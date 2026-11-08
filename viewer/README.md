@@ -500,7 +500,9 @@ Se projektrodens README og docs/hosting.md. Eksporten er nu et objekt med `versi
 
 Positionsmarkørerne bruger skroget fra `boat.svg`, kopieret fra
 `random simuleringer/cuteboat.svg`. Metadata i `boat-icons.js` angiver Vera, My,
-Mercutio og saltamalin som 8 × 2,54 meter. Alle øvrige både har foreløbige mål
+Mercutio og saltamalin som 8 × 2,54 meter. THE HULK er 10,3 × 2,18 meter,
+Rosa-Lux 10 × 3 meter, Alice 8 × 2,51 meter og Moster 7,77 × 2,5 meter.
+Alle øvrige både har foreløbige mål
 på 10 × 3 meter (`estimated: true`). Hver båd har et `dimensions`-felt med
 `lengthM` og `beamM`. Ret navneopslagene i `boatDimensionOverrides`, når mål kendes.
 
