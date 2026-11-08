@@ -27,13 +27,17 @@ function timeBoundary(points,time,after=false){
  return lo;
 }
 function path(points){return points.map((p,i)=>(i?'L':'M')+xy(p).join(',')).join(' ')}
-function visibleMapBounds(){
+function mapViewport(){
  const map=$('map'),matrix=map.getScreenCTM();if(!matrix)return null;
- const rect=map.getBoundingClientRect(),inverse=matrix.inverse();
+ const rect=map.getBoundingClientRect();if(!rect.width||!rect.height)return null;
+ if(![matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f].every(Number.isFinite)||Math.abs(matrix.a*matrix.d-matrix.b*matrix.c)<1e-12)return null;
+ const inverse=matrix.inverse();
  const a=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
  const b=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
- return {west:9.5+a.x*4.5/1000,east:9.5+b.x*4.5/1000,south:57-b.y*3/1180,north:57-a.y*3/1180};
+ return {rect,matrix,topLeft:a,viewBox:[a.x,a.y,b.x-a.x,b.y-a.y],
+  bounds:{west:9.5+a.x*4.5/1000,east:9.5+b.x*4.5/1000,south:57-b.y*3/1180,north:57-a.y*3/1180}};
 }
+function visibleMapBounds(){return mapViewport()?.bounds||null;}
 // Cache the full geometry in small chunks, then draw only those in the viewport.
 // Shared end points keep the detailed coastline continuous at chunk boundaries.
 const coastChunks=[];

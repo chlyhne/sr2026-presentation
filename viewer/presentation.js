@@ -337,7 +337,9 @@ $('previousEvent').onclick=()=>movePresentationEvent(-1);
 $('nextEvent').onclick=()=>movePresentationEvent(1);
 $('eventSelect').onchange=()=>showPresentationEvent(Number($('eventSelect').value));
 document.addEventListener('keydown',handlePresentationKey,true);
-document.addEventListener('fullscreenchange',updateFullscreenButton);
+document.addEventListener('fullscreenchange',()=>{
+ updateFullscreenButton();requestAnimationFrame(()=>webglTracks.redraw());
+});
 $('presentationFullscreen').onclick=async()=>{
  $('presentationMessage').textContent='';
  try{

@@ -554,6 +554,9 @@ efter zoomniveau eller geografisk udsnit. Ikoner og øvrige kortlag er fortsat S
 
 Canvas ligger i et SVG-`foreignObject` på sporenes oprindelige plads i lagfølgen.
 Zoom, panorering, skærmskalering og ændret vinduesstørrelse opdaterer projektionen.
+`mapViewport()` leverer det synlige kortrektangel og dets geografiske grænser
+til både sporenes projektion og `visibleMapBounds()`. Fuldskærmsskift genopfrisker
+sporlaget efter layout, og WebGL bruger grafikbufferens faktiske pixelstørrelse.
 Klik søger i de oprindelige kurver ved selve klikket; der vedligeholdes ingen
 usynlige SVG-klikstier under WebGL-afspilning. Ved overlap vælges den øverste
 båd, som med de tidligere klikstier. Hover i pause viser bådnavn og SOG og
@@ -569,6 +572,10 @@ softwaregrafik i tests. Vindpile og farveskala beholder deres eksisterende cache
 
 `node scripts/test_viewer_webgl_tracks.cjs` kontrollerer faktiske GPU-pixels,
 huller, fartdata, genbrug af buffere, eksport og tab/gendannelse af konteksten.
+`node scripts/test_viewer_fullscreen_tracks.cjs` gennemgår den udgivne
+præsentation før, under og efter fuld skærm og kontrollerer tekststørrelser og
+faktiske sporpixels ved de gemte zoomniveauer. Testen bruger grafikkort og en
+synlig browser som standard (`SR_HEADLESS=1` vælger headless).
 `node scripts/benchmark_viewer_tracks.cjs` sammenligner WebGL og SVG med alle
 106 både. Benchmarken bruger en synlig Chromium med grafikkort som standard;
 `SR_HEADLESS=1` kan bruges til automatisering, men måler ofte softwaregrafik.
