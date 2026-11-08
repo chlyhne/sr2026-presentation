@@ -1,0 +1,15 @@
+{
+  "time": 1781260800,
+  "observed_time": "2026-06-12T10:40:01+00:00",
+  "file": "radar/1781260800.png",
+  "colour_scheme": "red-violet-v1",
+  "source_id": "dk.com.202606121040.500_max.h5",
+  "source_pixel_size_m": 500,
+  "source_quantity": "DBZH",
+  "gain": 0.5,
+  "offset": -32.0,
+  "nodata": 255,
+  "undetect": 0.0,
+  "coloured_pixels": 29082,
+  "missing_pixels": 0
+}

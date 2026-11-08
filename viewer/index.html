@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="da">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sjælland Rundt · kort til præsentation</title>
+<link rel="stylesheet" href="viewer.css">
+<header><h1>Sjælland Rundt 2026 <span> / Mercutio</span></h1><div class="header-actions">
+  <button id="startPresentation" class="mode-switch">Start præsentation</button>
+  <button id="presentationFullscreen" aria-pressed="false" hidden>Fuld skærm</button>
+  <button id="endPresentation" hidden>Redigér</button>
+</div></header>
+<main><aside>
+  <div class="presentation-tools">
+    <button id="capture" class="primary">Gem kort som PNG</button>
+    <p class="help">Zoom og træk til det ønskede udsnit. Billedet indeholder kun kortet med de synlige lag og annotationer, i dobbelt opløsning.</p>
+    <p id="captureStatus" class="help" role="status" aria-live="polite"></p>
+  </div>
+  <label><input id="wind" type="checkbox" checked> Vind i 10 meters højde</label>
+  <label>Vindmodel<select id="windModel"><option value="dmi_harmonie_arome_europe">DMI HARMONIE · 2 km · prognosearkiv</option><option value="ecmwf_ifs">ECMWF IFS · 9 km · prognosearkiv</option><option value="era5">ERA5 · 0,25° · reanalyse</option></select></label>
+  <div id="windLegend" class="colour-legend" aria-label="DMI vindfarveskala i meter per sekund"></div>
+  <p class="help">Første blå: 8–10 m/s. De næste blå: 10–12 og 12–14 m/s. Gul begynder ved 14 m/s.</p>
+  <label><input id="windNumbers" type="checkbox"> Vis tal for vind / vindstød</label>
+  <p class="help">Vindfarver som på <a href="https://www.dmi.dk/vejrkort">DMI’s vindkort</a>, i m/s. Pilene peger med vinden og har fast afstand på skærmen ved alle zoomniveauer. Vinden ved pilene interpoleres fra modelpunkterne. Vindfeltet opdateres hver time; radaren hvert 10. minut.</p>
+  <label><input id="rain" type="checkbox" checked> Nedbørsradar · DMI</label>
+  <label>Radarens synlighed<input id="rainOpacity" type="range" min="0" max="1" step=".05" value=".75"></label>
+  <div id="rainLegend" class="colour-legend" aria-label="Radarekkostyrke i dBZ, rød til violet"></div>
+  <p id="rainPeriod" class="legend"></p>
+  <p class="help">Rød → violet: stigende radarekkostyrke i dBZ. Gråt: manglende dækning. Ekkoer under 0 dBZ er gennemsigtige.</p>
+  <label><input id="traffic" type="checkbox" checked> Trafikseparering · TSS</label>
+  <p id="trafficInfo" class="help"><span class="tss-swatch" aria-hidden="true"></span> Lilla skravering: skillezoner. Stiplede linjer: grænser. Store lilla pile: trafikretning. Kilde: <a href="https://wiki.openstreetmap.org/wiki/Tag:seamark:type=separation_lane">OpenSeaMap / OpenStreetMap</a>, kortlagt pr. juni 2026.</p>
+  <label><input id="military" type="checkbox" checked> Skydeområde · Hatter Barn</label>
+  <p id="militaryInfo" class="help"><span class="tss-swatch military-swatch" aria-hidden="true"></span> Sort skravering: Hatter Barn skydeområde, indtegnet efter dine syv hjørnekoordinater.</p>
+  <p>Spor: seneste 2 timer</p>
+  <p class="help">Sporfarven viser bådfart over grunden (SOG) fra TracTrac på jet-skalaen i kortet, 0–15 knob. Fart over 15 knob har samme farve som 15. Gråt spor betyder manglende fartdata. Prikker og navne har bådens egen farve.</p>
+  <p class="help">Spor og positioner interpoleres glidende mellem målepunkterne og følger kortets zoom. Huller over 5 minutter forbindes ikke.</p>
+  <div id="choices"></div>
+  <p class="help">Klik på et spor for at vise farten. Vælg Pin ved fartmærket for at beholde det i præsentationen. Klik på et pinnet mærke for at fjerne det igen.</p>
+  <div class="button-row"><button id="all">Vælg hele feltet</button><button id="reset">Vis Sjælland</button></div>
+  <p class="help">Zoom med musehjulet, og træk kortet. Tidslinjen følger udsnittet og de valgte både. Klik på en bådprik for at vise eller skjule navnet. Piletaster flytter tiden 1 sekund; hold Shift nede for 1 minut. Både med over 5 minutter gamle positioner skjules.</p>
+  <div class="annotation-tools">
+    <p id="noteEditorTitle" class="help">Ny note · vælg Redigér ved en eksisterende note for at ændre den eller tegne.</p>
+    <label for="note">Hvad skete der her?</label>
+    <textarea id="note" rows="3" maxlength="900" placeholder="Fx: Vi skifter til Code-0"></textarea>
+    <label for="noteImage">Billede til event (valgfrit)</label>
+    <input id="noteImage" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+    <p class="help">Vælg et billede, og gem eventet. Tekst er valgfri. Billedet gemmes på serveren.</p>
+    <div class="button-row"><button id="removeNoteImage" hidden>Fjern billede</button></div>
+    <p id="noteImageStatus" class="help" role="status"></p>
+    <label for="noteVideo">YouTube-video til event (valgfri)</label>
+    <input id="noteVideo" type="url" maxlength="2048" placeholder="https://youtu.be/…" aria-describedby="noteVideoStatus">
+    <p class="help">Indsæt et YouTube-link. Klik på videoen i højrepanelet for at afspille i fuld skærm. Tekst er valgfri.</p>
+    <div class="button-row"><button id="removeNoteVideo" hidden>Fjern video</button></div>
+    <p id="noteVideoStatus" class="help" role="status"></p>
+    <div class="button-row"><button id="placeNote">Placér på kortet</button><button id="cancelNote" hidden>Annullér</button></div>
+    <p id="annotationStatus" class="help" role="status" aria-live="polite">Skriv en tekst, og placér den på kortet. Noten husker tidspunkt, udsnit og valgte lag.</p>
+    <fieldset id="drawingTools" hidden>
+      <legend>Tegn til denne note</legend>
+      <label for="drawingTool">Værktøj</label>
+      <select id="drawingTool"><option value="pan">Flyt kortet</option><option value="pen">Frihånd</option><option value="arrow">Pil</option><option value="line">Linje</option><option value="circle">Cirkel</option></select>
+      <div class="drawing-style">
+        <label>Farve <input id="drawingColour" type="color" value="#e02020"></label>
+        <label>Stregbredde <select id="drawingWidth"><option value="2">Tynd</option><option value="4" selected>Normal</option><option value="7">Tyk</option></select></label>
+      </div>
+      <div class="button-row"><button id="undoDrawing">Fortryd sidste streg</button><button id="clearDrawings">Ryd tegninger</button></div>
+      <p class="help">Træk på kortet for at tegne. Vælg Flyt kortet for at panorere. Tegningerne følger geografien ved zoom og vises kun sammen med denne note. Escape stopper tegneværktøjet.</p>
+      <p id="drawingCount" class="help" role="status"></p>
+    </fieldset>
+    <label><input id="annotationsVisible" type="checkbox" checked> Vis annotationer ved dette tidspunkt</label>
+    <div class="button-row"><button id="save">Gem tidspunkt uden markør</button><button id="cancelEdit" hidden>Annullér redigering</button><button id="export">Eksportér noter</button></div>
+    <div id="notes"></div>
+  </div>
+  <p class="help">DMI og ECMWF er arkiverede prognoser; ERA5 er en efterfølgende reanalyse. Modellerne kan afvige fra den lokale vind og bygepust.</p>
+  <p class="help">Kilder: TracTrac · <a href="https://www.dmi.dk/friedata/dokumentation/radar-data">DMI radar</a> · <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo / Copernicus ERA5</a> · <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors · ODbL</a>. Klokkeslæt er dansk sommertid (UTC+2).</p>
+</aside>
+<svg id="map" viewBox="230 250 620 760" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Kort med bådspor, vind, nedbørsradar og annotationer">
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#183b49"/></marker></defs>
+  <g id="windField"><image id="windImage" x="0" y="0" width="1000" height="1180"/></g>
+  <g id="land" pointer-events="none"></g>
+  <g id="precipitation"><image id="radarImage" x="0" y="0" width="1000" height="1180" visibility="hidden"/></g>
+  <g id="baseMap"><g id="coast"></g><g id="trafficSeparation"></g><g id="militaryAreas"></g><g id="routeT" pointer-events="none"></g><g id="courseLines" pointer-events="none"></g></g>
+  <g id="winds"></g><g id="routes"></g><g id="places"></g><g id="seamarks" pointer-events="none"></g><g id="speedMarkers"></g><g id="noteDrawings" pointer-events="none"></g><g id="drawingPreview" pointer-events="none"></g><g id="annotations"></g><g id="mapCredit" pointer-events="none"></g><g id="trackSpeedLegend" pointer-events="none" aria-label="Bådfart over grunden, jet-farveskala fra 0 til 15 knob"></g>
+</svg>
+<button id="mapEventImage" type="button" aria-label="Luk billedet og vis kortet" title="Klik for at vise kortet igen" hidden>
+  <img id="mapEventImageContent" alt="" draggable="false" hidden>
+  <span id="mapEventImageStatus" role="status"></span>
+</button>
+<section id="eventPanel" aria-label="Valgt event">
+  <div class="event-summary" aria-live="polite" aria-atomic="true">
+    <div class="event-meta"><span id="eventCounter"></span><time id="eventTime"></time></div>
+    <p id="eventText"></p>
+    <textarea id="eventTextEditor" rows="4" maxlength="900" aria-label="Redigér eventtekst" title="Klik udenfor eller tryk Ctrl+Enter for at gemme. Escape annullerer." hidden></textarea>
+    <p id="inlineTextStatus" class="help" role="status"></p>
+  </div>
+  <figure id="eventImageFigure" hidden><button id="eventImageButton" type="button" aria-label="Vis billedet over kortet" aria-controls="mapEventImage" aria-expanded="false" title="Vis billedet over kortet"><img id="eventImage" alt=""></button><figcaption id="eventImageCaption"></figcaption></figure>
+  <p id="eventImageStatus" class="help" role="status"></p>
+  <figure id="eventVideoFigure" hidden>
+    <button id="eventVideoButton" type="button" aria-label="Afspil YouTube-video i fuld skærm" aria-controls="eventVideoOverlay" aria-expanded="false">
+      <img id="eventVideoThumbnail" alt="" loading="lazy">
+      <span class="video-play" aria-hidden="true">▶</span><span class="video-caption">Afspil i fuld skærm</span>
+    </button>
+  </figure>
+  <p id="speedPinStatus" class="help" role="status"></p>
+  <p id="eventBoatStatus" class="help" role="status"></p>
+</section>
+<footer id="editingTimeline"><div class="controls"><button id="back" aria-label="1 sekund tilbage">◀</button><button id="play">Afspil</button><button id="next" aria-label="1 sekund frem">▶</button><time id="clock" aria-label="Kortets tid"></time><div id="timelineTrack"><input id="time" aria-label="Tidspunkt, perioder med valgte både i kortudsnittet" type="range" step="1"><div id="timelineEvents" aria-hidden="true"></div></div></div><div id="timeWindow" hidden></div><div id="status" hidden></div></footer>
+<footer id="presentationFooter">
+  <div class="event-navigation">
+    <nav aria-label="Præsentationens events">
+      <button id="previousEvent" aria-label="Forrige event" title="Forrige event">←</button>
+      <label for="eventSelect" class="sr-only">Vælg event</label><select id="eventSelect"></select>
+      <button id="nextEvent" aria-label="Næste event" title="Næste event">→</button>
+    </nav>
+    <p id="presentationMessage" class="help" role="status"></p>
+  </div>
+</footer></main>
+<section id="eventVideoOverlay" role="dialog" aria-modal="true" aria-label="YouTube-video" hidden>
+  <div class="video-toolbar"><a id="eventVideoLink" target="_blank" rel="noopener">Åbn på YouTube</a><button id="closeEventVideo" type="button">Luk video ×</button></div>
+  <div id="eventVideoPlayer"></div>
+</section>
+<script src="config.js"></script><script src="boot.js"></script>
+</html>
