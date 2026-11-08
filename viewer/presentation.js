@@ -372,7 +372,10 @@ async function captureMap() {
  try {
   // Await the currently requested radar frame, even after a rapid time change.
   let radarPending,windPending;
-  do {radarPending=radarReady;windPending=windReady;await Promise.all([radarPending,windPending]);}
+  do {
+   radarPending=radarReady;windPending=windReady;await Promise.all([radarPending,windPending]);
+   await Promise.all([radarImageBuffer.paintReady,windImageBuffer.paintReady]);
+  }
   while(radarPending!==radarReady||windPending!==windReady);
   if($('wind').checked&&windFieldError)throw new Error('Vindkortet kunne ikke indlæses. Prøv igen.');
   if($('rain').checked && radarStatus==='kunne ikke indlæses')throw new Error('Radaren kunne ikke indlæses. Prøv igen, eller slå radarlaget fra.');

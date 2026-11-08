@@ -17,9 +17,11 @@ async function check(type){
    renderRadar(D.start+600);renderWindField(D.start+3600);
    return {radar:radarImageBuffer.frontNode===radarBack,wind:windImageBuffer.frontNode===windBack,
     radarVisible:$('radarImage').getAttribute('visibility'),windVisible:$('windImage').getAttribute('visibility'),
+    radarOldVisible:radarImageBuffer.backNode.getAttribute('visibility'),windOldVisible:windImageBuffer.backNode.getAttribute('visibility'),
     radarKey:radarImageBuffer.front.key,windKey:windImageBuffer.front.key};
   });
   assert.equal(instant.radar,true);assert.equal(instant.wind,true);assert.equal(instant.radarVisible,'visible');assert.equal(instant.windVisible,'visible');
+  assert.equal(instant.radarOldVisible,'visible');assert.equal(instant.windOldVisible,'visible');
   assert.equal(instant.radarKey,'1781165400');assert.match(instant.windKey,/:1781168400$/);
   await page.evaluate(()=>renderRadar(D.start+1200));
   assert.equal(await page.locator('#radarImage').getAttribute('visibility'),'visible');
@@ -41,6 +43,7 @@ async function check(type){
   await page.evaluate(()=>{$('rain').checked=true;setCurrentTime(D.start+3600);render();});
   await page.evaluate(()=>Promise.all([radarReady,windReady]));
   assert.equal(await page.locator('#radarImage').getAttribute('data-weather-key'),'1781168400');
+  await page.evaluate(()=>Promise.all([radarImageBuffer.paintReady,windImageBuffer.paintReady]));
   assert.equal(await page.locator('#precipitation image[visibility="visible"]').count(),1);
   assert.equal(await page.locator('#windField image[visibility="visible"]').count(),1);
   await page.screenshot({path:'/tmp/sr2026-weather-buffers-'+type.name()+'.png'});

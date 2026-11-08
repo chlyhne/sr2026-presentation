@@ -3,7 +3,7 @@ class WeatherImageBuffer {
  constructor(id){
   this.id=id;this.frontNode=document.getElementById(id);this.backNode=this.frontNode.cloneNode(false);
   this.backNode.id=id+'Back';this.frontNode.after(this.backNode);
-  this.front=null;this.back=null;this.hide();
+  this.front=null;this.back=null;this.paintReady=Promise.resolve();this.hide();
  }
  hide(){for(const node of [this.frontNode,this.backNode])node.setAttribute('visibility','hidden');}
  prepare(key,createHref,retry=false){
@@ -11,16 +11,20 @@ class WeatherImageBuffer {
   if(this.back?.key===key&&(!retry||!this.back.error))return this.back;
   this.back?.cancel?.();
   const entry={key,ready:false,error:null};this.back=entry;
-  const node=this.backNode;node.onload=node.onerror=null;
-  node.setAttribute('visibility','hidden');
+  const node=this.backNode,reusableAfter=this.paintReady;
   entry.promise=(async()=>{
    try{
+    // The retired front must survive its handoff before this slot is reused.
+    await reusableAfter;
+    if(this.back!==entry)return entry;
+    node.onload=node.onerror=null;node.setAttribute('visibility','hidden');
     // Yield before generating a future wind field so the current frame can finish.
     await new Promise(resolve=>setTimeout(resolve,0));
     if(this.back!==entry)return entry;
     const href=createHref(),image=new Image();entry.image=image;image.src=href;
     await image.decode();
     if(this.back!==entry)return entry;
+    if(node.getAttribute('href')===href)node.removeAttribute('href');
     await new Promise((resolve,reject)=>{
      entry.cancel=()=>{node.onload=node.onerror=null;resolve();};
      node.onload=()=>{node.onload=node.onerror=null;resolve();};
@@ -40,7 +44,15 @@ class WeatherImageBuffer {
   const oldNode=this.frontNode,oldEntry=this.front;
   this.frontNode=this.backNode;this.front=this.back;this.backNode=oldNode;this.back=oldEntry;
   this.backNode.id=this.id+'Back';this.frontNode.id=this.id;
-  this.frontNode.setAttribute('visibility','visible');this.backNode.setAttribute('visibility','hidden');
+  // Put the new frame above the fallback, retaining the old pixels through paint.
+  oldNode.after(this.frontNode);this.frontNode.setAttribute('visibility','visible');
+  const newNode=this.frontNode;
+  if(oldEntry?.ready&&oldNode.getAttribute('visibility')==='visible'){
+   this.paintReady=new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(this.frontNode===newNode&&this.backNode===oldNode)oldNode.setAttribute('visibility','hidden');
+    resolve();
+   })));
+  }else{oldNode.setAttribute('visibility','hidden');this.paintReady=Promise.resolve();}
   return true;
  }
 }
