@@ -24,29 +24,37 @@ function renderTimelineEvents(){
   mark.style.left=`calc(${ratio*100}% + ${8-16*ratio}px)`;marks.append(mark);
  }
 }
-function syncTimelineEvent(){
- const matches=timelineNotes().filter(n=>n.time===selectedTime);
+function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false}={}){
+ let matches=timelineNotes().filter(n=>n.time===selectedTime);
+ if(crossedEvents&&previousTime!==selectedTime){
+  const forward=selectedTime>previousTime;
+  const crossed=snappableTimelineNotes().filter(n=>forward
+   ?n.time>previousTime&&n.time<=selectedTime
+   :n.time<previousTime&&n.time>=selectedTime);
+  if(crossed.length){
+   const time=forward?Math.max(...crossed.map(n=>n.time)):Math.min(...crossed.map(n=>n.time));
+   matches=crossed.filter(n=>n.time===time);
+  }
+ }
  if(!matches.length)return;
  if(!matches.includes(activePresentationNote))activePresentationNote=matches[0];
  updatePresentationControls();
 }
-function seekTimeline(offset){
+function seekTimeline(offset,{snap=true}={}){
  if(!finishInlineTextEditing()){$('time').value=offsetAtTime(currentTime());return;}
  hideMapEventImage();
  hideEventVideo();
  stopPlayback();
  const snapWindow=eventSnapWindowSeconds(),candidateTime=timeAtOffset(offset);
  let nearest=null,distance=Infinity;
- for(const n of snappableTimelineNotes()){
+ for(const n of snap?snappableTimelineNotes():[]){
   const delta=Math.abs(offsetAtTime(n.time)-offset);
   // Joined visits can be adjacent on the slider but hours apart in real time.
   if(delta<=snapWindow&&Math.abs(n.time-candidateTime)<=snapWindow&&(delta<distance||(delta===distance&&n===activePresentationNote))){nearest=n;distance=delta;}
  }
  if(nearest){
-  selectedTime=nearest.time;activePresentationNote=nearest;
-  $('time').value=offsetAtTime(selectedTime);$('time').setAttribute('aria-valuetext',fmt(selectedTime));
-  updatePresentationControls();
- }else setCurrentTime(timeAtOffset(offset));
+  activePresentationNote=nearest;setCurrentTime(nearest.time);
+ }else setCurrentTime(candidateTime,{crossedEvents:true});
  render();
 }
 
@@ -111,7 +119,8 @@ function offsetAtTime(time){
  return Math.max(0,timelineLength-1);
 }
 
-function setCurrentTime(time,{fractional=false}={}){
+function setCurrentTime(time,{fractional=false,crossedEvents=false}={}){
+ const previousTime=selectedTime;
  time=Math.max(D.start,Math.min(D.end,fractional?time:Math.round(time)));
  let nearest=time,distance=Infinity;
  for(const range of visibleTimeRanges){
@@ -122,7 +131,7 @@ function setCurrentTime(time,{fractional=false}={}){
  selectedTime=nearest;
  $('time').value=offsetAtTime(selectedTime);
  $('time').setAttribute('aria-valuetext',fmt(selectedTime));
- syncTimelineEvent();
+ syncTimelineEvent(previousTime,{crossedEvents});
 }
 
 function updateTimeline(){
@@ -157,6 +166,10 @@ function updateTimeline(){
 }
 
 $('time').oninput=()=>seekTimeline(+$('time').value);
+$('time').addEventListener('wheel',e=>{
+ if($('time').disabled||(!e.deltaY&&!e.deltaX))return;
+ e.preventDefault();seekTimeline(+$('time').value+Math.sign(e.deltaY||e.deltaX)*(e.shiftKey?60:1),{snap:false});
+},{passive:false});
 $('time').onkeydown=e=>{
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
   e.preventDefault();e.stopPropagation();stopPlayback();step((['ArrowRight','ArrowUp'].includes(e.key)?1:-1)*(e.shiftKey?60:1));
