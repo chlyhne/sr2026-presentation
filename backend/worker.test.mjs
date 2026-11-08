@@ -143,3 +143,12 @@ test('publishing checks all images in one repository tree, accepting migrated im
  assert.equal((await request('/api/presentation',{method:'PUT',body:JSON.stringify({document:doc,sha})})).status,200);
  assert.equal(calls.filter(c=>c.url.includes('/git/trees/')).length,1);
 });
+test('static proxy uses manual redirects and rejects them without following',async()=>{
+ let calls=0;
+ globalThis.fetch=async(url,options)=>{
+  calls++;assert.equal(options.redirect,'manual');
+  return new Response(null,{status:302,headers:{Location:'https://elsewhere.example/'}});
+ };
+ const response=await request('/admin/boot.js');assert.equal(response.status,502);
+ assert.equal(calls,1);assert.match((await response.json()).error,/SITE_URL/);
+});
