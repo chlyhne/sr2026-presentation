@@ -99,7 +99,8 @@ function trackSpeedGeometry(points,speeds,start,end){
 }
 function renderTrackSpeedLegend(){
  const layer=$('trackSpeedLegend');layer.replaceChildren();
- const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();if(!matrix)return;
+ const viewport=mapViewport();if(!viewport)return;
+ const {rect,matrix}=viewport;
  const point=new DOMPoint(rect.left+12,rect.top+12).matrixTransform(matrix.inverse());
  const group=screenGroup(point.x,point.y,layer),width=Math.max(110,Math.min(230,rect.width-24));
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);

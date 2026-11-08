@@ -8,8 +8,8 @@ function screenGroup(x,y,parent){
  return el('g',{'data-screen-x':x,'data-screen-y':y,transform:`translate(${x} ${y})`},parent);
 }
 function resizeSymbols(){
- const matrix=$('map').getScreenCTM();
- if(!matrix)return;
+ const viewport=mapViewport();if(!viewport)return;
+ const {matrix}=viewport;
  const inverseScale=1/Math.hypot(matrix.a,matrix.b);
  for(const group of $('map').querySelectorAll('[data-screen-x]')){
   const transform=`translate(${group.dataset.screenX} ${group.dataset.screenY}) scale(${inverseScale})`;
@@ -27,13 +27,19 @@ function timeBoundary(points,time,after=false){
  return lo;
 }
 function path(points){return points.map((p,i)=>(i?'L':'M')+xy(p).join(',')).join(' ')}
-function visibleMapBounds(){
+let mapViewportCache=null;
+function mapViewport(){
  const map=$('map'),matrix=map.getScreenCTM();if(!matrix)return null;
- const rect=map.getBoundingClientRect(),inverse=matrix.inverse();
- const a=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
- const b=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
- return {west:9.5+a.x*4.5/1000,east:9.5+b.x*4.5/1000,south:57-b.y*3/1180,north:57-a.y*3/1180};
+ const rect=map.getBoundingClientRect(),pixelRatio=devicePixelRatio||1;
+ if(!rect.width||!rect.height)return null;
+ const key=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,pixelRatio].join(':');
+ if(mapViewportCache?.key===key)return mapViewportCache;
+ const inverse=matrix.inverse(),topLeft=new DOMPoint(rect.left,rect.top).matrixTransform(inverse),bottomRight=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
+ return mapViewportCache={key,rect,matrix,inverse,pixelRatio,topLeft,bottomRight,
+  viewBox:[topLeft.x,topLeft.y,bottomRight.x-topLeft.x,bottomRight.y-topLeft.y],
+  bounds:{west:9.5+topLeft.x*4.5/1000,east:9.5+bottomRight.x*4.5/1000,south:57-bottomRight.y*3/1180,north:57-topLeft.y*3/1180}};
 }
+function visibleMapBounds(){return mapViewport()?.bounds||null;}
 // Cache the full geometry in small chunks, then draw only those in the viewport.
 // Shared end points keep the detailed coastline continuous at chunk boundaries.
 const coastChunks=[];
@@ -73,7 +79,8 @@ function renderCoast(){
 }
 let mapCreditKey=null;
 function renderMapCredit(){
- const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();if(!matrix)return;
+ const viewport=mapViewport();if(!viewport)return;
+ const {rect,matrix}=viewport;
  const key=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.width,rect.height].join(':');
  if(key===mapCreditKey)return;
  mapCreditKey=key;renderTrackSpeedLegend();
@@ -181,8 +188,8 @@ function renderWindArrows(t=currentTime()) {
   if(windArrowKey!==false)layer.replaceChildren();
   windArrowKey=false;return;
  }
- const map=$('map'),matrix=map.getScreenCTM();if(!matrix)return;
- const inverse=matrix.inverse(),scale=1/Math.hypot(matrix.a,matrix.b),rect=map.getBoundingClientRect();
+ const viewport=mapViewport();if(!viewport)return;
+ const {matrix,inverse,rect}=viewport,scale=1/Math.hypot(matrix.a,matrix.b);
  const model=$('windModel').value,showNumbers=$('windNumbers').checked;
  const key=[Math.floor(t/3600),model,showNumbers,matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.width,rect.height].join(':');
  if(key===windArrowKey)return;

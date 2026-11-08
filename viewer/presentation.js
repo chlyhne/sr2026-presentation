@@ -337,7 +337,7 @@ $('previousEvent').onclick=()=>movePresentationEvent(-1);
 $('nextEvent').onclick=()=>movePresentationEvent(1);
 $('eventSelect').onchange=()=>showPresentationEvent(Number($('eventSelect').value));
 document.addEventListener('keydown',handlePresentationKey,true);
-document.addEventListener('fullscreenchange',updateFullscreenButton);
+document.addEventListener('fullscreenchange',()=>{updateFullscreenButton();scheduleMapViewportRefresh();});
 $('presentationFullscreen').onclick=async()=>{
  $('presentationMessage').textContent='';
  try{
@@ -352,8 +352,8 @@ function renderAnnotations() {
  renderNoteDrawings();
  updatePresentationControls();
  if(!$('annotationsVisible').checked) return;
- const map=$('map'), matrix=map.getScreenCTM();if(!matrix)return;
- const rect=map.getBoundingClientRect(),scale=Math.hypot(matrix.a,matrix.b);
+ const viewport=mapViewport();if(!viewport)return;
+ const {matrix,rect}=viewport,scale=Math.hypot(matrix.a,matrix.b);
  for(const [i,saved] of notes.entries()) {
   if(!noteIsVisible(saved))continue;
   const n=saved===editingNote?{...noteDraft,text:$('note').value}:saved;
@@ -403,11 +403,9 @@ async function captureMap() {
   if($('wind').checked&&windFieldError)throw new Error('Vindkortet kunne ikke indlæses. Prøv igen.');
   if($('rain').checked && radarStatus==='kunne ikke indlæses')throw new Error('Radaren kunne ikke indlæses. Prøv igen, eller slå radarlaget fra.');
   await document.fonts.ready;
-  const map=$('map'),rect=map.getBoundingClientRect(),inverse=map.getScreenCTM().inverse();
-  const topLeft=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
-  const bottomRight=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
+  const map=$('map'),viewport=mapViewport();if(!viewport)throw Error('Kortet er ikke synligt.');
+  const {rect,viewBox:bounds}=viewport;
   // Expand viewBox to include the exact visible area, including SVG's side gutters.
-  const bounds=[topLeft.x,topLeft.y,bottomRight.x-topLeft.x,bottomRight.y-topLeft.y];
   const clone=map.cloneNode(true),width=Math.round(rect.width),height=Math.round(rect.height);
   if(webglTracks.active){
    const routes=clone.querySelector('#routes');routes.replaceChildren();
@@ -451,4 +449,10 @@ async function captureMap() {
 $('capture').onclick=captureMap;
 $('note').addEventListener('input',()=>{if(editingNote)renderAnnotations();else if(pendingEventImage||hasPendingEventVideo())updatePresentationControls();});
 updateTimeline();showNotes();render();
-new ResizeObserver(()=>{if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit()}}).observe($('map'));
+let mapViewportRefresh=null;
+function scheduleMapViewportRefresh(){
+ if(mapViewportRefresh!==null)return;
+ mapViewportRefresh=requestAnimationFrame(()=>{mapViewportRefresh=null;updateTimeline();render();});
+}
+new ResizeObserver(scheduleMapViewportRefresh).observe($('map'));
+window.addEventListener('resize',scheduleMapViewportRefresh);
