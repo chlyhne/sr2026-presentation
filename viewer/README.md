@@ -540,3 +540,8 @@ indlæsning. Tilvalg af både og eventskift forbereder deres spor, før de vises
 Cachede intervaller bevares, også ved frem- og tilbagespoling. Det prioriterer
 hukommelse og forberedelsestid frem for genberegning under afspilning.
 Vindpile og farveskala genbruges, indtil deres data eller kortudsnittet ændres.
+
+Fartfarver og deres faste tidsgrænser beregnes ved forberedelsen af tracket.
+Afspilning klipper kun geometrien i de allerede farvelagte stykker.
+Farvegrupperne tegnes i en fast rækkefølge, så overlap ikke skifter farve,
+når gamle punkter forlader to-timersvinduet.
