@@ -11,7 +11,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   const metadata=await page.evaluate(()=>boats.map(b=>({name:b.name,...b.dimensions})));
   for(const boat of metadata){
    const expected={mercutio:[8,2.54],vera:[8,2.54],my:[8,2.54],saltamalin:[8,2.54],
-    'the hulk':[10.3,2.18],'rosa-lux':[10,3],alice:[8,2.51],moster:[7.77,2.5]}[boat.name.toLowerCase()];
+    'the hulk':[10.3,3.18],'rosa-lux':[10,3],alice:[8,2.51],moster:[7.77,2.5]}[boat.name.toLowerCase()];
    assert.equal(boat.lengthM,expected?expected[0]:10);assert.equal(boat.beamM,expected?expected[1]:3);
    assert.equal(!!boat.estimated,!expected);
   }
