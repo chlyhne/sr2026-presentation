@@ -197,7 +197,8 @@ async function routes(request, env) {
     if (!/^[a-zA-Z0-9_./-]+$/.test(suffix) || suffix.split('/').some(p => p === '..' || p === '.') || suffix.startsWith('/')) fail(404, 'Siden findes ikke.');
     const target = new URL(suffix, base);
     if (!target.href.startsWith(base.href)) fail(404, 'Siden findes ikke.');
-    const source = await fetch(target, {redirect: 'error'});
+    const source = await fetch(target, {redirect: 'manual'});
+    if (source.status >= 300 && source.status < 400) fail(502, 'Den offentlige side omdirigerer. Kontrollér SITE_URL.');
     const headers = new Headers({'Content-Type': source.headers.get('Content-Type') || 'application/octet-stream', 'Cache-Control': 'no-store'});
     return new Response(source.body, {status: source.status, headers});
   }
