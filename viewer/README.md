@@ -42,6 +42,10 @@ python3 scripts/serve_viewer.py
   hvor mindst én valgt båds aktuelle markør er i kortudsnittet. Når du trækker
   inden for cirka 1 % af skyderens bevægelige længde på hver side af en markering,
   snapper tiden til eventets præcise tidspunkt, og det pågældende event vælges.
+  Ved afspilning vælges det senest passerede event, også når et hurtigt tidsstep
+  springer over eventets præcise sekund. Afspilningen fortsætter uden pause eller
+  ændring af hastighed. Hurtige træk i skyderen vælger også passerede events,
+  både fremad og bagud, selv når trækket ender uden for snapvinduet.
   Tidsvinduet er 1 % af tidslinjens viste tid og følger dermed automatisk dens
   tidsomfang ved zoom og panorering. Der er ingen ekstra tidsgrænse baseret på zoom.
   Snap springer ikke over skjulte tidshuller. Resten af skyderen kan bruges frit.
@@ -74,6 +78,7 @@ python3 scripts/serve_viewer.py
   Piletaster på selve skyderen og sekundknapperne snapper ikke, så du kan flytte
   tiden væk fra et event i små trin. Piletaster uden for skyderen skifter events
   i præsentationen. Et træk i skyderen pauser afspilningen.
+  Musehjulet over skyderen flytter ét sekund; Shift+musehjul flytter ét minut.
   Klokken og PNG-filnavnet indeholder sekunder. Ved et nyt udsnit eller bådvalg
   flyttes en tid uden for de synlige perioder til nærmeste synlige tidspunkt.
   I præsentationen bevares den valgte tid ved zoom, panorering og ændret

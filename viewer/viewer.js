@@ -302,7 +302,7 @@ function advancePlayback(now){
  if($('time').disabled){stopPlayback();return;}
  playbackOffset=Math.min(timelineLength-1,playbackOffset+(now-playbackTickTime)/1000*playbackRate);
  playbackTickTime=now;
- setCurrentTime(timeAtOffset(playbackOffset,{fractional:true}),{fractional:true});render();
+ setCurrentTime(timeAtOffset(playbackOffset,{fractional:true}),{fractional:true,crossedEvents:true});render();
  if(playbackOffset>=timelineLength-1)stopPlayback();
 }
 $('play').onclick=()=>{
