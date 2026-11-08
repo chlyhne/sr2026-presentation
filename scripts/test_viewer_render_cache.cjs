@@ -10,12 +10,12 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
    const assert=(condition,message)=>{if(!condition)throw Error(message);};
    $('wind').checked=true;setCurrentTime(D.start+7200);render();
    const arrows=$('winds').firstChild,legend=$('trackSpeedLegend').firstChild,credit=$('mapCredit').firstChild;
-   const marker=$('routes').querySelector('.boat-marker').getAttribute('transform');
+   const marker=$('boatMarkers').querySelector('.boat-marker').getAttribute('transform');
    setCurrentTime(D.start+7240);render();
    assert($('winds').firstChild===arrows,'Wind DOM changed within one hour');
    assert($('trackSpeedLegend').firstChild===legend,'Legend DOM changed during playback');
    assert($('mapCredit').firstChild===credit,'Credit DOM changed during playback');
-   assert($('routes').querySelector('.boat-marker').getAttribute('transform')!==marker,'Boats must continue moving');
+   assert($('boatMarkers').querySelector('.boat-marker').getAttribute('transform')!==marker,'Boats must continue moving');
    renderWindArrows(D.start+10800);assert($('winds').firstChild!==arrows,'Hour change did not rebuild wind');
    const hourArrows=$('winds').firstChild;$('windNumbers').checked=true;renderWindArrows(D.start+10800);
    assert($('winds').firstChild!==hourArrows&&$('winds').querySelector('text'),'Wind numbers not refreshed');
