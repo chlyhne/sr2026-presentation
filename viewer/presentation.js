@@ -386,6 +386,19 @@ async function captureMap() {
   // Expand viewBox to include the exact visible area, including SVG's side gutters.
   const bounds=[topLeft.x,topLeft.y,bottomRight.x-topLeft.x,bottomRight.y-topLeft.y];
   const clone=map.cloneNode(true),width=Math.round(rect.width),height=Math.round(rect.height);
+  if(webglTracks.active){
+   const routes=clone.querySelector('#routes');routes.replaceChildren();
+   // Export native cubic SVG at the requested PNG resolution. Canvas elements
+   // inside foreignObject are not serializable, and a screen bitmap loses detail.
+   for(const boat of webglTracks.order||[]){
+    const geometry=trackGeometry(boat.points,currentTime()-7200,currentTime());if(!geometry)continue;
+    const group=el('g',{},routes);
+    el('path',{d:geometry,fill:'none',stroke:'#17313e','stroke-width':TRACK_OUTLINE_WIDTH,'stroke-linecap':'round','stroke-linejoin':'round','vector-effect':'non-scaling-stroke'},group);
+    for(const segment of trackSpeedGeometry(boat.points,boat.speeds,currentTime()-7200,currentTime()))
+     el('path',{d:segment.d,fill:'none',stroke:segment.colour,'stroke-width':TRACK_STROKE_WIDTH,'stroke-linecap':'round','stroke-linejoin':'round','vector-effect':'non-scaling-stroke'},group);
+   }
+  }
+  for(const host of clone.querySelectorAll('[data-webgl-tracks]'))host.remove();
   for(const control of clone.querySelectorAll('[data-speed-action],.track-hit-targets'))control.remove();
   const time=currentTime(),model=$('windModel').value,radarMissing=$('rain').checked&&radarStatus==='mangler';
   clone.setAttribute('width',width);clone.setAttribute('height',height);clone.setAttribute('viewBox',bounds.join(' '));
@@ -415,4 +428,4 @@ async function captureMap() {
 $('capture').onclick=captureMap;
 $('note').addEventListener('input',()=>{if(editingNote)renderAnnotations();else if(pendingEventImage||hasPendingEventVideo())updatePresentationControls();});
 updateTimeline();showNotes();render();
-new ResizeObserver(()=>{if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();resizeSymbols();renderAnnotations();renderMapCredit()}}).observe($('map'));
+new ResizeObserver(()=>{if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit()}}).observe($('map'));

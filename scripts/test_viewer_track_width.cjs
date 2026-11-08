@@ -25,6 +25,7 @@ async function check(type){
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000},deviceScaleFactor:1}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
+  if(type===chromium)await page.addInitScript(()=>window.SR_TRACK_RENDERER='webgl');
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');await page.waitForFunction(()=>typeof changeBoatSelection==='function');
   const names=await page.evaluate(()=>{
    const names=['Mercutio','Vera',boats.find(b=>!featured.has(b.name)).name];
@@ -47,8 +48,8 @@ async function check(type){
   async function measure(selectedNames){
    const samples=await page.evaluate(names=>names.map(name=>{
     const boat=boats.find(b=>b.name===name),screen=new DOMPoint(650,boat.widthTestY).matrixTransform($('map').getScreenCTM());
-    const group=$('routes').querySelector(`[data-boat-layer="${boat.id}"]`),colour=group.querySelector('[data-colouring] path');
-    return {boat:name,x:screen.x,y:screen.y,background:[220,236,240],outline:[23,49,62],fill:getComputedStyle(colour).stroke.match(/\d+/g).map(Number)};
+    const fill=TRACK_SPEED_COLOURS[speedBin(7.5)].match(/\d+/g).map(Number);
+    return {boat:name,x:screen.x,y:screen.y,background:[220,236,240],outline:[23,49,62],fill};
    }),selectedNames);
    const png=await page.screenshot();
    fs.writeFileSync('/tmp/sr2026-track-width-'+type.name()+'.png',png);

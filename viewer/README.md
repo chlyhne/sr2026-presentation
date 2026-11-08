@@ -536,19 +536,39 @@ fortsat i kladden, indtil der klikkes Udgiv.
 
 ## Genbrug under afspilning
 
-Bådenes spor, kanter og klikstier beholder deres SVG-elementer. Farvestier
-ændres kun, når deres geometri ændrer sig. Færdige kubiske kurvestykker
-genbruges; de afklippede ender af to-timerssporet beregnes ved den aktuelle tid.
-Kurve- og farvecachen forberedes for hele sejladsen for de valgte både ved
-indlæsning. Tilvalg af både og eventskift forbereder deres spor, før de vises.
-Cachede intervaller bevares, også ved frem- og tilbagespoling. Det prioriterer
-hukommelse og forberedelsestid frem for genberegning under afspilning.
-Vindpile og farveskala genbruges, indtil deres data eller kortudsnittet ændres.
+Sporlaget bruger WebGL 2 i `track-renderer.js`. Hvert kildeinterval gemmes én
+gang i en fast GPU-buffer med den oprindelige PCHIP-kurves koefficienter,
+tidsstempler og registrerede fartværdier. Bufferne forberedes for hele sejladsen
+for de valgte både og beholdes ved fravalg og frem-/tilbagespoling. Hele feltet
+bruger ca. 46,7 MB til disse buffere. Afspilning ændrer tidsgrænser og de
+intervaller, der tegnes, uden at bygge SVG-strenge eller uploade nye buffere.
 
-Fartfarver og deres faste tidsgrænser beregnes ved forberedelsen af tracket.
-Afspilning klipper kun geometrien i de allerede farvelagte stykker.
-Farvegrupperne tegnes i en fast rækkefølge, så overlap ikke skifter farve,
-når gamle punkter forlader to-timersvinduet.
+GPU'en evaluerer kubiske kurver, klipper dem til de seneste to timer og slår
+fartfarver op i den faste 128-trins palet. Dybdebufferen bevarer den hidtidige
+prioritet ved overlap: fartbin inden for en båd og derefter bådenes lagorden.
+Huller over fem minutter forbindes fortsat ikke. Der fjernes ingen kildepunkter
+efter zoomniveau eller geografisk udsnit. Ikoner og øvrige kortlag er fortsat SVG.
+
+Canvas ligger i et SVG-`foreignObject` på sporenes oprindelige plads i lagfølgen.
+Zoom, panorering, skærmskalering og ændret vinduesstørrelse opdaterer projektionen.
+Klik søger i de oprindelige kurver ved selve klikket; der vedligeholdes ingen
+usynlige SVG-klikstier under WebGL-afspilning. Ved overlap vælges den øverste
+båd, som med de tidligere klikstier. Hover i pause viser bådnavn og SOG og
+ændrer markøren; Pin/Fjern pin, tastaturbetjening og lagring er uændret.
+PNG-eksport bygger et særskilt SVG
+med de nøjagtige kubiske kurver og fartfarver, så eksporten bevarer opløsningen.
+
+Uden WebGL 2, ved kendt softwaregrafik eller ved tab af GPU-konteksten bruges
+de eksisterende SVG-spor med cachede kurvestykker som reserve. En gendannet
+kontekst genopbygger bufferne og skifter tilbage. Til fejlsøgning kan
+`window.SR_TRACK_RENDERER='svg'` sættes før boot; `'webgl'` tillader også
+softwaregrafik i tests. Vindpile og farveskala beholder deres eksisterende cache.
+
+`node scripts/test_viewer_webgl_tracks.cjs` kontrollerer faktiske GPU-pixels,
+huller, fartdata, genbrug af buffere, eksport og tab/gendannelse af konteksten.
+`node scripts/benchmark_viewer_tracks.cjs` sammenligner WebGL og SVG med alle
+106 både. Benchmarken bruger en synlig Chromium med grafikkort som standard;
+`SR_HEADLESS=1` kan bruges til automatisering, men måler ofte softwaregrafik.
 
 ## Dobbelt buffer til vejrkort
 

@@ -27,6 +27,8 @@ select,textarea{width:100%}input[type=range]{width:100%;accent-color:#ffce5c}
 #map:active,#map.panning{cursor:grabbing}#map.placing,#map.placing:active{cursor:crosshair}
 #map .boat-marker{cursor:pointer;outline:none}
 #map .track-hit-target,#map .speed-marker{cursor:pointer;outline:none}
+#map.track-hover{cursor:pointer}
+#trackHover{position:fixed;z-index:30;pointer-events:none;max-width:calc(100vw - 8px);padding:5px 8px;border:1px solid #365766;border-radius:4px;background:#f4fafb;color:#14212a;font:12px system-ui,sans-serif;box-shadow:0 2px 8px #0003}
 #map .speed-marker:focus-visible>circle,#map [data-speed-action]:focus-visible rect{stroke:#ffce5c;stroke-width:3}
 body.presenting #map .track-hit-target,body.presenting #map .speed-marker{pointer-events:none;cursor:inherit}
 body.presenting #map .speed-marker circle{pointer-events:none}
