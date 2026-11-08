@@ -141,29 +141,37 @@ for(const feature of D.route_t?.features||[]){
 }
 let interval=null;
 const windLabels={era5:'ERA5',ecmwf_ifs:'ECMWF IFS',dmi_harmonie_arome_europe:'DMI HARMONIE'};
-let radarKey=null,radarToken=0,radarStatus='indlæser …',radarReady=Promise.resolve();
+let radarKey=null,radarStatus='indlæser …',radarReady=Promise.resolve();
+const radarImageBuffer=new WeatherImageBuffer('radarImage');
+function prepareNextRadar(time){
+ const next=nextWeatherTime(time,600);if(next===null)return;
+ const frame=D.radar?.frames.find(f=>f.time>=next);
+ if(frame)radarImageBuffer.prepare(String(frame.time),()=>frame.file);
+}
 function renderRadar(time){
  const t=D.start+Math.floor((time-D.start)/600)*600;
  $('precipitation').setAttribute('opacity',$('rainOpacity').value);
  const enabled=$('rain').checked,key=`${t}:${enabled}`;
- if(key===radarKey)return;
- radarKey=key;const token=++radarToken;
- $('radarImage').setAttribute('visibility','hidden');
- if(!enabled){radarStatus='slået fra';$('rainPeriod').textContent='Radar slået fra';return}
+ if(key===radarKey){if(enabled&&radarImageBuffer.front?.key===String(t))prepareNextRadar(time);return;}
+ radarKey=key;
+ if(!enabled){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='slået fra';$('rainPeriod').textContent='Radar slået fra';return;}
  const frame=D.radar?.frames.find(f=>f.time===t);
- if(!frame){radarStatus='mangler';$('rainPeriod').textContent=`DMI radar mangler ved ${fmt(t)}`;return}
- radarStatus='indlæser …';$('rainPeriod').textContent=`DMI radar: ${fmt(t)} · dBZ`;
- let ready;radarReady=new Promise(resolve=>ready=resolve);
- const img=new Image();
- img.onload=()=>{
-  ready();if(token!==radarToken)return;
-  $('radarImage').setAttribute('href',img.src);$('radarImage').setAttribute('visibility','visible');
+ if(!frame){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='mangler';$('rainPeriod').textContent=`DMI radar mangler ved ${fmt(t)}`;prepareNextRadar(time);return;}
+ const finish=()=>{
   radarStatus=fmt(t);$('rainPeriod').textContent=`DMI radar: ${fmt(t)} · dBZ`;
-  status(currentTime());
+  prepareNextRadar(time);status(currentTime());
  };
- img.onerror=()=>{ready();if(token!==radarToken)return;radarStatus='kunne ikke indlæses';$('rainPeriod').textContent=`DMI radar kunne ikke indlæses ved ${fmt(t)}`;status(currentTime())};
- img.src=frame.file;
+ const entry=radarImageBuffer.prepare(String(t),()=>frame.file,true);
+ if(radarImageBuffer.display(String(t))){radarReady=Promise.resolve();finish();return;}
+ // Keep the previous frame on screen while an unanticipated seek loads.
+ radarStatus='indlæser …';$('rainPeriod').textContent=`DMI radar: ${fmt(t)} · indlæser …`;
+ radarReady=entry.promise.then(()=>{
+  if(key!==radarKey)return;
+  if(entry.error){radarStatus='kunne ikke indlæses';$('rainPeriod').textContent=`DMI radar kunne ikke indlæses ved ${fmt(t)}`;status(currentTime());return;}
+  if(radarImageBuffer.display(String(t)))finish();
+ });
 }
+
 function status(t){$('status').textContent=`Vind: ${windLabels[$('windModel').value]} ${fmt(Math.floor(t/3600)*3600)} ${$('rain').checked?' · Radar DMI: '+radarStatus:''} · Tracks: interpoleret ved ${fmt(t)} · Noter gemmes i denne browser`}
 const WIND_ARROW_SPACING=90;
 let windArrowKey=null;

@@ -1,3 +1,57 @@
+// Two decoded SVG image slots: keep the front visible until the back is ready.
+class WeatherImageBuffer {
+ constructor(id){
+  this.id=id;this.frontNode=document.getElementById(id);this.backNode=this.frontNode.cloneNode(false);
+  this.backNode.id=id+'Back';this.frontNode.after(this.backNode);
+  this.front=null;this.back=null;this.hide();
+ }
+ hide(){for(const node of [this.frontNode,this.backNode])node.setAttribute('visibility','hidden');}
+ prepare(key,createHref,retry=false){
+  if(this.front?.key===key)return this.front;
+  if(this.back?.key===key&&(!retry||!this.back.error))return this.back;
+  this.back?.cancel?.();
+  const entry={key,ready:false,error:null};this.back=entry;
+  const node=this.backNode;node.onload=node.onerror=null;
+  node.setAttribute('visibility','hidden');
+  entry.promise=(async()=>{
+   try{
+    // Yield before generating a future wind field so the current frame can finish.
+    await new Promise(resolve=>setTimeout(resolve,0));
+    if(this.back!==entry)return entry;
+    const href=createHref(),image=new Image();entry.image=image;image.src=href;
+    await image.decode();
+    if(this.back!==entry)return entry;
+    await new Promise((resolve,reject)=>{
+     entry.cancel=()=>{node.onload=node.onerror=null;resolve();};
+     node.onload=()=>{node.onload=node.onerror=null;resolve();};
+     node.onerror=()=>{node.onload=node.onerror=null;reject(new Error('Vejrbilledet kunne ikke indlæses.'));};
+     node.setAttribute('href',href);
+    });
+    entry.cancel=null;
+    if(this.back===entry){entry.ready=true;node.dataset.weatherKey=key;}
+   }catch(error){entry.error=error;}
+   return entry;
+  })();
+  return entry;
+ }
+ display(key){
+  if(this.front?.key===key&&this.front.ready){this.frontNode.setAttribute('visibility','visible');return true;}
+  if(this.back?.key!==key||!this.back.ready)return false;
+  const oldNode=this.frontNode,oldEntry=this.front;
+  this.frontNode=this.backNode;this.front=this.back;this.backNode=oldNode;this.back=oldEntry;
+  this.backNode.id=this.id+'Back';this.frontNode.id=this.id;
+  this.frontNode.setAttribute('visibility','visible');this.backNode.setAttribute('visibility','hidden');
+  return true;
+ }
+}
+function nextWeatherTime(time,period){
+ const boundary=Math.floor(time/period)*period+period;
+ if(boundary>D.end)return null;
+ if(!visibleTimeRanges.length)return boundary;
+ for(const range of visibleTimeRanges)if(range.end>=boundary)return Math.max(boundary,range.start);
+ return null;
+}
+
 // DMI's wind legend, read from dmi.dk/vejrkort on 7 November 2026.
 // Values are in m/s. Keep the complete scale for storms as well as light winds.
 const WIND_COLOURS = [[0,'#dcfaf7'],[2,'#9ef2e9'],[4,'#7deee2'],[6,'#16e1cc'],
@@ -39,7 +93,8 @@ colourLegend('rainLegend', RAIN_COLOURS, 'dBZ');
 // Interpolate the archived samples for a continuous background. This adds no
 // weather information or meteorological resolution.
 const windGrids = new Map();
-let windFieldKey = null;
+let windFieldKey=null,windReady=Promise.resolve(),windFieldError=null;
+const windImageBuffer=new WeatherImageBuffer('windImage');
 function windGrid(model) {
  if (windGrids.has(model)) return windGrids.get(model);
  const width=200, height=236, points=window.DATA.wind_models[model];
@@ -63,12 +118,25 @@ function windGrid(model) {
  }
  const grid={width,height,indices,weights}; windGrids.set(model,grid); return grid;
 }
-function renderWindField(t) {
- const image=document.getElementById('windImage'), enabled=document.getElementById('wind').checked;
- image.setAttribute('visibility',enabled?'visible':'hidden');
- if(!enabled) return;
- const model=document.getElementById('windModel').value, hour=Math.floor(t/3600)*3600, key=`${model}:${hour}`;
- if(key===windFieldKey) return;
+function prepareNextWind(time,model){
+ const next=nextWeatherTime(time,3600);if(next===null)return;
+ const hour=Math.floor(next/3600)*3600,key=`${model}:${hour}`;
+ windImageBuffer.prepare(key,()=>buildWindField(model,hour));
+}
+function renderWindField(t){
+ if(!document.getElementById('wind').checked){windFieldKey=null;windReady=Promise.resolve();windFieldError=null;windImageBuffer.hide();return;}
+ const model=document.getElementById('windModel').value,hour=Math.floor(t/3600)*3600,key=`${model}:${hour}`;
+ if(key===windFieldKey){if(windImageBuffer.front?.key===key)prepareNextWind(t,model);return;}
+ windFieldKey=key;windFieldError=null;
+ const entry=windImageBuffer.prepare(key,()=>buildWindField(model,hour),true);
+ if(windImageBuffer.display(key)){windReady=Promise.resolve();prepareNextWind(t,model);return;}
+ windReady=entry.promise.then(()=>{
+  if(windFieldKey!==key||!document.getElementById('wind').checked)return;
+  if(entry.error){windFieldError=entry.error;return;}
+  if(windImageBuffer.display(key))prepareNextWind(t,model);
+ });
+}
+function buildWindField(model,hour){
  const grid=windGrid(model), points=window.DATA.wind_models[model];
  const values=points.map(p=>{
   const i=p.hourly.time.indexOf(hour);
@@ -87,7 +155,7 @@ function renderWindField(t) {
   const speed=Math.hypot(east/total,north/total);
   pixels.data.set([...windColour(speed),255],p*4);
  }
- ctx.putImageData(pixels,0,0); image.setAttribute('href',canvas.toDataURL('image/png')); windFieldKey=key;
+ ctx.putImageData(pixels,0,0);return canvas.toDataURL('image/png');
 }
 
 let windSampleKey=null,windSamples=[];
