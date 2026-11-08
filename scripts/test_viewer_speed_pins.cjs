@@ -9,7 +9,7 @@ async function check(type){
   const page=await browser.newPage({viewport:{width:1500,height:1000},acceptDownloads:true}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>typeof nearestTrackSpeed==='function');
+  await page.waitForFunction(()=>typeof nearestTrackSpeed==='function'&&typeof stopPlayback==='function');
   const target=await page.evaluate(()=>{
    const boat=boats.find(b=>b.name==='Mercutio');
    const index=boat.points.findIndex((p,i)=>p[2]>D.start+26*3600&&boat.points[i+1]?.[2]-p[2]<300&&boat.speeds[i]>4);

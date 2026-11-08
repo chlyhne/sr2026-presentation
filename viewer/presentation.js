@@ -110,6 +110,7 @@ function changeBoatSelection(change){
   }
   target.settings=updated.settings;
  }else if(editingNote)noteDraft.settings={...noteDraft.settings,boats:[...chosen]};
+ prepareSelectedTracks();
  $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline();
  if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
  render();
@@ -197,6 +198,7 @@ function restoreNote(n,{showImage=false}={}) {
    shownBoatNames.clear();s.boatNames.forEach(id=>shownBoatNames.add(id));
   }
  }
+ prepareSelectedTracks();
  if(Array.isArray(n.view)&&n.view.length===4&&n.view.every(Number.isFinite)&&n.view[2]>0&&n.view[3]>0) {view=[...n.view];setview();}
  updateTimeline();selectedTime=n.time;$('time').value=offsetAtTime(n.time);
  $('time').setAttribute('aria-valuetext',fmt(n.time));
