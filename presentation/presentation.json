@@ -185,7 +185,7 @@
         "wind": true,
         "windModel": "dmi_harmonie_arome_europe",
         "windNumbers": false,
-        "rain": true,
+        "rain": false,
         "rainOpacity": 0.75,
         "traffic": true,
         "military": true,
@@ -204,8 +204,7 @@
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
           "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
           "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ],
-        "annotationsVisible": true
+        ]
       },
       "point": [
         691.8330557059962,
@@ -219,17 +218,17 @@
       "utc": "2026-06-11T08:42:21.000Z",
       "text": "Svag vind med mange pust og skift i vindretning. Domineret af bygen.\n\nVi skal uden om færger og holde klar af trafik separeringen!",
       "view": [
-        694.0437297546065,
-        371.27236434029845,
-        10.700500210947425,
-        13.116742194064585
+        693.5655353232277,
+        375.24110034826566,
+        5.3200397609375045,
+        6.52133906179436
       ],
       "settings": {
         "wind": true,
         "windModel": "dmi_harmonie_arome_europe",
         "windNumbers": false,
-        "rain": true,
-        "rainOpacity": 0.75,
+        "rain": false,
+        "rainOpacity": 1,
         "traffic": true,
         "military": true,
         "boats": [
@@ -245,8 +244,7 @@
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
           "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ],
-        "annotationsVisible": true
+        ]
       },
       "point": [
         696.1106078699231,
@@ -254,47 +252,6 @@
       ],
       "lon": 12.632497735414654,
       "lat": 56.03956092808206
-    },
-    {
-      "time": 1781167649,
-      "utc": "2026-06-11T08:47:29.000Z",
-      "text": "My faldet i et vindhul og trækker mod øst for at redde sig.",
-      "view": [
-        696.1628534121888,
-        375.50663168176214,
-        12.30557524258954,
-        15.084253523174285
-      ],
-      "settings": {
-        "wind": true,
-        "windModel": "dmi_harmonie_arome_europe",
-        "windNumbers": false,
-        "rain": true,
-        "rainOpacity": 0.75,
-        "traffic": true,
-        "military": true,
-        "boats": [
-          "Mercutio",
-          "Vera",
-          "My",
-          "THE HULK",
-          "Rosa-Lux"
-        ],
-        "boatNames": [
-          "groensund:cf8a8000-4624-013f-296f-04421a259aad",
-          "groensund:cf92fb10-4624-013f-2977-04421a259aad",
-          "groensund:cf9aff90-4624-013f-297e-04421a259aad",
-          "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ],
-        "annotationsVisible": true
-      },
-      "point": [
-        696.1751519497484,
-        380.61735574156046
-      ],
-      "lon": 12.632788183773869,
-      "lat": 56.03232875658925
     },
     {
       "time": 1781167750,
