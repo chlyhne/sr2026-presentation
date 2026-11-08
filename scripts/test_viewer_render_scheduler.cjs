@@ -33,6 +33,10 @@ async function check(type){
      if(reverse){requestRender();requestRender({viewportOnly:true});}else{requestRender({viewportOnly:true});requestRender();}
      await frame();check(full===1&&viewport===0,'Full request was downgraded');
     }
+    full=viewport=0;requestRender({backgroundOnly:true});requestRender({viewportOnly:true});requestRender({backgroundOnly:true});
+    await frame();check(viewport===1&&full===0,'Background request overrode viewport work');
+    full=viewport=0;requestRender({backgroundOnly:true});requestRender();requestRender({backgroundOnly:true});
+    await frame();check(full===1&&viewport===0,'Background request overrode full work');
     full=viewport=0;requestRender();render();check(full===1,'Immediate render was deferred');
     await frame();check(full===1&&viewport===0,'Immediate render left a duplicate queued draw');
     // A request produced while drawing belongs to the next frame, not this one.

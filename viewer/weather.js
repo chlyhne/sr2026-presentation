@@ -5,7 +5,11 @@ class WeatherImageBuffer {
   this.backNode.id=id+'Back';this.frontNode.after(this.backNode);
   this.front=null;this.back=null;this.paintReady=Promise.resolve();this.hide();
  }
- hide(){for(const node of [this.frontNode,this.backNode])node.setAttribute('visibility','hidden');}
+ hide(){
+  const changed=[this.frontNode,this.backNode].some(node=>node.getAttribute('visibility')!=='hidden');
+  for(const node of [this.frontNode,this.backNode])node.setAttribute('visibility','hidden');
+  if(changed)window.SRBackground?.invalidate();
+ }
  prepare(key,createHref,retry=false){
   if(this.front?.key===key)return this.front;
   if(this.back?.key===key&&(!retry||!this.back.error))return this.back;
@@ -32,14 +36,17 @@ class WeatherImageBuffer {
      node.setAttribute('href',href);
     });
     entry.cancel=null;
-    if(this.back===entry){entry.ready=true;node.dataset.weatherKey=key;}
+    if(this.back===entry){window.SRBackground?.prepareWeather(this,entry);entry.ready=true;node.dataset.weatherKey=key;}
    }catch(error){entry.error=error;}
    return entry;
   })();
   return entry;
  }
  display(key){
-  if(this.front?.key===key&&this.front.ready){this.frontNode.setAttribute('visibility','visible');return true;}
+  if(this.front?.key===key&&this.front.ready){
+   const changed=this.frontNode.getAttribute('visibility')!=='visible';this.frontNode.setAttribute('visibility','visible');
+   if(changed)window.SRBackground?.invalidate();return true;
+  }
   if(this.back?.key!==key||!this.back.ready)return false;
   const oldNode=this.frontNode,oldEntry=this.front;
   this.frontNode=this.backNode;this.front=this.back;this.backNode=oldNode;this.back=oldEntry;
@@ -53,7 +60,7 @@ class WeatherImageBuffer {
     resolve();
    })));
   }else{oldNode.setAttribute('visibility','hidden');this.paintReady=Promise.resolve();}
-  return true;
+  window.SRBackground?.invalidate();return true;
  }
 }
 function nextWeatherTime(time,period){

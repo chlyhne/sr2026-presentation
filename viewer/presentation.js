@@ -412,6 +412,7 @@ async function captureMap() {
   // Expand viewBox to include the exact visible area, including SVG's side gutters.
   const bounds=[topLeft.x,topLeft.y,bottomRight.x-topLeft.x,bottomRight.y-topLeft.y];
   const clone=map.cloneNode(true),width=Math.round(rect.width),height=Math.round(rect.height);
+  if(window.SRBackground?.active)window.SRBackground.exportSVG(clone,mapViewport().bounds);
   if(webglTracks.active){
    const routes=clone.querySelector('#routes');routes.replaceChildren();
    // Export native cubic SVG at the requested PNG resolution. Canvas elements
@@ -424,7 +425,7 @@ async function captureMap() {
      el('path',{d:segment.d,fill:'none',stroke:segment.colour,'stroke-width':TRACK_STROKE_WIDTH,'stroke-linecap':'round','stroke-linejoin':'round','vector-effect':'non-scaling-stroke'},group);
    }
   }
-  for(const host of clone.querySelectorAll('[data-webgl-tracks]'))host.remove();
+  for(const host of clone.querySelectorAll('[data-webgl-tracks],[data-webgl-background]'))host.remove();
   for(const control of clone.querySelectorAll('[data-speed-action],.track-hit-targets'))control.remove();
   const time=currentTime(),model=$('windModel').value,radarMissing=$('rain').checked&&radarStatus==='mangler';
   clone.setAttribute('width',width);clone.setAttribute('height',height);clone.setAttribute('viewBox',bounds.join(' '));

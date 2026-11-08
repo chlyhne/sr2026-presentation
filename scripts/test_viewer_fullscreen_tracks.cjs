@@ -24,6 +24,10 @@ async function check(type){
      check(webglTracks.active,'GPU renderer stopped: '+webglTracks.error);
      const {matrix,rect}=mapViewport(),gl=webglTracks.gl,host=webglTracks.host.getBoundingClientRect();
      check(['left','top','right','bottom'].every(k=>Math.abs(rect[k]-host[k])<.1),'Track clipping disagrees with map viewport');
+     check(webglBackground.active,'Background renderer stopped: '+webglBackground.error);
+     const background=webglBackground.host.getBoundingClientRect();
+     check(['left','top','right','bottom'].every(k=>Math.abs(rect[k]-background[k])<.1),'Background clipping disagrees with map viewport');
+     check(webglBackground.gl.getError()===0,'Background WebGL error');
      for(const text of $('map').querySelectorAll('#places text,.boat-name')){
       const transform=text.getScreenCTM(),pixels=parseFloat(getComputedStyle(text).fontSize)*Math.hypot(transform.a,transform.b);
       check(pixels>=10&&pixels<=13,'Map text size changed to '+pixels+' px');

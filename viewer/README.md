@@ -569,7 +569,7 @@ GPU'en evaluerer kubiske kurver, klipper dem til de seneste to timer og slår
 fartfarver op i den faste 128-trins palet. Dybdebufferen bevarer den hidtidige
 prioritet ved overlap: fartbin inden for en båd og derefter bådenes lagorden.
 Huller over fem minutter forbindes fortsat ikke. Der fjernes ingen kildepunkter
-efter zoomniveau eller geografisk udsnit. Ikoner og øvrige kortlag er fortsat SVG.
+efter zoomniveau eller geografisk udsnit. Ikoner og interaktive kortlag er fortsat SVG.
 
 Canvas ligger i et SVG-`foreignObject` på sporenes oprindelige plads i lagfølgen.
 Det indlejrede HTML-layout bruger skærmpixels og en invers SVG-transformation.
@@ -592,6 +592,27 @@ kontekst genopbygger bufferne og skifter tilbage. Til fejlsøgning kan
 `window.SR_TRACK_RENDERER='svg'` sættes før boot; `'webgl'` tillader også
 softwaregrafik i tests. Vindpile og farveskala beholder deres eksisterende cache.
 
+Baggrunden bruger én WebGL 2-flade i `background-renderer.js`, med fast
+lagrækkefølge: vindfarvefelt, land, radar og kyst. Landpolygoner, inklusive
+huller, trianguleres én gang med den lokalt medfølgende Earcut 3.0.2
+(`vendor/earcut.js`, ISC-licens i filen). Kysten bruger faste trekantbuffere med
+én skærmpixels bredde. Alle kildepunkter bevares. Panorering og zoom ændrer kun
+kamera og synlige tegningsintervaller; geometri og vejrteksturer uploades ikke
+igen. Vindpile, trafikseparering, skydeområder, ruter, ikoner og redigering
+bevarer deres eksisterende lag.
+
+Baggrunden og sporene deler `mapViewport()` og `positionMapCanvas()`, så både
+klipning og placering bygger på kortets faktiske skærmrektangel, også i fuld
+skærm og ved HiDPI. PNG-eksport genskaber native SVG-land og -kyst fra de samme
+kildefiler. SVG er også reserve ved manglende WebGL, softwaregrafik eller tab
+af konteksten. `window.SR_BACKGROUND_RENDERER='svg'` tvinger reserven;
+`'webgl'` tillader softwaregrafik i tests.
+
+`node scripts/test_viewer_background.cjs` sammenligner browserens færdige
+WebGL- og SVG-billeder i Chromium og Firefox ved flere zoomniveauer. Den
+kontrollerer også landhuller, lagrækkefølge, genbrug af geometri og teksturer,
+vejrskift, PNG-eksport og tab/gendannelse af GPU-konteksten.
+
 `node scripts/test_viewer_webgl_tracks.cjs` kontrollerer faktiske GPU-pixels,
 huller, fartdata, genbrug af buffere, eksport og tab/gendannelse af konteksten.
 `node scripts/test_viewer_fullscreen_tracks.cjs` gennemgår den udgivne
@@ -608,8 +629,10 @@ Pixels i selve grafikbufferen kan ikke afsløre fejl i browserens komposition.
 
 ## Dobbelt buffer til vejrkort
 
-Radar og vindfarvefelt har hver to SVG-billedbuffere. Det næste radartidspunkt
-og næste vindtime indlæses og afkodes på forhånd. Den færdige buffer vises ved
+Radar og vindfarvefelt har hver to billedbuffere, med SVG til reserve og eksport
+og to teksturer pr. lag i WebGL-baggrunden. Det næste radartidspunkt
+og næste vindtime indlæses, afkodes og uploades på forhånd. Indlæsningen må
+aldrig overskrive teksturen til det viste billede. Den færdige buffer vises ved
 tidsskiftet. Den gamle buffer beholdes gennem den første tegnecyklus, før
 den skjules og må genbruges, så skiftet ikke efterlader et tomt billede. Et uventet tidsspring beholder det aktuelle billede, indtil det
 nye er klart; forældede indlæsninger kan ikke overtage visningen. Manglende
