@@ -1263,47 +1263,6 @@
       ]
     },
     {
-      "time": 1781182265,
-      "utc": "2026-06-11T12:51:05.000Z",
-      "text": "My er uheldig ude på fjøjen og skal nu gå meget dybt for at undgå bomning.",
-      "view": [
-        699.2673468972258,
-        466.5327812476073,
-        28.46354329208022,
-        34.8907950031951
-      ],
-      "settings": {
-        "wind": true,
-        "windModel": "dmi_harmonie_arome_europe",
-        "windNumbers": false,
-        "rain": true,
-        "rainOpacity": 0.75,
-        "traffic": true,
-        "military": true,
-        "boats": [
-          "Mercutio",
-          "Vera",
-          "My",
-          "THE HULK",
-          "Rosa-Lux"
-        ],
-        "boatNames": [
-          "groensund:cf8a8000-4624-013f-296f-04421a259aad",
-          "groensund:cf92fb10-4624-013f-2977-04421a259aad",
-          "groensund:cf9aff90-4624-013f-297e-04421a259aad",
-          "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ],
-        "annotationsVisible": true
-      },
-      "point": [
-        708.7793784737587,
-        483.6032395064831
-      ],
-      "lon": 12.689507203131914,
-      "lat": 55.77050023854284
-    },
-    {
       "time": 1781184258,
       "utc": "2026-06-11T13:24:18.000Z",
       "text": "Vi bommer for at komme ud af strømmen og holde nogle mærker senere.",
