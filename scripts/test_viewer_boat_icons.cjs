@@ -43,7 +43,13 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   assert.ok(Math.abs(classic.beam-classic.expectedBeam)<.001);
   assert.ok(Math.abs(classic.length-classic.expectedLength)<.001);
   await page.screenshot({path:'/tmp/sr2026-classic-boats.png'});
+  for(const [name,lengthM,beamM] of [['THE HULK',10.3,3.18],['XBOX',12.75,4.18],['Slipstik',10,2.3]]){
+   const far=await zoom(10,name);
+   assert.ok(Math.abs(far.beam-beamM*8/2.54)<.001,name+' shares the beam scale');
+   assert.ok(Math.abs(far.length-lengthM*8/2.54)<.001,name+' shares the length scale');
+  }
   const wide=await zoom(10);assert.ok(Math.abs(wide.beam-8)<.001);
+  assert.ok(Math.abs(wide.length-8*8/2.54)<.001);
   await page.screenshot({path:'/tmp/sr2026-boats-wide.png'});
   const close=await zoom(.1);assert.ok(close.beam>8);assert.ok(Math.abs(close.beam-close.expectedBeam)<.001);assert.ok(Math.abs(close.length-close.expectedLength)<.001);
   const iconOnTop=await page.evaluate(()=>{
@@ -63,6 +69,6 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   await page.evaluate(()=>setPresentationMode(true));assert.equal(await page.locator('.boat-icon').count(),1);
   const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());await(await download).saveAs('/tmp/sr2026-boats-export.png');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({checks:'all boat dimensions, 8px minimum, physical beam and length, viewport resize, name toggle, presentation, PNG export',wide,close,resized,errors}));
+  console.log(JSON.stringify({checks:'all boat dimensions, shared 8px per 2.54m minimum, physical beam and length, viewport resize, name toggle, presentation, PNG export',wide,close,resized,errors}));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
