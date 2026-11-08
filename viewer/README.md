@@ -553,6 +553,9 @@ Huller over fem minutter forbindes fortsat ikke. Der fjernes ingen kildepunkter
 efter zoomniveau eller geografisk udsnit. Ikoner og øvrige kortlag er fortsat SVG.
 
 Canvas ligger i et SVG-`foreignObject` på sporenes oprindelige plads i lagfølgen.
+Det indlejrede HTML-layout bruger skærmpixels og en invers SVG-transformation.
+Dermed afrunder browserens canvas-kompositor ikke placeringen i kortkoordinater
+før zoom; ved tæt zoom ville afrundingen ellers forskyde hele sporlaget.
 Zoom, panorering, skærmskalering og ændret vinduesstørrelse opdaterer projektionen.
 `mapViewport()` leverer det synlige kortrektangel og dets geografiske grænser
 til både sporenes projektion og `visibleMapBounds()`. Fuldskærmsskift genopfrisker
@@ -576,6 +579,10 @@ huller, fartdata, genbrug af buffere, eksport og tab/gendannelse af konteksten.
 præsentation før, under og efter fuld skærm og kontrollerer tekststørrelser og
 faktiske sporpixels ved de gemte zoomniveauer. Testen bruger grafikkort og en
 synlig browser som standard (`SR_HEADLESS=1` vælger headless).
+`node scripts/test_viewer_track_alignment.cjs` sammenligner faktiske
+skærmbilleder af WebGL og SVG ved event 7, både med zoom og fremspoling,
+fuld skærm og HiDPI. Den kontrollerer også, at sporet rammer bådens SVG-anker.
+Pixels i selve grafikbufferen kan ikke afsløre fejl i browserens komposition.
 `node scripts/benchmark_viewer_tracks.cjs` sammenligner WebGL og SVG med alle
 106 både. Benchmarken bruger en synlig Chromium med grafikkort som standard;
 `SR_HEADLESS=1` kan bruges til automatisering, men måler ofte softwaregrafik.
