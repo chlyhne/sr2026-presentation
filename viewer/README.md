@@ -555,3 +555,6 @@ den skjules og må genbruges, så skiftet ikke efterlader et tomt billede. Et uv
 nye er klart; forældede indlæsninger kan ikke overtage visningen. Manglende
 radardata skjules fortsat og markeres som manglende. PNG-eksport afventer
 det valgte radar- og vindbillede og medtager kun de synlige buffere.
+
+Bådikoner og navne tegnes i det fælles `boatMarkers`-lag over alle bådspor.
+Det gælder også ved afspilning og PNG-eksport.

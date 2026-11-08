@@ -46,6 +46,15 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   const wide=await zoom(10);assert.ok(Math.abs(wide.beam-8)<.001);
   await page.screenshot({path:'/tmp/sr2026-boats-wide.png'});
   const close=await zoom(.1);assert.ok(close.beam>8);assert.ok(Math.abs(close.beam-close.expectedBeam)<.001);assert.ok(Math.abs(close.length-close.expectedLength)<.001);
+  const iconOnTop=await page.evaluate(()=>{
+   const marker=$('boatMarkers').querySelector('.boat-marker'),matrix=marker.getScreenCTM();
+   const mapPoint=new DOMPoint(matrix.e,matrix.f).matrixTransform($('map').getScreenCTM().inverse());
+   const crossing=el('path',{d:`M ${mapPoint.x-1} ${mapPoint.y} L ${mapPoint.x+1} ${mapPoint.y}`,stroke:'red','stroke-width':20,'vector-effect':'non-scaling-stroke'},$('routes'));
+   const top=document.elementFromPoint(matrix.e,matrix.f),result=top.closest('.boat-marker')===marker;
+   crossing.remove();return result;
+  });
+  assert.equal(iconOnTop,true,'Boat icon must be above every track, including its hit targets');
+  assert.equal(await page.locator('#routes .boat-marker').count(),0);
   await page.screenshot({path:'/tmp/sr2026-boats-close.png'});
   // Screen resizing must also refresh the geographic size without changing time.
   await page.setViewportSize({width:1200,height:850});await page.waitForTimeout(100);

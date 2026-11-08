@@ -100,7 +100,7 @@ function syncBoatChoices(){
 function toggleBoatName(id,focus=false){
  shownBoatNames.has(id)?shownBoatNames.delete(id):shownBoatNames.add(id);
  renderTracks();
- if(focus)$('routes').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
+ if(focus)$('boatMarkers').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
 }
 // Assign the complete field once, so toggling boats never changes their colours.
 for(const [i,name] of [...new Set(boats.map(b=>b.name))].sort().entries()){
@@ -222,14 +222,15 @@ function createTrackLayer(boat){
  const speedTrack=el('g',{'data-boat-id':boat.id,'data-interpolation':'pchip','data-colouring':'sog-jet',fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},group);
  const hits=el('g',{class:'track-hit-targets'},group);
  const hit=el('path',{class:'track-hit-target','data-track-boat-id':boat.id,fill:'none',stroke:'transparent','stroke-width':16,'vector-effect':'non-scaling-stroke','pointer-events':'stroke','stroke-linecap':'round'},hits);
- const markers=el('g',{class:'boat-markers'},group);
+ const markers=el('g',{class:'boat-markers'});
  return {group,outline,speedTrack,hit,markers,speedPaths:new Map()};
 }
 function updateTrackPath(path,d){
  if(path.getAttribute('d')!==d)path.setAttribute('d',d);
 }
 function renderTracks(t=currentTime()){
- const routes=$('routes');
+ const routes=$('routes'),markerLayer=$('boatMarkers');
+ markerLayer.replaceChildren();
  const drawingOrder=boats.filter(b=>chosen.has(b.name)).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
  const selected=new Set(drawingOrder.map(b=>b.id));
  for(const [id,layer] of trackLayers)if(!selected.has(id)){layer.group.remove();trackLayers.delete(id);}
@@ -261,7 +262,7 @@ function renderTracks(t=currentTime()){
    if(speedTrack.children[index]!==line)speedTrack.insertBefore(line,speedTrack.children[index]||null);
    updateTrackPath(line,segment.d);
   }
-  markers.replaceChildren();
+  markers.replaceChildren();markerLayer.append(markers);
   const position=trackPosition(b.points,t);
   if(!position)continue;
   const [x,y]=xy(position.point),group=screenGroup(x,y,markers);
