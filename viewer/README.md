@@ -491,3 +491,7 @@ følger kortet og PNG-billederne.
 Fra projektroden: `python3 scripts/prepare_viewer.py` (kræver `requests`).
 Udtræk cachelagres. Manglende radartider findes i `radar/manifest.json` og vises som
 manglende i brugerfladen. Visningen kræver ingen npm-pakker.
+
+## Onlineudgaven
+
+Se projektrodens README og docs/hosting.md. Eksporten er nu et objekt med `version`, `notes` og `speedPins`; billeder indlejres stadig i de enkelte noter. Import accepterer også ældre eksportfiler, der kun indeholder en liste af noter.

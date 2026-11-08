@@ -25,7 +25,7 @@
   }
   window.SR_SHA=sha;
   const draftKey='sr2026-draft:'+location.pathname+':'+(window.SR_LOGIN||'');
-  if(config.admin){try{const draft=JSON.parse(localStorage.getItem(draftKey));if(draft&&draft.sha===sha){initial=draft.document;window.SR_RESTORED=true;}}catch{}}
+  if(config.admin){try{const draft=JSON.parse(localStorage.getItem(draftKey));if(draft&&draft.sha===sha){initial=draft.document;window.SR_RESTORED=true;}else if(draft){localStorage.setItem(draftKey+':previous',JSON.stringify(draft));}window.SR_PREVIOUS_DRAFT=JSON.parse(localStorage.getItem(draftKey+':previous')||'null');}catch{}}
   const memory=new Map([['sr2026-notes',JSON.stringify(initial.notes)],['sr2026-speed-pins',JSON.stringify(initial.speedPins)]]);
   window.SRStorage={getItem:key=>memory.get(key)||null,setItem:(key,value)=>{
    if(window.SR_READONLY)return;
