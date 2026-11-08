@@ -3,7 +3,7 @@
 // as the boat markers, including crossings with no source point in the viewport.
 let selectedTime=D.start,visibleTimeRanges=[],boatTimeRanges=[],timelineLength=0;
 const currentTime=()=>selectedTime;
-const trackBlockCache=new WeakMap();
+const timelineTrackCache=new WeakMap(),TIMELINE_LEAF_SIZE=16;
 const EVENT_SNAP_FRACTION=.01;
 function eventSnapWindowSeconds(){
  return Math.max(0,timelineLength-1)*EVENT_SNAP_FRACTION;
@@ -58,29 +58,61 @@ function seekTimeline(offset,{snap=true}={}){
  requestRender();
 }
 
-function trackBlocks(points){
- if(trackBlockCache.has(points))return trackBlockCache.get(points);
- const blocks=[];
- for(let start=0;start<points.length;start+=128){
-  const end=Math.min(points.length,start+128);
-  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
-  for(let i=start;i<Math.min(points.length,end+1);i++){
-   const [lon,lat]=points[i];west=Math.min(west,lon);east=Math.max(east,lon);
-   south=Math.min(south,lat);north=Math.max(north,lat);
-  }
-  blocks.push({start,end,west,east,south,north});
- }
- trackBlockCache.set(points,blocks);return blocks;
+function appendTimelineRange(ranges,start,end){
+ if(start>end)return;
+ const previous=ranges.at(-1);
+ // Cached ranges are shared by parents and queries; never mutate them.
+ if(previous&&start<=previous.end+1){
+  if(end>previous.end)ranges[ranges.length-1]={start:previous.start,end};
+ }else ranges.push({start,end});
 }
-
+function prepareTimelineTrack(points){
+ if(timelineTrackCache.has(points))return timelineTrackCache.get(points);
+ const build=(first,end)=>{
+  const node={first,end,west:Infinity,east:-Infinity,south:Infinity,north:-Infinity,ranges:[],left:null,right:null};
+  if(end-first>TIMELINE_LEAF_SIZE){
+   const middle=(first+end)>>>1;node.left=build(first,middle);node.right=build(middle,end);
+   const {left,right}=node;
+   node.west=Math.min(left.west,right.west);node.east=Math.max(left.east,right.east);
+   node.south=Math.min(left.south,right.south);node.north=Math.max(left.north,right.north);
+   node.ranges=left.ranges.slice();
+   for(const range of right.ranges)appendTimelineRange(node.ranges,range.start,range.end);
+  }else{
+   for(let i=first;i<end;i++){
+    const a=points[i],b=points[i+1],connected=b&&b[2]>a[2]&&b[2]-a[2]<=TRACK_MAX_GAP;
+    const start=Math.max(D.start,Math.ceil(a[2]-1e-6));
+    const stop=Math.min(D.end,Math.floor((connected?b[2]:Math.min(a[2]+TRACK_MAX_GAP,b?b[2]-1e-6:D.end))+1e-6));
+    if(start>stop)continue;
+    appendTimelineRange(node.ranges,start,stop);
+    node.west=Math.min(node.west,a[0]);node.east=Math.max(node.east,a[0]);
+    node.south=Math.min(node.south,a[1]);node.north=Math.max(node.north,a[1]);
+    // PCHIP stays inside each pair of endpoints on both coordinate axes.
+    // A gap holds only the first position; it must not connect distant points.
+    if(connected){
+     node.west=Math.min(node.west,b[0]);node.east=Math.max(node.east,b[0]);
+     node.south=Math.min(node.south,b[1]);node.north=Math.max(node.north,b[1]);
+    }
+   }
+  }
+  return node;
+ };
+ const root=build(0,points.length);timelineTrackCache.set(points,root);return root;
+}
+const EMPTY_TIMELINE_RANGES=[];
 function visibleBoatRanges(points,bounds){
+ const root=prepareTimelineTrack(points);
+ const outside=node=>!node.ranges.length||!mapBoundsIntersect(node,bounds);
+ const inside=node=>node.west>=bounds.west&&node.east<=bounds.east&&node.south>=bounds.south&&node.north<=bounds.north;
+ if(outside(root))return EMPTY_TIMELINE_RANGES;
+ if(inside(root))return root.ranges;
  const ranges=[];
- for(const block of trackBlocks(points)){
-  if(block.east<bounds.west||block.west>bounds.east||block.north<bounds.south||block.south>bounds.north)continue;
-  if(points[block.end-1][2]+300<D.start||points[block.start][2]>D.end)continue;
-  for(let i=block.start;i<block.end;i++){
-   const [lon,lat,time]=points[i],next=points[i+1];
-   let from=time,to;
+ const visit=node=>{
+  if(outside(node))return;
+  if(inside(node)){
+   for(const range of node.ranges)appendTimelineRange(ranges,range.start,range.end);
+  }else if(node.left){visit(node.left);visit(node.right);}
+  else for(let i=node.first;i<node.end;i++){
+   const [lon,lat,time]=points[i],next=points[i+1];let from=time,to;
    if(next&&next[2]>time&&next[2]-time<=TRACK_MAX_GAP){
     const interval=trackIntervalInBounds(points,i,bounds);if(!interval)continue;
     from=interval.start;to=interval.end;
@@ -88,16 +120,14 @@ function visibleBoatRanges(points,bounds){
     if(lon<bounds.west||lon>bounds.east||lat<bounds.south||lat>bounds.north)continue;
     to=Math.min(time+TRACK_MAX_GAP,next?next[2]-1e-6:D.end);
    }
-   const start=Math.max(D.start,Math.ceil(from-1e-6));
-   const end=Math.min(D.end,Math.floor(to+1e-6));
-   if(start>end)continue;
-   const previous=ranges.at(-1);
-   if(previous&&start<=previous.end+1)previous.end=Math.max(previous.end,end);
-   else ranges.push({start,end});
+   appendTimelineRange(ranges,Math.max(D.start,Math.ceil(from-1e-6)),Math.min(D.end,Math.floor(to+1e-6)));
   }
- }
+ };
+ visit(root);
  return ranges;
 }
+// Prepare the complete fleet before interaction, including currently hidden boats.
+for(const boat of boats)prepareTimelineTrack(boat.points);
 
 function timeAtOffset(offset,{fractional=false}={}){
  if(!timelineLength)return selectedTime;

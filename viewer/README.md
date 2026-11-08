@@ -388,6 +388,17 @@ koordinatgrænser. Den samme kurve bruges til spor, positionsprik og beregning a
 hvornår båden er inde i kortudsnittet. Også passager mellem to målepunkter tæller
 med på tidslinjen, selv når ingen af de to målepunkter ligger i udsnittet.
 
+Tidslinjen har et balanceret træ over hvert spors sammenhængende indeksintervaller.
+Hver knude gemmer en geografisk bounding box og de sammenlagte gyldige
+tidsintervaller, inklusive positionernes holdetid ved datapauser. Træerne
+forberedes for hele feltet ved opstart og beholdes ved bådvalg og panorering.
+Et helt spor indenfor eller udenfor kortet afgøres ved roden. Kun grene, der
+rammer kortgrænsen, undersøges nærmere; blade rummer højst 16 kildeintervaller,
+og kantkrydsninger bruger fortsat den præcise kubiske kurve. Der antages ingen
+maksimal bådfart. `node scripts/test_viewer_timeline_index.cjs` sammenligner
+resultaterne med det tidligere flade indeks på både syntetiske spor og alle
+gemte kortudsnit og kontrollerer genbrug af de forberedte intervaller.
+
 SVG renderer kurverne i den aktuelle skærmopløsning ved alle zoomniveauer; der
 bruges ingen fast opløsning af ekstra punkter. Begge ender af to-timerssporet
 afskæres ved de præcise tidspunkter på kurven. Interpolationen ændrer ikke
