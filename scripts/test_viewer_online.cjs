@@ -91,11 +91,28 @@ async function check(type){
   assert.equal(await writer.evaluate(()=>notes[0].image.id),importID);
   assert.equal(await writer.evaluate(()=>notes[0].image.dataUrl),undefined);
   assert.deepEqual(await writer.evaluate(()=>speedPins),fixture.speedPins);
-  // Authenticated read-only accounts still receive the viewer, never editing controls.
-  await writer.evaluate(()=>localStorage.clear());canEdit=false;
+  // A newer server version must preserve the older local draft for recovery.
+  const staleDocument=await writer.evaluate(()=>({version:1,notes:JSON.parse(JSON.stringify(notes)),speedPins:JSON.parse(JSON.stringify(speedPins))}));
+  sha='c'.repeat(40);serverDocument.notes[0].text='Ny serverversion';
   await writer.reload();await ready(writer);
+  assert.equal(await writer.evaluate(()=>notes[0].text),'Ny serverversion');
+  const earlierDraft=()=>writer.evaluate(()=>JSON.parse(localStorage.getItem(SR_DRAFT_KEY+':previous')).document);
+  assert.deepEqual(await earlierDraft(),staleDocument,'Mismatched revision preserves the entire previous draft');
+  await writer.locator('.note-jump').first().click();
+  await writer.locator('#eventText').click();await writer.locator('#eventTextEditor').fill('Ny kladde oven på serverversionen');await writer.keyboard.press('Control+Enter');
+  assert.deepEqual(await earlierDraft(),staleDocument,'Further edits must not overwrite the previous draft');
+  await writer.reload();await ready(writer);
+  assert.equal(await writer.evaluate(()=>notes[0].text),'Ny kladde oven på serverversionen');
+  assert.deepEqual(await earlierDraft(),staleDocument,'Recovery copy survives another reload');
+  const previousDownload=writer.waitForEvent('download');
+  await writer.getByRole('button',{name:'Hent tidligere kladde',exact:true}).click();
+  const recovered=JSON.parse(fs.readFileSync(await (await previousDownload).path(),'utf8'));
+  assert.deepEqual(recovered,staleDocument,'Recovery download contains the original notes, image references and pins');
+  // Authenticated read-only accounts are stopped before loading the editor.
+  await writer.evaluate(()=>localStorage.clear());canEdit=false;
+  await writer.reload();await writer.getByRole('link',{name:'Log ind med GitHub',exact:true}).waitFor();
   assert.equal(await writer.getByRole('button',{name:'Udgiv',exact:true}).count(),0);
-  assert.equal(await writer.locator('#endPresentation').isVisible(),false);
+  assert.equal(await writer.locator('#endPresentation').count(),0);
   await writer.close();
 
   // Local mode retains the original browser storage and exports all portable content.
@@ -113,7 +130,7 @@ async function check(type){
   assert.deepEqual(localBundle.speedPins,fixture.speedPins);
   assert.match(localBundle.notes[0].image.dataUrl,/^data:image\/png;base64,/);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'public snapshot, readonly Escape, local storage isolation, writer edit, reload draft, revision publish, conflict retention, portable image/pin export/import, read-only login, legacy local export',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'public snapshot, readonly Escape, local storage isolation, writer edit, reload draft, revision publish, conflict retention, stale draft recovery/download, portable image/pin export/import, read-only login, legacy local export',errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

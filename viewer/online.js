@@ -12,6 +12,10 @@
  }
  if(config.admin){
   status.textContent=window.SR_RESTORED?'Din lokale kladde er gendannet. Klik Udgiv, når den er klar.':'Redigering · ændringer udgives først med Udgiv.';
+  if(window.SR_PREVIOUS_DRAFT){
+   status.textContent+=' Der findes en ældre kladde fra før en anden udgivelse.';
+   button('Hent tidligere kladde',()=>download(new Blob([JSON.stringify(window.SR_PREVIOUS_DRAFT.document,null,2)],{type:'application/json'}),'sr2026-tidligere-kladde.json'));
+  }
   button('Log ud',async()=>{try{const r=await fetch(config.apiBase+'/api/logout',{method:'POST'});if(!r.ok)throw Error('Kunne ikke logge ud.');location.reload();}catch(e){status.textContent=e.message;}});
   const publish=button('Udgiv',async()=>{
    if(!finishInlineTextEditing()||!noteNavigationAllowed())return;
