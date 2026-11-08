@@ -12,7 +12,8 @@ function resizeSymbols(){
  if(!matrix)return;
  const inverseScale=1/Math.hypot(matrix.a,matrix.b);
  for(const group of $('map').querySelectorAll('[data-screen-x]')){
-  group.setAttribute('transform',`translate(${group.dataset.screenX} ${group.dataset.screenY}) scale(${inverseScale})`);
+  const transform=`translate(${group.dataset.screenX} ${group.dataset.screenY}) scale(${inverseScale})`;
+  if(group.getAttribute('transform')!==transform)group.setAttribute('transform',transform);
  }
  resizeBoatIcons(matrix);
 }
@@ -70,10 +71,13 @@ function renderCoast(){
   'stroke-linejoin':'round','stroke-linecap':'round','vector-effect':'non-scaling-stroke'},fragment);
  $('coast').replaceChildren(fragment);coastKey=key;
 }
+let mapCreditKey=null;
 function renderMapCredit(){
- renderTrackSpeedLegend();
- const layer=$('mapCredit');layer.replaceChildren();
  const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();if(!matrix)return;
+ const key=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.width,rect.height].join(':');
+ if(key===mapCreditKey)return;
+ mapCreditKey=key;renderTrackSpeedLegend();
+ const layer=$('mapCredit');layer.replaceChildren();
  const point=new DOMPoint(rect.right-8,rect.bottom-8).matrixTransform(matrix.inverse());
  const group=screenGroup(point.x,point.y,layer);
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
@@ -162,12 +166,20 @@ function renderRadar(time){
 }
 function status(t){$('status').textContent=`Vind: ${windLabels[$('windModel').value]} ${fmt(Math.floor(t/3600)*3600)} ${$('rain').checked?' · Radar DMI: '+radarStatus:''} · Tracks: interpoleret ved ${fmt(t)} · Noter gemmes i denne browser`}
 const WIND_ARROW_SPACING=90;
+let windArrowKey=null;
 function renderWindArrows(t=currentTime()) {
- const layer=$('winds');layer.replaceChildren();
- if(!$('wind').checked)return;
+ const layer=$('winds');
+ if(!$('wind').checked){
+  if(windArrowKey!==false)layer.replaceChildren();
+  windArrowKey=false;return;
+ }
  const map=$('map'),matrix=map.getScreenCTM();if(!matrix)return;
  const inverse=matrix.inverse(),scale=1/Math.hypot(matrix.a,matrix.b),rect=map.getBoundingClientRect();
- const model=$('windModel').value,samples=windSamplesAt(model,t),showNumbers=$('windNumbers').checked;
+ const model=$('windModel').value,showNumbers=$('windNumbers').checked;
+ const key=[Math.floor(t/3600),model,showNumbers,matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.width,rect.height].join(':');
+ if(key===windArrowKey)return;
+ windArrowKey=key;layer.replaceChildren();
+ const samples=windSamplesAt(model,t);
  // The lattice belongs to the visible map. Zoom and pan change the geographic
  // location sampled at each node, while its distance to the next stays 90 px.
  for(let sy=WIND_ARROW_SPACING/2;sy<rect.height;sy+=WIND_ARROW_SPACING) {
@@ -194,27 +206,54 @@ function render(){const t=currentTime();$('clock').textContent=fmt(t);$('clock')
  renderAnnotations();
  renderMapCredit();
 }
+// Keep each boat's paths alive. Most speed buckets are unchanged between frames.
+const trackLayers=new Map();
+function createTrackLayer(boat){
+ const group=el('g',{'data-boat-layer':boat.id});
+ const outline=el('path',{class:'track-outline',fill:'none',stroke:'#17313e','stroke-width':TRACK_OUTLINE_WIDTH,'vector-effect':'non-scaling-stroke','stroke-linecap':'round','stroke-linejoin':'round'},group);
+ const speedTrack=el('g',{'data-boat-id':boat.id,'data-interpolation':'pchip','data-colouring':'sog-jet',fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},group);
+ const hits=el('g',{class:'track-hit-targets'},group);
+ const hit=el('path',{class:'track-hit-target','data-track-boat-id':boat.id,fill:'none',stroke:'transparent','stroke-width':16,'vector-effect':'non-scaling-stroke','pointer-events':'stroke','stroke-linecap':'round'},hits);
+ const markers=el('g',{class:'boat-markers'},group);
+ return {group,outline,speedTrack,hit,markers,speedPaths:new Map()};
+}
+function updateTrackPath(path,d){
+ if(path.getAttribute('d')!==d)path.setAttribute('d',d);
+}
 function renderTracks(t=currentTime()){
- $('routes').replaceChildren();
+ const routes=$('routes');
  const drawingOrder=boats.filter(b=>chosen.has(b.name)).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
+ const selected=new Set(drawingOrder.map(b=>b.id));
+ for(const [id,layer] of trackLayers)if(!selected.has(id)){layer.group.remove();trackLayers.delete(id);}
+ let previous=null;
  for(const b of drawingOrder){
-  const first=timeBoundary(b.points,t-7200);
-  const end=timeBoundary(b.points,t,true);
+  const first=timeBoundary(b.points,t-7200),end=timeBoundary(b.points,t,true);
   const geometry=trackGeometry(b.points,t-7200,t);
-  if(!geometry)continue;
-  const boatLayer=el('g',{'data-boat-layer':b.id},$('routes'));
-  const markers=el('g',{class:'boat-markers'}),hits=el('g',{class:'track-hit-targets'});
-  const color=colours[b.name];
-  el('path',{class:'track-outline',d:geometry,fill:'none',stroke:'#17313e','stroke-width':TRACK_OUTLINE_WIDTH,'vector-effect':'non-scaling-stroke','stroke-linecap':'round','stroke-linejoin':'round'},boatLayer);
-  const speedTrack=el('g',{'data-boat-id':b.id,'data-point-count':end-first,'data-interpolation':'pchip','data-colouring':'sog-jet',fill:'none',
-   'stroke-linecap':'round','stroke-linejoin':'round'},boatLayer);
-  for(const segment of trackSpeedGeometry(b.points,b.speeds,t-7200,t)){
-   const line=el('path',{d:segment.d,stroke:segment.colour,'stroke-width':TRACK_STROKE_WIDTH,'vector-effect':'non-scaling-stroke','data-speed-bin':segment.bin},speedTrack);
-   el('title',{},line).textContent=`${b.name} · ${segment.bin<0?'fart mangler':`SOG ${segment.bin===TRACK_SPEED_BINS-1?'15+':(segment.bin*TRACK_SPEED_MAX/(TRACK_SPEED_BINS-1)).toFixed(1)} knob`} · TracTrac`;
+  if(!geometry){
+   trackLayers.get(b.id)?.group.remove();trackLayers.delete(b.id);continue;
   }
-  el('path',{class:'track-hit-target','data-track-boat-id':b.id,d:geometry,fill:'none',stroke:'transparent',
-   'stroke-width':16,'vector-effect':'non-scaling-stroke','pointer-events':'stroke','stroke-linecap':'round'},hits);
-  boatLayer.append(hits,markers);
+  let layer=trackLayers.get(b.id);
+  if(!layer){layer=createTrackLayer(b);trackLayers.set(b.id,layer);}
+  const {group:boatLayer,outline,speedTrack,hit,markers,speedPaths}=layer;
+  const next=previous?previous.nextElementSibling:routes.firstElementChild;
+  if(next!==boatLayer)routes.insertBefore(boatLayer,next);
+  previous=boatLayer;
+  const color=colours[b.name];
+  updateTrackPath(outline,geometry);updateTrackPath(hit,geometry);
+  speedTrack.setAttribute('data-point-count',end-first);
+  const segments=trackSpeedGeometry(b.points,b.speeds,t-7200,t),bins=new Set(segments.map(s=>s.bin));
+  for(const [bin,path] of speedPaths)if(!bins.has(bin)){path.remove();speedPaths.delete(bin);}
+  for(const [index,segment] of segments.entries()){
+   let line=speedPaths.get(segment.bin);
+   if(!line){
+    line=el('path',{stroke:segment.colour,'stroke-width':TRACK_STROKE_WIDTH,'vector-effect':'non-scaling-stroke','data-speed-bin':segment.bin});
+    el('title',{},line).textContent=`${b.name} · ${segment.bin<0?'fart mangler':`SOG ${segment.bin===TRACK_SPEED_BINS-1?'15+':(segment.bin*TRACK_SPEED_MAX/(TRACK_SPEED_BINS-1)).toFixed(1)} knob`} · TracTrac`;
+    speedPaths.set(segment.bin,line);
+   }
+   if(speedTrack.children[index]!==line)speedTrack.insertBefore(line,speedTrack.children[index]||null);
+   updateTrackPath(line,segment.d);
+  }
+  markers.replaceChildren();
   const position=trackPosition(b.points,t);
   if(!position)continue;
   const [x,y]=xy(position.point),group=screenGroup(x,y,markers);
@@ -248,6 +287,7 @@ function advancePlayback(now){
 $('play').onclick=()=>{
  if(interval){stopPlayback();return;}
  if($('time').disabled||!finishInlineTextEditing())return;
+ prepareSelectedTracks();
  playbackOffset=offsetAtTime(currentTime());
  if(playbackOffset>=timelineLength-1)return;
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();

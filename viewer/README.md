@@ -529,3 +529,14 @@ eller annulleres med den. Ved andre tidspunkter ændres kun den aktuelle visning
 Forrige, Næste og direkte eventvalg genskaber de gemte lag. Snap på tidslinjen
 bevarer de aktuelle lag og skriver ikke til events. Onlineændringer ligger
 fortsat i kladden, indtil der klikkes Udgiv.
+
+## Genbrug under afspilning
+
+Bådenes spor, kanter og klikstier beholder deres SVG-elementer. Farvestier
+ændres kun, når deres geometri ændrer sig. Færdige kubiske kurvestykker
+genbruges; de afklippede ender af to-timerssporet beregnes ved den aktuelle tid.
+Kurve- og farvecachen forberedes for hele sejladsen for de valgte både ved
+indlæsning. Tilvalg af både og eventskift forbereder deres spor, før de vises.
+Cachede intervaller bevares, også ved frem- og tilbagespoling. Det prioriterer
+hukommelse og forberedelsestid frem for genberegning under afspilning.
+Vindpile og farveskala genbruges, indtil deres data eller kortudsnittet ændres.

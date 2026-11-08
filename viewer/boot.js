@@ -37,5 +37,6 @@
  for(const file of ['data','boat-icons','weather','viewer','traffic','military','tracks','speed-pins','timeline','drawings','event-images','event-videos','inline-text','presentation','online']){
   await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=file+'.js';s.onload=resolve;s.onerror=reject;document.body.append(s);});
   if(file==='boat-icons')await loadBoatHulls();
+  if(file==='tracks')prepareSelectedTracks();
  }
 })().catch(()=>{document.body.append(Object.assign(document.createElement('p'),{textContent:'Siden kunne ikke indlæses. Genindlæs for at prøve igen.'}));});
