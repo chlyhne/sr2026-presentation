@@ -99,10 +99,10 @@ python3 scripts/serve_viewer.py
   en jet-farveskala fra 0 til 15 knob. Farven mættes ved 15 knob. Kortets farvebjælke
   viser 0, 5, 10 og 15+ knob og følger med i præsentationen og PNG-billedet.
   Gråt spor betyder manglende fartdata. Sporene har en mørk kant mod vejrkortets farver.
-- Klik på en båds positionsprik for at vise eller skjule navnet. Det gælder alle
+- Klik på en båds bådikon for at vise eller skjule navnet. Det gælder alle
   både. Tab og Enter/mellemrum kan også bruges. Navnevalget bevares ved zoom,
   tidsskift og til-/fravalg af både, gemmes med noter og kommer med i PNG-billedet.
-  De fem standardbådes navne er vist fra start. At trække fra en prik flytter kortet.
+  De fem standardbådes navne er vist fra start. At trække fra et bådikon flytter kortet.
   Alle eksisterende events får én gang vist navnene på deres aktive både.
   Bådudvalgene ændres ikke, og senere manuelle navneskjul bevares ved genindlæsning.
 - Klik på et sted på et spor i redigering for at vise farten i knob
@@ -134,8 +134,8 @@ Chromium og Firefox.
 - Zoom og træk kortet. Alle både har samme faste sporbredde på skærmen:
   2,7 pixels farve med 4,7 pixels mørk kant. Det gælder ved alle zoomniveauer,
   også når en båd vælges til efter zoom. Der er ingen særlig bredde for standardbådene.
-  Prikker, bådnavne, stednavne, vindtal og vindpile har også fast skærmstørrelse.
-  Mindste kortbredde er nu 2 kortenheder mod tidligere 60, så der kan zoomes
+  Bådnavne, stednavne, vindtal og vindpile har fast skærmstørrelse.
+  Mindste kortbredde er 0,05 kortenheder, så der kan zoomes
   yderligere 30 gange ind. Tidslinjen bruger hele den faktisk synlige kortflade.
 - Vindpilene ligger i et kvadratisk gitter med 90 skærmpixels mellem centrene,
   uanset zoom. Gitteret opdateres ved zoom, panorering og ændret vinduesstørrelse.
@@ -495,3 +495,17 @@ manglende i brugerfladen. Visningen kræver ingen npm-pakker.
 ## Onlineudgaven
 
 Se projektrodens README og docs/hosting.md. Eksporten er nu et objekt med `version`, `notes` og `speedPins`; billeder indlejres stadig i de enkelte noter. Import accepterer også ældre eksportfiler, der kun indeholder en liste af noter.
+
+## Bådikoner og mål
+
+Positionsmarkørerne bruger skroget fra `boat.svg`, kopieret fra
+`random simuleringer/cuteboat.svg`. Metadata i `boat-icons.js` angiver Vera, My,
+Mercutio og saltamalin som 8 × 2,54 meter. Alle øvrige både har foreløbige mål
+på 10 × 3 meter (`estimated: true`). Hver båd har et `dimensions`-felt med
+`lengthM` og `beamM`. Ret navneopslagene i `boatDimensionOverrides`, når mål kendes.
+
+Ikoner følger bevægelsesretningen langs tracket. Bredden er mindst 8
+skærmpixels. Når den geografiske bredde bliver større end det, vises både
+længde og bredde i korrekt skala under hensyn til kortets projektion og
+bådens breddegrad. Kortet kan zoomes tæt nok på til at vise denne forskel.
+Navne har fortsat fast skriftstørrelse; farver, klik, præsentation og PNG bevares.
