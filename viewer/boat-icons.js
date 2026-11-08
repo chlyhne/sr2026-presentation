@@ -1,7 +1,10 @@
 // Metres. Other boats use provisional dimensions until measured values are supplied.
 const boatDimensionOverrides={
  mercutio:{lengthM:8,beamM:2.54},vera:{lengthM:8,beamM:2.54},
- my:{lengthM:8,beamM:2.54},saltamalin:{lengthM:8,beamM:2.54}
+ my:{lengthM:8,beamM:2.54},saltamalin:{lengthM:8,beamM:2.54},
+ 'the hulk':{lengthM:10.3,beamM:2.18},
+ 'rosa-lux':{lengthM:10,beamM:3},
+ alice:{lengthM:8,beamM:2.51},moster:{lengthM:7.77,beamM:2.5}
 };
 function boatDimensions(name){
  return boatDimensionOverrides[name.toLowerCase()]||{lengthM:10,beamM:3,estimated:true};
