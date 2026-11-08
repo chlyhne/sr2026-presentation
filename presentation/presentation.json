@@ -7258,6 +7258,7 @@
         "rainOpacity": 0.75,
         "traffic": true,
         "military": true,
+        "annotationsVisible": true,
         "boats": [
           "Mercutio",
           "Vera",
@@ -7273,15 +7274,22 @@
           "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
           "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf267bd0-4624-013f-291d-04421a259aad"
-        ],
-        "annotationsVisible": true
+        ]
       },
       "point": [
         417.4501431956887,
         368.218915451318
       ],
       "lon": 11.378525644380598,
-      "lat": 56.06385021495428
+      "lat": 56.06385021495428,
+      "image": {
+        "id": "383f4fba-6a7f-44fe-a8ef-cff69028ddac",
+        "url": "event-images/383f4fba-6a7f-44fe-a8ef-cff69028ddac.webp",
+        "name": "Screenshot 2026-11-08 at 23-33-15 FFUUUUUU.webp (WEBP Image 513 × 387 pixels).png",
+        "width": 513,
+        "height": 387,
+        "type": "image/webp"
+      }
     },
     {
       "time": 1781284227,
