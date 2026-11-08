@@ -62,8 +62,8 @@ function renderTraffic(){
  const layer=$('trafficSeparation'),enabled=$('traffic').checked;
  layer.setAttribute('display',enabled?'inline':'none');
  if(!enabled)return;
- const viewport=mapViewport();if(!viewport)return;
- const {bounds,matrix,rect}=viewport;
+ const bounds=visibleMapBounds(),matrix=$('map').getScreenCTM();if(!bounds||!matrix)return;
+ const rect=$('map').getBoundingClientRect();
  const key=[bounds.west,bounds.east,bounds.south,bounds.north,rect.width,rect.height].join(':');
  if(key===trafficKey)return;
  trafficKey=key;layer.replaceChildren();
