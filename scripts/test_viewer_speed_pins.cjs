@@ -10,7 +10,7 @@ async function check(type){
   page.on('pageerror',e=>errors.push(e.message));
   if(process.env.SR_TRACK_RENDERER)await page.addInitScript(renderer=>window.SR_TRACK_RENDERER=renderer,process.env.SR_TRACK_RENDERER);
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>typeof nearestTrackSpeed==='function'&&typeof stopPlayback==='function');
+  await page.waitForFunction(()=>typeof nearestTrackSpeed==='function'&&typeof stopPlayback==='function'&&typeof captureMap==='function');
   const target=await page.evaluate(()=>{
    const boat=boats.find(b=>b.name==='Mercutio');
    const index=boat.points.findIndex((p,i)=>p[2]>D.start+26*3600&&boat.points[i+1]?.[2]-p[2]<300&&boat.speeds[i]>4);
@@ -30,6 +30,14 @@ async function check(type){
    notes=[note];localStorage.setItem('sr2026-notes',JSON.stringify(notes));showNotes();
    return {x:screen.x,y:screen.y,time,boatId:boat.id,view:[...view],now:currentTime()};
   });
+  // Let the initial ResizeObserver and the new event's layout finish before
+  // sending pointer input; a queued track draw deliberately clears hover.
+  Object.assign(target,await page.evaluate(async target=>{
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));flushRender();
+   const boat=boats.find(b=>b.id===target.boatId),point=trackSpeedSample(boat,target.time).point;
+   const screen=new DOMPoint(...xy(point)).matrixTransform($('map').getScreenCTM());
+   return {x:screen.x,y:screen.y};
+  },target));
   const notesBefore=await page.evaluate(()=>localStorage.getItem('sr2026-notes'));
   const renderer=await page.evaluate(()=>webglTracks.active?'webgl':'svg');
   if(renderer==='webgl'){

@@ -35,9 +35,18 @@ function mapViewport(){
  const a=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
  const b=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
  return {rect,matrix,inverse,topLeft:a,viewBox:[a.x,a.y,b.x-a.x,b.y-a.y],
+  pixelWidth:Math.max(1,Math.round(rect.width*(devicePixelRatio||1))),pixelHeight:Math.max(1,Math.round(rect.height*(devicePixelRatio||1))),
   bounds:{west:9.5+a.x*4.5/1000,east:9.5+b.x*4.5/1000,south:57-b.y*3/1180,north:57-a.y*3/1180}};
 }
 function visibleMapBounds(){return mapViewport()?.bounds||null;}
+function positionMapCanvas(host,canvas,viewport){
+ const {rect,inverse,topLeft,pixelWidth,pixelHeight}=viewport;
+ host.setAttribute('x',0);host.setAttribute('y',0);
+ host.setAttribute('width',rect.width);host.setAttribute('height',rect.height);
+ host.setAttribute('transform',`matrix(${inverse.a} ${inverse.b} ${inverse.c} ${inverse.d} ${topLeft.x} ${topLeft.y})`);
+ if(canvas.width!==pixelWidth)canvas.width=pixelWidth;if(canvas.height!==pixelHeight)canvas.height=pixelHeight;
+}
+function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>=b.south&&a.south<=b.north;}
 // Cache the full geometry in small chunks, then draw only those in the viewport.
 // Shared end points keep the detailed coastline continuous at chunk boundaries.
 const coastChunks=[];
@@ -46,12 +55,12 @@ const landPolygons=(D.land?.features||[]).map(feature=>{
  const rings=feature.geometry.coordinates,points=rings.flat();
  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
  for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
- return {west,east,south,north,d:rings.map(ring=>path(ring)+'Z').join(' ')};
+ return {west,east,south,north,rings,d:rings.map(ring=>path(ring)+'Z').join(' ')};
 });
 let landKey=null;
 function renderLand(bounds){
  const visible=[];
- for(const [i,polygon] of landPolygons.entries())if(polygon.east>=bounds.west&&polygon.west<=bounds.east&&polygon.north>=bounds.south&&polygon.south<=bounds.north)visible.push(i);
+ for(const [i,polygon] of landPolygons.entries())if(mapBoundsIntersect(polygon,bounds))visible.push(i);
  const key=visible.join(',');if(key===landKey)return;
  const fragment=document.createDocumentFragment();
  for(const i of visible)el('path',{d:landPolygons[i].d,fill:LAND_FILL,'fill-rule':'evenodd'},fragment);
@@ -61,14 +70,15 @@ for(const line of D.coast)for(let start=0;start<line.length-1;start+=256){
  const points=line.slice(start,start+257);
  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
  for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
- coastChunks.push({west,east,south,north,d:path(points)});
+ coastChunks.push({west,east,south,north,points,before:line[start-1],after:line[start+257],d:path(points)});
 }
 let coastKey=null;
 function renderCoast(){
+ if(window.SRBackground?.active)return;
  const bounds=visibleMapBounds();if(!bounds)return;
  renderLand(bounds);
  const visible=[];
- for(const [i,chunk] of coastChunks.entries())if(chunk.east>=bounds.west&&chunk.west<=bounds.east&&chunk.north>=bounds.south&&chunk.south<=bounds.north)visible.push(i);
+ for(const [i,chunk] of coastChunks.entries())if(mapBoundsIntersect(chunk,bounds))visible.push(i);
  const key=visible.join(',');if(key===coastKey)return;
  const fragment=document.createDocumentFragment();
  for(const i of visible)el('path',{d:coastChunks[i].d,fill:'none',stroke:'#365766','stroke-width':1,
@@ -217,8 +227,10 @@ function renderWindArrows(t=currentTime()) {
 // Keep state changes synchronous, but combine UI paint requests until the next
 // browser frame. Full redraws subsume viewport-only redraws, in either order.
 let renderRequest=null,renderRequestKind=null;
-function requestRender({viewportOnly=false}={}){
- if(renderRequestKind!=='full')renderRequestKind=viewportOnly?'viewport':'full';
+const RENDER_PRIORITY={background:1,viewport:2,full:3};
+function requestRender({viewportOnly=false,backgroundOnly=false}={}){
+ const kind=backgroundOnly?'background':viewportOnly?'viewport':'full';
+ if(!renderRequestKind||RENDER_PRIORITY[kind]>RENDER_PRIORITY[renderRequestKind])renderRequestKind=kind;
  if(renderRequest===null)renderRequest=requestAnimationFrame(flushRender);
 }
 function consumeRenderRequest(){
@@ -227,17 +239,17 @@ function consumeRenderRequest(){
 }
 function flushRender(){
  const kind=consumeRenderRequest();
- if(kind==='full')drawMap();else if(kind==='viewport')drawViewport();
+ if(kind==='full')drawMap();else if(kind==='viewport')drawViewport();else if(kind==='background')window.SRBackground?.render();
 }
 // Retain an immediate path for exports, scene restoration and programmatic use.
 function render(){consumeRenderRequest();drawMap();}
-function drawMap(){const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderCoast();renderWindField(t);renderRadar(t);status(t);renderWindArrows(t);renderTraffic();renderMilitary();
+function drawMap(){const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderCoast();renderWindField(t);renderRadar(t);window.SRBackground?.render();status(t);renderWindArrows(t);renderTraffic();renderMilitary();
  renderTracks(t,{includeSpeedPins:false});
  renderAnnotations();
  renderMapCredit();
 }
 function drawViewport(){
- renderCoast();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit();
+ renderCoast();window.SRBackground?.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit();
 }
 // Keep each boat's paths alive. Most speed buckets are unchanged between frames.
 const trackLayers=new Map();
@@ -316,7 +328,7 @@ function renderSVGTracks(t,drawingOrder){
  }
 }
 function step(n){if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
-for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value)};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
+for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
 let playbackTickTime=0,playbackRate=1,playbackOffset=0;
 function advancePlayback(now){
