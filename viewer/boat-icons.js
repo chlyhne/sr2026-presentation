@@ -1,16 +1,32 @@
 // Metres. Other boats use provisional dimensions until measured values are supplied.
-const boatDimensionOverrides={
+const boatMetadataOverrides={
  mercutio:{lengthM:8,beamM:2.54},vera:{lengthM:8,beamM:2.54},
  my:{lengthM:8,beamM:2.54},saltamalin:{lengthM:8,beamM:2.54},
  'the hulk':{lengthM:10.3,beamM:3.18},
  'rosa-lux':{lengthM:10,beamM:3},
- alice:{lengthM:8,beamM:2.51},moster:{lengthM:7.77,beamM:2.5}
+ alice:{lengthM:8,beamM:2.51},moster:{lengthM:7.77,beamM:2.5},
+ slipstik:{lengthM:10,beamM:2.3,hull:'classic'},ambra:{lengthM:10,beamM:2.3,hull:'classic'}
 };
-function boatDimensions(name){
- return boatDimensionOverrides[name.toLowerCase()]||{lengthM:10,beamM:3,estimated:true};
+function boatMetadata(name){
+ return {hull:'modern',...(boatMetadataOverrides[name.toLowerCase()]||{lengthM:10,beamM:3,estimated:true})};
 }
-// Hull from cuteboat.svg. Its tight bounds map the hull to unit beam and length.
-const BOAT_HULL_PATH='m 16.707798,43.669827 c -0.06396,3.175447 0.191719,6.871511 0.191719,6.871511 h 3.93206 3.931543 c 0,0 0.4548,-6.570802 0,-9.717352 -0.674261,-4.664911 -3.928601,-12.781853 -3.931543,-12.789192 -0.0029,0.0073 -3.257799,8.12428 -3.93206,12.789192 -0.1137,0.786637 -0.170401,1.787359 -0.191719,2.845841 z';
+// Load the editable SVG assets once. Tight hull bounds define true length and beam.
+const boatHulls={};
+async function loadBoatHulls(){
+ for(const name of ['modern','classic']){
+  const response=await fetch(name+'.svg');
+  if(!response.ok)throw new Error('Bådformen '+name+' kunne ikke indlæses.');
+  const svg=new DOMParser().parseFromString(await response.text(),'image/svg+xml');
+  const d=svg.querySelector('path')?.getAttribute('d');
+  if(!d)throw new Error('Bådformen '+name+' mangler et skrog.');
+  const measuring=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  measuring.style.cssText='position:absolute;width:0;height:0;visibility:hidden';
+  const path=document.createElementNS(measuring.namespaceURI,'path');path.setAttribute('d',d);
+  measuring.append(path);document.body.append(measuring);
+  const bounds=path.getBBox();measuring.remove();
+  boatHulls[name]={d,transform:`scale(${1/bounds.width} ${1/bounds.height}) translate(${-bounds.x-bounds.width/2} ${-bounds.y-bounds.height/2})`};
+ }
+}
 function boatCourse(points,time){
  const i=Math.max(0,timeBoundary(points,time,true)-1),a=points[i],b=points[i+1];
  if(b&&b[2]>a[2]&&b[2]-a[2]<=TRACK_MAX_GAP){
@@ -24,12 +40,11 @@ function boatCourse(points,time){
  return 0;
 }
 function renderBoatIcon(group,boat,position,time,colour){
- const icon=el('g',{class:'boat-icon','data-lat':position.point[1],
-  'data-course':boatCourse(boat.points,time),'data-length-m':boat.dimensions.lengthM,
-  'data-beam-m':boat.dimensions.beamM},group);
- // Coordinates and bounds come directly from the supplied Inkscape hull.
- el('path',{class:'boat-hull',d:BOAT_HULL_PATH,
-  transform:`scale(${1/8.26772689819336} ${1/22.506546020507812}) translate(-20.831390380859375 -39.288063049316406)`,
+ const hull=boatHulls[boat.metadata.hull];
+ const icon=el('g',{class:'boat-icon','data-hull':boat.metadata.hull,'data-lat':position.point[1],
+  'data-course':boatCourse(boat.points,time),'data-length-m':boat.metadata.lengthM,
+  'data-beam-m':boat.metadata.beamM},group);
+ el('path',{class:'boat-hull',d:hull.d,transform:hull.transform,
   fill:colour,stroke:'#14212a','stroke-width':1,'vector-effect':'non-scaling-stroke'},icon);
 }
 function resizeBoatIcons(matrix){

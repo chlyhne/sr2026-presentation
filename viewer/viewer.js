@@ -86,7 +86,7 @@ function renderMapCredit(){
 const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff84'};
 const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
 const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set(featured);
-const boats=D.boats.map(b=>({...b,dimensions:boatDimensions(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
+const boats=D.boats.map(b=>({...b,metadata:boatMetadata(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
 const shownBoatNames=new Set(boats.filter(b=>featured.has(b.name)).map(b=>b.id));
 function syncBoatChoices(){
  for(const [i,b] of boats.entries()){

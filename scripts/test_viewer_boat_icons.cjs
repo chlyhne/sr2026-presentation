@@ -8,15 +8,16 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForFunction(()=>typeof notes!=='undefined'&&!!document.querySelector('.boat-icon'));
-  const metadata=await page.evaluate(()=>boats.map(b=>({name:b.name,...b.dimensions})));
+  const metadata=await page.evaluate(()=>boats.map(b=>({name:b.name,...b.metadata})));
   for(const boat of metadata){
    const expected={mercutio:[8,2.54],vera:[8,2.54],my:[8,2.54],saltamalin:[8,2.54],
-    'the hulk':[10.3,3.18],'rosa-lux':[10,3],alice:[8,2.51],moster:[7.77,2.5]}[boat.name.toLowerCase()];
+    'the hulk':[10.3,3.18],'rosa-lux':[10,3],alice:[8,2.51],moster:[7.77,2.5],slipstik:[10,2.3],ambra:[10,2.3]}[boat.name.toLowerCase()];
    assert.equal(boat.lengthM,expected?expected[0]:10);assert.equal(boat.beamM,expected?expected[1]:3);
    assert.equal(!!boat.estimated,!expected);
+   assert.equal(boat.hull,['slipstik','ambra'].includes(boat.name.toLowerCase())?'classic':'modern');
   }
-  async function zoom(width){return page.evaluate(width=>{
-   const boat=boats.find(b=>b.name==='Mercutio');chosen.clear();chosen.add(boat.name);
+  async function zoom(width,name='Mercutio'){return page.evaluate(([width,name])=>{
+   const boat=boats.find(b=>b.name===name);chosen.clear();chosen.add(boat.name);
    $('wind').checked=false;$('rain').checked=false;selectedTime=D.start+3600;
    const point=trackPosition(boat.points,selectedTime).point,[x,y]=xy(point);
    const height=width*.9;view=[x-width/2,y-height/2,width,height];$('map').setAttribute('viewBox',view.join(' '));render();
@@ -24,10 +25,24 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
    const beam=Math.hypot(m.a,m.b)*bbox.width,length=Math.hypot(m.c,m.d)*bbox.height;
    const c=+icon.dataset.course,latitude=point[1]*Math.PI/180,R=6371008.8,rad=Math.PI/180,map=$('map').getScreenCTM();
    const east=1000/(4.5*rad*R*Math.cos(latitude)),north=1180/(3*rad*R);
-   const expectedBeam=2.54*Math.hypot(map.a*east*Math.cos(c)+map.c*north*Math.sin(c),map.b*east*Math.cos(c)+map.d*north*Math.sin(c));
-   const expectedLength=8*Math.hypot(map.a*east*Math.sin(c)-map.c*north*Math.cos(c),map.b*east*Math.sin(c)-map.d*north*Math.cos(c));
+   const expectedBeam=boat.metadata.beamM*Math.hypot(map.a*east*Math.cos(c)+map.c*north*Math.sin(c),map.b*east*Math.cos(c)+map.d*north*Math.sin(c));
+   const expectedLength=boat.metadata.lengthM*Math.hypot(map.a*east*Math.sin(c)-map.c*north*Math.cos(c),map.b*east*Math.sin(c)-map.d*north*Math.cos(c));
    return {beam,length,expectedBeam,expectedLength};
-  },width);}
+  },[width,name]);}
+  // Both classic boats must render the supplied hull with their own true dimensions.
+  await page.evaluate(()=>{
+   chosen.clear();chosen.add('Slipstik');chosen.add('Ambra');
+   selectedTime=D.start+3600;render();
+  });
+  assert.equal(await page.locator('.boat-icon[data-hull="classic"]').count(),2);
+  assert.equal(await page.locator('.boat-icon[data-hull="modern"]').count(),0);
+  const hullShapes=await page.evaluate(()=>Object.fromEntries(Object.entries(boatHulls).map(([name,hull])=>[name,hull.d])));
+  assert.notEqual(hullShapes.classic,hullShapes.modern);
+  assert.equal(await page.locator('.boat-hull').first().getAttribute('d'),hullShapes.classic);
+  const classic=await zoom(.1,'Slipstik');
+  assert.ok(Math.abs(classic.beam-classic.expectedBeam)<.001);
+  assert.ok(Math.abs(classic.length-classic.expectedLength)<.001);
+  await page.screenshot({path:'/tmp/sr2026-classic-boats.png'});
   const wide=await zoom(10);assert.ok(Math.abs(wide.beam-8)<.001);
   await page.screenshot({path:'/tmp/sr2026-boats-wide.png'});
   const close=await zoom(.1);assert.ok(close.beam>8);assert.ok(Math.abs(close.beam-close.expectedBeam)<.001);assert.ok(Math.abs(close.length-close.expectedLength)<.001);

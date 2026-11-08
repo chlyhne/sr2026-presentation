@@ -498,13 +498,16 @@ Se projektrodens README og docs/hosting.md. Eksporten er nu et objekt med `versi
 
 ## Bådikoner og mål
 
-Positionsmarkørerne bruger skroget fra `boat.svg`, kopieret fra
+Positionsmarkørerne bruger skroget fra `modern.svg`, kopieret fra
 `random simuleringer/cuteboat.svg`. Metadata i `boat-icons.js` angiver Vera, My,
 Mercutio og saltamalin som 8 × 2,54 meter. THE HULK er 10,3 × 3,18 meter,
 Rosa-Lux 10 × 3 meter, Alice 8 × 2,51 meter og Moster 7,77 × 2,5 meter.
 Alle øvrige både har foreløbige mål
-på 10 × 3 meter (`estimated: true`). Hver båd har et `dimensions`-felt med
-`lengthM` og `beamM`. Ret navneopslagene i `boatDimensionOverrides`, når mål kendes.
+på 10 × 3 meter (`estimated: true`). Hver båd har et `metadata`-felt med
+`lengthM`, `beamM` og `hull`. `hull` er `modern` som standard; Slipstik og Ambra
+bruger `classic.svg` og måler begge 10 × 2,3 meter. Begge SVG-filer ligger i
+`viewer/` og indlæses direkte, så skrogtegningerne kan redigeres der.
+Ret navneopslagene i `boatMetadataOverrides`, når mål eller skrogform ændres.
 
 Ikoner følger bevægelsesretningen langs tracket. Bredden er mindst 8
 skærmpixels. Når den geografiske bredde bliver større end det, vises både
