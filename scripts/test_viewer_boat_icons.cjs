@@ -1,5 +1,7 @@
 const assert=require('node:assert/strict');
 const path=require('node:path');
+const resolved=JSON.parse(require('node:fs').readFileSync(path.resolve(__dirname,'../data/boat-dimensions/resolved.json'),'utf8'));
+const expectedSourced=Object.fromEntries(resolved.boats.map(b=>[b.trackName.toLowerCase(),b.metadata]));
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 (async()=>{
  const browser=await chromium.launch({headless:true});
@@ -11,10 +13,14 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   const metadata=await page.evaluate(()=>boats.map(b=>({name:b.name,...b.metadata})));
   for(const boat of metadata){
    const expected={mercutio:[8,2.54],vera:[8,2.54],my:[8,2.54],saltamalin:[8,2.54],
-    'the hulk':[10.3,3.18],'rosa-lux':[10,3],alice:[8,2.51],moster:[7.77,2.5],slipstik:[10,2.3],ambra:[10,2.3],xbox:[12.75,4.18],'quinta light':[12.55,4.3],'hansen 3.5':[10.65,3.53]}[boat.name.toLowerCase()];
-   assert.equal(boat.lengthM,expected?expected[0]:10);assert.equal(boat.beamM,expected?expected[1]:3);
-   assert.equal(!!boat.estimated,!expected);
-   assert.equal(boat.hull,['slipstik','ambra'].includes(boat.name.toLowerCase())?'classic':'modern');
+    'the hulk':[10.3,3.18],'rosa-lux':[10,3],alice:[8,2.51],moster:[7.77,2.5],slipstik:[10,2.3],ambra:[10,2.3],xbox:[12.75,4.18],'quinta light':[12.55,4.3],'hansen 3.5':[10.65,3.53],munje:[13.35,4.25],
+    'vi ses':[10.21,3.21],'dream on':[15.88,3.86],norma:[9.96,3.1],'tjørn':[12.25,3.3],sabrina:[11.8872,3.784314606741573]}[boat.name.toLowerCase()];
+   const collected=expectedSourced[boat.name.toLowerCase()];
+   assert.ok(collected);
+   assert.equal(boat.lengthM,expected?expected[0]:collected.lengthM);assert.equal(boat.beamM,expected?expected[1]:collected.beamM);
+   assert.equal(!!boat.estimated,expected?false:!!collected.estimated);
+   const modern=['the hulk','my','vera','mercutio','saltamalin','laolao','xbox','quinta light'];
+   assert.equal(boat.hull,['slipstik','ambra'].includes(boat.name.toLowerCase())?'classic':modern.includes(boat.name.toLowerCase())?'modern':'common');
   }
   async function zoom(width,name='Mercutio'){return page.evaluate(([width,name])=>{
    const boat=boats.find(b=>b.name===name);chosen.clear();chosen.add(boat.name);
@@ -43,11 +49,13 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   assert.ok(Math.abs(classic.beam-classic.expectedBeam)<.001);
   assert.ok(Math.abs(classic.length-classic.expectedLength)<.001);
   await page.screenshot({path:'/tmp/sr2026-classic-boats.png'});
-  for(const [name,lengthM,beamM] of [['THE HULK',10.3,3.18],['XBOX',12.75,4.18],['Slipstik',10,2.3]]){
+  for(const [name,lengthM,beamM] of [['THE HULK',10.3,3.18],['XBOX',12.75,4.18],['Slipstik',10,2.3],['Rosa-Lux',10,3]]){
    const far=await zoom(10,name);
    assert.ok(Math.abs(far.beam-beamM*8/2.54)<.001,name+' shares the beam scale');
    assert.ok(Math.abs(far.length-lengthM*8/2.54)<.001,name+' shares the length scale');
   }
+  await zoom(.1,'Rosa-Lux');assert.equal(await page.locator('.boat-icon').getAttribute('data-hull'),'common');
+  await page.screenshot({path:'/tmp/sr2026-common-boats.png'});
   const wide=await zoom(10);assert.ok(Math.abs(wide.beam-8)<.001);
   assert.ok(Math.abs(wide.length-8*8/2.54)<.001);
   await page.screenshot({path:'/tmp/sr2026-boats-wide.png'});

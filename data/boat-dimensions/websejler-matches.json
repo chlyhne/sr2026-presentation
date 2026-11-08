@@ -1,0 +1,6611 @@
+{
+  "fetchedAt": "2026-11-08T16:53:54.024850+00:00",
+  "eventId": "3a4bd78c-acfb-474f-b47d-160705d3b0aa",
+  "measurementFields": {
+    "lengthM": "LOA",
+    "beamM": "Bmax"
+  },
+  "boats": [
+    {
+      "trackId": "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+      "trackName": "Abelone 3",
+      "bowNumber": "2597",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "15f8a5c1-69d5-4c55-b0ee-329f6d04c4c6",
+        "SailNumber": "K25 S27",
+        "SailNumberCountry": "K25",
+        "BoatName": "Abelone 3",
+        "BoatType": "Kosterbåd/spidsgatter",
+        "BowNumber": "2597",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "11370",
+          "boatType": "MAXI 77",
+          "sailNumber": "2527",
+          "name": "Lea"
+        },
+        {
+          "certificate": "4778",
+          "boatType": "MAXI 77",
+          "sailNumber": "2527",
+          "name": ""
+        }
+      ],
+      "status": "not-matched",
+      "typeCandidates": []
+    },
+    {
+      "trackId": "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+      "trackName": "Alex",
+      "bowNumber": "2598",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "b083f321-6ce8-4b45-9a78-2383603e8729",
+        "SailNumber": "DEN 435",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Alex",
+        "BoatType": "Dehler 343",
+        "BowNumber": "2598",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "32399",
+          "boatType": "BAVARIA 33",
+          "sailNumber": "435",
+          "name": "Windborn"
+        },
+        {
+          "certificate": "9016",
+          "boatType": "HR 352",
+          "sailNumber": "435",
+          "name": "Linie Fire"
+        },
+        {
+          "certificate": "32294",
+          "boatType": "KDY 15 M2/JUNIORBÅD",
+          "sailNumber": "435",
+          "name": ""
+        },
+        {
+          "certificate": "32248",
+          "boatType": "KDY 15 M2/JUNIORBÅD",
+          "sailNumber": "435",
+          "name": ""
+        },
+        {
+          "certificate": "16809",
+          "boatType": "NORDISK FOLKEBÅD",
+          "sailNumber": "435",
+          "name": "Bonus"
+        },
+        {
+          "certificate": "4884",
+          "boatType": "SPÆKHUGGER",
+          "sailNumber": "435",
+          "name": "Pummel"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "285",
+          "boatType": "DEHLER 34/343"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.11,
+        "beamM": 3.43,
+        "source": "https://websejler.dk/da/baadtype/285",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "285",
+        "boatType": "DEHLER 34/343"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+      "trackName": "Alice",
+      "bowNumber": "3096",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "5c7fd480-0b54-462b-b068-e52d3cf171b2",
+        "SailNumber": "DEN 468",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Alice",
+        "BoatType": "J 80",
+        "BowNumber": "3096",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37529",
+          "boatType": "J 80",
+          "sailNumber": "468",
+          "name": "Alice"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 8.0,
+        "beamM": 2.51,
+        "source": "https://websejler.dk/da/certifikat/37529",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37529",
+        "boatType": "J 80",
+        "sailNumber": "468",
+        "name": "Alice"
+      }
+    },
+    {
+      "trackId": "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+      "trackName": "Allegra",
+      "bowNumber": "2617",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "519a1557-a7a8-4c55-b7c5-a6f5b0bde998",
+        "SailNumber": "DEN 53",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Allegra",
+        "BoatType": "Bianca 107",
+        "BowNumber": "2617",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "17180",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "53",
+          "name": "Søløven"
+        },
+        {
+          "certificate": "4995",
+          "boatType": "6 METRE R",
+          "sailNumber": "53",
+          "name": "Joker"
+        },
+        {
+          "certificate": "7107",
+          "boatType": "ALBIN ALPHA",
+          "sailNumber": "53",
+          "name": "Trille"
+        },
+        {
+          "certificate": "6651",
+          "boatType": "APHRODITE 29/291",
+          "sailNumber": "53",
+          "name": "Dulcinea"
+        },
+        {
+          "certificate": "8685",
+          "boatType": "BALLAD",
+          "sailNumber": "53",
+          "name": "Minstrel"
+        },
+        {
+          "certificate": "31930",
+          "boatType": "BANDHOLM 27",
+          "sailNumber": "53",
+          "name": "Brezza"
+        },
+        {
+          "certificate": "31310",
+          "boatType": "BANNER 23 RACER",
+          "sailNumber": "53",
+          "name": "Den Grimme Ælling"
+        },
+        {
+          "certificate": "1041",
+          "boatType": "BANNER 26 MK II",
+          "sailNumber": "53",
+          "name": "Spar 4"
+        },
+        {
+          "certificate": "2797",
+          "boatType": "BANNER 30 MED MOTOR",
+          "sailNumber": "53",
+          "name": "Strix Bubu"
+        },
+        {
+          "certificate": "4627",
+          "boatType": "BANNER 33 FAMILY",
+          "sailNumber": "53",
+          "name": "Kisseline"
+        },
+        {
+          "certificate": "714",
+          "boatType": "BB 10 METER",
+          "sailNumber": "53",
+          "name": "Sjus"
+        },
+        {
+          "certificate": "9863",
+          "boatType": "BIANCA 28",
+          "sailNumber": "53",
+          "name": ""
+        },
+        {
+          "certificate": "30016",
+          "boatType": "BIANCA LIDO",
+          "sailNumber": "53",
+          "name": "Fru Kristoff"
+        },
+        {
+          "certificate": "37400",
+          "boatType": "BLUE DINA 25",
+          "sailNumber": "53",
+          "name": "Tulle"
+        },
+        {
+          "certificate": "30477",
+          "boatType": "COLINA 353",
+          "sailNumber": "53",
+          "name": "Mary Lou"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "161",
+          "boatType": "BIANCA 107"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.69,
+        "beamM": 3.16,
+        "source": "https://websejler.dk/da/baadtype/161",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "161",
+        "boatType": "BIANCA 107"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+      "trackName": "Alvilda",
+      "bowNumber": "3093",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "9e323dac-d083-47f3-a652-d37238d6c7e0",
+        "SailNumber": "DEN 127",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Alvilda",
+        "BoatType": "Scan-Kap 99",
+        "BowNumber": "3093",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "11532",
+          "boatType": "SCAN-KAP 99",
+          "sailNumber": "127",
+          "name": "Alvilda"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 9.86,
+        "beamM": 2.61,
+        "source": "https://websejler.dk/da/certifikat/11532",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "11532",
+        "boatType": "SCAN-KAP 99",
+        "sailNumber": "127",
+        "name": "Alvilda"
+      }
+    },
+    {
+      "trackId": "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+      "trackName": "Amalie",
+      "bowNumber": "2618",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "14237450-c783-4d4d-9d10-cd245aaa5551",
+        "SailNumber": "DEN 101",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Amalie",
+        "BoatType": "Møn 431",
+        "BowNumber": "2618",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "14863",
+          "boatType": "470",
+          "sailNumber": "101",
+          "name": ""
+        },
+        {
+          "certificate": "1938",
+          "boatType": "ALBIN 85 CUMULUS",
+          "sailNumber": "101",
+          "name": "Carina"
+        },
+        {
+          "certificate": "7598",
+          "boatType": "ALBIN ALPHA",
+          "sailNumber": "101",
+          "name": "Revanche"
+        },
+        {
+          "certificate": "16085",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "101",
+          "name": "Dite"
+        },
+        {
+          "certificate": "1112",
+          "boatType": "BANDHOLM 28",
+          "sailNumber": "101",
+          "name": "Tai-Pan"
+        },
+        {
+          "certificate": "4522",
+          "boatType": "BANNER 28 RACER MK II",
+          "sailNumber": "101",
+          "name": "Fjeren"
+        },
+        {
+          "certificate": "10210",
+          "boatType": "BANNER 30 UDEN MOTOR",
+          "sailNumber": "101",
+          "name": "Spanking Lady"
+        },
+        {
+          "certificate": "30872",
+          "boatType": "BANNER 41",
+          "sailNumber": "101",
+          "name": "Lykke"
+        },
+        {
+          "certificate": "31138",
+          "boatType": "BAVARIA 34",
+          "sailNumber": "101",
+          "name": "Kleopatra"
+        },
+        {
+          "certificate": "30331",
+          "boatType": "BAVARIA 37",
+          "sailNumber": "101",
+          "name": "Mary Kristine III"
+        },
+        {
+          "certificate": "2150",
+          "boatType": "BIANCA 28",
+          "sailNumber": "101",
+          "name": "Tusindfryd"
+        },
+        {
+          "certificate": "7614",
+          "boatType": "BLUE DANE 32",
+          "sailNumber": "101",
+          "name": "Quick IV"
+        },
+        {
+          "certificate": "4874",
+          "boatType": "CARTER 30",
+          "sailNumber": "101",
+          "name": "Tenna III"
+        },
+        {
+          "certificate": "35153",
+          "boatType": "CENIT SEVEN",
+          "sailNumber": "101",
+          "name": "Danhegn"
+        },
+        {
+          "certificate": "937",
+          "boatType": "COMMANDER 31",
+          "sailNumber": "101",
+          "name": ""
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10016",
+          "boatType": "MØN 431"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 12.8,
+        "beamM": 3.87,
+        "source": "https://websejler.dk/da/baadtype/10016",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10016",
+        "boatType": "MØN 431"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+      "trackName": "Ambra",
+      "bowNumber": "3095",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "b4d4b63a-369e-406e-841a-9e668e13ac11",
+        "SailNumber": "DEN 68",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Ambra",
+        "BoatType": "BB 10 METER",
+        "BowNumber": "3095",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "3461",
+          "boatType": "BB 10 METER",
+          "sailNumber": "68",
+          "name": "Ambra"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.02,
+        "beamM": 2.3,
+        "source": "https://websejler.dk/da/certifikat/3461",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "3461",
+        "boatType": "BB 10 METER",
+        "sailNumber": "68",
+        "name": "Ambra"
+      }
+    },
+    {
+      "trackId": "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+      "trackName": "Andraste",
+      "bowNumber": "2619",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "505be10e-54eb-4d20-8366-392757ba7dd5",
+        "SailNumber": "GBR 3921",
+        "SailNumberCountry": "GBR",
+        "BoatName": "Andraste",
+        "BoatType": "Sloop, \"One off\"",
+        "BowNumber": "2619",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [],
+      "status": "not-matched",
+      "typeCandidates": []
+    },
+    {
+      "trackId": "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+      "trackName": "Andrea",
+      "bowNumber": "3114",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "786d8103-a5bf-493a-8d04-68af08c3fa01",
+        "SailNumber": "DEN 245",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Andrea",
+        "BoatType": "X-362 SPORT",
+        "BowNumber": "3114",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37461",
+          "boatType": "X-362 SPORT",
+          "sailNumber": "245",
+          "name": "Andrea"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.72,
+        "beamM": 3.47,
+        "source": "https://websejler.dk/da/certifikat/37461",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37461",
+        "boatType": "X-362 SPORT",
+        "sailNumber": "245",
+        "name": "Andrea"
+      }
+    },
+    {
+      "trackId": "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+      "trackName": "Annibeth",
+      "bowNumber": "3319",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "75ce11e0-576e-4fcb-84a3-aa3171bc6278",
+        "SailNumber": "DEN 45",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Annibeth",
+        "BoatType": "DUFOUR 45",
+        "BowNumber": "3319",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "33195",
+          "boatType": "DUFOUR 45",
+          "sailNumber": "45",
+          "name": "Annibeth"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 13.6,
+        "beamM": 4.3,
+        "source": "https://websejler.dk/da/certifikat/33195",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "33195",
+        "boatType": "DUFOUR 45",
+        "sailNumber": "45",
+        "name": "Annibeth"
+      }
+    },
+    {
+      "trackId": "groensund:cee02030-4624-013f-28e5-04421a259aad",
+      "trackName": "Banner Viking",
+      "bowNumber": "2625",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "237b57c4-f555-4e4c-9ee6-30dc3ebfba7c",
+        "SailNumber": "DEN 6",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Banner Viking",
+        "BoatType": "Banner 41 R",
+        "BowNumber": "2625",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "9243",
+          "boatType": "BANNER 41",
+          "sailNumber": "6",
+          "name": "Banner Viking"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.33,
+        "beamM": 3.25,
+        "source": "https://websejler.dk/da/certifikat/9243",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "9243",
+        "boatType": "BANNER 41",
+        "sailNumber": "6",
+        "name": "Banner Viking"
+      }
+    },
+    {
+      "trackId": "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+      "trackName": "Bibs",
+      "bowNumber": "2635",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "7b6f331c-342d-40cd-add0-514f75f34259",
+        "SailNumber": "DEN 110",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Bibs",
+        "BoatType": "Omega 42",
+        "BowNumber": "2635",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "17762",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "110",
+          "name": "Nordsund"
+        },
+        {
+          "certificate": "2070",
+          "boatType": "806",
+          "sailNumber": "110",
+          "name": "Belinda"
+        },
+        {
+          "certificate": "11338",
+          "boatType": "ALBIN ALPHA",
+          "sailNumber": "110",
+          "name": "Inki"
+        },
+        {
+          "certificate": "37224",
+          "boatType": "ARCONA 400",
+          "sailNumber": "110",
+          "name": "Arcona Matata"
+        },
+        {
+          "certificate": "898",
+          "boatType": "BANDHOLM 27",
+          "sailNumber": "110",
+          "name": "Bandit"
+        },
+        {
+          "certificate": "5144",
+          "boatType": "BANNER 28 RACER MK II",
+          "sailNumber": "110",
+          "name": "Purple Rain"
+        },
+        {
+          "certificate": "2484",
+          "boatType": "BLUE DANE 32",
+          "sailNumber": "110",
+          "name": "Skræp"
+        },
+        {
+          "certificate": "8226",
+          "boatType": "CAYENNE",
+          "sailNumber": "110",
+          "name": "Rai"
+        },
+        {
+          "certificate": "6620",
+          "boatType": "COMFORTINA 32",
+          "sailNumber": "110",
+          "name": "Celebrina"
+        },
+        {
+          "certificate": "3382",
+          "boatType": "COMMANDER 31",
+          "sailNumber": "110",
+          "name": "Kanut"
+        },
+        {
+          "certificate": "8342",
+          "boatType": "COMPIS 33",
+          "sailNumber": "110",
+          "name": "Helle"
+        },
+        {
+          "certificate": "34843",
+          "boatType": "DUFOUR 35 CLASSIC",
+          "sailNumber": "110",
+          "name": "Astérie"
+        },
+        {
+          "certificate": "36306",
+          "boatType": "FENIX",
+          "sailNumber": "110",
+          "name": "Jellyfish"
+        },
+        {
+          "certificate": "14226",
+          "boatType": "FLIPPER",
+          "sailNumber": "110",
+          "name": ""
+        },
+        {
+          "certificate": "8880",
+          "boatType": "GRANADA 27",
+          "sailNumber": "110",
+          "name": "Rejali"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "248",
+          "boatType": "OMEGA 42"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 12.88,
+        "beamM": 3.1,
+        "source": "https://websejler.dk/da/baadtype/248",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "248",
+        "boatType": "OMEGA 42"
+      }
+    },
+    {
+      "trackId": "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+      "trackName": "Blacq Magic",
+      "bowNumber": "3317",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "15ed6c4f-7240-4508-ae3c-e25c3c13fe54",
+        "SailNumber": "DEN 7",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Blacq Magic",
+        "BoatType": "MAX FUN 35",
+        "BowNumber": "3317",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37022",
+          "boatType": "MAX FUN 35",
+          "sailNumber": "7",
+          "name": "Blacq Magic"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.58,
+        "beamM": 3.21,
+        "source": "https://websejler.dk/da/certifikat/37022",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37022",
+        "boatType": "MAX FUN 35",
+        "sailNumber": "7",
+        "name": "Blacq Magic"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+      "trackName": "Blue Bird",
+      "bowNumber": "2600",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "3360ec4e-d14c-49f4-985b-d01c049da844",
+        "SailNumber": "DEN 145",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Blue Bird",
+        "BoatType": "Sunwind 31",
+        "BowNumber": "2600",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "30847",
+          "boatType": "470",
+          "sailNumber": "145",
+          "name": ""
+        },
+        {
+          "certificate": "3134",
+          "boatType": "BALLAD",
+          "sailNumber": "145",
+          "name": "Hugin"
+        },
+        {
+          "certificate": "11894",
+          "boatType": "CONTRAST 33",
+          "sailNumber": "145",
+          "name": "Freja"
+        },
+        {
+          "certificate": "46",
+          "boatType": "DEHLER DUETTA 86",
+          "sailNumber": "145",
+          "name": "Turtle II"
+        },
+        {
+          "certificate": "398",
+          "boatType": "DRABANT 22",
+          "sailNumber": "145",
+          "name": "Domitilla"
+        },
+        {
+          "certificate": "3002",
+          "boatType": "DRABANT 24 UDEN MOTOR",
+          "sailNumber": "145",
+          "name": "Athos"
+        },
+        {
+          "certificate": "37214",
+          "boatType": "DUFOUR 385",
+          "sailNumber": "145",
+          "name": "Mamaia"
+        },
+        {
+          "certificate": "32606",
+          "boatType": "EXPRESS",
+          "sailNumber": "145",
+          "name": "eXpral"
+        },
+        {
+          "certificate": "4221",
+          "boatType": "GRANADA 24",
+          "sailNumber": "145",
+          "name": "Fjutten"
+        },
+        {
+          "certificate": "5051",
+          "boatType": "GRANADA 27",
+          "sailNumber": "145",
+          "name": "Sørine"
+        },
+        {
+          "certificate": "16632",
+          "boatType": "H-BÅD",
+          "sailNumber": "145",
+          "name": "Amanda II"
+        },
+        {
+          "certificate": "16776",
+          "boatType": "IF-BÅD",
+          "sailNumber": "145",
+          "name": "Vips"
+        },
+        {
+          "certificate": "4681",
+          "boatType": "KINGS CRUISER 33",
+          "sailNumber": "145",
+          "name": "Undine III"
+        },
+        {
+          "certificate": "3945",
+          "boatType": "L23",
+          "sailNumber": "145",
+          "name": "Atu"
+        },
+        {
+          "certificate": "2613",
+          "boatType": "LA-KRYDSER",
+          "sailNumber": "145",
+          "name": "Fu-Fu"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "251",
+          "boatType": "SUNWIND 31"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 9.31,
+        "beamM": 2.92,
+        "source": "https://websejler.dk/da/baadtype/251",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "251",
+        "boatType": "SUNWIND 31"
+      }
+    },
+    {
+      "trackId": "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+      "trackName": "Blåregn",
+      "bowNumber": "3098",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "995ff939-c077-428c-94af-94acd0d9a921",
+        "SailNumber": "DEN 56",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Blåregn",
+        "BoatType": "X-99",
+        "BowNumber": "3098",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "7169",
+          "boatType": "X-99",
+          "sailNumber": "56",
+          "name": "Blåregn"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.0,
+        "beamM": 3.0,
+        "source": "https://websejler.dk/da/certifikat/7169",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "7169",
+        "boatType": "X-99",
+        "sailNumber": "56",
+        "name": "Blåregn"
+      }
+    },
+    {
+      "trackId": "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+      "trackName": "Buksesnedkeren",
+      "bowNumber": "3327",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "e0901b67-219a-4917-aa48-8a440b91f3ec",
+        "SailNumber": "DEN 1239",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Buksesnedkeren",
+        "BoatType": null,
+        "BowNumber": "3327",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "9852",
+          "boatType": "ONE OFF",
+          "sailNumber": "1239",
+          "name": "Buksesnedkeren"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 19.24,
+        "beamM": 4.91,
+        "source": "https://websejler.dk/da/certifikat/9852",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "9852",
+        "boatType": "ONE OFF",
+        "sailNumber": "1239",
+        "name": "Buksesnedkeren"
+      }
+    },
+    {
+      "trackId": "groensund:d0410370-4624-013f-2a15-04421a259aad",
+      "trackName": "Casa Bent",
+      "bowNumber": "3323",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "5098664c-653f-4d9a-b40e-9a5a012c565c",
+        "SailNumber": "DEN 103",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Casa Bent",
+        "BoatType": "DEHLER 46",
+        "BowNumber": "3323",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37834",
+          "boatType": "DEHLER 46",
+          "sailNumber": "103",
+          "name": "Casa Bent"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 13.89,
+        "beamM": 4.32,
+        "source": "https://websejler.dk/da/certifikat/37834",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37834",
+        "boatType": "DEHLER 46",
+        "sailNumber": "103",
+        "name": "Casa Bent"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+      "trackName": "Charlotte",
+      "bowNumber": "3090",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "6f9c28d3-2204-4d02-91b0-155a15c47199",
+        "SailNumber": "DEN 271",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Charlotte",
+        "BoatType": "MAMBA 31/311",
+        "BowNumber": "3090",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "8646",
+          "boatType": "MAMBA 31/311",
+          "sailNumber": "271",
+          "name": "Charlotte"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 9.29,
+        "beamM": 3.06,
+        "source": "https://websejler.dk/da/certifikat/8646",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "8646",
+        "boatType": "MAMBA 31/311",
+        "sailNumber": "271",
+        "name": "Charlotte"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+      "trackName": "Delizia",
+      "bowNumber": "3089",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "6aa2fa0a-d230-4034-982e-efdaa16968a8",
+        "SailNumber": "DEN 531",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Delizia",
+        "BoatType": "BALLAD",
+        "BowNumber": "3089",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37862",
+          "boatType": "BALLAD",
+          "sailNumber": "531",
+          "name": "Delizia"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 9.16,
+        "beamM": 2.97,
+        "source": "https://websejler.dk/da/certifikat/37862",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37862",
+        "boatType": "BALLAD",
+        "sailNumber": "531",
+        "name": "Delizia"
+      }
+    },
+    {
+      "trackId": "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+      "trackName": "DenAnden",
+      "bowNumber": "2637",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "5723c47f-c9f5-427c-b56f-399f66e5064c",
+        "SailNumber": "DEN 1",
+        "SailNumberCountry": "DEN",
+        "BoatName": "DenAnden",
+        "BoatType": "Bavaria 42",
+        "BowNumber": "2637",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "30565",
+          "boatType": "10 METRE R",
+          "sailNumber": "1",
+          "name": "Viking"
+        },
+        {
+          "certificate": "3764",
+          "boatType": "1006",
+          "sailNumber": "1",
+          "name": "Focus"
+        },
+        {
+          "certificate": "11426",
+          "boatType": "12 METER TYPE",
+          "sailNumber": "1",
+          "name": "Sølvmågen"
+        },
+        {
+          "certificate": "11778",
+          "boatType": "12 METRE R",
+          "sailNumber": "1",
+          "name": "Thea"
+        },
+        {
+          "certificate": "9582",
+          "boatType": "12 METRE R",
+          "sailNumber": "1",
+          "name": "Holger Danske I"
+        },
+        {
+          "certificate": "14573",
+          "boatType": "14 FOOT DINGHY",
+          "sailNumber": "1",
+          "name": ""
+        },
+        {
+          "certificate": "5188",
+          "boatType": "4.4 METER",
+          "sailNumber": "1",
+          "name": "Bllos"
+        },
+        {
+          "certificate": "7802",
+          "boatType": "50' OCEAN RACER",
+          "sailNumber": "1",
+          "name": "Liberty"
+        },
+        {
+          "certificate": "3227",
+          "boatType": "6 METER SKANDINAVISK",
+          "sailNumber": "1",
+          "name": "Nannie"
+        },
+        {
+          "certificate": "4424",
+          "boatType": "7 METRE",
+          "sailNumber": "1",
+          "name": "Tamagant"
+        },
+        {
+          "certificate": "4203",
+          "boatType": "7 METRE",
+          "sailNumber": "1",
+          "name": "Ambition"
+        },
+        {
+          "certificate": "3282",
+          "boatType": "717",
+          "sailNumber": "1",
+          "name": "Rabbit"
+        },
+        {
+          "certificate": "32083",
+          "boatType": "8 METRE R",
+          "sailNumber": "1",
+          "name": "Anitra"
+        },
+        {
+          "certificate": "4533",
+          "boatType": "8 METRE R",
+          "sailNumber": "1",
+          "name": "Zenta"
+        },
+        {
+          "certificate": "9371",
+          "boatType": "8 METRE R",
+          "sailNumber": "1",
+          "name": "Attila"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10301",
+          "boatType": "BAVARIA 42"
+        },
+        {
+          "typeId": "10808",
+          "boatType": "BAVARIA 42 MATCH"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 12.83,
+        "beamM": 3.99,
+        "source": "https://websejler.dk/da/baadtype/10301",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10301",
+        "boatType": "BAVARIA 42"
+      }
+    },
+    {
+      "trackId": "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+      "trackName": "Dina 2",
+      "bowNumber": "2639",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "6f982799-2262-4104-965e-71736041a57f",
+        "SailNumber": "BA 35",
+        "SailNumberCountry": "BA",
+        "BoatName": "Dina 2",
+        "BoatType": "Banholm 35",
+        "BowNumber": "2639",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "17192",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "35",
+          "name": "Gulnare"
+        },
+        {
+          "certificate": "1789",
+          "boatType": "4.4 METER",
+          "sailNumber": "35",
+          "name": "Smølfine"
+        },
+        {
+          "certificate": "11932",
+          "boatType": "806",
+          "sailNumber": "35",
+          "name": "Vic2ria"
+        },
+        {
+          "certificate": "1102",
+          "boatType": "ALO 28",
+          "sailNumber": "35",
+          "name": "Jessabel"
+        },
+        {
+          "certificate": "16080",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "35",
+          "name": "Why Not"
+        },
+        {
+          "certificate": "3880",
+          "boatType": "APHRODITE 29/291",
+          "sailNumber": "35",
+          "name": "Amia"
+        },
+        {
+          "certificate": "10585",
+          "boatType": "BALATON 31",
+          "sailNumber": "35",
+          "name": "Hovsa"
+        },
+        {
+          "certificate": "2791",
+          "boatType": "BANNER 30 MED MOTOR",
+          "sailNumber": "35",
+          "name": "Bandit"
+        },
+        {
+          "certificate": "5102",
+          "boatType": "BANNER 33 FAMILY",
+          "sailNumber": "35",
+          "name": "Fie"
+        },
+        {
+          "certificate": "7987",
+          "boatType": "BANNER 34",
+          "sailNumber": "35",
+          "name": "Jezica"
+        },
+        {
+          "certificate": "645",
+          "boatType": "BB 10 METER",
+          "sailNumber": "35",
+          "name": "Stormfugl"
+        },
+        {
+          "certificate": "37209",
+          "boatType": "BELINDA 22",
+          "sailNumber": "35",
+          "name": "Bamse 2"
+        },
+        {
+          "certificate": "8420",
+          "boatType": "BIANCA 107",
+          "sailNumber": "35",
+          "name": "Abelone"
+        },
+        {
+          "certificate": "11929",
+          "boatType": "BIANCA 111",
+          "sailNumber": "35",
+          "name": "Minna-Mona"
+        },
+        {
+          "certificate": "33759",
+          "boatType": "BIANCA 28",
+          "sailNumber": "35",
+          "name": "Liljen"
+        }
+      ],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [
+        {
+          "typeId": "10340",
+          "boatType": "BANDHOLM 35 DD"
+        },
+        {
+          "typeId": "1089",
+          "boatType": "BANDHOLM 35 SD"
+        }
+      ],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 10.62,
+        "beamM": 3.3,
+        "source": "https://sailboatdata.com/sailboat/bandholm-35/",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "estimated": true,
+        "note": "Reviewed spelling correction: Manage2Sail Banholm 35 is interpreted as Bandholm 35."
+      }
+    },
+    {
+      "trackId": "groensund:cef01130-4624-013f-28f5-04421a259aad",
+      "trackName": "Dorthea",
+      "bowNumber": "2650",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "c0df54bf-1951-4626-be7e-e4b3e6cd0b5b",
+        "SailNumber": "DEN 45",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Dorthea",
+        "BoatType": "Luffe 40",
+        "BowNumber": "2650",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "11517",
+          "boatType": "LUFFE 40 NY KØL",
+          "sailNumber": "45",
+          "name": "Dorthea"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.17,
+        "beamM": 3.28,
+        "source": "https://websejler.dk/da/certifikat/11517",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "11517",
+        "boatType": "LUFFE 40 NY KØL",
+        "sailNumber": "45",
+        "name": "Dorthea"
+      }
+    },
+    {
+      "trackId": "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+      "trackName": "Dream on",
+      "bowNumber": "2652",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "e8ab9533-64f5-4343-9eca-db8fc591457f",
+        "SailNumber": "DEN 1",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Dream on",
+        "BoatType": "Frers 49'",
+        "BowNumber": "2652",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "36805",
+          "boatType": "IRC 49 ONE OFF",
+          "sailNumber": "1",
+          "name": "Dream On"
+        }
+      ],
+      "typeConflict": {
+        "certificate": "36805",
+        "boatType": "IRC 49 ONE OFF",
+        "sailNumber": "1",
+        "name": "Dream On"
+      },
+      "status": "not-matched",
+      "typeCandidates": []
+    },
+    {
+      "trackId": "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+      "trackName": "DS37",
+      "bowNumber": "3120",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "b762330f-656a-4f90-89b7-a07c4b3168aa",
+        "SailNumber": "DEN 25",
+        "SailNumberCountry": "DEN",
+        "BoatName": "DS37",
+        "BoatType": "SCANDINAVIAN MATCH RACER",
+        "BowNumber": "3120",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "35172",
+          "boatType": "1006",
+          "sailNumber": "25",
+          "name": "Hippopotamus"
+        },
+        {
+          "certificate": "11235",
+          "boatType": "ALO 28",
+          "sailNumber": "25",
+          "name": "Bonita"
+        },
+        {
+          "certificate": "4873",
+          "boatType": "ATHENA 34",
+          "sailNumber": "25",
+          "name": "Baracuda"
+        },
+        {
+          "certificate": "2192",
+          "boatType": "BANDHOLM 30",
+          "sailNumber": "25",
+          "name": "Aquila"
+        },
+        {
+          "certificate": "1044",
+          "boatType": "BANNER 30 MED MOTOR",
+          "sailNumber": "25",
+          "name": "Rosa"
+        },
+        {
+          "certificate": "12006",
+          "boatType": "BANNER 33 FAMILY",
+          "sailNumber": "25",
+          "name": "Valborg"
+        },
+        {
+          "certificate": "10482",
+          "boatType": "BANNER 34",
+          "sailNumber": "25",
+          "name": "Abcd"
+        },
+        {
+          "certificate": "32467",
+          "boatType": "BAVARIA 33",
+          "sailNumber": "25",
+          "name": "Loumus"
+        },
+        {
+          "certificate": "711",
+          "boatType": "BB 10 METER",
+          "sailNumber": "25",
+          "name": "Kimoli"
+        },
+        {
+          "certificate": "7086",
+          "boatType": "BIANCA 111",
+          "sailNumber": "25",
+          "name": "Chinook"
+        },
+        {
+          "certificate": "2156",
+          "boatType": "BIANCA 28",
+          "sailNumber": "25",
+          "name": "Seagrass"
+        },
+        {
+          "certificate": "11600",
+          "boatType": "BIANCA 420",
+          "sailNumber": "25",
+          "name": "Mågen 3"
+        },
+        {
+          "certificate": "1094",
+          "boatType": "BIANCA RIVIERA",
+          "sailNumber": "25",
+          "name": "Nike"
+        },
+        {
+          "certificate": "11520",
+          "boatType": "BIANCA RIVIERA",
+          "sailNumber": "25",
+          "name": "Bente III"
+        },
+        {
+          "certificate": "8787",
+          "boatType": "BOHEME 10 METER",
+          "sailNumber": "25",
+          "name": "Pam"
+        }
+      ],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 11.25,
+        "beamM": 3.23,
+        "source": "https://sailboatdata.com/sailboat/ds-37-match-racer/",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "estimated": true,
+        "note": "The track name DS37 identifies the 37-foot Scandinavian Match Racer."
+      }
+    },
+    {
+      "trackId": "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+      "trackName": "Easy L♥️ver",
+      "bowNumber": "3325",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "2167c05b-369a-49ef-a550-d41e2d4540d8",
+        "SailNumber": "DEN 28",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Easy L♥️ver",
+        "BoatType": "Soto 40",
+        "BowNumber": "3325",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "17540",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "28",
+          "name": "Kuben"
+        },
+        {
+          "certificate": "999",
+          "boatType": "ALO 28",
+          "sailNumber": "28",
+          "name": "Triton"
+        },
+        {
+          "certificate": "6474",
+          "boatType": "ANSA 42",
+          "sailNumber": "28",
+          "name": "Nadine"
+        },
+        {
+          "certificate": "3200",
+          "boatType": "AVANCE 36",
+          "sailNumber": "28",
+          "name": "Timeless"
+        },
+        {
+          "certificate": "3551",
+          "boatType": "BANDHOLM 28",
+          "sailNumber": "28",
+          "name": "Rikke"
+        },
+        {
+          "certificate": "3663",
+          "boatType": "BANNER 30 UDEN MOTOR",
+          "sailNumber": "28",
+          "name": "Snap-Shot"
+        },
+        {
+          "certificate": "1050",
+          "boatType": "BANNER 33 FAMILY",
+          "sailNumber": "28",
+          "name": "Gammarus"
+        },
+        {
+          "certificate": "7461",
+          "boatType": "BANNER 34",
+          "sailNumber": "28",
+          "name": "Shochone"
+        },
+        {
+          "certificate": "4454",
+          "boatType": "BECKER 27",
+          "sailNumber": "28",
+          "name": "Maria"
+        },
+        {
+          "certificate": "9452",
+          "boatType": "BIANCA 111",
+          "sailNumber": "28",
+          "name": "Kolorit"
+        },
+        {
+          "certificate": "31732",
+          "boatType": "BIANCA 28",
+          "sailNumber": "28",
+          "name": "Kanok"
+        },
+        {
+          "certificate": "30755",
+          "boatType": "BIANCA 36",
+          "sailNumber": "28",
+          "name": "Noahs Ark"
+        },
+        {
+          "certificate": "35334",
+          "boatType": "BIANCA 360",
+          "sailNumber": "28",
+          "name": "Zeus"
+        },
+        {
+          "certificate": "30585",
+          "boatType": "BIANCA 420",
+          "sailNumber": "28",
+          "name": "Pertito"
+        },
+        {
+          "certificate": "6951",
+          "boatType": "BOHEME 106",
+          "sailNumber": "28",
+          "name": "Tante Brun"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10683",
+          "boatType": "SOTO 40"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 12.3,
+        "beamM": 3.76,
+        "source": "https://websejler.dk/da/baadtype/10683",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10683",
+        "boatType": "SOTO 40"
+      }
+    },
+    {
+      "trackId": "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+      "trackName": "Eldkvarn",
+      "bowNumber": "3101",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "c2167e77-074b-4d2d-8938-c91f6f41c743",
+        "SailNumber": "SWE 10172",
+        "SailNumberCountry": "SWE",
+        "BoatName": "Eldkvarn",
+        "BoatType": "RIDAS 31 racer",
+        "BowNumber": "3101",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37905",
+          "boatType": "RIDAS 31",
+          "sailNumber": "10172",
+          "name": ""
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "sail-number-and-type-with-unnamed-certificate",
+      "measurement": {
+        "lengthM": 9.35,
+        "beamM": 3.12,
+        "source": "https://websejler.dk/da/certifikat/37905",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37905",
+        "boatType": "RIDAS 31",
+        "sailNumber": "10172",
+        "name": ""
+      }
+    },
+    {
+      "trackId": "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+      "trackName": "Enjoy Life",
+      "bowNumber": "3321",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "e96f4375-5d02-4652-b222-70645caf5a47",
+        "SailNumber": "DEN 1100",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Enjoy Life",
+        "BoatType": "KER 11.3",
+        "BowNumber": "3321",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "34294",
+          "boatType": "KER 11.3",
+          "sailNumber": "1100",
+          "name": "Enjoy Life"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.3,
+        "beamM": 3.63,
+        "source": "https://websejler.dk/da/certifikat/34294",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "34294",
+        "boatType": "KER 11.3",
+        "sailNumber": "1100",
+        "name": "Enjoy Life"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+      "trackName": "Esmeralda",
+      "bowNumber": "3078",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "0a8b2af5-1de7-4722-88c1-40361c953640",
+        "SailNumber": "DEN 318",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Esmeralda",
+        "BoatType": "HR 31/310",
+        "BowNumber": "3078",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "37912",
+          "boatType": "HR 31/310",
+          "sailNumber": "318",
+          "name": "Esmeralda"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 9.62,
+        "beamM": 3.3,
+        "source": "https://websejler.dk/da/certifikat/37912",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37912",
+        "boatType": "HR 31/310",
+        "sailNumber": "318",
+        "name": "Esmeralda"
+      }
+    },
+    {
+      "trackId": "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+      "trackName": "FARR-WELL II",
+      "bowNumber": "3079",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "30554ca7-5a06-4ff8-a6ac-f146e418ab5b",
+        "SailNumber": "DEN 414",
+        "SailNumberCountry": "DEN",
+        "BoatName": "FARR-WELL II",
+        "BoatType": "FIRST 27.7",
+        "BowNumber": "3079",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "37289",
+          "boatType": "FIRST 27.7",
+          "sailNumber": "414",
+          "name": "FARR-WELL II"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 8.3,
+        "beamM": 3.0,
+        "source": "https://websejler.dk/da/certifikat/37289",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37289",
+        "boatType": "FIRST 27.7",
+        "sailNumber": "414",
+        "name": "FARR-WELL II"
+      }
+    },
+    {
+      "trackId": "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+      "trackName": "Festina",
+      "bowNumber": "3123",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "d14f9296-2179-4c65-8e86-536a9171029f",
+        "SailNumber": "DEN 5",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Festina",
+        "BoatType": "ARCONA 380/385",
+        "BowNumber": "3123",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37630",
+          "boatType": "ARCONA 380/385",
+          "sailNumber": "5",
+          "name": "Festina"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.28,
+        "beamM": 3.79,
+        "source": "https://websejler.dk/da/certifikat/37630",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37630",
+        "boatType": "ARCONA 380/385",
+        "sailNumber": "5",
+        "name": "Festina"
+      }
+    },
+    {
+      "trackId": "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+      "trackName": "Fifty",
+      "bowNumber": "3117",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "e544f724-4cd8-4d49-b31d-5cdeaf28fe17",
+        "SailNumber": "DEN 15",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Fifty",
+        "BoatType": "BANNER 41",
+        "BowNumber": "3117",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "11252",
+          "boatType": "BANNER 41",
+          "sailNumber": "15",
+          "name": "Fifty"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.33,
+        "beamM": 3.25,
+        "source": "https://websejler.dk/da/certifikat/11252",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "11252",
+        "boatType": "BANNER 41",
+        "sailNumber": "15",
+        "name": "Fifty"
+      }
+    },
+    {
+      "trackId": "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+      "trackName": "Freja",
+      "bowNumber": "2653",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "60c9d6c2-e857-4cd9-982d-b87eafbf520b",
+        "SailNumber": "DEN 384",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Frigg",
+        "BoatType": "SunFast 32",
+        "BowNumber": "2653",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "7384",
+          "boatType": "806",
+          "sailNumber": "384",
+          "name": "Jonok"
+        },
+        {
+          "certificate": "8988",
+          "boatType": "BIANCA 36",
+          "sailNumber": "384",
+          "name": "Freja"
+        },
+        {
+          "certificate": "32279",
+          "boatType": "DRAGE",
+          "sailNumber": "384",
+          "name": ""
+        },
+        {
+          "certificate": "16941",
+          "boatType": "H-BÅD",
+          "sailNumber": "384",
+          "name": "Fru Handberg"
+        },
+        {
+          "certificate": "10665",
+          "boatType": "JUNKER 22",
+          "sailNumber": "384",
+          "name": "Kulmule"
+        },
+        {
+          "certificate": "7721",
+          "boatType": "L23",
+          "sailNumber": "384",
+          "name": "Lalena"
+        },
+        {
+          "certificate": "16843",
+          "boatType": "NORDISK FOLKEBÅD",
+          "sailNumber": "384",
+          "name": "Aida"
+        },
+        {
+          "certificate": "5077",
+          "boatType": "SCAMPI 30 MK IV",
+          "sailNumber": "384",
+          "name": "Mia Noi"
+        },
+        {
+          "certificate": "37524",
+          "boatType": "X-332",
+          "sailNumber": "384",
+          "name": "GlideX"
+        },
+        {
+          "certificate": "8030",
+          "boatType": "X-79",
+          "sailNumber": "384",
+          "name": "X-Hausted"
+        }
+      ],
+      "typeConflict": {
+        "certificate": "8988",
+        "boatType": "BIANCA 36",
+        "sailNumber": "384",
+        "name": "Freja"
+      },
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 9.5,
+        "beamM": 3.3,
+        "source": "https://sailboatdata.com/sailboat/sun-fast-32-jeanneau/",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "estimated": true
+      }
+    },
+    {
+      "trackId": "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+      "trackName": "Frida II",
+      "bowNumber": "2821",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "e8d126c2-6dd7-4238-9a2e-2bb246feb529",
+        "SailNumber": "SWE 432",
+        "SailNumberCountry": "SWE",
+        "BoatName": "Frida II",
+        "BoatType": "Hanse 320",
+        "BowNumber": "2821",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10466",
+          "boatType": "HANSE 320"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 9.55,
+        "beamM": 3.3,
+        "source": "https://websejler.dk/da/baadtype/10466",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10466",
+        "boatType": "HANSE 320"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+      "trackName": "Friendship 2",
+      "bowNumber": "3092",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "c435b720-181c-42a6-b1d9-a37a7f7ecfbb",
+        "SailNumber": "DEN 11",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Friendship 2",
+        "BoatType": "Aphrodite 101",
+        "BowNumber": "3092",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "16309",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "11",
+          "name": "Friendship 2"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "12",
+          "boatType": "APHRODITE 101"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 9.92,
+        "beamM": 2.42,
+        "source": "https://websejler.dk/da/baadtype/12",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "12",
+        "boatType": "APHRODITE 101"
+      }
+    },
+    {
+      "trackId": "groensund:ceff8000-4624-013f-2903-04421a259aad",
+      "trackName": "Frigg",
+      "bowNumber": "2822",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "77457d12-6b86-42ae-bc99-f9915cfbfefd",
+        "SailNumber": "DEN 693",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Freja",
+        "BoatType": "SunFast 32",
+        "BowNumber": "2822",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "140",
+          "boatType": "BALLAD",
+          "sailNumber": "693",
+          "name": "Ea"
+        },
+        {
+          "certificate": "8362",
+          "boatType": "DEHLER 31",
+          "sailNumber": "693",
+          "name": "Kalas"
+        },
+        {
+          "certificate": "970",
+          "boatType": "DRABANT 33",
+          "sailNumber": "693",
+          "name": "Snus"
+        },
+        {
+          "certificate": "6240",
+          "boatType": "FENIX",
+          "sailNumber": "693",
+          "name": "Fifong"
+        },
+        {
+          "certificate": "31978",
+          "boatType": "JEANNEAU SUN FAST 32 i",
+          "sailNumber": "693",
+          "name": "Fru Vognsen"
+        },
+        {
+          "certificate": "11303",
+          "boatType": "MAXI 1000",
+          "sailNumber": "693",
+          "name": "Luna"
+        },
+        {
+          "certificate": "6159",
+          "boatType": "MAXI 95",
+          "sailNumber": "693",
+          "name": "Humle"
+        },
+        {
+          "certificate": "16603",
+          "boatType": "NORDISK FOLKEBÅD",
+          "sailNumber": "693",
+          "name": "PL Davita"
+        }
+      ],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 9.5,
+        "beamM": 3.3,
+        "source": "https://sailboatdata.com/sailboat/sun-fast-32-jeanneau/",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "estimated": true
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+      "trackName": "GAIA",
+      "bowNumber": "2601",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "6118db79-48d5-4ccf-8e65-44c842babd58",
+        "SailNumber": "-- --",
+        "SailNumberCountry": "--",
+        "BoatName": "GAIA",
+        "BoatType": "Najad 340",
+        "BowNumber": "2601",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "37239",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "130",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "10551",
+          "boatType": "CAPRICE",
+          "sailNumber": "15",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "32365",
+          "boatType": "ELAN 31 HUMPHREYS",
+          "sailNumber": "226",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "11314",
+          "boatType": "GIB SEA 76",
+          "sailNumber": "12",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "4512",
+          "boatType": "GRANADA 27",
+          "sailNumber": "151",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "10145",
+          "boatType": "HH 47",
+          "sailNumber": "4",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "11887",
+          "boatType": "IMPALA 33",
+          "sailNumber": "17",
+          "name": "Mammagaia"
+        },
+        {
+          "certificate": "1630",
+          "boatType": "MONSUN 31",
+          "sailNumber": "223",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "16517",
+          "boatType": "NORDISK FOLKEBÅD",
+          "sailNumber": "977",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "7566",
+          "boatType": "OMEGA 34",
+          "sailNumber": "317",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "37288",
+          "boatType": "SMARAGD",
+          "sailNumber": "186",
+          "name": "Gaia"
+        },
+        {
+          "certificate": "4996",
+          "boatType": "SVENDBORG SENIOR",
+          "sailNumber": "173",
+          "name": "Gaia"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "2294",
+          "boatType": "NAJAD 340"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.1,
+        "beamM": 3.47,
+        "source": "https://websejler.dk/da/baadtype/2294",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "2294",
+        "boatType": "NAJAD 340"
+      }
+    },
+    {
+      "trackId": "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+      "trackName": "Grand Delice",
+      "bowNumber": "3110",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "be83b615-6c75-41a3-9282-fa7ef6aaec71",
+        "SailNumber": "DEN 1",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Grand Delice",
+        "BoatType": "FIRST 36.7",
+        "BowNumber": "3110",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36100",
+          "boatType": "FIRST 36.7",
+          "sailNumber": "1",
+          "name": "Grand Delice"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.62,
+        "beamM": 3.45,
+        "source": "https://websejler.dk/da/certifikat/36100",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36100",
+        "boatType": "FIRST 36.7",
+        "sailNumber": "1",
+        "name": "Grand Delice"
+      }
+    },
+    {
+      "trackId": "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+      "trackName": "Guldfisken",
+      "bowNumber": "3109",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "2911e83e-9811-4ac5-bb53-635170876cce",
+        "SailNumber": "SWE 399",
+        "SailNumberCountry": "SWE",
+        "BoatName": "Guldfisken",
+        "BoatType": "FIRST 36.7",
+        "BowNumber": "3109",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37484",
+          "boatType": "FIRST 36.7",
+          "sailNumber": "399",
+          "name": "Guldfisken"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.64,
+        "beamM": 3.45,
+        "source": "https://websejler.dk/da/certifikat/37484",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37484",
+        "boatType": "FIRST 36.7",
+        "sailNumber": "399",
+        "name": "Guldfisken"
+      }
+    },
+    {
+      "trackId": "groensund:d0448170-4624-013f-2a18-04421a259aad",
+      "trackName": "HANSEN 3.5",
+      "bowNumber": "3324",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "3c968edf-730c-4dee-8cd1-f0210151f0da",
+        "SailNumber": "DEN 35551",
+        "SailNumberCountry": "DEN",
+        "BoatName": "HANSEN 3.5",
+        "BoatType": "ELLIOT 35 SS",
+        "BowNumber": "3324",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "35938",
+          "boatType": "ELLIOT 35 SS",
+          "sailNumber": "35551",
+          "name": "HANSEN 3.5"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.65,
+        "beamM": 3.53,
+        "source": "https://websejler.dk/da/certifikat/35938",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "35938",
+        "boatType": "ELLIOT 35 SS",
+        "sailNumber": "35551",
+        "name": "HANSEN 3.5"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+      "trackName": "Irma",
+      "bowNumber": "2823",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "1b3814aa-eaf9-45ed-87a5-6549f7398dec",
+        "SailNumber": "DEN 92",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Irma",
+        "BoatType": "Trio 92",
+        "BowNumber": "2823",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "17546",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "92",
+          "name": "Tove"
+        },
+        {
+          "certificate": "6418",
+          "boatType": "806",
+          "sailNumber": "92",
+          "name": "Immarqa"
+        },
+        {
+          "certificate": "11590",
+          "boatType": "ALBIN 78 CIRRUS",
+          "sailNumber": "92",
+          "name": "Amphitrite"
+        },
+        {
+          "certificate": "11325",
+          "boatType": "BANNER 30 MED MOTOR",
+          "sailNumber": "92",
+          "name": "Askepotten"
+        },
+        {
+          "certificate": "32524",
+          "boatType": "BAVARIA 30",
+          "sailNumber": "92",
+          "name": "Latene"
+        },
+        {
+          "certificate": "30582",
+          "boatType": "BAVARIA 37",
+          "sailNumber": "92",
+          "name": "Dolphin"
+        },
+        {
+          "certificate": "2565",
+          "boatType": "BLUE DANE 32",
+          "sailNumber": "92",
+          "name": "Aurora"
+        },
+        {
+          "certificate": "32836",
+          "boatType": "DELPHIA 40",
+          "sailNumber": "92",
+          "name": "La Diva"
+        },
+        {
+          "certificate": "11349",
+          "boatType": "DRABANT 22",
+          "sailNumber": "92",
+          "name": "Scharnhorst"
+        },
+        {
+          "certificate": "246",
+          "boatType": "DRABANT 24 UDEN MOTOR",
+          "sailNumber": "92",
+          "name": "Ellen"
+        },
+        {
+          "certificate": "10310",
+          "boatType": "DRABANT 27",
+          "sailNumber": "92",
+          "name": "Chica"
+        },
+        {
+          "certificate": "6629",
+          "boatType": "DRACO KRYDSER",
+          "sailNumber": "92",
+          "name": "Sommerwind"
+        },
+        {
+          "certificate": "33990",
+          "boatType": "EXPRESS",
+          "sailNumber": "92",
+          "name": ""
+        },
+        {
+          "certificate": "11554",
+          "boatType": "FAURBY 36",
+          "sailNumber": "92",
+          "name": "Cille"
+        },
+        {
+          "certificate": "4010",
+          "boatType": "GRANADA 27",
+          "sailNumber": "92",
+          "name": "Sessen"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "1971",
+          "boatType": "TRIO 92"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 9.2,
+        "beamM": 3.2,
+        "source": "https://websejler.dk/da/baadtype/1971",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "1971",
+        "boatType": "TRIO 92"
+      }
+    },
+    {
+      "trackId": "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+      "trackName": "Irmgard II",
+      "bowNumber": "3118",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "3ff4ba14-8c08-41bb-89b0-c969366bc3c4",
+        "SailNumber": "DEN 322",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Irmgard II",
+        "BoatType": "DEHLER 38",
+        "BowNumber": "3118",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36980",
+          "boatType": "DEHLER 38 (2014)",
+          "sailNumber": "322",
+          "name": "Irmgard II"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.28,
+        "beamM": 3.76,
+        "source": "https://websejler.dk/da/certifikat/36980",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36980",
+        "boatType": "DEHLER 38 (2014)",
+        "sailNumber": "322",
+        "name": "Irmgard II"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+      "trackName": "Joujou 2",
+      "bowNumber": "2595",
+      "entry": {
+        "RegattaId": "5b3407a2-3895-4fc1-a05e-e0522d898f98",
+        "EntryId": "bf8b87e6-cb68-49bc-bf4f-51d6386e7abf",
+        "SailNumber": "DEN 35",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Joujou 2",
+        "BoatType": "Luffe 37",
+        "BowNumber": "2595",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=5b3407a2-3895-4fc1-a05e-e0522d898f98"
+      },
+      "candidates": [
+        {
+          "certificate": "3984",
+          "boatType": "LUFFE 37",
+          "sailNumber": "35",
+          "name": "Joujou 2"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.16,
+        "beamM": 2.73,
+        "source": "https://websejler.dk/da/certifikat/3984",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "3984",
+        "boatType": "LUFFE 37",
+        "sailNumber": "35",
+        "name": "Joujou 2"
+      }
+    },
+    {
+      "trackId": "groensund:d0275120-4624-013f-29fd-04421a259aad",
+      "trackName": "Joy",
+      "bowNumber": "3316",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "9c799039-0a1d-464f-96d2-52fa822702a2",
+        "SailNumber": "DEN 1",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Joy",
+        "BoatType": "J 112",
+        "BowNumber": "3316",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "30034",
+          "boatType": "COLIN ARCHER",
+          "sailNumber": "1",
+          "name": "Joyce"
+        },
+        {
+          "certificate": "8274",
+          "boatType": "HAVKRYDSER",
+          "sailNumber": "1",
+          "name": "Joy"
+        },
+        {
+          "certificate": "35884",
+          "boatType": "J 112",
+          "sailNumber": "1",
+          "name": "Joy"
+        },
+        {
+          "certificate": "9140",
+          "boatType": "JASMINE 25",
+          "sailNumber": "1",
+          "name": "Joy"
+        },
+        {
+          "certificate": "5320",
+          "boatType": "SPIDSGATTER",
+          "sailNumber": "1",
+          "name": "Joy"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.97,
+        "beamM": 3.58,
+        "source": "https://websejler.dk/da/certifikat/35884",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "35884",
+        "boatType": "J 112",
+        "sailNumber": "1",
+        "name": "Joy"
+      }
+    },
+    {
+      "trackId": "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+      "trackName": "Julianehåb",
+      "bowNumber": "2824",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "7bd163df-871c-4c7d-991f-875f11d3c3de",
+        "SailNumber": "DEN 107",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Julianehåb",
+        "BoatType": "Bianca 107",
+        "BowNumber": "2824",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "17710",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "107",
+          "name": "Uni"
+        },
+        {
+          "certificate": "15028",
+          "boatType": "470",
+          "sailNumber": "107",
+          "name": ""
+        },
+        {
+          "certificate": "32898",
+          "boatType": "806",
+          "sailNumber": "107",
+          "name": "Chase"
+        },
+        {
+          "certificate": "9990",
+          "boatType": "BANDHOLM 27",
+          "sailNumber": "107",
+          "name": "Viti"
+        },
+        {
+          "certificate": "5680",
+          "boatType": "BANDHOLM 28",
+          "sailNumber": "107",
+          "name": "Nuggi"
+        },
+        {
+          "certificate": "32889",
+          "boatType": "BAVARIA 30 MK II",
+          "sailNumber": "107",
+          "name": "Soffy"
+        },
+        {
+          "certificate": "8786",
+          "boatType": "BIANCA 107",
+          "sailNumber": "107",
+          "name": "Vitamin 107"
+        },
+        {
+          "certificate": "11367",
+          "boatType": "BIANCA 107",
+          "sailNumber": "107",
+          "name": "Katrine II"
+        },
+        {
+          "certificate": "11083",
+          "boatType": "BIANCA 107",
+          "sailNumber": "107",
+          "name": "Malou"
+        },
+        {
+          "certificate": "5100",
+          "boatType": "BLUE DANE 32",
+          "sailNumber": "107",
+          "name": "Djog II"
+        },
+        {
+          "certificate": "34866",
+          "boatType": "CB66 RACER",
+          "sailNumber": "107",
+          "name": "Donatella"
+        },
+        {
+          "certificate": "1210",
+          "boatType": "FIRST 22",
+          "sailNumber": "107",
+          "name": "Aqua II"
+        },
+        {
+          "certificate": "11387",
+          "boatType": "GRANADA 27",
+          "sailNumber": "107",
+          "name": "Skidt Mads"
+        },
+        {
+          "certificate": "17439",
+          "boatType": "H-BÅD",
+          "sailNumber": "107",
+          "name": "Sahra"
+        },
+        {
+          "certificate": "32072",
+          "boatType": "HANSE 400",
+          "sailNumber": "107",
+          "name": "Fionia"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "161",
+          "boatType": "BIANCA 107"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.69,
+        "beamM": 3.16,
+        "source": "https://websejler.dk/da/baadtype/161",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "161",
+        "boatType": "BIANCA 107"
+      }
+    },
+    {
+      "trackId": "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+      "trackName": "Lacee Bee",
+      "bowNumber": "2825",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "972abbf7-8565-48fa-8adf-ef852b7a328f",
+        "SailNumber": "SWE 12430",
+        "SailNumberCountry": "SWE",
+        "BoatName": "Lacee Bee",
+        "BoatType": "Hanse 430",
+        "BowNumber": "2825",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10423",
+          "boatType": "HANSE 430"
+        },
+        {
+          "typeId": "10477",
+          "boatType": "HANSE 430 E"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 13.15,
+        "beamM": 4.18,
+        "source": "https://websejler.dk/da/baadtype/10423",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10423",
+        "boatType": "HANSE 430"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+      "trackName": "Laguna",
+      "bowNumber": "2602",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "e0231f2e-07cb-4a1b-98e8-2bd9ec72672b",
+        "SailNumber": "DEN 61",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Laguna",
+        "BoatType": "Mamba 29",
+        "BowNumber": "2602",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "31936",
+          "boatType": "MAMBA 29",
+          "sailNumber": "61",
+          "name": "Laguna"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 8.9,
+        "beamM": 2.93,
+        "source": "https://websejler.dk/da/certifikat/31936",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "31936",
+        "boatType": "MAMBA 29",
+        "sailNumber": "61",
+        "name": "Laguna"
+      }
+    },
+    {
+      "trackId": "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+      "trackName": "Laolao",
+      "bowNumber": "3122",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "3a2b0b78-3e60-4917-8107-6a3e73754656",
+        "SailNumber": "DEN 3601",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Laolao",
+        "BoatType": "JEANNEAU SUN FAST 3600",
+        "BowNumber": "3122",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36240",
+          "boatType": "JEANNEAU SUN FAST 3600",
+          "sailNumber": "3601",
+          "name": "Laolao"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.8,
+        "beamM": 3.56,
+        "source": "https://websejler.dk/da/certifikat/36240",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36240",
+        "boatType": "JEANNEAU SUN FAST 3600",
+        "sailNumber": "3601",
+        "name": "Laolao"
+      }
+    },
+    {
+      "trackId": "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+      "trackName": "Little Wing",
+      "bowNumber": "2826",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "3157094d-7935-4395-ae31-0ea0380aca5b",
+        "SailNumber": "DEN 121",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Little Wing",
+        "BoatType": "Dufour 40",
+        "BowNumber": "2826",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "17945",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "121",
+          "name": ""
+        },
+        {
+          "certificate": "14324",
+          "boatType": "470",
+          "sailNumber": "121",
+          "name": ""
+        },
+        {
+          "certificate": "2071",
+          "boatType": "806",
+          "sailNumber": "121",
+          "name": "Rita"
+        },
+        {
+          "certificate": "8643",
+          "boatType": "ALBIN ALPHA",
+          "sailNumber": "121",
+          "name": "Sofie"
+        },
+        {
+          "certificate": "36066",
+          "boatType": "ARCONA 400",
+          "sailNumber": "121",
+          "name": "PING"
+        },
+        {
+          "certificate": "9478",
+          "boatType": "BB 10 METER",
+          "sailNumber": "121",
+          "name": "Flicka"
+        },
+        {
+          "certificate": "11223",
+          "boatType": "BLUE LETH 32",
+          "sailNumber": "121",
+          "name": "Lady Daisy"
+        },
+        {
+          "certificate": "249",
+          "boatType": "DRABANT 24 UDEN MOTOR",
+          "sailNumber": "121",
+          "name": "Ariel"
+        },
+        {
+          "certificate": "32959",
+          "boatType": "DUFOUR 40",
+          "sailNumber": "121",
+          "name": "Siam"
+        },
+        {
+          "certificate": "9627",
+          "boatType": "ELVSTRØM 32",
+          "sailNumber": "121",
+          "name": "Kama"
+        },
+        {
+          "certificate": "31094",
+          "boatType": "ELVSTRØM CORONET 38",
+          "sailNumber": "121",
+          "name": "Tangrasmus"
+        },
+        {
+          "certificate": "37909",
+          "boatType": "FIRST 300",
+          "sailNumber": "121",
+          "name": "Spirit of Blazer"
+        },
+        {
+          "certificate": "2919",
+          "boatType": "GRANADA 27",
+          "sailNumber": "121",
+          "name": "Futte"
+        },
+        {
+          "certificate": "1239",
+          "boatType": "GRANADA 31",
+          "sailNumber": "121",
+          "name": "Jumle"
+        },
+        {
+          "certificate": "2006",
+          "boatType": "GRINDE",
+          "sailNumber": "121",
+          "name": "Grampus"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10254",
+          "boatType": "DUFOUR 40"
+        },
+        {
+          "typeId": "10701",
+          "boatType": "DUFOUR 405 GRAND LARGE"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 11.99,
+        "beamM": 3.91,
+        "source": "https://websejler.dk/da/baadtype/10254",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10254",
+        "boatType": "DUFOUR 40"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+      "trackName": "Luna",
+      "bowNumber": "2604",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "e317420f-9e99-44cb-9c80-e722ae4cfc9d",
+        "SailNumber": "D 26",
+        "SailNumberCountry": "D",
+        "BoatName": "Luna",
+        "BoatType": "Solus 29",
+        "BowNumber": "2604",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "2407",
+          "boatType": "1006",
+          "sailNumber": "26",
+          "name": "Krabask III"
+        },
+        {
+          "certificate": "33902",
+          "boatType": "5.5 METRE",
+          "sailNumber": "26",
+          "name": "Willy Lehmann"
+        },
+        {
+          "certificate": "10172",
+          "boatType": "ACCENT 26",
+          "sailNumber": "26",
+          "name": "Mjølner"
+        },
+        {
+          "certificate": "4386",
+          "boatType": "BANDHOLM 20",
+          "sailNumber": "26",
+          "name": "Trunte"
+        },
+        {
+          "certificate": "5935",
+          "boatType": "BANNER 33 FAMILY",
+          "sailNumber": "26",
+          "name": "Hera"
+        },
+        {
+          "certificate": "5206",
+          "boatType": "BANNER 33 RACER",
+          "sailNumber": "26",
+          "name": "Moster"
+        },
+        {
+          "certificate": "35353",
+          "boatType": "BANNER 34",
+          "sailNumber": "26",
+          "name": "The Stig"
+        },
+        {
+          "certificate": "7230",
+          "boatType": "BB 10 METER",
+          "sailNumber": "26",
+          "name": "BB KING"
+        },
+        {
+          "certificate": "11424",
+          "boatType": "BIANCA 107",
+          "sailNumber": "26",
+          "name": "Josephine"
+        },
+        {
+          "certificate": "4216",
+          "boatType": "CAPRICE",
+          "sailNumber": "26",
+          "name": "Caprisen"
+        },
+        {
+          "certificate": "5428",
+          "boatType": "CONCORDE 38",
+          "sailNumber": "26",
+          "name": "Palnatoke"
+        },
+        {
+          "certificate": "3588",
+          "boatType": "DIVA 39",
+          "sailNumber": "26",
+          "name": "Miss Matthies"
+        },
+        {
+          "certificate": "6291",
+          "boatType": "DRABANT 22",
+          "sailNumber": "26",
+          "name": "Malou"
+        },
+        {
+          "certificate": "254",
+          "boatType": "DRABANT 24 UDEN MOTOR",
+          "sailNumber": "26",
+          "name": "Snuden"
+        },
+        {
+          "certificate": "967",
+          "boatType": "DRABANT 33",
+          "sailNumber": "26",
+          "name": "Liv"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "190",
+          "boatType": "SOLUS 29"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 8.72,
+        "beamM": 2.92,
+        "source": "https://websejler.dk/da/baadtype/190",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "190",
+        "boatType": "SOLUS 29"
+      }
+    },
+    {
+      "trackId": "groensund:cf123d90-4624-013f-2913-04421a259aad",
+      "trackName": "Margrethe",
+      "bowNumber": "2827",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "71efea4e-a5f6-49be-abd2-67e9bf0805d8",
+        "SailNumber": "XXX xxx",
+        "SailNumberCountry": "XXX",
+        "BoatName": "Margrethe",
+        "BoatType": "Jeanneau sun magic",
+        "BowNumber": "2827",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "603",
+          "boatType": "B 31",
+          "sailNumber": "556",
+          "name": "Margrethe III"
+        },
+        {
+          "certificate": "32561",
+          "boatType": "BAVARIA 33",
+          "sailNumber": "1",
+          "name": "Margrethe"
+        },
+        {
+          "certificate": "33918",
+          "boatType": "BAVARIA 36 CRUISER 06-",
+          "sailNumber": "1",
+          "name": "Margrethe 2"
+        },
+        {
+          "certificate": "3799",
+          "boatType": "BIANCA 28",
+          "sailNumber": "135",
+          "name": "Gurli Margrethe"
+        },
+        {
+          "certificate": "31624",
+          "boatType": "CARIBBEAN 40",
+          "sailNumber": "40",
+          "name": "Else Margrethe"
+        },
+        {
+          "certificate": "8449",
+          "boatType": "HUNTER 19",
+          "sailNumber": "392",
+          "name": "Margrethe"
+        },
+        {
+          "certificate": "16115",
+          "boatType": "NORDISK FOLKEBÅD",
+          "sailNumber": "450",
+          "name": "Margrethe"
+        },
+        {
+          "certificate": "575",
+          "boatType": "SCAN-KAP 99",
+          "sailNumber": "31",
+          "name": "Margrethe"
+        },
+        {
+          "certificate": "5070",
+          "boatType": "SPÆKHUGGER",
+          "sailNumber": "86",
+          "name": "Margrethe"
+        }
+      ],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 13.34,
+        "beamM": 4.24,
+        "source": "https://sailboatdata.com/sailboat/sun-magic-44-jeanneau/",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "estimated": true,
+        "note": "Manage2Sail omits 44 from the Sun Magic model name. Treat as a reviewed model estimate."
+      }
+    },
+    {
+      "trackId": "groensund:cf186800-4624-013f-2916-04421a259aad",
+      "trackName": "Mary",
+      "bowNumber": "2828",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "059f0d33-6960-4c67-a873-26c0cd8e6fb6",
+        "SailNumber": "44 DEN",
+        "SailNumberCountry": "44",
+        "BoatName": "Mary",
+        "BoatType": "Hallberg-Rassy 37",
+        "BowNumber": "2828",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "5673",
+          "boatType": "1006",
+          "sailNumber": "44",
+          "name": "Fortune"
+        },
+        {
+          "certificate": "17355",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "44",
+          "name": "Jackpot"
+        },
+        {
+          "certificate": "32620",
+          "boatType": "717",
+          "sailNumber": "44",
+          "name": "Fast Forward"
+        },
+        {
+          "certificate": "11199",
+          "boatType": "8 METER OD",
+          "sailNumber": "44",
+          "name": "Fitnees"
+        },
+        {
+          "certificate": "4724",
+          "boatType": "ALBIN NOVA",
+          "sailNumber": "44",
+          "name": "Carisma"
+        },
+        {
+          "certificate": "32939",
+          "boatType": "ARCONA 370",
+          "sailNumber": "44",
+          "name": "Anfiloki"
+        },
+        {
+          "certificate": "1031",
+          "boatType": "BANDHOLM 27",
+          "sailNumber": "44",
+          "name": "Birdie"
+        },
+        {
+          "certificate": "35797",
+          "boatType": "BAVARIA 44",
+          "sailNumber": "44",
+          "name": "Shangri-La"
+        },
+        {
+          "certificate": "708",
+          "boatType": "BB 10 METER",
+          "sailNumber": "44",
+          "name": "Jo"
+        },
+        {
+          "certificate": "10986",
+          "boatType": "BIANCA 107",
+          "sailNumber": "44",
+          "name": "Blue Madonna"
+        },
+        {
+          "certificate": "9879",
+          "boatType": "BIANCA 111",
+          "sailNumber": "44",
+          "name": "Rasja"
+        },
+        {
+          "certificate": "10134",
+          "boatType": "BIANCA 28",
+          "sailNumber": "44",
+          "name": "Cohiba"
+        },
+        {
+          "certificate": "13",
+          "boatType": "BOHEME MINI 630",
+          "sailNumber": "44",
+          "name": "Mimi"
+        },
+        {
+          "certificate": "9757",
+          "boatType": "BRØKER 44",
+          "sailNumber": "44",
+          "name": "Sara-Maja"
+        },
+        {
+          "certificate": "33711",
+          "boatType": "CB66 RACER",
+          "sailNumber": "44",
+          "name": ""
+        }
+      ],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 11.32,
+        "beamM": 3.55,
+        "source": "https://sailboatdata.com/sailboat/hallberg-rassy-37/",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "estimated": true
+      }
+    },
+    {
+      "trackId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+      "trackName": "Mercutio",
+      "bowNumber": "3080",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "f8003b00-1959-4366-85c6-71e76a6dcea2",
+        "SailNumber": "DEN 162",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Mercutio",
+        "BoatType": "Seascape 27",
+        "BowNumber": "3080",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "33011",
+          "boatType": "470",
+          "sailNumber": "162",
+          "name": ""
+        },
+        {
+          "certificate": "10973",
+          "boatType": "ALBIN ALPHA",
+          "sailNumber": "162",
+          "name": "Spar Dame"
+        },
+        {
+          "certificate": "33607",
+          "boatType": "CB66 RACER",
+          "sailNumber": "162",
+          "name": "Lille Clara"
+        },
+        {
+          "certificate": "7205",
+          "boatType": "DEHLER 34/343",
+          "sailNumber": "162",
+          "name": "Mouse"
+        },
+        {
+          "certificate": "31229",
+          "boatType": "DRABANT 24 UDEN MOTOR",
+          "sailNumber": "162",
+          "name": ""
+        },
+        {
+          "certificate": "32489",
+          "boatType": "DRAGE",
+          "sailNumber": "162",
+          "name": "Maj-Britt"
+        },
+        {
+          "certificate": "36060",
+          "boatType": "ESSE 850",
+          "sailNumber": "162",
+          "name": "Lusian"
+        },
+        {
+          "certificate": "35847",
+          "boatType": "FIRST 40",
+          "sailNumber": "162",
+          "name": "Milla"
+        },
+        {
+          "certificate": "17792",
+          "boatType": "H-BÅD",
+          "sailNumber": "162",
+          "name": "Bente"
+        },
+        {
+          "certificate": "3163",
+          "boatType": "L23",
+          "sailNumber": "162",
+          "name": "Saksen"
+        },
+        {
+          "certificate": "2295",
+          "boatType": "LA-KRYDSER",
+          "sailNumber": "162",
+          "name": "Pegasus"
+        },
+        {
+          "certificate": "4629",
+          "boatType": "NAVER 29",
+          "sailNumber": "162",
+          "name": "Tanja"
+        },
+        {
+          "certificate": "1392",
+          "boatType": "OMEGA 34",
+          "sailNumber": "162",
+          "name": "Fluks"
+        },
+        {
+          "certificate": "721",
+          "boatType": "POLARIS DRABANT UDEN MOTOR",
+          "sailNumber": "162",
+          "name": "Malou"
+        },
+        {
+          "certificate": "11179",
+          "boatType": "SAFIR",
+          "sailNumber": "162",
+          "name": "Columbine"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10637",
+          "boatType": "SEASCAPE 27"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 7.99,
+        "beamM": 2.54,
+        "source": "https://websejler.dk/da/baadtype/10637",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10637",
+        "boatType": "SEASCAPE 27"
+      }
+    },
+    {
+      "trackId": "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+      "trackName": "Mette",
+      "bowNumber": "2829",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "2646c9c1-151e-459b-8c5f-2985d8ce841d",
+        "SailNumber": "SWE 307",
+        "SailNumberCountry": "SWE",
+        "BoatName": "Mette",
+        "BoatType": "Hanse 400e",
+        "BowNumber": "2829",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [
+        {
+          "typeId": "10317",
+          "boatType": "HANSE 400"
+        }
+      ],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 11.99,
+        "beamM": 4.04,
+        "source": "https://sailboatdata.com/sailboat/hanse-400-2006-2007/",
+        "measurementFields": [
+          "LOD",
+          "Beam"
+        ],
+        "estimated": true,
+        "loaM": 12.1,
+        "note": "The page identifies the epoxy option and a 400e owner; both 400 generations list the same hull dimensions."
+      }
+    },
+    {
+      "trackId": "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+      "trackName": "Miss-X",
+      "bowNumber": "3103",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "ef526080-5258-4f13-943d-1ddff6821386",
+        "SailNumber": "DEN 362",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Miss-X",
+        "BoatType": "X-332",
+        "BowNumber": "3103",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "35567",
+          "boatType": "X-332",
+          "sailNumber": "362",
+          "name": "Miss-X"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.05,
+        "beamM": 3.29,
+        "source": "https://websejler.dk/da/certifikat/35567",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "35567",
+        "boatType": "X-332",
+        "sailNumber": "362",
+        "name": "Miss-X"
+      }
+    },
+    {
+      "trackId": "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+      "trackName": "MorGrethe",
+      "bowNumber": "3107",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "1b9b024d-aa83-4670-89a9-1f60e8512169",
+        "SailNumber": "DEN 60",
+        "SailNumberCountry": "DEN",
+        "BoatName": "MorGrethe",
+        "BoatType": "OMEGA 42",
+        "BowNumber": "3107",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "9534",
+          "boatType": "OMEGA 42",
+          "sailNumber": "60",
+          "name": "MorGrethe"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.88,
+        "beamM": 3.1,
+        "source": "https://websejler.dk/da/certifikat/9534",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "9534",
+        "boatType": "OMEGA 42",
+        "sailNumber": "60",
+        "name": "MorGrethe"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+      "trackName": "Moster",
+      "bowNumber": "3088",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "0c45b68c-e6ea-4884-92d4-9b6e1b7c78b8",
+        "SailNumber": "DEN 705",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Moster",
+        "BoatType": "EXPRESS",
+        "BowNumber": "3088",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "31195",
+          "boatType": "EXPRESS",
+          "sailNumber": "705",
+          "name": "Moster"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 7.78,
+        "beamM": 2.5,
+        "source": "https://websejler.dk/da/certifikat/31195",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "31195",
+        "boatType": "EXPRESS",
+        "sailNumber": "705",
+        "name": "Moster"
+      }
+    },
+    {
+      "trackId": "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+      "trackName": "munje",
+      "bowNumber": "2830",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "7372cf9b-8076-4ce3-a45b-c50fcbc24764",
+        "SailNumber": "DK 44",
+        "SailNumberCountry": "DK",
+        "BoatName": "munje",
+        "BoatType": "Dufour 44",
+        "BowNumber": "2830",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "32924",
+          "boatType": "DUFOUR 44",
+          "sailNumber": "44",
+          "name": "munje"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 13.35,
+        "beamM": 4.25,
+        "source": "https://websejler.dk/da/certifikat/32924",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "32924",
+        "boatType": "DUFOUR 44",
+        "sailNumber": "44",
+        "name": "munje"
+      }
+    },
+    {
+      "trackId": "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+      "trackName": "My",
+      "bowNumber": "3082",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "614a4347-7e49-4024-b7aa-744f1a669aa8",
+        "SailNumber": "SWE 27",
+        "SailNumberCountry": "SWE",
+        "BoatName": "My",
+        "BoatType": "Seascape 27",
+        "BowNumber": "3082",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "37019",
+          "boatType": "SEASCAPE 27",
+          "sailNumber": "27",
+          "name": "My"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 7.99,
+        "beamM": 2.54,
+        "source": "https://websejler.dk/da/certifikat/37019",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37019",
+        "boatType": "SEASCAPE 27",
+        "sailNumber": "27",
+        "name": "My"
+      }
+    },
+    {
+      "trackId": "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+      "trackName": "Neptun",
+      "bowNumber": "2831",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "ede9e54d-4a2a-46c8-9b8b-ff7fc2efa7ac",
+        "SailNumber": "DEN 452",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Neptun",
+        "BoatType": "J105",
+        "BowNumber": "2831",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "888",
+          "boatType": "ALBIN 78 CIRRUS",
+          "sailNumber": "452",
+          "name": "Cassiopeia"
+        },
+        {
+          "certificate": "30026",
+          "boatType": "COMFORTINA 32",
+          "sailNumber": "452",
+          "name": "Comfy"
+        },
+        {
+          "certificate": "30716",
+          "boatType": "DEHLER 34/343",
+          "sailNumber": "452",
+          "name": "Mellon"
+        },
+        {
+          "certificate": "5410",
+          "boatType": "FIRST 27",
+          "sailNumber": "452",
+          "name": "Filia"
+        },
+        {
+          "certificate": "829",
+          "boatType": "GRINDE",
+          "sailNumber": "452",
+          "name": "Verzollnix"
+        },
+        {
+          "certificate": "35121",
+          "boatType": "J105",
+          "sailNumber": "452",
+          "name": "Cartan"
+        },
+        {
+          "certificate": "6971",
+          "boatType": "RASMUS 35",
+          "sailNumber": "452",
+          "name": "Anett H"
+        },
+        {
+          "certificate": "6841",
+          "boatType": "SPÆKHUGGER",
+          "sailNumber": "452",
+          "name": "Movie II"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10255",
+          "boatType": "J105"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.57,
+        "beamM": 3.34,
+        "source": "https://websejler.dk/da/baadtype/10255",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10255",
+        "boatType": "J105"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+      "trackName": "NINI",
+      "bowNumber": "3097",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "1197f1ca-2ce9-4dbf-8a04-c6cd3518434a",
+        "SailNumber": "DEN 21",
+        "SailNumberCountry": "DEN",
+        "BoatName": "NINI",
+        "BoatType": "DRABANT 38",
+        "BowNumber": "3097",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37831",
+          "boatType": "DRABANT 38",
+          "sailNumber": "21",
+          "name": "NINI"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.5,
+        "beamM": 3.03,
+        "source": "https://websejler.dk/da/certifikat/37831",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37831",
+        "boatType": "DRABANT 38",
+        "sailNumber": "21",
+        "name": "NINI"
+      }
+    },
+    {
+      "trackId": "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+      "trackName": "NJOY",
+      "bowNumber": "2832",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "5184aa5d-f6c5-48bf-8977-7c5badda1a54",
+        "SailNumber": "BV 34",
+        "SailNumberCountry": "BV",
+        "BoatName": "NJOY",
+        "BoatType": "Bavaria 34",
+        "BowNumber": "2832",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "1507",
+          "boatType": "1006",
+          "sailNumber": "34",
+          "name": "Galadriel"
+        },
+        {
+          "certificate": "3995",
+          "boatType": "ALO 28",
+          "sailNumber": "34",
+          "name": "Jolly"
+        },
+        {
+          "certificate": "3351",
+          "boatType": "AVANCE 36",
+          "sailNumber": "34",
+          "name": "A Conto"
+        },
+        {
+          "certificate": "9275",
+          "boatType": "BANNER 26 MK I",
+          "sailNumber": "34",
+          "name": "Release"
+        },
+        {
+          "certificate": "6556",
+          "boatType": "BANNER 28 RACER",
+          "sailNumber": "34",
+          "name": "Flying Banner"
+        },
+        {
+          "certificate": "2790",
+          "boatType": "BANNER 30 UDEN MOTOR",
+          "sailNumber": "34",
+          "name": "Xargo"
+        },
+        {
+          "certificate": "8997",
+          "boatType": "BANNER 34",
+          "sailNumber": "34",
+          "name": "Mary-Ann"
+        },
+        {
+          "certificate": "717",
+          "boatType": "BB 10 METER",
+          "sailNumber": "34",
+          "name": "Blaatand"
+        },
+        {
+          "certificate": "5659",
+          "boatType": "BELINDA 22",
+          "sailNumber": "34",
+          "name": "Pate Deux"
+        },
+        {
+          "certificate": "8923",
+          "boatType": "BIANCA 107",
+          "sailNumber": "34",
+          "name": "Trud"
+        },
+        {
+          "certificate": "32544",
+          "boatType": "BIANCA 320",
+          "sailNumber": "34",
+          "name": "MHoney"
+        },
+        {
+          "certificate": "6132",
+          "boatType": "BIANCA LIDO",
+          "sailNumber": "34",
+          "name": "Cruise Mønte"
+        },
+        {
+          "certificate": "32203",
+          "boatType": "CB66 RACER",
+          "sailNumber": "34",
+          "name": "Grøn"
+        },
+        {
+          "certificate": "9144",
+          "boatType": "COMFORT 32",
+          "sailNumber": "34",
+          "name": "Krabbe"
+        },
+        {
+          "certificate": "10370",
+          "boatType": "CONCORDE 38",
+          "sailNumber": "34",
+          "name": "Nifle"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "2406",
+          "boatType": "BAVARIA 34"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.36,
+        "beamM": 3.5,
+        "source": "https://websejler.dk/da/baadtype/2406",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "2406",
+        "boatType": "BAVARIA 34"
+      }
+    },
+    {
+      "trackId": "groensund:cf40a610-4624-013f-2929-04421a259aad",
+      "trackName": "Nordstjernen",
+      "bowNumber": "2833",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "ab1a67bc-183d-4a28-aeba-869a36b6fc1f",
+        "SailNumber": "DEN 20",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Nordstjernen",
+        "BoatType": "FAURBY 36",
+        "BowNumber": "2833",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "6708",
+          "boatType": "FAURBY 36",
+          "sailNumber": "20",
+          "name": "Nordstjernen"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.1,
+        "beamM": 3.0,
+        "source": "https://websejler.dk/da/certifikat/6708",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "6708",
+        "boatType": "FAURBY 36",
+        "sailNumber": "20",
+        "name": "Nordstjernen"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+      "trackName": "Norma",
+      "bowNumber": "2607",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "c5e374d5-8b52-42ca-8265-6da99a629f7b",
+        "SailNumber": "DEN 62",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Norma",
+        "BoatType": "Hunter 33",
+        "BowNumber": "2607",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "17386",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "62",
+          "name": "Grøn"
+        },
+        {
+          "certificate": "11364",
+          "boatType": "6 METRE R",
+          "sailNumber": "62",
+          "name": "Junie"
+        },
+        {
+          "certificate": "2184",
+          "boatType": "ALBIN 79",
+          "sailNumber": "62",
+          "name": "Nathalie"
+        },
+        {
+          "certificate": "1899",
+          "boatType": "ALBIN 85 CUMULUS",
+          "sailNumber": "62",
+          "name": "Akka"
+        },
+        {
+          "certificate": "9529",
+          "boatType": "APHRODITE 29/291",
+          "sailNumber": "62",
+          "name": "Aprodite"
+        },
+        {
+          "certificate": "2792",
+          "boatType": "BANNER 30 UDEN MOTOR",
+          "sailNumber": "62",
+          "name": "Sally"
+        },
+        {
+          "certificate": "1049",
+          "boatType": "BANNER 33 FAMILY",
+          "sailNumber": "62",
+          "name": "Putte"
+        },
+        {
+          "certificate": "31932",
+          "boatType": "BAVARIA 34",
+          "sailNumber": "62",
+          "name": "Wet Vet"
+        },
+        {
+          "certificate": "651",
+          "boatType": "BB 10 METER",
+          "sailNumber": "62",
+          "name": "Dream"
+        },
+        {
+          "certificate": "56",
+          "boatType": "BIANCA 28",
+          "sailNumber": "62",
+          "name": "Luna"
+        },
+        {
+          "certificate": "32509",
+          "boatType": "CAYENNE",
+          "sailNumber": "62",
+          "name": "STREITFAU"
+        },
+        {
+          "certificate": "34846",
+          "boatType": "CB66 RACER",
+          "sailNumber": "62",
+          "name": "My Home"
+        },
+        {
+          "certificate": "3024",
+          "boatType": "COMMANDER 31",
+          "sailNumber": "62",
+          "name": "Bas-Ytto"
+        },
+        {
+          "certificate": "9998",
+          "boatType": "DIVA 39",
+          "sailNumber": "62",
+          "name": "Amfitrite"
+        },
+        {
+          "certificate": "4493",
+          "boatType": "DRABANT 22",
+          "sailNumber": "62",
+          "name": "Brivi"
+        }
+      ],
+      "status": "not-matched",
+      "typeCandidates": []
+    },
+    {
+      "trackId": "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+      "trackName": "Pandora",
+      "bowNumber": "2834",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "9ba6c03e-76a0-4ac0-81c0-4df7c7369a9a",
+        "SailNumber": "DEN 269",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Pandora",
+        "BoatType": "Bavaria 42C",
+        "BowNumber": "2834",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "36099",
+          "boatType": "BAVARIA 42",
+          "sailNumber": "269",
+          "name": "Pandora"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.85,
+        "beamM": 3.98,
+        "source": "https://websejler.dk/da/certifikat/36099",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36099",
+        "boatType": "BAVARIA 42",
+        "sailNumber": "269",
+        "name": "Pandora"
+      }
+    },
+    {
+      "trackId": "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+      "trackName": "Petrix",
+      "bowNumber": "2835",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "95ea300f-504b-409a-9356-b049629c7191",
+        "SailNumber": "DEN 385",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Petrix",
+        "BoatType": "Hanse 385",
+        "BowNumber": "2835",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "17706",
+          "boatType": "606",
+          "sailNumber": "385",
+          "name": "Skum III"
+        },
+        {
+          "certificate": "8783",
+          "boatType": "806",
+          "sailNumber": "385",
+          "name": "Tumle"
+        },
+        {
+          "certificate": "3568",
+          "boatType": "BEASON 31",
+          "sailNumber": "385",
+          "name": "Annegitte"
+        },
+        {
+          "certificate": "6465",
+          "boatType": "COMFORTINA 32",
+          "sailNumber": "385",
+          "name": "Dipso"
+        },
+        {
+          "certificate": "32280",
+          "boatType": "DRAGE",
+          "sailNumber": "385",
+          "name": ""
+        },
+        {
+          "certificate": "16219",
+          "boatType": "H-BÅD",
+          "sailNumber": "385",
+          "name": "sneHvide"
+        },
+        {
+          "certificate": "11677",
+          "boatType": "MAXI 999",
+          "sailNumber": "385",
+          "name": "Afrodite"
+        },
+        {
+          "certificate": "32632",
+          "boatType": "X-332 S",
+          "sailNumber": "385",
+          "name": "Cartan"
+        },
+        {
+          "certificate": "8570",
+          "boatType": "X-79",
+          "sailNumber": "385",
+          "name": "Expres Paye"
+        },
+        {
+          "certificate": "10925",
+          "boatType": "X-99",
+          "sailNumber": "385",
+          "name": "X-Stream"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10629",
+          "boatType": "HANSE 385"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.99,
+        "beamM": 3.92,
+        "source": "https://websejler.dk/da/baadtype/10629",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10629",
+        "boatType": "HANSE 385"
+      }
+    },
+    {
+      "trackId": "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+      "trackName": "PING",
+      "bowNumber": "3312",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "8d98e0c0-def5-489c-b53a-7c3260ddc409",
+        "SailNumber": "DEN 121",
+        "SailNumberCountry": "DEN",
+        "BoatName": "PING",
+        "BoatType": "ARCONA 400",
+        "BowNumber": "3312",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36066",
+          "boatType": "ARCONA 400",
+          "sailNumber": "121",
+          "name": "PING"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.98,
+        "beamM": 3.82,
+        "source": "https://websejler.dk/da/certifikat/36066",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36066",
+        "boatType": "ARCONA 400",
+        "sailNumber": "121",
+        "name": "PING"
+      }
+    },
+    {
+      "trackId": "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+      "trackName": "Pixie",
+      "bowNumber": "3314",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "063a30e6-e0f1-4983-b292-fbbad4f26862",
+        "SailNumber": "DEN 76",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Pixie",
+        "BoatType": "XP 38",
+        "BowNumber": "3314",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "35621",
+          "boatType": "XP 38",
+          "sailNumber": "76",
+          "name": "Pixie"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.6,
+        "beamM": 3.7,
+        "source": "https://websejler.dk/da/certifikat/35621",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "35621",
+        "boatType": "XP 38",
+        "sailNumber": "76",
+        "name": "Pixie"
+      }
+    },
+    {
+      "trackId": "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+      "trackName": "Popeye",
+      "bowNumber": "2836",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "a479f88c-1ff7-4429-a19a-0119e162a3e8",
+        "SailNumber": "HR 37",
+        "SailNumberCountry": "HR",
+        "BoatName": "Popeye",
+        "BoatType": "Hallberg Rassy 37",
+        "BowNumber": "2836",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "226",
+          "boatType": "806",
+          "sailNumber": "37",
+          "name": "Natascha"
+        },
+        {
+          "certificate": "2190",
+          "boatType": "BANDHOLM 27",
+          "sailNumber": "37",
+          "name": "Peledo"
+        },
+        {
+          "certificate": "11069",
+          "boatType": "BANNER 23 RACER",
+          "sailNumber": "37",
+          "name": "Green Leader"
+        },
+        {
+          "certificate": "4482",
+          "boatType": "BANNER 26 MK II",
+          "sailNumber": "37",
+          "name": "Sterling"
+        },
+        {
+          "certificate": "8040",
+          "boatType": "BANNER 34",
+          "sailNumber": "37",
+          "name": "Matilda"
+        },
+        {
+          "certificate": "36194",
+          "boatType": "BAVARIA 37 CRUISER",
+          "sailNumber": "37",
+          "name": "La Fontaine"
+        },
+        {
+          "certificate": "654",
+          "boatType": "BB 10 METER",
+          "sailNumber": "37",
+          "name": "Tora"
+        },
+        {
+          "certificate": "2322",
+          "boatType": "BELINDA 21",
+          "sailNumber": "37",
+          "name": "Bananen"
+        },
+        {
+          "certificate": "7593",
+          "boatType": "BELINDA 22",
+          "sailNumber": "37",
+          "name": "Bananen"
+        },
+        {
+          "certificate": "10055",
+          "boatType": "BENETEAU OCEANIS 320",
+          "sailNumber": "37",
+          "name": "Friendship"
+        },
+        {
+          "certificate": "11090",
+          "boatType": "COMFORTINA 35",
+          "sailNumber": "37",
+          "name": "Geisha"
+        },
+        {
+          "certificate": "9610",
+          "boatType": "COMFORTINA 38",
+          "sailNumber": "37",
+          "name": "Malu"
+        },
+        {
+          "certificate": "7683",
+          "boatType": "COMMANDER 31",
+          "sailNumber": "37",
+          "name": "Tai-Pan"
+        },
+        {
+          "certificate": "14949",
+          "boatType": "CONTENDER",
+          "sailNumber": "37",
+          "name": ""
+        },
+        {
+          "certificate": "30875",
+          "boatType": "DEHLER 32",
+          "sailNumber": "37",
+          "name": "Dessert"
+        }
+      ],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 11.32,
+        "beamM": 3.55,
+        "source": "https://sailboatdata.com/sailboat/hallberg-rassy-37/",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "estimated": true
+      }
+    },
+    {
+      "trackId": "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+      "trackName": "Quinta Light",
+      "bowNumber": "3326",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "a64fa96c-c1f5-4f9e-97ab-cff3b2c7da36",
+        "SailNumber": "DEN 5",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Quinta Light",
+        "BoatType": "HH 42",
+        "BowNumber": "3326",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36449",
+          "boatType": "HH 42",
+          "sailNumber": "5",
+          "name": "Quinta Light"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.55,
+        "beamM": 4.3,
+        "source": "https://websejler.dk/da/certifikat/36449",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36449",
+        "boatType": "HH 42",
+        "sailNumber": "5",
+        "name": "Quinta Light"
+      }
+    },
+    {
+      "trackId": "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+      "trackName": "Quokka",
+      "bowNumber": "3318",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "0dc9813e-5c9c-4ea7-9ade-c1f1ac431158",
+        "SailNumber": "DEN 2215",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Quokka",
+        "BoatType": "GRAND SOLEIL 43",
+        "BowNumber": "3318",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36624",
+          "boatType": "GRAND SOLEIL 43",
+          "sailNumber": "2215",
+          "name": "Quokka"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.95,
+        "beamM": 3.91,
+        "source": "https://websejler.dk/da/certifikat/36624",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36624",
+        "boatType": "GRAND SOLEIL 43",
+        "sailNumber": "2215",
+        "name": "Quokka"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+      "trackName": "Rafi",
+      "bowNumber": "2609",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "7f917ee9-db2f-4637-947d-b93b674a61c3",
+        "SailNumber": "221 Bianca",
+        "SailNumberCountry": "221",
+        "BoatName": "Rafi",
+        "BoatType": "Bianca 27",
+        "BowNumber": "2609",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "8603",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "221",
+          "name": "Ralle"
+        },
+        {
+          "certificate": "34059",
+          "boatType": "BOSTRØM 37",
+          "sailNumber": "221",
+          "name": "Swiftnick"
+        },
+        {
+          "certificate": "16308",
+          "boatType": "DRAGE",
+          "sailNumber": "221",
+          "name": "Hulk"
+        },
+        {
+          "certificate": "9104",
+          "boatType": "GRINDE",
+          "sailNumber": "221",
+          "name": "Helios"
+        },
+        {
+          "certificate": "16692",
+          "boatType": "IF-BÅD",
+          "sailNumber": "221",
+          "name": "Rikke"
+        },
+        {
+          "certificate": "11102",
+          "boatType": "L23",
+          "sailNumber": "221",
+          "name": "Delta"
+        },
+        {
+          "certificate": "11592",
+          "boatType": "MAMBA 29",
+          "sailNumber": "221",
+          "name": "Fierik"
+        },
+        {
+          "certificate": "791",
+          "boatType": "POLARIS DRABANT MED MOTOR",
+          "sailNumber": "221",
+          "name": "Julie"
+        },
+        {
+          "certificate": "8972",
+          "boatType": "SPÆKHUGGER",
+          "sailNumber": "221",
+          "name": "Maja"
+        },
+        {
+          "certificate": "36464",
+          "boatType": "X-332",
+          "sailNumber": "221",
+          "name": "Xia"
+        },
+        {
+          "certificate": "32975",
+          "boatType": "X-35",
+          "sailNumber": "221",
+          "name": "Cartan"
+        },
+        {
+          "certificate": "3775",
+          "boatType": "X-79",
+          "sailNumber": "221",
+          "name": "Helt Xet"
+        },
+        {
+          "certificate": "33300",
+          "boatType": "ZOOM8",
+          "sailNumber": "221",
+          "name": ""
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "118",
+          "boatType": "BIANCA 27"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 8.25,
+        "beamM": 2.43,
+        "source": "https://websejler.dk/da/baadtype/118",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "118",
+        "boatType": "BIANCA 27"
+      }
+    },
+    {
+      "trackId": "groensund:cf512990-4624-013f-2937-04421a259aad",
+      "trackName": "Ran",
+      "bowNumber": "2837",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "81771572-575b-4860-80d1-f3ee959b644b",
+        "SailNumber": "DDS Ran",
+        "SailNumberCountry": "DDS",
+        "BoatName": "Ran",
+        "BoatType": "40 fods Ketch",
+        "BowNumber": "2837",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "7752",
+          "boatType": "1/4 TON",
+          "sailNumber": "3472",
+          "name": "Randale"
+        },
+        {
+          "certificate": "64",
+          "boatType": "40' YACHT",
+          "sailNumber": "1125",
+          "name": "Aranx"
+        },
+        {
+          "certificate": "3985",
+          "boatType": "8 METRE R",
+          "sailNumber": "8",
+          "name": "Francisca"
+        },
+        {
+          "certificate": "11793",
+          "boatType": "ACCENT 26",
+          "sailNumber": "75",
+          "name": "Amarant"
+        },
+        {
+          "certificate": "11538",
+          "boatType": "ACCENT 26",
+          "sailNumber": "161",
+          "name": "Grand Cru"
+        },
+        {
+          "certificate": "8415",
+          "boatType": "ACCENT 26",
+          "sailNumber": "354",
+          "name": "Boomerang"
+        },
+        {
+          "certificate": "6875",
+          "boatType": "ALBIN 78 CIRRUS",
+          "sailNumber": "46",
+          "name": "Randi II"
+        },
+        {
+          "certificate": "30153",
+          "boatType": "ALBIN 78 CIRRUS",
+          "sailNumber": "503",
+          "name": "Fran"
+        },
+        {
+          "certificate": "30908",
+          "boatType": "ALU 40",
+          "sailNumber": "2",
+          "name": "Ran"
+        },
+        {
+          "certificate": "31474",
+          "boatType": "ARCONA 400",
+          "sailNumber": "51",
+          "name": "Grand Bleu"
+        },
+        {
+          "certificate": "804",
+          "boatType": "B 31",
+          "sailNumber": "520",
+          "name": "Navarana"
+        },
+        {
+          "certificate": "6680",
+          "boatType": "B 31",
+          "sailNumber": "598",
+          "name": "Grand Jete"
+        },
+        {
+          "certificate": "5554",
+          "boatType": "BALLAD",
+          "sailNumber": "185",
+          "name": "Grand De Lyx"
+        },
+        {
+          "certificate": "11839",
+          "boatType": "BALLAD",
+          "sailNumber": "1097",
+          "name": "Boomerang"
+        },
+        {
+          "certificate": "37197",
+          "boatType": "BALLAD",
+          "sailNumber": "1495",
+          "name": "Myran"
+        }
+      ],
+      "status": "not-matched",
+      "typeCandidates": []
+    },
+    {
+      "trackId": "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
+      "trackName": "Rosa-Lux",
+      "bowNumber": "3104",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "0c362d0a-8c59-49c0-8316-502e284884d7",
+        "SailNumber": "DEN 520",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Rosa-Lux",
+        "BoatType": "X-99",
+        "BowNumber": "3104",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "34325",
+          "boatType": "X-99",
+          "sailNumber": "520",
+          "name": "Rosa-Lux"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.0,
+        "beamM": 3.0,
+        "source": "https://websejler.dk/da/certifikat/34325",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "34325",
+        "boatType": "X-99",
+        "sailNumber": "520",
+        "name": "Rosa-Lux"
+      }
+    },
+    {
+      "trackId": "groensund:cf552280-4624-013f-293b-04421a259aad",
+      "trackName": "SABRINA",
+      "bowNumber": "2838",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "b8f6fbcc-6e32-463d-890a-26d89c82552a",
+        "SailNumber": "DEN Y11",
+        "SailNumberCountry": "DEN",
+        "BoatName": "SABRINA",
+        "BoatType": null,
+        "BowNumber": "2838",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "3280",
+          "boatType": "10 METER TYPE",
+          "sailNumber": "11",
+          "name": "Roblon"
+        },
+        {
+          "certificate": "10232",
+          "boatType": "10 METRE R",
+          "sailNumber": "11",
+          "name": "Luna Viiii"
+        },
+        {
+          "certificate": "14502",
+          "boatType": "14 FOOT DINGHY",
+          "sailNumber": "11",
+          "name": "Carbonaden"
+        },
+        {
+          "certificate": "4746",
+          "boatType": "6 METRE R",
+          "sailNumber": "11",
+          "name": "Nurdug"
+        },
+        {
+          "certificate": "8754",
+          "boatType": "806",
+          "sailNumber": "11",
+          "name": "Antonia"
+        },
+        {
+          "certificate": "801",
+          "boatType": "ALBIN 85 CUMULUS",
+          "sailNumber": "11",
+          "name": "Siesta"
+        },
+        {
+          "certificate": "6600",
+          "boatType": "ALBIN ALPHA",
+          "sailNumber": "11",
+          "name": "Forever"
+        },
+        {
+          "certificate": "16309",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "11",
+          "name": "Friendship 2"
+        },
+        {
+          "certificate": "8949",
+          "boatType": "B 25 MK II",
+          "sailNumber": "11",
+          "name": "Frodo"
+        },
+        {
+          "certificate": "5097",
+          "boatType": "BANDHOLM 20",
+          "sailNumber": "11",
+          "name": ""
+        },
+        {
+          "certificate": "1037",
+          "boatType": "BANNER 26 MK I",
+          "sailNumber": "11",
+          "name": "Aktiv Fritid"
+        },
+        {
+          "certificate": "3902",
+          "boatType": "BANNER 30 MED MOTOR",
+          "sailNumber": "11",
+          "name": "Chaos"
+        },
+        {
+          "certificate": "1052",
+          "boatType": "BANNER 33 FAMILY",
+          "sailNumber": "11",
+          "name": "Monsunen"
+        },
+        {
+          "certificate": "6256",
+          "boatType": "BANNER 34",
+          "sailNumber": "11",
+          "name": "Trunte"
+        },
+        {
+          "certificate": "637",
+          "boatType": "BB 10 METER",
+          "sailNumber": "11",
+          "name": "Kolibri"
+        }
+      ],
+      "status": "not-matched",
+      "typeCandidates": []
+    },
+    {
+      "trackId": "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+      "trackName": "Sagitta",
+      "bowNumber": "3100",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "8c036236-695a-4cda-a5e6-380c1fcea910",
+        "SailNumber": "GER 6540",
+        "SailNumberCountry": "GER",
+        "BoatName": "Sagitta",
+        "BoatType": "ALBIN STRATUS",
+        "BowNumber": "3100",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "33871",
+          "boatType": "ALBIN STRATUS",
+          "sailNumber": "6540",
+          "name": "Sagitta"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.76,
+        "beamM": 3.28,
+        "source": "https://websejler.dk/da/certifikat/33871",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "33871",
+        "boatType": "ALBIN STRATUS",
+        "sailNumber": "6540",
+        "name": "Sagitta"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+      "trackName": "Salka Valka",
+      "bowNumber": "2610",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "61bd6b26-4b6a-40f2-ac3f-b5a675bbfdd0",
+        "SailNumber": "DEN 3",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Salka Valka",
+        "BoatType": null,
+        "BowNumber": "2610",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "1506",
+          "boatType": "1006",
+          "sailNumber": "3",
+          "name": "Mon Ami II"
+        },
+        {
+          "certificate": "14516",
+          "boatType": "14 FOOT DINGHY",
+          "sailNumber": "3",
+          "name": "Betty Barclay"
+        },
+        {
+          "certificate": "3228",
+          "boatType": "6 METRE R",
+          "sailNumber": "3",
+          "name": "Mariposa"
+        },
+        {
+          "certificate": "6145",
+          "boatType": "717",
+          "sailNumber": "3",
+          "name": "Maverick"
+        },
+        {
+          "certificate": "37091",
+          "boatType": "AEOLOS P30",
+          "sailNumber": "3",
+          "name": "The Beast"
+        },
+        {
+          "certificate": "5431",
+          "boatType": "ALBIN 82 MS",
+          "sailNumber": "3",
+          "name": "Wolle Struer"
+        },
+        {
+          "certificate": "1932",
+          "boatType": "ALBIN 85 CUMULUS",
+          "sailNumber": "3",
+          "name": "White Label"
+        },
+        {
+          "certificate": "7617",
+          "boatType": "ALL ABOARD 105",
+          "sailNumber": "3",
+          "name": "One-O-Five"
+        },
+        {
+          "certificate": "3734",
+          "boatType": "ALO 26",
+          "sailNumber": "3",
+          "name": "Aurora"
+        },
+        {
+          "certificate": "16004",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "3",
+          "name": "Amigo"
+        },
+        {
+          "certificate": "11595",
+          "boatType": "ARCHI 808 RACING",
+          "sailNumber": "3",
+          "name": "Brede Maren"
+        },
+        {
+          "certificate": "33272",
+          "boatType": "ARCONA 340",
+          "sailNumber": "3",
+          "name": "Artfol"
+        },
+        {
+          "certificate": "33818",
+          "boatType": "ARCONA 36",
+          "sailNumber": "3",
+          "name": "Athene"
+        },
+        {
+          "certificate": "33270",
+          "boatType": "ARCONA 430",
+          "sailNumber": "3",
+          "name": "KARLA"
+        },
+        {
+          "certificate": "2341",
+          "boatType": "ATALANTA 30",
+          "sailNumber": "3",
+          "name": "Koni"
+        }
+      ],
+      "status": "not-matched",
+      "typeCandidates": []
+    },
+    {
+      "trackId": "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+      "trackName": "saltamalin",
+      "bowNumber": "3105",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "7898c915-7301-45a4-8139-71674786aec2",
+        "SailNumber": "SWE 237",
+        "SailNumberCountry": "SWE",
+        "BoatName": "saltamalin",
+        "BoatType": "Seascape 27",
+        "BowNumber": "3105",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "34933",
+          "boatType": "SEASCAPE 27",
+          "sailNumber": "237",
+          "name": ""
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "sail-number-and-type-with-unnamed-certificate",
+      "measurement": {
+        "lengthM": 7.99,
+        "beamM": 2.54,
+        "source": "https://websejler.dk/da/certifikat/34933",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "34933",
+        "boatType": "SEASCAPE 27",
+        "sailNumber": "237",
+        "name": ""
+      }
+    },
+    {
+      "trackId": "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+      "trackName": "Sanne",
+      "bowNumber": "2841",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "cffe79ea-48f4-426c-8b51-f3854c816cec",
+        "SailNumber": "DEN 477",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Sanne",
+        "BoatType": "SAGITTA 35",
+        "BowNumber": "2841",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "8591",
+          "boatType": "SAGITTA 35",
+          "sailNumber": "477",
+          "name": "Sanne"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.47,
+        "beamM": 3.05,
+        "source": "https://websejler.dk/da/certifikat/8591",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "8591",
+        "boatType": "SAGITTA 35",
+        "sailNumber": "477",
+        "name": "Sanne"
+      }
+    },
+    {
+      "trackId": "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+      "trackName": "Scarlet",
+      "bowNumber": "3106",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "a8702fca-a90d-45d6-980d-83a16be5a772",
+        "SailNumber": "DEN 11",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Scarlet",
+        "BoatType": "JEANNEAU SUN FAST 36",
+        "BowNumber": "3106",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "35796",
+          "boatType": "JEANNEAU SUN FAST 36",
+          "sailNumber": "11",
+          "name": "Scarlet"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.09,
+        "beamM": 3.5,
+        "source": "https://websejler.dk/da/certifikat/35796",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "35796",
+        "boatType": "JEANNEAU SUN FAST 36",
+        "sailNumber": "11",
+        "name": "Scarlet"
+      }
+    },
+    {
+      "trackId": "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+      "trackName": "Siroque",
+      "bowNumber": "3102",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "9f266cb0-54a4-46fe-ac1d-14934c0c2e39",
+        "SailNumber": "DEN 2606",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Siroque",
+        "BoatType": "First 31.7",
+        "BowNumber": "3102",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37895",
+          "boatType": "FIRST 31.7",
+          "sailNumber": "2606",
+          "name": "Siroque"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 9.5,
+        "beamM": 3.23,
+        "source": "https://websejler.dk/da/certifikat/37895",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37895",
+        "boatType": "FIRST 31.7",
+        "sailNumber": "2606",
+        "name": "Siroque"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+      "trackName": "Slipstik",
+      "bowNumber": "3094",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "2d1005e7-995b-4da4-b4c7-ae3c9184d637",
+        "SailNumber": "DEN 42",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Slipstik",
+        "BoatType": "BB 10 METER",
+        "BowNumber": "3094",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "716",
+          "boatType": "BB 10 METER",
+          "sailNumber": "42",
+          "name": "Slipstik"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "43",
+          "boatType": "BB 10 METER"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.02,
+        "beamM": 2.3,
+        "source": "https://websejler.dk/da/baadtype/43",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "43",
+        "boatType": "BB 10 METER"
+      }
+    },
+    {
+      "trackId": "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+      "trackName": "Sneppen",
+      "bowNumber": "2842",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "cf6e3a2d-c7de-47ca-beb4-8d6f289ac8c1",
+        "SailNumber": "DEN 15",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Sneppen",
+        "BoatType": "Faurby 424",
+        "BowNumber": "2842",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "4242",
+          "boatType": "1006",
+          "sailNumber": "15",
+          "name": "Lotte"
+        },
+        {
+          "certificate": "35185",
+          "boatType": "12 METRE R",
+          "sailNumber": "15",
+          "name": "Vim"
+        },
+        {
+          "certificate": "14779",
+          "boatType": "14 FOOT DINGHY",
+          "sailNumber": "15",
+          "name": ""
+        },
+        {
+          "certificate": "17545",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "15",
+          "name": "Trævaren"
+        },
+        {
+          "certificate": "32969",
+          "boatType": "6 METRE R",
+          "sailNumber": "15",
+          "name": "Oui-Oui"
+        },
+        {
+          "certificate": "17331",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "15",
+          "name": "Kasper"
+        },
+        {
+          "certificate": "36029",
+          "boatType": "ARCONA 465",
+          "sailNumber": "15",
+          "name": "Mermaiden"
+        },
+        {
+          "certificate": "35801",
+          "boatType": "ATALANTA 30",
+          "sailNumber": "15",
+          "name": "Svante"
+        },
+        {
+          "certificate": "5594",
+          "boatType": "AVANCE 24/245",
+          "sailNumber": "15",
+          "name": "Carla Marie"
+        },
+        {
+          "certificate": "2825",
+          "boatType": "B 25 MK II",
+          "sailNumber": "15",
+          "name": "Koral"
+        },
+        {
+          "certificate": "5456",
+          "boatType": "BANNER 28 RACER",
+          "sailNumber": "15",
+          "name": "Bandit"
+        },
+        {
+          "certificate": "2111",
+          "boatType": "BANNER 30 UDEN MOTOR",
+          "sailNumber": "15",
+          "name": "Bananen"
+        },
+        {
+          "certificate": "31234",
+          "boatType": "BANNER 33 RACER",
+          "sailNumber": "15",
+          "name": "Frida-Luna"
+        },
+        {
+          "certificate": "7301",
+          "boatType": "BANNER 34",
+          "sailNumber": "15",
+          "name": "Hønsetyven"
+        },
+        {
+          "certificate": "11252",
+          "boatType": "BANNER 41",
+          "sailNumber": "15",
+          "name": "Fifty"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10064",
+          "boatType": "FAURBY 424"
+        },
+        {
+          "typeId": "10583",
+          "boatType": "FAURBY 424 E"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 12.62,
+        "beamM": 3.4,
+        "source": "https://websejler.dk/da/baadtype/10064",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10064",
+        "boatType": "FAURBY 424"
+      }
+    },
+    {
+      "trackId": "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+      "trackName": "Solhverv",
+      "bowNumber": "3313",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "f6bd49c0-4914-4729-a5a7-6fd9b8ed2731",
+        "SailNumber": "DEN 67",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Solhverv",
+        "BoatType": "ARCONA 400",
+        "BowNumber": "3313",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37252",
+          "boatType": "ARCONA 400",
+          "sailNumber": "67",
+          "name": "Solhverv"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.98,
+        "beamM": 3.82,
+        "source": "https://websejler.dk/da/certifikat/37252",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37252",
+        "boatType": "ARCONA 400",
+        "sailNumber": "67",
+        "name": "Solhverv"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+      "trackName": "Sonja fra Sydhavnen",
+      "bowNumber": "3086",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "2b13d24b-6656-4cf6-8e30-45a9191bbed7",
+        "SailNumber": "DEN 66",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Sonja fra Sydhavnen",
+        "BoatType": "LYNÆS SENIOR",
+        "BowNumber": "3086",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37910",
+          "boatType": "LYNÆS SENIOR",
+          "sailNumber": "66",
+          "name": "Sonja fra Sydhavnen"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 5.71,
+        "beamM": 2.36,
+        "source": "https://websejler.dk/da/certifikat/37910",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37910",
+        "boatType": "LYNÆS SENIOR",
+        "sailNumber": "66",
+        "name": "Sonja fra Sydhavnen"
+      }
+    },
+    {
+      "trackId": "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+      "trackName": "SPIDER PIG",
+      "bowNumber": "3099",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "44106557-703c-4562-b945-80b65edfa069",
+        "SailNumber": "SWE 65",
+        "SailNumberCountry": "SWE",
+        "BoatName": "SPIDER PIG",
+        "BoatType": "CORBY 25",
+        "BowNumber": "3099",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37889",
+          "boatType": "CORBY 25",
+          "sailNumber": "65",
+          "name": "SPIDER PIG"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 7.7,
+        "beamM": 2.47,
+        "source": "https://websejler.dk/da/certifikat/37889",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37889",
+        "boatType": "CORBY 25",
+        "sailNumber": "65",
+        "name": "SPIDER PIG"
+      }
+    },
+    {
+      "trackId": "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+      "trackName": "Stormy",
+      "bowNumber": "3322",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "26729b30-3a07-4745-b559-2e2f3f676540",
+        "SailNumber": "DEN 1",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Stormy",
+        "BoatType": "STIMSON IRC 42",
+        "BowNumber": "3322",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "8871",
+          "boatType": "LB 33",
+          "sailNumber": "1",
+          "name": "Stormy"
+        },
+        {
+          "certificate": "36595",
+          "boatType": "STIMSON IRC 42",
+          "sailNumber": "1",
+          "name": "Stormy"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.88,
+        "beamM": 3.93,
+        "source": "https://websejler.dk/da/certifikat/36595",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36595",
+        "boatType": "STIMSON IRC 42",
+        "sailNumber": "1",
+        "name": "Stormy"
+      }
+    },
+    {
+      "trackId": "groensund:cf9aff90-4624-013f-297e-04421a259aad",
+      "trackName": "THE HULK",
+      "bowNumber": "3084",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "a5896595-d172-42cd-a94c-5f474678363f",
+        "SailNumber": "DEN 48",
+        "SailNumberCountry": "DEN",
+        "BoatName": "THE HULK",
+        "BoatType": "DEHLER 30 OD",
+        "BowNumber": "3084",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "37374",
+          "boatType": "DEHLER 30 OD",
+          "sailNumber": "48",
+          "name": "THE HULK"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 9.12,
+        "beamM": 3.26,
+        "source": "https://websejler.dk/da/certifikat/37374",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37374",
+        "boatType": "DEHLER 30 OD",
+        "sailNumber": "48",
+        "name": "THE HULK"
+      }
+    },
+    {
+      "trackId": "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+      "trackName": "Thermidor",
+      "bowNumber": "3116",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "97c5b26b-7479-4ef9-a247-9c98274d6da7",
+        "SailNumber": "SWE 102",
+        "SailNumberCountry": "SWE",
+        "BoatName": "Thermidor",
+        "BoatType": "FIRST 36.7",
+        "BowNumber": "3116",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36170",
+          "boatType": "FIRST 36.7",
+          "sailNumber": "102",
+          "name": "Thermidor"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.64,
+        "beamM": 3.45,
+        "source": "https://websejler.dk/da/certifikat/36170",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36170",
+        "boatType": "FIRST 36.7",
+        "sailNumber": "102",
+        "name": "Thermidor"
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+      "trackName": "Tignanello",
+      "bowNumber": "3077",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "2f5dbb44-7138-4dca-9662-2e36972ee302",
+        "SailNumber": "DEN 79",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Tignanello",
+        "BoatType": "X-372",
+        "BowNumber": "3077",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "37494",
+          "boatType": "X-372",
+          "sailNumber": "79",
+          "name": "Tignanello"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.05,
+        "beamM": 3.57,
+        "source": "https://websejler.dk/da/certifikat/37494",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37494",
+        "boatType": "X-372",
+        "sailNumber": "79",
+        "name": "Tignanello"
+      }
+    },
+    {
+      "trackId": "groensund:cf608a70-4624-013f-2946-04421a259aad",
+      "trackName": "Tjørn",
+      "bowNumber": "2843",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "e92e9e22-5e92-4312-a878-385100f4aaf5",
+        "SailNumber": "DEN No name",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Tjørn",
+        "BoatType": "Luffe 40 one off",
+        "BowNumber": "2843",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "7457",
+          "boatType": "GIB SEA 76",
+          "sailNumber": "13",
+          "name": "Tjørnevik"
+        },
+        {
+          "certificate": "34815",
+          "boatType": "KUTTER",
+          "sailNumber": "86",
+          "name": "TJØRN"
+        }
+      ],
+      "status": "not-matched",
+      "typeCandidates": [
+        {
+          "typeId": "2087",
+          "boatType": "LUFFE 40"
+        },
+        {
+          "typeId": "10490",
+          "boatType": "LUFFE 40 B"
+        },
+        {
+          "typeId": "10336",
+          "boatType": "LUFFE 40 NY KØL"
+        },
+        {
+          "typeId": "10276",
+          "boatType": "LUFFE 40.04"
+        },
+        {
+          "typeId": "10756",
+          "boatType": "LUFFE 40.20"
+        }
+      ]
+    },
+    {
+      "trackId": "groensund:cf643a90-4624-013f-2949-04421a259aad",
+      "trackName": "Triumph",
+      "bowNumber": "2844",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "90c8c33c-6122-460e-8668-f48af44c8a2f",
+        "SailNumber": "SWE 73",
+        "SailNumberCountry": "SWE",
+        "BoatName": "Triumph",
+        "BoatType": "Delphia 37",
+        "BowNumber": "2844",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "35355",
+          "boatType": "SEASCAPE 27",
+          "sailNumber": "73",
+          "name": "Vera"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10376",
+          "boatType": "DELPHIA 37"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.74,
+        "beamM": 3.61,
+        "source": "https://websejler.dk/da/baadtype/10376",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10376",
+        "boatType": "DELPHIA 37"
+      }
+    },
+    {
+      "trackId": "groensund:cf67f030-4624-013f-294c-04421a259aad",
+      "trackName": "Vaiana - DEN",
+      "bowNumber": "2845",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "152dcf86-be43-4005-abc5-9eb305d59693",
+        "SailNumber": "B 42",
+        "SailNumberCountry": "B",
+        "BoatName": "Vaiana",
+        "BoatType": "Bavaria C42",
+        "BowNumber": "2845",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "4801",
+          "boatType": "1006",
+          "sailNumber": "42",
+          "name": "Olfert"
+        },
+        {
+          "certificate": "4917",
+          "boatType": "6 METRE R",
+          "sailNumber": "42",
+          "name": "Cutty"
+        },
+        {
+          "certificate": "17114",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "42",
+          "name": "Cassiopeia"
+        },
+        {
+          "certificate": "35694",
+          "boatType": "ARCONA 400",
+          "sailNumber": "42",
+          "name": "@Z"
+        },
+        {
+          "certificate": "4241",
+          "boatType": "AVANCE 36",
+          "sailNumber": "42",
+          "name": "Anne-Louise"
+        },
+        {
+          "certificate": "1029",
+          "boatType": "BANDHOLM 26",
+          "sailNumber": "42",
+          "name": "Naja"
+        },
+        {
+          "certificate": "6625",
+          "boatType": "BANNER 30 MED MOTOR",
+          "sailNumber": "42",
+          "name": "Betty Bus"
+        },
+        {
+          "certificate": "716",
+          "boatType": "BB 10 METER",
+          "sailNumber": "42",
+          "name": "Slipstik"
+        },
+        {
+          "certificate": "11660",
+          "boatType": "BIANCA 107",
+          "sailNumber": "42",
+          "name": "Laura"
+        },
+        {
+          "certificate": "9686",
+          "boatType": "BIANCA 28",
+          "sailNumber": "42",
+          "name": "Meson"
+        },
+        {
+          "certificate": "4024",
+          "boatType": "COMPIS 36",
+          "sailNumber": "42",
+          "name": "Anca"
+        },
+        {
+          "certificate": "15142",
+          "boatType": "CONTENDER",
+          "sailNumber": "42",
+          "name": ""
+        },
+        {
+          "certificate": "35531",
+          "boatType": "DEHLER 35 CWS",
+          "sailNumber": "42",
+          "name": "Ni hao"
+        },
+        {
+          "certificate": "10375",
+          "boatType": "DIVA 39",
+          "sailNumber": "42",
+          "name": "Ultimate"
+        },
+        {
+          "certificate": "11522",
+          "boatType": "DRABANT 22",
+          "sailNumber": "42",
+          "name": "Sirene"
+        }
+      ],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [
+        {
+          "typeId": "1165",
+          "boatType": "C & C 42"
+        },
+        {
+          "typeId": "10745",
+          "boatType": "STIMSON IRC 42"
+        },
+        {
+          "typeId": "10577",
+          "boatType": "XC 42"
+        }
+      ],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 11.98,
+        "beamM": 4.29,
+        "source": "https://sailboatdata.com/sailboat/c42-bavaria/",
+        "measurementFields": [
+          "LOD",
+          "Beam"
+        ],
+        "estimated": true,
+        "loaM": 12.38,
+        "note": "Use reported length on deck for the hull icon; LOA with bowsprit is 12.9 m."
+      }
+    },
+    {
+      "trackId": "groensund:cf774910-4624-013f-295b-04421a259aad",
+      "trackName": "Vaiana - NO",
+      "bowNumber": "2849",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "fb9770e3-fea1-4923-a6d4-d0d0f9afbd86",
+        "SailNumber": "NO Name",
+        "SailNumberCountry": "NO",
+        "BoatName": "Vaiana",
+        "BoatType": "Malö 50",
+        "BowNumber": "2849",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "7817",
+          "boatType": "X-95",
+          "sailNumber": "10",
+          "name": "Vaiana"
+        }
+      ],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 11.1,
+        "beamM": 3.35,
+        "source": "https://sailboatdata.com/sailboat/malo-50/",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "estimated": true
+      }
+    },
+    {
+      "trackId": "groensund:d023a320-4624-013f-29fa-04421a259aad",
+      "trackName": "Valkyria",
+      "bowNumber": "3315",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "962d0498-6329-4492-bcf7-c1545c8041f7",
+        "SailNumber": "SWE 134",
+        "SailNumberCountry": "SWE",
+        "BoatName": "Valkyria",
+        "BoatType": "ARCONA 380/385",
+        "BowNumber": "3315",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36073",
+          "boatType": "ARCONA 380/385",
+          "sailNumber": "134",
+          "name": "Valkyria"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.28,
+        "beamM": 3.8,
+        "source": "https://websejler.dk/da/certifikat/36073",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36073",
+        "boatType": "ARCONA 380/385",
+        "sailNumber": "134",
+        "name": "Valkyria"
+      }
+    },
+    {
+      "trackId": "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+      "trackName": "VELOCE",
+      "bowNumber": "3119",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "1585be69-b47c-410f-b31a-d967ca57b560",
+        "SailNumber": "DEN 17",
+        "SailNumberCountry": "DEN",
+        "BoatName": "VELOCE",
+        "BoatType": "EXPLORER 38",
+        "BowNumber": "3119",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "34776",
+          "boatType": "EXPLORER 38",
+          "sailNumber": "17",
+          "name": "VELOCE"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 11.62,
+        "beamM": 3.58,
+        "source": "https://websejler.dk/da/certifikat/34776",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "34776",
+        "boatType": "EXPLORER 38",
+        "sailNumber": "17",
+        "name": "VELOCE"
+      }
+    },
+    {
+      "trackId": "groensund:cf8e6940-4624-013f-2973-04421a259aad",
+      "trackName": "Vera",
+      "bowNumber": "3081",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "8abcc7fa-913d-4c87-9438-273661cd891b",
+        "SailNumber": "SWE 73",
+        "SailNumberCountry": "SWE",
+        "BoatName": "Vera",
+        "BoatType": "Seascape 27",
+        "BowNumber": "3081",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "35355",
+          "boatType": "SEASCAPE 27",
+          "sailNumber": "73",
+          "name": "Vera"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 7.99,
+        "beamM": 2.54,
+        "source": "https://websejler.dk/da/certifikat/35355",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "35355",
+        "boatType": "SEASCAPE 27",
+        "sailNumber": "73",
+        "name": "Vera"
+      }
+    },
+    {
+      "trackId": "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+      "trackName": "Vi Ses",
+      "bowNumber": "2846",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "4f236197-cea0-432a-b890-6b69e3f52641",
+        "SailNumber": "DEN 436",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Vi Ses",
+        "BoatType": "Dehler 34",
+        "BowNumber": "2846",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "8433",
+          "boatType": "ACCENT 26",
+          "sailNumber": "436",
+          "name": "Merulinchen"
+        },
+        {
+          "certificate": "9591",
+          "boatType": "COMMANDER 31",
+          "sailNumber": "436",
+          "name": "Porse"
+        },
+        {
+          "certificate": "32787",
+          "boatType": "HANSE 342",
+          "sailNumber": "436",
+          "name": "AURORA"
+        },
+        {
+          "certificate": "8905",
+          "boatType": "JEANNEAU BRIO",
+          "sailNumber": "436",
+          "name": "Gribben"
+        },
+        {
+          "certificate": "11585",
+          "boatType": "JEANNEAU FANTASIA 27",
+          "sailNumber": "436",
+          "name": "Sandrine"
+        },
+        {
+          "certificate": "32249",
+          "boatType": "KDY 15 M2/JUNIORBÅD",
+          "sailNumber": "436",
+          "name": "Lykke"
+        },
+        {
+          "certificate": "1924",
+          "boatType": "MAXI 84",
+          "sailNumber": "436",
+          "name": "Isabel 2"
+        },
+        {
+          "certificate": "11368",
+          "boatType": "MAXI 87",
+          "sailNumber": "436",
+          "name": "Laurine"
+        },
+        {
+          "certificate": "16701",
+          "boatType": "NORDISK FOLKEBÅD",
+          "sailNumber": "436",
+          "name": "Viva"
+        },
+        {
+          "certificate": "7396",
+          "boatType": "SPÆKHUGGER",
+          "sailNumber": "436",
+          "name": "Huggedrengen"
+        }
+      ],
+      "status": "not-matched",
+      "typeCandidates": [
+        {
+          "typeId": "10816",
+          "boatType": "DEHLER 34 JV"
+        },
+        {
+          "typeId": "10285",
+          "boatType": "DEHLER 34 SD"
+        },
+        {
+          "typeId": "10391",
+          "boatType": "DEHLER 34 SV"
+        },
+        {
+          "typeId": "285",
+          "boatType": "DEHLER 34/343"
+        }
+      ]
+    },
+    {
+      "trackId": "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+      "trackName": "Viento",
+      "bowNumber": "2847",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "1bb048af-5e14-488e-b3f8-1f94d782f9f4",
+        "SailNumber": "DEN 7",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Viento",
+        "BoatType": "Møn 341",
+        "BowNumber": "2847",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "2969",
+          "boatType": "1006",
+          "sailNumber": "7",
+          "name": "Lady Dyx"
+        },
+        {
+          "certificate": "5644",
+          "boatType": "4.4 METER",
+          "sailNumber": "7",
+          "name": "Blue Seven"
+        },
+        {
+          "certificate": "36762",
+          "boatType": "6 METRE R",
+          "sailNumber": "7",
+          "name": "Easy"
+        },
+        {
+          "certificate": "2462",
+          "boatType": "7 METRE",
+          "sailNumber": "7",
+          "name": "Syv"
+        },
+        {
+          "certificate": "8713",
+          "boatType": "ARCONA 36",
+          "sailNumber": "7",
+          "name": "Bamsa"
+        },
+        {
+          "certificate": "37716",
+          "boatType": "ARCONA 380/385",
+          "sailNumber": "7",
+          "name": "Brita"
+        },
+        {
+          "certificate": "37728",
+          "boatType": "ARCONA 380/385",
+          "sailNumber": "7",
+          "name": "Brita"
+        },
+        {
+          "certificate": "4481",
+          "boatType": "BANDHOLM 24",
+          "sailNumber": "7",
+          "name": "Tøseloppen"
+        },
+        {
+          "certificate": "894",
+          "boatType": "BANDHOLM 27",
+          "sailNumber": "7",
+          "name": "Windy"
+        },
+        {
+          "certificate": "3389",
+          "boatType": "BANDHOLM 30",
+          "sailNumber": "7",
+          "name": "Shanty"
+        },
+        {
+          "certificate": "8393",
+          "boatType": "BANNER 23 RACER",
+          "sailNumber": "7",
+          "name": "Mojn Do"
+        },
+        {
+          "certificate": "1803",
+          "boatType": "BANNER 28 MED SÆNKEKØL",
+          "sailNumber": "7",
+          "name": "Red Arrow"
+        },
+        {
+          "certificate": "8135",
+          "boatType": "BANNER 28 RACER MK II",
+          "sailNumber": "7",
+          "name": "Banause"
+        },
+        {
+          "certificate": "9919",
+          "boatType": "BANNER 28 RACER MK II",
+          "sailNumber": "7",
+          "name": "Røde"
+        },
+        {
+          "certificate": "1047",
+          "boatType": "BANNER 29",
+          "sailNumber": "7",
+          "name": "Røde Orm"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "2318",
+          "boatType": "MØN 341"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 10.32,
+        "beamM": 3.2,
+        "source": "https://websejler.dk/da/baadtype/2318",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "2318",
+        "boatType": "MØN 341"
+      }
+    },
+    {
+      "trackId": "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+      "trackName": "Voador",
+      "bowNumber": "3113",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "a0769073-0de0-432e-9a6e-d2bcf6b068b1",
+        "SailNumber": "GBR 722r",
+        "SailNumberCountry": "GBR",
+        "BoatName": "Voador",
+        "BoatType": "J105",
+        "BowNumber": "3113",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36507",
+          "boatType": "J105",
+          "sailNumber": "722",
+          "name": "Voador"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.55,
+        "beamM": 3.34,
+        "source": "https://websejler.dk/da/certifikat/36507",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36507",
+        "boatType": "J105",
+        "sailNumber": "722",
+        "name": "Voador"
+      }
+    },
+    {
+      "trackId": "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+      "trackName": "Xanadu",
+      "bowNumber": "2848",
+      "entry": {
+        "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+        "EntryId": "1df43e77-5f69-4968-b716-745e15aa26ae",
+        "SailNumber": "DEN 35",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Xanadu",
+        "BoatType": "Hanse 371",
+        "BowNumber": "2848",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+      },
+      "candidates": [
+        {
+          "certificate": "17192",
+          "boatType": "2.4 METRE R",
+          "sailNumber": "35",
+          "name": "Gulnare"
+        },
+        {
+          "certificate": "1789",
+          "boatType": "4.4 METER",
+          "sailNumber": "35",
+          "name": "Smølfine"
+        },
+        {
+          "certificate": "11932",
+          "boatType": "806",
+          "sailNumber": "35",
+          "name": "Vic2ria"
+        },
+        {
+          "certificate": "1102",
+          "boatType": "ALO 28",
+          "sailNumber": "35",
+          "name": "Jessabel"
+        },
+        {
+          "certificate": "16080",
+          "boatType": "APHRODITE 101",
+          "sailNumber": "35",
+          "name": "Why Not"
+        },
+        {
+          "certificate": "3880",
+          "boatType": "APHRODITE 29/291",
+          "sailNumber": "35",
+          "name": "Amia"
+        },
+        {
+          "certificate": "10585",
+          "boatType": "BALATON 31",
+          "sailNumber": "35",
+          "name": "Hovsa"
+        },
+        {
+          "certificate": "2791",
+          "boatType": "BANNER 30 MED MOTOR",
+          "sailNumber": "35",
+          "name": "Bandit"
+        },
+        {
+          "certificate": "5102",
+          "boatType": "BANNER 33 FAMILY",
+          "sailNumber": "35",
+          "name": "Fie"
+        },
+        {
+          "certificate": "7987",
+          "boatType": "BANNER 34",
+          "sailNumber": "35",
+          "name": "Jezica"
+        },
+        {
+          "certificate": "645",
+          "boatType": "BB 10 METER",
+          "sailNumber": "35",
+          "name": "Stormfugl"
+        },
+        {
+          "certificate": "37209",
+          "boatType": "BELINDA 22",
+          "sailNumber": "35",
+          "name": "Bamse 2"
+        },
+        {
+          "certificate": "8420",
+          "boatType": "BIANCA 107",
+          "sailNumber": "35",
+          "name": "Abelone"
+        },
+        {
+          "certificate": "11929",
+          "boatType": "BIANCA 111",
+          "sailNumber": "35",
+          "name": "Minna-Mona"
+        },
+        {
+          "certificate": "33759",
+          "boatType": "BIANCA 28",
+          "sailNumber": "35",
+          "name": "Liljen"
+        }
+      ],
+      "status": "matched-type",
+      "typeCandidates": [
+        {
+          "typeId": "10072",
+          "boatType": "HANSE 371"
+        }
+      ],
+      "matchMethod": "exact-boat-type",
+      "measurement": {
+        "lengthM": 11.25,
+        "beamM": 3.63,
+        "source": "https://websejler.dk/da/baadtype/10072",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "estimated": true,
+        "typeId": "10072",
+        "boatType": "HANSE 371"
+      }
+    },
+    {
+      "trackId": "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+      "trackName": "XAR",
+      "bowNumber": "2593",
+      "entry": {
+        "RegattaId": "5b3407a2-3895-4fc1-a05e-e0522d898f98",
+        "EntryId": "0430f1ca-20c8-4048-9340-626c5d317c2c",
+        "SailNumber": "SWE 129",
+        "SailNumberCountry": "SWE",
+        "BoatName": "XAR",
+        "BoatType": "XP-44",
+        "BowNumber": "2593",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=5b3407a2-3895-4fc1-a05e-e0522d898f98"
+      },
+      "candidates": [],
+      "status": "matched-sailboatdata-type",
+      "typeCandidates": [],
+      "matchMethod": "reviewed-boat-type",
+      "measurement": {
+        "lengthM": 13.29,
+        "beamM": 4.07,
+        "source": "https://sailboatdata.com/sailboat/xp-44/",
+        "measurementFields": [
+          "Hull length in notes",
+          "Beam"
+        ],
+        "estimated": true,
+        "loaM": 13.88,
+        "note": "Use the explicit hull length from the notes rather than overall length."
+      }
+    },
+    {
+      "trackId": "groensund:cff53330-4624-013f-29d0-04421a259aad",
+      "trackName": "XAVIA",
+      "bowNumber": "3111",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "16da03f1-0bbd-466b-9e71-72da235a930b",
+        "SailNumber": "DEN 1130",
+        "SailNumberCountry": "DEN",
+        "BoatName": "XAVIA",
+        "BoatType": "X-362 SPORT",
+        "BowNumber": "3111",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "36710",
+          "boatType": "X-362 SPORT",
+          "sailNumber": "1130",
+          "name": "XAVIA"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 10.72,
+        "beamM": 3.47,
+        "source": "https://websejler.dk/da/certifikat/36710",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36710",
+        "boatType": "X-362 SPORT",
+        "sailNumber": "1130",
+        "name": "XAVIA"
+      }
+    },
+    {
+      "trackId": "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+      "trackName": "XBOX",
+      "bowNumber": "3320",
+      "entry": {
+        "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+        "EntryId": "77c054f3-4621-428b-8ea0-eec798192ae5",
+        "SailNumber": "DEN 41",
+        "SailNumberCountry": "DEN",
+        "BoatName": "XBOX",
+        "BoatType": "XR 41",
+        "BowNumber": "3320",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+      },
+      "candidates": [
+        {
+          "certificate": "37673",
+          "boatType": "XR 41",
+          "sailNumber": "41",
+          "name": "XBOX"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.75,
+        "beamM": 4.18,
+        "source": "https://websejler.dk/da/certifikat/37673",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37673",
+        "boatType": "XR 41",
+        "sailNumber": "41",
+        "name": "XBOX"
+      }
+    },
+    {
+      "trackId": "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+      "trackName": "Xilje",
+      "bowNumber": "3085",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "5499ad14-f0e9-456b-bced-7c7a942127cd",
+        "SailNumber": "DEN 9",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Xilje",
+        "BoatType": "IMX 40",
+        "BowNumber": "3085",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "36114",
+          "boatType": "IMX 40",
+          "sailNumber": "9",
+          "name": "Xilje"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 12.1,
+        "beamM": 3.77,
+        "source": "https://websejler.dk/da/certifikat/36114",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "36114",
+        "boatType": "IMX 40",
+        "sailNumber": "9",
+        "name": "Xilje"
+      }
+    },
+    {
+      "trackId": "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+      "trackName": "XUSIDUS",
+      "bowNumber": "3083",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "e1dc2769-a35f-4179-a935-aa87db64e897",
+        "SailNumber": "SWE 74",
+        "SailNumberCountry": "SWE",
+        "BoatName": "XUSIDUS",
+        "BoatType": "X-382",
+        "BowNumber": "3083",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "37406",
+          "boatType": "X-382",
+          "sailNumber": "74",
+          "name": ""
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "sail-number-and-type-with-unnamed-certificate",
+      "measurement": {
+        "lengthM": 11.45,
+        "beamM": 3.72,
+        "source": "https://websejler.dk/da/certifikat/37406",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "37406",
+        "boatType": "X-382",
+        "sailNumber": "74",
+        "name": ""
+      }
+    },
+    {
+      "trackId": "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad",
+      "trackName": "Zenobia",
+      "bowNumber": "2850",
+      "entry": {
+        "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+        "EntryId": "9da782d9-5175-4e28-8823-32bd70bd02dc",
+        "SailNumber": "DEN 338",
+        "SailNumberCountry": "DEN",
+        "BoatName": "Zenobia",
+        "BoatType": "ALBIN NOVA",
+        "BowNumber": "2850",
+        "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+      },
+      "candidates": [
+        {
+          "certificate": "5907",
+          "boatType": "ALBIN NOVA",
+          "sailNumber": "338",
+          "name": "Zenobia"
+        }
+      ],
+      "status": "matched",
+      "matchMethod": "name-and-sail-number",
+      "measurement": {
+        "lengthM": 9.86,
+        "beamM": 3.15,
+        "source": "https://websejler.dk/da/certifikat/5907",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "certificate": "5907",
+        "boatType": "ALBIN NOVA",
+        "sailNumber": "338",
+        "name": "Zenobia"
+      }
+    }
+  ]
+}

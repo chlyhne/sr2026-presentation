@@ -500,16 +500,18 @@ Se projektrodens README og docs/hosting.md. Eksporten er nu et objekt med `versi
 
 ## Bådikoner og mål
 
-Positionsmarkørerne bruger skroget fra `modern.svg`, kopieret fra
-`random simuleringer/cuteboat.svg`. Metadata i `boat-icons.js` angiver Vera, My,
+Positionsmarkørerne bruger `common.svg`, `modern.svg` eller `classic.svg`.
+`modern.svg` er kopieret fra `random simuleringer/cuteboat.svg`. Metadata i `boat-icons.js` angiver Vera, My,
 Mercutio og saltamalin som 8 × 2,54 meter. THE HULK er 10,3 × 3,18 meter,
 Rosa-Lux 10 × 3 meter, Alice 8 × 2,51 meter og Moster 7,77 × 2,5 meter.
 XBOX er 12,75 × 4,18 meter, Quinta Light er 12,55 × 4,3 meter og
-HANSEN 3.5 er 10,65 × 3,53 meter, alle med `modern` skrogform.
-Alle øvrige både har foreløbige mål
-på 10 × 3 meter (`estimated: true`). Hver båd har et `metadata`-felt med
-`lengthM`, `beamM` og `hull`. `hull` er `modern` som standard; Slipstik og Ambra
-bruger `classic.svg` og måler begge 10 × 2,3 meter. Begge SVG-filer ligger i
+HANSEN 3.5 er 10,65 × 3,53 meter, og munje er 13,35 × 4,25 meter.
+XBOX og Quinta Light har `modern` skrogform; munje og HANSEN 3.5 har `common`.
+De øvrige både bruger indsamlede mål fra Websejler og SailboatData, når de
+er identificeret sikkert. Både uden brugbare kilder har fortsat foreløbige
+mål på 10 × 3 meter (`estimated: true`). Hver båd har et `metadata`-felt med
+`lengthM`, `beamM` og `hull`. `hull` er `common` som standard; Slipstik og Ambra
+bruger `classic.svg` og måler begge 10 × 2,3 meter. Alle tre SVG-filer ligger i
 `viewer/` og indlæses direkte, så skrogtegningerne kan redigeres der.
 Ret navneopslagene i `boatMetadataOverrides`, når mål eller skrogform ændres.
 
@@ -560,3 +562,14 @@ det valgte radar- og vindbillede og medtager kun de synlige buffere.
 
 Bådikoner og navne tegnes i det fælles `boatMarkers`-lag over alle bådspor.
 Det gælder også ved afspilning og PNG-eksport.
+
+## Kilder til bådmål
+
+`boat-measurements.js` indeholder de genererede, kildebelagte mål.
+`boatMetadataOverrides` har forrang for mål angivet af brugeren; en ændring
+af skrogformen alene bevarer de indsamlede mål. Standardformen er `common`.
+THE HULK, My, Vera, Mercutio, saltamalin, Laolao, XBOX og Quinta Light bruger
+`modern`; Slipstik og Ambra bruger `classic`.
+
+Se `../data/boat-dimensions/dimensions.csv` for hele oversigten og
+`../data/boat-dimensions/README.md` for metode og genskabelse.
