@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "sr2026-presentation-admin",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-08",
+  "workers_dev": true,
+  "vars": {
+    "GITHUB_REPOSITORY": "chlyhne/sr2026-presentation",
+    "GITHUB_BRANCH": "main",
+    "SITE_URL": "https://chlyhne.github.io/sr2026-presentation/"
+  },
+  "account_id": "e3fe64d31e2cd0126ede7967f7f9a3e6"
+}

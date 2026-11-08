@@ -1,0 +1,302 @@
+const $=id=>document.getElementById(id), D=window.DATA, NS='http://www.w3.org/2000/svg';
+const xy=([lon,lat])=>[(lon-9.5)/4.5*1000,(57-lat)/3*1180];
+const timeFormatter=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Copenhagen',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+const fmt=t=>timeFormatter.format(new Date(t*1000));
+function el(tag,attrs={},parent){const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(parent)parent.append(n);return n;}
+// Geographic anchors move with the map; symbols use CSS pixel dimensions.
+function screenGroup(x,y,parent){
+ return el('g',{'data-screen-x':x,'data-screen-y':y,transform:`translate(${x} ${y})`},parent);
+}
+function resizeSymbols(){
+ const matrix=$('map').getScreenCTM();
+ if(!matrix)return;
+ const inverseScale=1/Math.hypot(matrix.a,matrix.b);
+ for(const group of $('map').querySelectorAll('[data-screen-x]')){
+  group.setAttribute('transform',`translate(${group.dataset.screenX} ${group.dataset.screenY}) scale(${inverseScale})`);
+ }
+}
+// Find a time boundary without scanning the full track.
+function timeBoundary(points,time,after=false){
+ let lo=0,hi=points.length;
+ while(lo<hi){
+  const mid=(lo+hi)>>>1,stamp=points[mid][2];
+  if(stamp<time||(after&&stamp===time))lo=mid+1;else hi=mid;
+ }
+ return lo;
+}
+function path(points){return points.map((p,i)=>(i?'L':'M')+xy(p).join(',')).join(' ')}
+function visibleMapBounds(){
+ const map=$('map'),matrix=map.getScreenCTM();if(!matrix)return null;
+ const rect=map.getBoundingClientRect(),inverse=matrix.inverse();
+ const a=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
+ const b=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
+ return {west:9.5+a.x*4.5/1000,east:9.5+b.x*4.5/1000,south:57-b.y*3/1180,north:57-a.y*3/1180};
+}
+// Cache the full geometry in small chunks, then draw only those in the viewport.
+// Shared end points keep the detailed coastline continuous at chunk boundaries.
+const coastChunks=[];
+const LAND_FILL='#bdc7cb';
+const landPolygons=(D.land?.features||[]).map(feature=>{
+ const rings=feature.geometry.coordinates,points=rings.flat();
+ let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
+ for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
+ return {west,east,south,north,d:rings.map(ring=>path(ring)+'Z').join(' ')};
+});
+let landKey=null;
+function renderLand(bounds){
+ const visible=[];
+ for(const [i,polygon] of landPolygons.entries())if(polygon.east>=bounds.west&&polygon.west<=bounds.east&&polygon.north>=bounds.south&&polygon.south<=bounds.north)visible.push(i);
+ const key=visible.join(',');if(key===landKey)return;
+ const fragment=document.createDocumentFragment();
+ for(const i of visible)el('path',{d:landPolygons[i].d,fill:LAND_FILL,'fill-rule':'evenodd'},fragment);
+ $('land').replaceChildren(fragment);landKey=key;
+}
+for(const line of D.coast)for(let start=0;start<line.length-1;start+=256){
+ const points=line.slice(start,start+257);
+ let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
+ for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
+ coastChunks.push({west,east,south,north,d:path(points)});
+}
+let coastKey=null;
+function renderCoast(){
+ const bounds=visibleMapBounds();if(!bounds)return;
+ renderLand(bounds);
+ const visible=[];
+ for(const [i,chunk] of coastChunks.entries())if(chunk.east>=bounds.west&&chunk.west<=bounds.east&&chunk.north>=bounds.south&&chunk.south<=bounds.north)visible.push(i);
+ const key=visible.join(',');if(key===coastKey)return;
+ const fragment=document.createDocumentFragment();
+ for(const i of visible)el('path',{d:coastChunks[i].d,fill:'none',stroke:'#365766','stroke-width':1,
+  'stroke-linejoin':'round','stroke-linecap':'round','vector-effect':'non-scaling-stroke'},fragment);
+ $('coast').replaceChildren(fragment);coastKey=key;
+}
+function renderMapCredit(){
+ renderTrackSpeedLegend();
+ const layer=$('mapCredit');layer.replaceChildren();
+ const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();if(!matrix)return;
+ const point=new DOMPoint(rect.right-8,rect.bottom-8).matrixTransform(matrix.inverse());
+ const group=screenGroup(point.x,point.y,layer);
+ group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
+ const osm=D.coast_metadata?.license==='ODbL-1.0';
+ el('rect',{x:osm?-185:-90,y:osm?-26:-15,width:osm?185:90,height:osm?32:20,rx:3,fill:'#ffffff',opacity:.88},group);
+ const text=el('text',{x:-5,y:osm?-12:0,'text-anchor':'end','font-size':10,fill:'#173d4c'},group);
+ text.textContent=D.coast_metadata?.attribution||'Natural Earth';
+ if(osm)el('text',{x:-5,y:1,'text-anchor':'end','font-size':10,fill:'#173d4c'},group).textContent='openstreetmap.org/copyright';
+}
+const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff84'};
+const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
+const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set(featured);
+const boats=[...D.boats].sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
+const shownBoatNames=new Set(boats.filter(b=>featured.has(b.name)).map(b=>b.id));
+function syncBoatChoices(){
+ for(const [i,b] of boats.entries()){
+  const input=$('choices').children[i]?.querySelector('input');if(input)input.checked=chosen.has(b.name);
+ }
+}
+function toggleBoatName(id,focus=false){
+ shownBoatNames.has(id)?shownBoatNames.delete(id):shownBoatNames.add(id);
+ renderTracks();
+ if(focus)$('routes').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
+}
+// Assign the complete field once, so toggling boats never changes their colours.
+for(const [i,name] of [...new Set(boats.map(b=>b.name))].sort().entries()){
+ if(!Object.hasOwn(colours,name))colours[name]=`hsl(${((18+i*137.507764)%360).toFixed(3)},78%,${42+i%3*7}%)`;
+}
+for(const b of boats){const label=document.createElement('label');label.className='boat';const box=document.createElement('input');box.type='checkbox';box.checked=chosen.has(b.name);box.addEventListener('change',()=>changeBoatSelection(()=>{box.checked?chosen.add(b.name):chosen.delete(b.name);}));const dot=document.createElement('span');dot.className='dot';dot.style.background=colours[b.name];label.append(box,dot,document.createTextNode(b.name));$('choices').append(label)}
+for(const [name,lon,lat] of [['Helsingør',12.61,56.04],['København',12.57,55.67],['Stevns',12.45,55.28],['Møn',12.3,54.98],['Farø',11.99,54.95],['Agersø',11.2,55.21],['Storebæltsbroen',11.03,55.33],['Røsnæs',10.87,55.74],['Sj. Odde',11.3,55.97],['Gilleleje',12.31,56.13]]){const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('places'));el('circle',{cx:0,cy:0,r:2,fill:'#173d4c'},group);const n=el('text',{x:4,y:-4,fill:'#173d4c','font-size':11,stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);n.textContent=name}
+// Red mark in Snekkeløb: user-supplied 56° 2.391′ N, 11° 16.523′ E.
+{
+ const [x,y]=xy([11+16.523/60,56+2.391/60]),group=screenGroup(x,y,$('seamarks'));
+ el('circle',{id:'snekkeloebRedMark',cx:0,cy:0,r:5,fill:'#e02020',stroke:'#ffffff','stroke-width':1},group);
+ el('title',{},group).textContent='Rød i Snekkeløb · 56° 2.391′ N 11° 16.523′ E';
+}
+// Rute T is an open line through the user's waypoints, in the base map layer.
+for(const feature of D.course_lines?.features||[]){
+ const {kind,name,reference_utc}=feature.properties,coordinates=feature.geometry.coordinates;
+ const colour=kind==='start'?'#087b3d':'#c62738';
+ const group=el('g',{'data-course-line':kind},$('courseLines'));
+ el('title',{},group).textContent=`${name} · TracTrac${reference_utc?' · Mercutios start '+fmt(Date.parse(reference_utc)/1000):''}`;
+ el('path',{d:path(coordinates),fill:'none',stroke:'#ffffff','stroke-width':5,'vector-effect':'non-scaling-stroke'},group);
+ el('path',{'data-line-geometry':kind,d:path(coordinates),fill:'none',stroke:colour,'stroke-width':2.5,
+  'stroke-dasharray':kind==='finish'?'6 4':'none','vector-effect':'non-scaling-stroke'},group);
+ for(const [i,coordinate] of coordinates.entries()){
+  const [x,y]=xy(coordinate),marker=screenGroup(x,y,group);
+  el('circle',{r:3,fill:colour,stroke:'#ffffff','stroke-width':1},marker);
+  el('title',{},marker).textContent=feature.properties.endpoints[i].name;
+ }
+ const [x,y]=xy([(coordinates[0][0]+coordinates[1][0])/2,(coordinates[0][1]+coordinates[1][1])/2]);
+ const label=screenGroup(x,y,group);
+ el('text',{x:0,y:-10,'text-anchor':'middle',fill:colour,'font-size':12,'font-weight':750,
+  stroke:'#ffffff','stroke-width':3,'paint-order':'stroke'},label).textContent=name;
+}
+for(const feature of D.route_t?.features||[]){
+ const line=el('path',{'data-route-id':feature.id,d:path(feature.geometry.coordinates),fill:'none',
+  stroke:'#000000','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round',
+  'vector-effect':'non-scaling-stroke'},$('routeT'));
+ el('title',{},line).textContent=feature.properties.name+' · måtte ikke krydses under sejladsen';
+}
+let interval=null;
+const windLabels={era5:'ERA5',ecmwf_ifs:'ECMWF IFS',dmi_harmonie_arome_europe:'DMI HARMONIE'};
+let radarKey=null,radarToken=0,radarStatus='indlæser …',radarReady=Promise.resolve();
+function renderRadar(time){
+ const t=D.start+Math.floor((time-D.start)/600)*600;
+ $('precipitation').setAttribute('opacity',$('rainOpacity').value);
+ const enabled=$('rain').checked,key=`${t}:${enabled}`;
+ if(key===radarKey)return;
+ radarKey=key;const token=++radarToken;
+ $('radarImage').setAttribute('visibility','hidden');
+ if(!enabled){radarStatus='slået fra';$('rainPeriod').textContent='Radar slået fra';return}
+ const frame=D.radar?.frames.find(f=>f.time===t);
+ if(!frame){radarStatus='mangler';$('rainPeriod').textContent=`DMI radar mangler ved ${fmt(t)}`;return}
+ radarStatus='indlæser …';$('rainPeriod').textContent=`DMI radar: ${fmt(t)} · dBZ`;
+ let ready;radarReady=new Promise(resolve=>ready=resolve);
+ const img=new Image();
+ img.onload=()=>{
+  ready();if(token!==radarToken)return;
+  $('radarImage').setAttribute('href',img.src);$('radarImage').setAttribute('visibility','visible');
+  radarStatus=fmt(t);$('rainPeriod').textContent=`DMI radar: ${fmt(t)} · dBZ`;
+  status(currentTime());
+ };
+ img.onerror=()=>{ready();if(token!==radarToken)return;radarStatus='kunne ikke indlæses';$('rainPeriod').textContent=`DMI radar kunne ikke indlæses ved ${fmt(t)}`;status(currentTime())};
+ img.src=frame.file;
+}
+function status(t){$('status').textContent=`Vind: ${windLabels[$('windModel').value]} ${fmt(Math.floor(t/3600)*3600)} ${$('rain').checked?' · Radar DMI: '+radarStatus:''} · Tracks: interpoleret ved ${fmt(t)} · Noter gemmes i denne browser`}
+const WIND_ARROW_SPACING=90;
+function renderWindArrows(t=currentTime()) {
+ const layer=$('winds');layer.replaceChildren();
+ if(!$('wind').checked)return;
+ const map=$('map'),matrix=map.getScreenCTM();if(!matrix)return;
+ const inverse=matrix.inverse(),scale=1/Math.hypot(matrix.a,matrix.b),rect=map.getBoundingClientRect();
+ const model=$('windModel').value,samples=windSamplesAt(model,t),showNumbers=$('windNumbers').checked;
+ // The lattice belongs to the visible map. Zoom and pan change the geographic
+ // location sampled at each node, while its distance to the next stays 90 px.
+ for(let sy=WIND_ARROW_SPACING/2;sy<rect.height;sy+=WIND_ARROW_SPACING) {
+  for(let sx=WIND_ARROW_SPACING/2;sx<rect.width;sx+=WIND_ARROW_SPACING) {
+   const point=new DOMPoint(rect.left+sx,rect.top+sy).matrixTransform(inverse);
+   const lon=9.5+point.x*4.5/1000,lat=57-point.y*3/1180;
+   const wind=interpolateWind(samples,lon,lat);if(!wind)continue;
+   const group=screenGroup(point.x,point.y,layer);
+   group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${scale})`);
+   if(wind.speed>0) {
+    const length=9+wind.speed*1.4,dx=wind.east/wind.speed*length,dy=-wind.north/wind.speed*length;
+    el('line',{x1:-dx/2,y1:-dy/2,x2:dx/2,y2:dy/2,stroke:'#183b49','stroke-width':2,'marker-end':'url(#arrow)'},group);
+   } else el('circle',{r:2,fill:'#183b49'},group);
+   if(showNumbers) {
+    const text=el('text',{x:5,y:19,'font-size':10,fill:'#173d4c',stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);
+    text.textContent=wind.speed.toFixed(1)+' / '+(wind.gust==null?'–':wind.gust.toFixed(1));
+   }
+   el('title',{},group).textContent=`${windLabels[model]} · interpoleret: vind ${wind.speed.toFixed(1)} m/s, vindstød ${wind.gust==null?'mangler':wind.gust.toFixed(1)+' m/s'}, ${wind.direction==null?'vindstille':'fra '+wind.direction.toFixed(0)+'°'}, ${fmt(Math.floor(t/3600)*3600)}`;
+  }
+ }
+}
+function render(){const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderCoast();renderWindField(t);renderRadar(t);status(t);renderWindArrows(t);renderTraffic();renderMilitary();
+ renderTracks(t);
+ renderAnnotations();
+ renderMapCredit();
+}
+function renderTracks(t=currentTime()){
+ $('routes').replaceChildren();
+ const drawingOrder=boats.filter(b=>chosen.has(b.name)).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
+ for(const b of drawingOrder){
+  const first=timeBoundary(b.points,t-7200);
+  const end=timeBoundary(b.points,t,true);
+  const geometry=trackGeometry(b.points,t-7200,t);
+  if(!geometry)continue;
+  const boatLayer=el('g',{'data-boat-layer':b.id},$('routes'));
+  const markers=el('g',{class:'boat-markers'}),hits=el('g',{class:'track-hit-targets'});
+  const color=colours[b.name];
+  el('path',{class:'track-outline',d:geometry,fill:'none',stroke:'#17313e','stroke-width':TRACK_OUTLINE_WIDTH,'vector-effect':'non-scaling-stroke','stroke-linecap':'round','stroke-linejoin':'round'},boatLayer);
+  const speedTrack=el('g',{'data-boat-id':b.id,'data-point-count':end-first,'data-interpolation':'pchip','data-colouring':'sog-jet',fill:'none',
+   'stroke-linecap':'round','stroke-linejoin':'round'},boatLayer);
+  for(const segment of trackSpeedGeometry(b.points,b.speeds,t-7200,t)){
+   const line=el('path',{d:segment.d,stroke:segment.colour,'stroke-width':TRACK_STROKE_WIDTH,'vector-effect':'non-scaling-stroke','data-speed-bin':segment.bin},speedTrack);
+   el('title',{},line).textContent=`${b.name} · ${segment.bin<0?'fart mangler':`SOG ${segment.bin===TRACK_SPEED_BINS-1?'15+':(segment.bin*TRACK_SPEED_MAX/(TRACK_SPEED_BINS-1)).toFixed(1)} knob`} · TracTrac`;
+  }
+  el('path',{class:'track-hit-target','data-track-boat-id':b.id,d:geometry,fill:'none',stroke:'transparent',
+   'stroke-width':16,'vector-effect':'non-scaling-stroke','pointer-events':'stroke','stroke-linecap':'round'},hits);
+  boatLayer.append(hits,markers);
+  const position=trackPosition(b.points,t);
+  if(!position)continue;
+  const [x,y]=xy(position.point),group=screenGroup(x,y,markers);
+  group.setAttribute('class','boat-marker');group.dataset.boatMarker=b.id;
+  group.setAttribute('role','button');group.setAttribute('tabindex','0');
+  group.setAttribute('aria-label',`Vis/skjul navn: ${b.name}`);
+  group.setAttribute('aria-pressed',String(shownBoatNames.has(b.id)));
+  el('title',{},group).textContent=`${b.name} · ${position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
+  el('circle',{cx:0,cy:0,r:10,fill:'transparent','pointer-events':'all'},group);
+  el('circle',{class:'boat-dot',cx:0,cy:0,r:4,fill:color,stroke:'#14212a','stroke-width':1},group);
+  if(shownBoatNames.has(b.id)){
+   const text=el('text',{class:'boat-name','pointer-events':'none',x:7,y:({Mercutio:-12,Vera:15,My:-4,'THE HULK':27}[b.name]||3),fill:color,
+    'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},group);
+   text.textContent=b.name;
+  }
+ }
+
+ resizeSymbols();renderSpeedPins();
+}
+function step(n){if(finishInlineTextEditing()&&!$('time').disabled){setCurrentTime(timeAtOffset(+$('time').value+n));render()}}
+for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=render;$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value)};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
+$('play').onclick=()=>{if(interval){stopPlayback()}else if(!$('time').disabled){$('play').textContent='Pause';interval=setInterval(()=>{if($('time').disabled||+$('time').value>=+$('time').max){stopPlayback();return}step(60)},800)}};
+document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
+$('all').onclick=()=>changeBoatSelection(()=>{const all=boats.every(b=>chosen.has(b.name));chosen.clear();if(!all)for(const b of boats)chosen.add(b.name);});
+let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();resizeSymbols();renderAnnotations();renderMapCredit()} }$('reset').onclick=()=>{view=[230,250,620,760];setview()};
+const MIN_MAP_VIEW_WIDTH=2,MAX_MAP_VIEW_WIDTH=1800;
+$('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture)return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*(e.deltaY>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform($('map').getScreenCTM().inverse());view=[anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f];setview()},{passive:false});
+let drag=null;
+const map=$('map');
+// The map owns the gesture, including when it starts on SVG text or an image.
+// Native text selection and image dragging can otherwise cancel pointer events.
+map.ondragstart=e=>e.preventDefault();
+map.onpointerdown=e=>{
+ if(e.button!==0||drag)return;
+ if(beginDrawingGesture(e))return;
+ e.preventDefault();
+ drag={pointerId:e.pointerId,x:e.clientX,y:e.clientY,view:[...view],
+  boatId:e.target.closest('[data-boat-marker]')?.dataset.boatMarker,
+  noteIndex:e.target.closest('[data-note-index]')?.dataset.noteIndex,
+  trackBoatId:e.target.closest('[data-track-boat-id]')?.dataset.trackBoatId,
+  speedKey:e.target.closest('[data-speed-key]')?.dataset.speedKey,
+  speedAction:e.target.closest('[data-speed-action]')?.dataset.speedAction,
+  inverse:map.getScreenCTM().inverse(),moved:false};
+ map.setPointerCapture(e.pointerId);
+ map.classList.add('panning');
+};
+map.onpointermove=e=>{
+ if(moveDrawingGesture(e))return;
+ if(!drag||e.pointerId!==drag.pointerId)return;
+ e.preventDefault();
+ const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+ if(Math.hypot(dx,dy)>4)drag.moved=true;
+ if(!drag.moved)return;
+ const delta=new DOMPoint(dx,dy).matrixTransform(new DOMMatrix([
+  drag.inverse.a,drag.inverse.b,drag.inverse.c,drag.inverse.d,0,0]));
+ view=[drag.view[0]-delta.x,drag.view[1]-delta.y,drag.view[2],drag.view[3]];
+ setview();
+};
+function endPan(e){
+ if(endDrawingGesture(e))return;
+ if(!drag||e.pointerId!==drag.pointerId)return;
+ const click=e.type==='pointerup'&&!drag.moved,{boatId,noteIndex,trackBoatId,speedKey,speedAction}=drag;
+ drag=null;map.classList.remove('panning');
+ if(map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);
+ if(click){
+  if(placingNote)placeAnnotation(e);
+  else if(noteIndex!==undefined&&!document.body.classList.contains('presenting'))beginNoteEditing(notes[+noteIndex]);
+  else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
+  else if(boatId)toggleBoatName(boatId);
+  else if(trackBoatId)chooseTrackSpeed(e,trackBoatId);
+  else if(!document.body.classList.contains('presenting'))closeTrackSpeedSelection();
+ }
+}
+map.onpointerup=endPan;
+map.onpointercancel=endPan;
+map.onlostpointercapture=endPan;
+map.addEventListener('keydown',e=>{
+ const speedMarker=e.target.closest('[data-speed-key]');
+ if(speedMarker&&(e.key==='Enter'||e.key===' ')){
+  e.preventDefault();e.stopPropagation();handleSpeedPinClick(e.target.closest('[data-speed-action]')?.dataset.speedAction,speedMarker.dataset.speedKey);return;
+ }
+ const marker=e.target.closest('[data-boat-marker]');
+ if(marker&&(e.key==='Enter'||e.key===' ')){
+  e.preventDefault();e.stopPropagation();toggleBoatName(marker.dataset.boatMarker,true);
+ }
+});

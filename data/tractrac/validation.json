@@ -1,0 +1,52 @@
+{
+  "tracks": 106,
+  "positions": 730370,
+  "courses": {
+    "groensund": {
+      "competitors": 83,
+      "tracks": 83
+    },
+    "boegestroemmen": {
+      "competitors": 23,
+      "tracks": 23
+    }
+  },
+  "featured_boats": [
+    {
+      "id": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+      "name": "Mercutio",
+      "points": 12456,
+      "first_utc": "2026-06-11T07:08:17+00:00",
+      "last_utc": "2026-06-13T07:02:33+00:00"
+    },
+    {
+      "id": "groensund:cf9aff90-4624-013f-297e-04421a259aad",
+      "name": "THE HULK",
+      "points": 11013,
+      "first_utc": "2026-06-11T07:08:05+00:00",
+      "last_utc": "2026-06-13T07:02:30+00:00"
+    },
+    {
+      "id": "groensund:cf8e6940-4624-013f-2973-04421a259aad",
+      "name": "Vera",
+      "points": 12162,
+      "first_utc": "2026-06-11T07:08:17+00:00",
+      "last_utc": "2026-06-13T07:02:21+00:00"
+    },
+    {
+      "id": "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+      "name": "My",
+      "points": 10596,
+      "first_utc": "2026-06-11T07:08:55+00:00",
+      "last_utc": "2026-06-13T07:02:52+00:00"
+    },
+    {
+      "id": "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+      "name": "Moster",
+      "points": 9713,
+      "first_utc": "2026-06-11T07:08:57+00:00",
+      "last_utc": "2026-06-13T07:02:43+00:00"
+    }
+  ],
+  "shared_competitor_ids": []
+}

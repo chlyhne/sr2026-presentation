@@ -1,0 +1,125 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.4 2390de5a",
+  "osm3s": {
+    "timestamp_osm_base": "2026-11-07T10:09:06Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "way",
+  "id": 944138699,
+  "bounds": {
+    "minlat": 55.9036111,
+    "minlon": 11.0766667,
+    "maxlat": 56.1119444,
+    "maxlon": 11.2822167
+  },
+  "nodes": [
+    8741450927,
+    8741450926,
+    8741450924,
+    8741450923,
+    8741450925,
+    8741450927
+  ],
+  "geometry": [
+    { "lat": 55.9036111, "lon": 11.2322222 },
+    { "lat": 55.9188889, "lon": 11.1280556 },
+    { "lat": 56.0216667, "lon": 11.0766667 },
+    { "lat": 56.1119444, "lon": 11.1738889 },
+    { "lat": 56.0077833, "lon": 11.2822167 },
+    { "lat": 55.9036111, "lon": 11.2322222 }
+  ],
+  "tags": {
+    "landuse": "military",
+    "name": "EK R 11 Sjællands Odde W.",
+    "seamark:military_area:category": "firing",
+    "seamark:military_area:restriction": "restricted_entry",
+    "seamark:name": "EK R 11 Sjællands Odde W.",
+    "seamark:type": "military_area"
+  }
+},
+{
+  "type": "way",
+  "id": 944138700,
+  "bounds": {
+    "minlat": 55.9916667,
+    "minlon": 11.2215606,
+    "maxlat": 56.0772222,
+    "maxlon": 11.4044444
+  },
+  "nodes": [
+    8741450932,
+    8741450930,
+    8741450929,
+    8741450928,
+    8741450931,
+    8741450925,
+    8741450932
+  ],
+  "geometry": [
+    { "lat": 56.0661710, "lon": 11.2215606 },
+    { "lat": 56.0772222, "lon": 11.2488889 },
+    { "lat": 56.0730556, "lon": 11.3433333 },
+    { "lat": 56.0272222, "lon": 11.4044444 },
+    { "lat": 55.9916667, "lon": 11.3988889 },
+    { "lat": 56.0077833, "lon": 11.2822167 },
+    { "lat": 56.0661710, "lon": 11.2215606 }
+  ],
+  "tags": {
+    "landuse": "military",
+    "name": "EK R 12 Gniben",
+    "seamark:military_area:category": "firing",
+    "seamark:military_area:restriction": "restricted_entry",
+    "seamark:name": "EK R 20 Gniben",
+    "seamark:type": "military_area"
+  }
+},
+{
+  "type": "way",
+  "id": 1108054789,
+  "bounds": {
+    "minlat": 55.9577833,
+    "minlon": 11.1738833,
+    "maxlat": 56.2934667,
+    "maxlon": 11.8183333
+  },
+  "nodes": [
+    8741450925,
+    8741450932,
+    10138628654,
+    10138628653,
+    10138628652,
+    10138628651,
+    10138628650,
+    10138628649,
+    10138628648,
+    8741450925
+  ],
+  "geometry": [
+    { "lat": 56.0077833, "lon": 11.2822167 },
+    { "lat": 56.0661710, "lon": 11.2215606 },
+    { "lat": 56.1119500, "lon": 11.1738833 },
+    { "lat": 56.1366667, "lon": 11.2544500 },
+    { "lat": 56.2934667, "lon": 11.4550000 },
+    { "lat": 56.2934667, "lon": 11.6052833 },
+    { "lat": 56.0394500, "lon": 11.8183333 },
+    { "lat": 56.0200000, "lon": 11.7933333 },
+    { "lat": 55.9577833, "lon": 11.6402833 },
+    { "lat": 56.0077833, "lon": 11.2822167 }
+  ],
+  "tags": {
+    "landuse": "military",
+    "military": "danger_area",
+    "name": "EK R 19 MULTEX",
+    "seamark:military_area:category": "firing",
+    "seamark:military_area:restriction": "restricted_entry",
+    "seamark:name": "EK R 19 MULTEX",
+    "seamark:type": "military_area"
+  }
+}
+
+  ]
+}

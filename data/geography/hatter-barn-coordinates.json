@@ -1,0 +1,15 @@
+{
+  "name": "Hatter Barn skydeområde",
+  "source": "Brugerens syv hjørnekoordinater for Hatter Barn",
+  "source_date": "2026-11-07",
+  "format": "Hver koordinat er [grader, decimalminutter], nordlig bredde og østlig længde. Hjørnerne er i brugerens rækkefølge.",
+  "points": [
+    {"latitude": [55, "47.889"], "longitude": [10, "51.639"]},
+    {"latitude": [55, "47.890"], "longitude": [10, "50.240"]},
+    {"latitude": [55, "49.640"], "longitude": [10, "50.240"]},
+    {"latitude": [55, "53.880"], "longitude": [10, "56.081"]},
+    {"latitude": [55, "54.750"], "longitude": [10, "57.870"]},
+    {"latitude": [55, "54.750"], "longitude": [10, "60.000"]},
+    {"latitude": [55, "53.270"], "longitude": [10, "59.530"]}
+  ]
+}

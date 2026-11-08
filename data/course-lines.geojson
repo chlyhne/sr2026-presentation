@@ -1,0 +1,115 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "source": "TracTrac event 3539",
+    "event_url": "https://www.tractrac.com/event-page/event_20260610_SjllandRun/3539",
+    "source_courses": [
+      "groensund",
+      "boegestroemmen"
+    ],
+    "duplicate_course_lines_combined": true,
+    "source_coordinates_preserved": true,
+    "control_replay_sources": [
+      "https://liveserver1.tractrac.com/events/event_20260610_SjllandRun/datafiles/d1a9e190-4616-013f-25ac-04421a259aad-controls.mtb",
+      "https://liveserver1.tractrac.com/events/event_20260610_SjllandRun/datafiles/c5dfe7f0-4616-013f-25a9-04421a259aad-controls.mtb"
+    ]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "tractrac/start",
+      "properties": {
+        "kind": "start",
+        "name": "Start",
+        "source_name": "Start",
+        "map_item_id": "db6419f0-4625-013f-2a2d-04421a259aad",
+        "source": "TracTrac event 3539, SR Grønsund and SR Bøgestrømmen",
+        "endpoints": [
+          {
+            "id": "c93d0d40-4625-013f-2a25-04421a259aad",
+            "name": "Start A",
+            "is_static": false,
+            "source_position_utc": "2026-06-11T07:12:49+00:00",
+            "coordinates": [
+              12.615764,
+              56.052284
+            ]
+          },
+          {
+            "id": "d1076d20-4625-013f-2a29-04421a259aad",
+            "name": "Start B",
+            "is_static": false,
+            "source_position_utc": "2026-06-11T08:29:55+00:00",
+            "coordinates": [
+              12.607778,
+              56.048291
+            ]
+          }
+        ],
+        "reference_boat": "Mercutio",
+        "reference_class": "Start 3 - Løb 5 Two-Racing",
+        "reference_utc": "2026-06-11T08:30:00+00:00",
+        "position_selection": "latest source position at or before Mercutio class start; fixed snapshot"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            12.615764,
+            56.052284
+          ],
+          [
+            12.607778,
+            56.048291
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tractrac/finish",
+      "properties": {
+        "kind": "finish",
+        "name": "Mål",
+        "source_name": "Finish",
+        "map_item_id": "0484e8f0-4616-013f-bc30-1c6b0055db37",
+        "source": "TracTrac event 3539, SR Grønsund and SR Bøgestrømmen",
+        "endpoints": [
+          {
+            "id": "7a664740-2932-013e-fe47-04421a259aad",
+            "name": "Helsingør Mål Mole",
+            "is_static": true,
+            "source_position_utc": null,
+            "coordinates": [
+              12.618503,
+              56.043069
+            ]
+          },
+          {
+            "id": "9730c3f0-2932-013e-fe4a-04421a259aad",
+            "name": "Helsingør Mål Bøje",
+            "is_static": true,
+            "source_position_utc": null,
+            "coordinates": [
+              12.622832,
+              56.044775
+            ]
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            12.618503,
+            56.043069
+          ],
+          [
+            12.622832,
+            56.044775
+          ]
+        ]
+      }
+    }
+  ]
+}
