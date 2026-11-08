@@ -102,6 +102,7 @@ function syncBoatChoices(){
  }
 }
 function toggleBoatName(id,focus=false){
+ flushRender();
  shownBoatNames.has(id)?shownBoatNames.delete(id):shownBoatNames.add(id);
  renderTracks();
  if(focus)$('boatMarkers').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
@@ -213,10 +214,30 @@ function renderWindArrows(t=currentTime()) {
   }
  }
 }
-function render(){const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderCoast();renderWindField(t);renderRadar(t);status(t);renderWindArrows(t);renderTraffic();renderMilitary();
- renderTracks(t);
+// Keep state changes synchronous, but combine UI paint requests until the next
+// browser frame. Full redraws subsume viewport-only redraws, in either order.
+let renderRequest=null,renderRequestKind=null;
+function requestRender({viewportOnly=false}={}){
+ if(renderRequestKind!=='full')renderRequestKind=viewportOnly?'viewport':'full';
+ if(renderRequest===null)renderRequest=requestAnimationFrame(flushRender);
+}
+function consumeRenderRequest(){
+ if(renderRequest!==null)cancelAnimationFrame(renderRequest);
+ const kind=renderRequestKind;renderRequest=null;renderRequestKind=null;return kind;
+}
+function flushRender(){
+ const kind=consumeRenderRequest();
+ if(kind==='full')drawMap();else if(kind==='viewport')drawViewport();
+}
+// Retain an immediate path for exports, scene restoration and programmatic use.
+function render(){consumeRenderRequest();drawMap();}
+function drawMap(){const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderCoast();renderWindField(t);renderRadar(t);status(t);renderWindArrows(t);renderTraffic();renderMilitary();
+ renderTracks(t,{includeSpeedPins:false});
  renderAnnotations();
  renderMapCredit();
+}
+function drawViewport(){
+ renderCoast();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit();
 }
 // Keep each boat's paths alive. Most speed buckets are unchanged between frames.
 const trackLayers=new Map();
@@ -232,7 +253,7 @@ function createTrackLayer(boat){
 function updateTrackPath(path,d){
  if(path.getAttribute('d')!==d)path.setAttribute('d',d);
 }
-function renderTracks(t=currentTime()){
+function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  clearTrackHover();
  const markerLayer=$('boatMarkers');
  markerLayer.replaceChildren();
@@ -258,7 +279,7 @@ function renderTracks(t=currentTime()){
    text.textContent=b.name;
   }
  }
- resizeSymbols();renderSpeedPins();
+ resizeSymbols();if(includeSpeedPins)renderSpeedPins();
 }
 // Retained for browsers without WebGL and for exact vector PNG snapshots.
 function renderSVGTracks(t,drawingOrder){
@@ -294,15 +315,15 @@ function renderSVGTracks(t,drawingOrder){
   }
  }
 }
-function step(n){if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));render()}}
-for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=render;$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value)};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
+function step(n){if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
+for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value)};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
 let playbackTickTime=0,playbackRate=1,playbackOffset=0;
 function advancePlayback(now){
  if($('time').disabled){stopPlayback();return;}
  playbackOffset=Math.min(timelineLength-1,playbackOffset+(now-playbackTickTime)/1000*playbackRate);
  playbackTickTime=now;
- setCurrentTime(timeAtOffset(playbackOffset,{fractional:true}),{fractional:true,crossedEvents:true});render();
+ setCurrentTime(timeAtOffset(playbackOffset,{fractional:true}),{fractional:true,crossedEvents:true});requestRender();
  if(playbackOffset>=timelineLength-1)stopPlayback();
 }
 $('play').onclick=()=>{
@@ -320,7 +341,7 @@ $('playbackSpeed').onchange=()=>{
 };
 document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
 $('all').onclick=()=>changeBoatSelection(()=>{const all=boats.every(b=>chosen.has(b.name));chosen.clear();if(!all)for(const b of boats)chosen.add(b.name);});
-let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit()} }$('reset').onclick=()=>{view=[230,250,620,760];setview()};
+let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));requestRender({viewportOnly:!updateTimeline()}); }$('reset').onclick=()=>{view=[230,250,620,760];setview()};
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
 $('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture)return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*(e.deltaY>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform($('map').getScreenCTM().inverse());view=[anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f];setview()},{passive:false});
 let drag=null;

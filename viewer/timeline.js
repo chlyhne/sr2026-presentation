@@ -55,7 +55,7 @@ function seekTimeline(offset,{snap=true}={}){
  if(nearest){
   activePresentationNote=nearest;setCurrentTime(nearest.time);
  }else setCurrentTime(candidateTime,{crossedEvents:true});
- render();
+ requestRender();
 }
 
 function trackBlocks(points){

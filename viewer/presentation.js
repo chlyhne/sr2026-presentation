@@ -98,16 +98,16 @@ function editableSettingsEvent(){
 let lastLayerSettings=layerSettings();
 function changeEventLayers(event){
  const next=layerSettings(),key=event.currentTarget.id,changes={[key]:next[key]};
- if(!finishInlineTextEditing()){applyLayerSettings(lastLayerSettings);render();return;}
+ if(!finishInlineTextEditing()){applyLayerSettings(lastLayerSettings);requestRender();return;}
  const target=editableSettingsEvent();
  if(target){
   const updated={...target,settings:{...target.settings,...changes}};
   if(!persistNotes(notes.map(n=>n===target?updated:n))){
-   applyLayerSettings(lastLayerSettings);render();return;
+   applyLayerSettings(lastLayerSettings);requestRender();return;
   }
   target.settings=updated.settings;
  }else if(editingNote)noteDraft.settings={...noteDraft.settings,...changes};
- lastLayerSettings=next;render();
+ lastLayerSettings=next;requestRender();
 }
 for(const id of EVENT_LAYER_KEYS)$(id).onchange=changeEventLayers;
 function changeBoatSelection(change){
@@ -127,7 +127,7 @@ function changeBoatSelection(change){
  prepareSelectedTracks();
  $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline();
  if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
- render();
+ requestRender();
 }
 function saveAnnotation(point) {
  if(!finishInlineTextEditing())return;
@@ -338,7 +338,7 @@ $('nextEvent').onclick=()=>movePresentationEvent(1);
 $('eventSelect').onchange=()=>showPresentationEvent(Number($('eventSelect').value));
 document.addEventListener('keydown',handlePresentationKey,true);
 document.addEventListener('fullscreenchange',()=>{
- updateFullscreenButton();requestAnimationFrame(()=>webglTracks.redraw());
+ updateFullscreenButton();requestRender({viewportOnly:true});
 });
 $('presentationFullscreen').onclick=async()=>{
  $('presentationMessage').textContent='';
@@ -395,16 +395,17 @@ async function captureMap() {
  stopPlayback();const button=$('capture');button.disabled=true;$('captureStatus').textContent='Gør kortbilledet klar …';
  let svgURL;
  try {
+  await document.fonts.ready;
   // Await the currently requested radar frame, even after a rapid time change.
   let radarPending,windPending;
   do {
+   flushRender();
    radarPending=radarReady;windPending=windReady;await Promise.all([radarPending,windPending]);
    await Promise.all([radarImageBuffer.paintReady,windImageBuffer.paintReady]);
   }
-  while(radarPending!==radarReady||windPending!==windReady);
+  while(renderRequestKind!==null||radarPending!==radarReady||windPending!==windReady);
   if($('wind').checked&&windFieldError)throw new Error('Vindkortet kunne ikke indlæses. Prøv igen.');
   if($('rain').checked && radarStatus==='kunne ikke indlæses')throw new Error('Radaren kunne ikke indlæses. Prøv igen, eller slå radarlaget fra.');
-  await document.fonts.ready;
   const map=$('map'),rect=map.getBoundingClientRect(),inverse=map.getScreenCTM().inverse();
   const topLeft=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
   const bottomRight=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
@@ -453,4 +454,4 @@ async function captureMap() {
 $('capture').onclick=captureMap;
 $('note').addEventListener('input',()=>{if(editingNote)renderAnnotations();else if(pendingEventImage||hasPendingEventVideo())updatePresentationControls();});
 updateTimeline();showNotes();render();
-new ResizeObserver(()=>{if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit()}}).observe($('map'));
+new ResizeObserver(()=>requestRender({viewportOnly:!updateTimeline()})).observe($('map'));

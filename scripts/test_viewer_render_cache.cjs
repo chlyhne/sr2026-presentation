@@ -21,7 +21,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
    assert($('winds').firstChild!==hourArrows&&$('winds').querySelector('text'),'Wind numbers not refreshed');
    $('wind').checked=false;renderWindArrows();assert(!$('winds').children.length,'Wind did not hide');
    $('wind').checked=true;renderWindArrows();assert($('winds').children.length,'Wind did not return');
-   const beforeZoom=$('winds').firstChild;view=[view[0]+1,view[1]+1,view[2]*.8,view[3]*.8];setview();
+   const beforeZoom=$('winds').firstChild;view=[view[0]+1,view[1]+1,view[2]*.8,view[3]*.8];setview();flushRender();
    assert($('winds').firstChild!==beforeZoom,'Pan/zoom did not rebuild wind');
    assert($('trackSpeedLegend').firstChild!==legend,'Pan/zoom did not reposition legend');
    return {checks:'static DOM reuse, moving boats, hourly wind, layer toggles, numbers, pan and zoom'};
