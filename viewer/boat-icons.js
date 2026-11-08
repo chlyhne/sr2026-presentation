@@ -5,6 +5,8 @@ const boatMetadataOverrides={
  'the hulk':{lengthM:10.3,beamM:3.18},
  'rosa-lux':{lengthM:10,beamM:3},
  xbox:{lengthM:12.75,beamM:4.18,hull:'modern'},
+ 'quinta light':{lengthM:12.55,beamM:4.3,hull:'modern'},
+ 'hansen 3.5':{lengthM:10.65,beamM:3.53,hull:'modern'},
  alice:{lengthM:8,beamM:2.51},moster:{lengthM:7.77,beamM:2.5},
  slipstik:{lengthM:10,beamM:2.3,hull:'classic'},ambra:{lengthM:10,beamM:2.3,hull:'classic'}
 };
