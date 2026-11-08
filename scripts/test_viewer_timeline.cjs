@@ -9,7 +9,7 @@ async function check(type){
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>typeof captureMap==='function');
+  await page.waitForFunction(()=>typeof seekTimeline==='function');
   const fixtures=await page.evaluate(()=>{
    const settings={...sceneSettings(),rain:false,wind:false,boats:['Mercutio']};
    return [{time:D.start+3600,text:'Event ved start',point:xy([12.6,56.02]),view:[230,250,620,760],settings},
@@ -107,7 +107,7 @@ async function check(type){
   const gapChecks=await page.evaluate(()=>{
    const start=D.start,end=D.end;
    const points=[[11,55,start+1000],[11.001,55,start+1060],[11,55,end-1060],[11.001,55,end-1000]];
-   boats.splice(0,boats.length,{id:'gap-test',name:'Gap Test',metadata:boatMetadata('Gap Test'),points,speeds:[4,4,5,5]});
+   boats.splice(0,boats.length,{id:'gap-test',name:'Gap Test',points,speeds:[4,4,5,5]});
    colours['Gap Test']='#ffdc42';chosen.clear();chosen.add('Gap Test');
    const [x,y]=xy([11,55]),mapView=[x-5,y-5,20,20];
    const settings={...sceneSettings(),boats:['Gap Test']};
@@ -152,7 +152,7 @@ async function check(type){
   });assert.equal(gapChecks,true);
   const proportionalSnapChecks=await page.evaluate(()=>{
    const eventTime=D.start+10800,[x,y]=xy([11,55]);
-   const boat={id:'snap-test',name:'Snap Test',metadata:boatMetadata('Snap Test'),points:Array.from({length:361},(_,i)=>[11,55,D.start+i*60]),speeds:Array(361).fill(5)};
+   const boat={id:'snap-test',name:'Snap Test',points:Array.from({length:361},(_,i)=>[11,55,D.start+i*60]),speeds:Array(361).fill(5)};
    boats.splice(0,boats.length,boat);colours[boat.name]='#ffdc42';chosen.clear();chosen.add(boat.name);
    notes=[{time:eventTime,text:'Zoom snap',view:[x-310,y-310,620,620],settings:{...sceneSettings(),boats:[boat.name]}}];
    showNotes();restoreNote(notes[0]);

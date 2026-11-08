@@ -11,8 +11,7 @@ function renderMilitary(){
  const layer=$('militaryAreas'),enabled=$('military').checked;
  layer.setAttribute('display',enabled?'inline':'none');
  if(!enabled)return;
- const viewport=mapViewport();if(!viewport)return;
- const {bounds,matrix}=viewport;
+ const bounds=visibleMapBounds(),matrix=$('map').getScreenCTM();if(!bounds||!matrix)return;
  const scale=1/Math.hypot(matrix.a,matrix.b);
  militaryHatch.setAttribute('patternTransform',`scale(${scale})`);
  const key=[bounds.west,bounds.east,bounds.south,bounds.north].join(':');if(key===militaryKey)return;
