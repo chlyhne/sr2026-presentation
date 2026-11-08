@@ -138,8 +138,8 @@ void main(){
   this.time=time;this.order=order;
   if(!this.active)return false;
   try{
-   const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();
-   if(!matrix||!rect.width||!rect.height)return true;
+   const viewport=mapViewport();if(!viewport)return true;
+   const {rect,matrix,topLeft:top,viewBox}=viewport;
    const ratio=window.devicePixelRatio||1,width=Math.max(1,Math.round(rect.width*ratio)),height=Math.max(1,Math.round(rect.height*ratio));
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
    const key=[time,viewportKey,...order.map(b=>b.id)].join(':');
@@ -148,14 +148,13 @@ void main(){
    const gl=this.gl,u=this.uniforms;
    gl.useProgram(this.program);
    if(this.viewportKey!==viewportKey){
-    const inverse=matrix.inverse(),top=new DOMPoint(rect.left,rect.top).matrixTransform(inverse),bottom=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
-    for(const [name,value] of Object.entries({x:top.x,y:top.y,width:bottom.x-top.x,height:bottom.y-top.y}))this.host.setAttribute(name,value);
+    for(const [i,name] of ['x','y','width','height'].entries())this.host.setAttribute(name,viewBox[i]);
     if(this.canvas.width!==width)this.canvas.width=width;if(this.canvas.height!==height)this.canvas.height=height;
     gl.uniform4f(u.origin,Math.fround(top.x),Math.fround(top.y),top.x-Math.fround(top.x),top.y-Math.fround(top.y));
     gl.uniformMatrix2fv(u.screen,false,new Float32Array([matrix.a,matrix.b,matrix.c,matrix.d]));
     gl.uniform2f(u.size,rect.width,rect.height);this.viewportKey=viewportKey;
    }
-   gl.viewport(0,0,width,height);gl.clearColor(0,0,0,0);gl.clearDepth(1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+   gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);gl.clearColor(0,0,0,0);gl.clearDepth(1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
    gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.useProgram(this.program);
    gl.uniform2f(u.windowTime,time-7200-D.start,time-D.start);
    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.palette);gl.uniform1i(u.palette,0);
