@@ -502,6 +502,7 @@ Positionsmarkørerne bruger skroget fra `modern.svg`, kopieret fra
 `random simuleringer/cuteboat.svg`. Metadata i `boat-icons.js` angiver Vera, My,
 Mercutio og saltamalin som 8 × 2,54 meter. THE HULK er 10,3 × 3,18 meter,
 Rosa-Lux 10 × 3 meter, Alice 8 × 2,51 meter og Moster 7,77 × 2,5 meter.
+XBOX er 12,75 × 4,18 meter med `modern` skrogform.
 Alle øvrige både har foreløbige mål
 på 10 × 3 meter (`estimated: true`). Hver båd har et `metadata`-felt med
 `lengthM`, `beamM` og `hull`. `hull` er `modern` som standard; Slipstik og Ambra

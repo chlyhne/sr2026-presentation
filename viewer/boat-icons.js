@@ -4,6 +4,7 @@ const boatMetadataOverrides={
  my:{lengthM:8,beamM:2.54},saltamalin:{lengthM:8,beamM:2.54},
  'the hulk':{lengthM:10.3,beamM:3.18},
  'rosa-lux':{lengthM:10,beamM:3},
+ xbox:{lengthM:12.75,beamM:4.18,hull:'modern'},
  alice:{lengthM:8,beamM:2.51},moster:{lengthM:7.77,beamM:2.5},
  slipstik:{lengthM:10,beamM:2.3,hull:'classic'},ambra:{lengthM:10,beamM:2.3,hull:'classic'}
 };
