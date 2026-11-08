@@ -544,6 +544,20 @@ fortsat i kladden, indtil der klikkes Udgiv.
 
 ## Genbrug under afspilning
 
+Gentagne tegneønsker fra afspilning, tidslinje, lag, bådvalg, zoom og resize
+samles med `requestRender()` til næste `requestAnimationFrame`. Tegningen læser
+den seneste tilstand. En fuld gentegning har forrang over en opdatering af
+kortudsnittet; zoom alene genbruger de eksisterende bådmarkører. Tidsændringer,
+eventvalg og lagring sker stadig synkront, så mellemtrin ikke tabes i logikken.
+Den synkrone `render()` bevares til gendannelse af scener og programmatisk brug,
+og `flushRender()` udfører ventende arbejde før fx PNG-eksport. Eksport afventer
+derefter også de aktuelle vejrbufferes billeder. Fartmærker tegnes én gang pr.
+fuld gentegning. Opløsning, sporpræcision og afspilningshastigheder er uændrede.
+
+`node scripts/test_viewer_render_scheduler.cjs` kontrollerer samling af input,
+seneste tilstand, prioritet, synkron tegning, ventende arbejde under en tegning,
+genbrug ved panorering og eksport af den seneste scene.
+
 Sporlaget bruger WebGL 2 i `track-renderer.js`. Hvert kildeinterval gemmes én
 gang i en fast GPU-buffer med den oprindelige PCHIP-kurves koefficienter,
 tidsstempler og registrerede fartværdier. Bufferne forberedes for hele sejladsen
