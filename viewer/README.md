@@ -550,7 +550,8 @@ når gamle punkter forlader to-timersvinduet.
 
 Radar og vindfarvefelt har hver to SVG-billedbuffere. Det næste radartidspunkt
 og næste vindtime indlæses og afkodes på forhånd. Den færdige buffer vises ved
-tidsskiftet. Et uventet tidsspring beholder det aktuelle billede, indtil det
+tidsskiftet. Den gamle buffer beholdes gennem den første tegnecyklus, før
+den skjules og må genbruges, så skiftet ikke efterlader et tomt billede. Et uventet tidsspring beholder det aktuelle billede, indtil det
 nye er klart; forældede indlæsninger kan ikke overtage visningen. Manglende
 radardata skjules fortsat og markeres som manglende. PNG-eksport afventer
 det valgte radar- og vindbillede og medtager kun de synlige buffere.
