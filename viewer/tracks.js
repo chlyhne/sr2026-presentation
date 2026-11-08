@@ -55,6 +55,7 @@ function getTrackSpeedCache(points,speeds){
 }
 // Prepare the whole voyage before playback, then retain it for reverse seeks.
 function prepareBoatTrack(boat){
+ if(typeof webglTracks!=='undefined'&&webglTracks.active){webglTracks.prepare(boat);return;}
  const {points,speeds}=boat,cache=getTrackSpeedCache(points,speeds);
  if(cache.prepared)return;
  const model=getTrackModel(points);

@@ -12,15 +12,16 @@ function trackSpeedSample(boat,time){
  const speed=speedBin(s0)<0||speedBin(s1)<0?null:s0+(s1-s0)*(time-a[2])/(b[2]-a[2]);
  return {boatId:boat.id,time,point:trackValue(points,i,time).point,speed};
 }
-function nearestTrackSpeed(clientX,clientY,boatId){
+function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
  const matrix=$('map').getScreenCTM();if(!matrix)return null;
- const now=currentTime(),start=now-7200,limit=12*12;
+ const now=currentTime(),start=now-7200,limit=topmost?8*8:12*12;
  let best=null,bestDistance=limit;
  function distance(point){
   const [x,y]=xy(point),dx=matrix.a*x+matrix.c*y+matrix.e-clientX,dy=matrix.b*x+matrix.d*y+matrix.f-clientY;
   return dx*dx+dy*dy;
  }
- for(const boat of boats){
+ const order=topmost&&webglTracks.active?[...webglTracks.order].reverse():boats;
+ for(const boat of order){
   if(!chosen.has(boat.name)||(boatId&&boat.id!==boatId))continue;
   const points=boat.points,model=getTrackModel(points);
   for(let i=Math.max(0,timeBoundary(points,start)-1);i<points.length&&points[i][2]<=now;i++){
@@ -52,6 +53,7 @@ function nearestTrackSpeed(clientX,clientY,boatId){
    if(d<minimum){minimum=d;nearest=refined;}
    if(minimum<=bestDistance){bestDistance=minimum;best={boatId:boat.id,time:nearest};}
   }
+  if(topmost&&best)return best;
  }
  return best;
 }
@@ -60,7 +62,35 @@ function matchingSpeedPin(sample){
 }
 function chooseTrackSpeed(e,boatId){
  if(document.body.classList.contains('presenting'))return;
- stopPlayback();pickedTrackSpeed=nearestTrackSpeed(e.clientX,e.clientY,boatId);renderSpeedPins();
+ pickedTrackSpeed=nearestTrackSpeed(e.clientX,e.clientY,boatId,!boatId&&webglTracks.active);
+ if(pickedTrackSpeed)stopPlayback();
+ renderSpeedPins();
+}
+// SVG paths supplied hover titles/cursors. The GPU layer has no DOM hit paths;
+// resolve hover on demand while paused, independently of the playback loop.
+let trackHoverTimer=null,trackHoverTip=null;
+function clearTrackHover(){
+ if(trackHoverTimer!==null){clearTimeout(trackHoverTimer);trackHoverTimer=null;}
+ if(trackHoverTip&&!trackHoverTip.hidden){trackHoverTip.hidden=true;$('map').classList.remove('track-hover');}
+}
+function updateTrackHover(e){
+ if(!webglTracks.active||interval||placingNote||drawingTool!=='pan'||document.body.classList.contains('presenting')||
+  e.target.closest('[data-boat-marker],[data-note-index],[data-speed-key]')){clearTrackHover();return;}
+ if(trackHoverTimer!==null)clearTimeout(trackHoverTimer);
+ const {clientX,clientY}=e;
+ trackHoverTimer=setTimeout(()=>{
+  trackHoverTimer=null;
+  const hit=nearestTrackSpeed(clientX,clientY,undefined,true);
+  if(!hit){clearTrackHover();return;}
+  const boat=boats.find(b=>b.id===hit.boatId),sample=trackSpeedSample(boat,hit.time);
+  if(!sample){clearTrackHover();return;}
+  if(!trackHoverTip){trackHoverTip=document.createElement('div');trackHoverTip.id='trackHover';trackHoverTip.setAttribute('role','tooltip');document.body.append(trackHoverTip);}
+  const speed=sample.speed===null?'fart mangler':`SOG ${sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})} knob`;
+  trackHoverTip.textContent=`${boat.name} · ${speed} · TracTrac`;
+  trackHoverTip.hidden=false;trackHoverTip.style.left=Math.max(4,Math.min(clientX+12,innerWidth-trackHoverTip.offsetWidth-4))+'px';
+  trackHoverTip.style.top=Math.max(4,Math.min(clientY+16,innerHeight-trackHoverTip.offsetHeight-4))+'px';
+  $('map').classList.add('track-hover');
+ },80);
 }
 function closeTrackSpeedSelection(){pickedTrackSpeed=null;renderSpeedPins();}
 function toggleSpeedPin(){

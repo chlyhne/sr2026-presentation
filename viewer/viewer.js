@@ -229,40 +229,15 @@ function updateTrackPath(path,d){
  if(path.getAttribute('d')!==d)path.setAttribute('d',d);
 }
 function renderTracks(t=currentTime()){
- const routes=$('routes'),markerLayer=$('boatMarkers');
+ clearTrackHover();
+ const markerLayer=$('boatMarkers');
  markerLayer.replaceChildren();
  const drawingOrder=boats.filter(b=>chosen.has(b.name)).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
- const selected=new Set(drawingOrder.map(b=>b.id));
- for(const [id,layer] of trackLayers)if(!selected.has(id)){layer.group.remove();trackLayers.delete(id);}
- let previous=null;
+ if(webglTracks.render(t,drawingOrder)){
+  for(const layer of trackLayers.values())layer.group.remove();trackLayers.clear();
+ }else renderSVGTracks(t,drawingOrder);
  for(const b of drawingOrder){
-  const first=timeBoundary(b.points,t-7200),end=timeBoundary(b.points,t,true);
-  const geometry=trackGeometry(b.points,t-7200,t);
-  if(!geometry){
-   trackLayers.get(b.id)?.group.remove();trackLayers.delete(b.id);continue;
-  }
-  let layer=trackLayers.get(b.id);
-  if(!layer){layer=createTrackLayer(b);trackLayers.set(b.id,layer);}
-  const {group:boatLayer,outline,speedTrack,hit,markers,speedPaths}=layer;
-  const next=previous?previous.nextElementSibling:routes.firstElementChild;
-  if(next!==boatLayer)routes.insertBefore(boatLayer,next);
-  previous=boatLayer;
-  const color=colours[b.name];
-  updateTrackPath(outline,geometry);updateTrackPath(hit,geometry);
-  speedTrack.setAttribute('data-point-count',end-first);
-  const segments=trackSpeedGeometry(b.points,b.speeds,t-7200,t),bins=new Set(segments.map(s=>s.bin));
-  for(const [bin,path] of speedPaths)if(!bins.has(bin)){path.remove();speedPaths.delete(bin);}
-  for(const [index,segment] of segments.entries()){
-   let line=speedPaths.get(segment.bin);
-   if(!line){
-    line=el('path',{stroke:segment.colour,'stroke-width':TRACK_STROKE_WIDTH,'vector-effect':'non-scaling-stroke','data-speed-bin':segment.bin});
-    el('title',{},line).textContent=`${b.name} · ${segment.bin<0?'fart mangler':`SOG ${segment.bin===TRACK_SPEED_BINS-1?'15+':(segment.bin*TRACK_SPEED_MAX/(TRACK_SPEED_BINS-1)).toFixed(1)} knob`} · TracTrac`;
-    speedPaths.set(segment.bin,line);
-   }
-   if(speedTrack.children[index]!==line)speedTrack.insertBefore(line,speedTrack.children[index]||null);
-   updateTrackPath(line,segment.d);
-  }
-  markers.replaceChildren();markerLayer.append(markers);
+  const markers=el('g',{class:'boat-markers'},markerLayer),color=colours[b.name];
   const position=trackPosition(b.points,t);
   if(!position)continue;
   const [x,y]=xy(position.point),group=screenGroup(x,y,markers);
@@ -279,8 +254,41 @@ function renderTracks(t=currentTime()){
    text.textContent=b.name;
   }
  }
-
  resizeSymbols();renderSpeedPins();
+}
+// Retained for browsers without WebGL and for exact vector PNG snapshots.
+function renderSVGTracks(t,drawingOrder){
+ const routes=$('routes');
+ const selected=new Set(drawingOrder.map(b=>b.id));
+ for(const [id,layer] of trackLayers)if(!selected.has(id)){layer.group.remove();trackLayers.delete(id);}
+ let previous=null;
+ for(const b of drawingOrder){
+  const first=timeBoundary(b.points,t-7200),end=timeBoundary(b.points,t,true);
+  const geometry=trackGeometry(b.points,t-7200,t);
+  if(!geometry){
+   trackLayers.get(b.id)?.group.remove();trackLayers.delete(b.id);continue;
+  }
+  let layer=trackLayers.get(b.id);
+  if(!layer){layer=createTrackLayer(b);trackLayers.set(b.id,layer);}
+  const {group:boatLayer,outline,speedTrack,hit,speedPaths}=layer;
+  const next=previous?previous.nextElementSibling:routes.firstElementChild;
+  if(next!==boatLayer)routes.insertBefore(boatLayer,next);
+  previous=boatLayer;
+  updateTrackPath(outline,geometry);updateTrackPath(hit,geometry);
+  speedTrack.setAttribute('data-point-count',end-first);
+  const segments=trackSpeedGeometry(b.points,b.speeds,t-7200,t),bins=new Set(segments.map(s=>s.bin));
+  for(const [bin,path] of speedPaths)if(!bins.has(bin)){path.remove();speedPaths.delete(bin);}
+  for(const [index,segment] of segments.entries()){
+   let line=speedPaths.get(segment.bin);
+   if(!line){
+    line=el('path',{stroke:segment.colour,'stroke-width':TRACK_STROKE_WIDTH,'vector-effect':'non-scaling-stroke','data-speed-bin':segment.bin});
+    el('title',{},line).textContent=`${b.name} · ${segment.bin<0?'fart mangler':`SOG ${segment.bin===TRACK_SPEED_BINS-1?'15+':(segment.bin*TRACK_SPEED_MAX/(TRACK_SPEED_BINS-1)).toFixed(1)} knob`} · TracTrac`;
+    speedPaths.set(segment.bin,line);
+   }
+   if(speedTrack.children[index]!==line)speedTrack.insertBefore(line,speedTrack.children[index]||null);
+   updateTrackPath(line,segment.d);
+  }
+ }
 }
 function step(n){if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));render()}}
 for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=render;$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value)};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
@@ -308,7 +316,7 @@ $('playbackSpeed').onchange=()=>{
 };
 document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
 $('all').onclick=()=>changeBoatSelection(()=>{const all=boats.every(b=>chosen.has(b.name));chosen.clear();if(!all)for(const b of boats)chosen.add(b.name);});
-let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();resizeSymbols();renderAnnotations();renderMapCredit()} }$('reset').onclick=()=>{view=[230,250,620,760];setview()};
+let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit()} }$('reset').onclick=()=>{view=[230,250,620,760];setview()};
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
 $('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture)return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*(e.deltaY>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform($('map').getScreenCTM().inverse());view=[anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f];setview()},{passive:false});
 let drag=null;
@@ -318,6 +326,7 @@ const map=$('map');
 map.ondragstart=e=>e.preventDefault();
 map.onpointerdown=e=>{
  if(e.button!==0||drag)return;
+ clearTrackHover();
  if(beginDrawingGesture(e))return;
  e.preventDefault();
  drag={pointerId:e.pointerId,x:e.clientX,y:e.clientY,view:[...view],
@@ -332,7 +341,8 @@ map.onpointerdown=e=>{
 };
 map.onpointermove=e=>{
  if(moveDrawingGesture(e))return;
- if(!drag||e.pointerId!==drag.pointerId)return;
+ if(!drag){updateTrackHover(e);return;}
+ if(e.pointerId!==drag.pointerId)return;
  e.preventDefault();
  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
  if(Math.hypot(dx,dy)>4)drag.moved=true;
@@ -354,12 +364,15 @@ function endPan(e){
   else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
   else if(boatId)toggleBoatName(boatId);
   else if(trackBoatId)chooseTrackSpeed(e,trackBoatId);
-  else if(!document.body.classList.contains('presenting'))closeTrackSpeedSelection();
+  else if(!document.body.classList.contains('presenting')){
+   if(webglTracks.active)chooseTrackSpeed(e);else closeTrackSpeedSelection();
+  }
  }
 }
 map.onpointerup=endPan;
 map.onpointercancel=endPan;
 map.onlostpointercapture=endPan;
+map.onpointerleave=()=>clearTrackHover();
 map.addEventListener('keydown',e=>{
  const speedMarker=e.target.closest('[data-speed-key]');
  if(speedMarker&&(e.key==='Enter'||e.key===' ')){

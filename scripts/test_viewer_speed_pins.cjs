@@ -8,6 +8,7 @@ async function check(type){
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000},acceptDownloads:true}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
+  if(process.env.SR_TRACK_RENDERER)await page.addInitScript(renderer=>window.SR_TRACK_RENDERER=renderer,process.env.SR_TRACK_RENDERER);
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
   await page.waitForFunction(()=>typeof nearestTrackSpeed==='function'&&typeof stopPlayback==='function');
   const target=await page.evaluate(()=>{
@@ -30,6 +31,12 @@ async function check(type){
    return {x:screen.x,y:screen.y,time,boatId:boat.id,view:[...view],now:currentTime()};
   });
   const notesBefore=await page.evaluate(()=>localStorage.getItem('sr2026-notes'));
+  const renderer=await page.evaluate(()=>webglTracks.active?'webgl':'svg');
+  if(renderer==='webgl'){
+   await page.mouse.move(target.x,target.y);
+   await page.waitForFunction(()=>!$('trackHover')?.hidden&&$('map').classList.contains('track-hover'));
+   assert.match(await page.locator('#trackHover').textContent(),/Mercutio · SOG/);
+  }
   await page.mouse.click(target.x,target.y);
   assert.equal(await page.locator('#speedMarkers [data-pinned="false"]').count(),1);
   assert.equal(await page.locator('#speedMarkers [data-speed-action="pin"]').count(),1);
@@ -66,7 +73,7 @@ async function check(type){
   await page.locator('.note-jump').click();assert.equal(await page.locator('.track-speed-label').textContent(),labelBefore);
   await page.locator('#startPresentation').click();assert.equal(await page.locator('#speedMarkers [data-pinned="true"]').count(),1);
   assert.equal(await page.locator('[data-speed-action]').count(),0);
-  assert.equal(await page.evaluate(()=>getComputedStyle(document.querySelector('.track-hit-target')).pointerEvents),'none');
+  assert.equal(await page.evaluate(()=>webglTracks.active?getComputedStyle(webglTracks.host).pointerEvents:getComputedStyle(document.querySelector('.track-hit-target')).pointerEvents),'none');
   const visibility=await page.evaluate(pin=>{
    const seen=()=>{render();return $('speedMarkers').children.length;};
    selectedTime=pin.time-1;const future=seen();
@@ -92,7 +99,7 @@ async function check(type){
   assert.match(await page.locator('#speedPinStatus').textContent(),/kunne ikke gemmes/);
   await page.evaluate(()=>{Storage.prototype.setItem=originalPinStorage;});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'exact curve picking, native speed interpolation, click preview, pin/unpin/keyboard, persistence, selected boats, tail and viewport visibility, no gaps, panning, presentation, zoom, PNG, failed save',errors}));
+  console.log(JSON.stringify({browser:type.name(),renderer,checks:'exact curve picking, hover, native speed interpolation, click preview, pin/unpin/keyboard, persistence, selected boats, tail and viewport visibility, no gaps, panning, presentation, zoom, PNG, failed save',errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
