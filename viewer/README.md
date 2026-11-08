@@ -512,9 +512,10 @@ bruger `classic.svg` og måler begge 10 × 2,3 meter. Begge SVG-filer ligger i
 `viewer/` og indlæses direkte, så skrogtegningerne kan redigeres der.
 Ret navneopslagene i `boatMetadataOverrides`, når mål eller skrogform ændres.
 
-Ikoner følger bevægelsesretningen langs tracket. Bredden er mindst 8
-skærmpixels. Når den geografiske bredde bliver større end det, vises både
-længde og bredde i korrekt skala under hensyn til kortets projektion og
+Ikoner følger bevægelsesretningen langs tracket. Minimumsskalaen er fælles:
+2,54 meter svarer til 8 skærmpixels, både for længde og bredde. Større både
+vises derfor større også ved oversigtszoom. Ved tæt zoom følger målene
+kortets fysiske skala under hensyn til projektionen og
 bådens breddegrad. Kortet kan zoomes tæt nok på til at vise denne forskel.
 Navne har fortsat fast skriftstørrelse; farver, klik, præsentation og PNG bevares.
 

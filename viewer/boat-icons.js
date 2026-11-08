@@ -50,7 +50,7 @@ function renderBoatIcon(group,boat,position,time,colour){
 }
 function resizeBoatIcons(matrix){
  // The map is linear in longitude/latitude, so east and north have distinct scales.
- const radians=Math.PI/180,earthRadius=6371008.8;
+ const radians=Math.PI/180,earthRadius=6371008.8,minimumPixelsPerMetre=8/2.54;
  for(const icon of $('map').querySelectorAll('.boat-icon')){
   const latitude=+icon.dataset.lat*radians,course=+icon.dataset.course;
   const east=1000/(4.5*radians*earthRadius*Math.cos(latitude));
@@ -62,10 +62,12 @@ function resizeBoatIcons(matrix){
   const by=matrix.b*east*cos+matrix.d*north*sin;
   const lx=matrix.a*east*sin-matrix.c*north*cos;
   const ly=matrix.b*east*sin-matrix.d*north*cos;
-  const minimumScale=Math.max(1,8/(beam*Math.hypot(bx,by)));
-  icon.dataset.displayBeamPx=beam*Math.hypot(bx,by)*minimumScale;
-  icon.setAttribute('transform',`matrix(${bx*beam*minimumScale} ${by*beam*minimumScale} ${-lx*length*minimumScale} ${-ly*length*minimumScale} 0 0)`);
+  // The minimum is pixels per metre, shared by all hull sizes.
+  const beamScale=Math.max(1,minimumPixelsPerMetre/Math.hypot(bx,by));
+  const lengthScale=Math.max(1,minimumPixelsPerMetre/Math.hypot(lx,ly));
+  icon.dataset.displayBeamPx=beam*Math.hypot(bx,by)*beamScale;
+  icon.setAttribute('transform',`matrix(${bx*beam*beamScale} ${by*beam*beamScale} ${-lx*length*lengthScale} ${-ly*length*lengthScale} 0 0)`);
   const name=icon.parentNode.querySelector('.boat-name');
-  if(name)name.setAttribute('x',Math.max(7,(Math.abs(bx*beam)+Math.abs(lx*length))*minimumScale/2+3));
+  if(name)name.setAttribute('x',Math.max(7,(Math.abs(bx*beam)*beamScale+Math.abs(lx*length)*lengthScale)/2+3));
  }
 }
