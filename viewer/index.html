@@ -102,7 +102,7 @@
   <p id="speedPinStatus" class="help" role="status"></p>
   <p id="eventBoatStatus" class="help" role="status"></p>
 </section>
-<footer id="editingTimeline"><div class="controls"><button id="back" aria-label="1 sekund tilbage">◀</button><button id="play">Afspil</button><button id="next" aria-label="1 sekund frem">▶</button><time id="clock" aria-label="Kortets tid"></time><div id="timelineTrack"><input id="time" aria-label="Tidspunkt, perioder med valgte både i kortudsnittet" type="range" step="1"><div id="timelineEvents" aria-hidden="true"></div></div></div><div id="timeWindow" hidden></div><div id="status" hidden></div></footer>
+<footer id="editingTimeline"><div class="controls"><button id="back" aria-label="1 sekund tilbage">◀</button><button id="play">Afspil</button><label for="playbackSpeed" class="sr-only">Afspilningshastighed</label><select id="playbackSpeed" title="Afspilningshastighed"><option value="1">1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="20">20×</option><option value="100">100×</option><option value="200">200×</option><option value="400">400×</option></select><button id="next" aria-label="1 sekund frem">▶</button><time id="clock" aria-label="Kortets tid"></time><div id="timelineTrack"><input id="time" aria-label="Tidspunkt, perioder med valgte både i kortudsnittet" type="range" step="1"><div id="timelineEvents" aria-hidden="true"></div></div></div><div id="timeWindow" hidden></div><div id="status" hidden></div></footer>
 <footer id="presentationFooter">
   <div class="event-navigation">
     <nav aria-label="Præsentationens events">

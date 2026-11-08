@@ -68,7 +68,9 @@ python3 scripts/serve_viewer.py
   udsnittet; der er ingen snapmål i denne situation. Uden synlige passager er
   skyderen deaktiveret i redigering, mens noterne stadig kan åbnes direkte.
 - Tiden kan flyttes i **1-sekunds trin** med skyderen, knapperne eller piletasterne.
-  Shift+piletast flytter 1 minut. Afspilning går 1 synligt minut frem pr. trin.
+  Shift+piletast flytter 1 minut. Afspilning opdaterer 10 gange pr. sekund og kan køre med 1×, 2×, 5×, 10×,
+  20×, 100×, 200× eller 400×. Ved 1× svarer ét sekund til ét sekund i sejladsen.
+  Bådpositionerne interpoleres også mellem hele sekunder under afspilning.
   Piletaster på selve skyderen og sekundknapperne snapper ikke, så du kan flytte
   tiden væk fra et event i små trin. Piletaster uden for skyderen skifter events
   i præsentationen. Et træk i skyderen pauser afspilningen.
@@ -515,3 +517,15 @@ skærmpixels. Når den geografiske bredde bliver større end det, vises både
 længde og bredde i korrekt skala under hensyn til kortets projektion og
 bådens breddegrad. Kortet kan zoomes tæt nok på til at vise denne forskel.
 Navne har fortsat fast skriftstørrelse; farver, klik, præsentation og PNG bevares.
+
+## Lag pr. event
+
+Vind, vindtal, radar, TSS, skydeområde og synligheden af gemte noter tilhører
+hvert event, sammen med vindmodel og radarens gennemsigtighed. I redigering
+gemmes et ændret lag direkte til det valgte event, når tiden står præcist på
+eventets tidspunkt. Ved fuld noteredigering følger lagene kladden og gemmes
+eller annulleres med den. Ved andre tidspunkter ændres kun den aktuelle visning.
+
+Forrige, Næste og direkte eventvalg genskaber de gemte lag. Snap på tidslinjen
+bevarer de aktuelle lag og skriver ikke til events. Onlineændringer ligger
+fortsat i kladden, indtil der klikkes Udgiv.

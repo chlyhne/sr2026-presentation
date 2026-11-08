@@ -91,12 +91,12 @@ function visibleBoatRanges(points,bounds){
  return ranges;
 }
 
-function timeAtOffset(offset){
+function timeAtOffset(offset,{fractional=false}={}){
  if(!timelineLength)return selectedTime;
- offset=Math.max(0,Math.min(timelineLength-1,Math.round(offset)));
+ offset=Math.max(0,Math.min(timelineLength-1,fractional?offset:Math.round(offset)));
  for(const range of visibleTimeRanges){
   const length=range.end-range.start+1;
-  if(offset<length)return range.start+offset;
+  if(offset<length)return Math.min(range.end,range.start+offset);
   offset-=length;
  }
  return visibleTimeRanges.at(-1).end;
@@ -111,8 +111,8 @@ function offsetAtTime(time){
  return Math.max(0,timelineLength-1);
 }
 
-function setCurrentTime(time){
- time=Math.max(D.start,Math.min(D.end,Math.round(time)));
+function setCurrentTime(time,{fractional=false}={}){
+ time=Math.max(D.start,Math.min(D.end,fractional?time:Math.round(time)));
  let nearest=time,distance=Infinity;
  for(const range of visibleTimeRanges){
   const candidate=Math.max(range.start,Math.min(range.end,time));
@@ -152,6 +152,7 @@ function updateTimeline(){
  $('timeWindow').textContent=timelineLength
   ? `I udsnittet: ${fmt(visibleTimeRanges[0].start)} – ${fmt(visibleTimeRanges.at(-1).end)} · ${visibleTimeRanges.length} ${visibleTimeRanges.length===1?'periode':'perioder'} · trin: 1 sekund · pauser uden både springes over`
   : chosen.size?'Ingen valgte både passerer dette udsnit. Zoom ud eller flyt kortet.':'Vælg mindst én båd for at bruge tidslinjen.';
+ if(interval){playbackOffset=offsetAtTime(selectedTime);playbackTickTime=performance.now();}
  return selectedTime!==before;
 }
 
