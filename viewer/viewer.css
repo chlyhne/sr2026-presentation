@@ -16,6 +16,7 @@ select,button,textarea{background:#254254;color:white;border:1px solid #607e90;b
 button{cursor:pointer}button:hover{background:#385f75}button:disabled{cursor:wait;opacity:.65}
 button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #ffce5c;outline-offset:3px}
 select,textarea{width:100%}input[type=range]{width:100%;accent-color:#ffce5c}
+#noteTime{display:block;width:100%;min-width:0;margin-top:5px;background:#254254;color:white;border:1px solid #607e90;border-radius:5px;padding:8px;color-scheme:dark}
 .primary{width:100%;background:#ffce5c;color:#142937;border-color:#ffce5c;font-weight:700;padding:12px}
 .primary:hover{background:#ffdc89}
 .presentation-tools,.annotation-tools{border-bottom:1px solid #38505f;padding-bottom:14px}

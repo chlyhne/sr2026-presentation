@@ -204,7 +204,10 @@ linjerne sammenlægges; der afrundes ikke.
 - **Redigér** ved en note åbner dens tekst, markør og tegninger. Du kan også klikke
   på notens markør på kortet. **Flyt / tilføj markør** ændrer placeringen.
   **Gem ændringer** opdaterer den eksisterende note, inklusive det aktuelle
-  kortudsnit og lag; notens tidspunkt og plads i eventrækkefølgen bevares.
+  kortudsnit og lag. Feltet **Tidspunkt (dansk tid)** ændrer eventets dato og
+  klokkeslæt med sekunders præcision inden for sejladsens tidsrum. Når du gemmer,
+  sorteres eventet automatisk efter det nye tidspunkt; markør, tegninger og
+  vedhæftninger bevares. **Annullér redigering** kasserer også ændringer af tiden.
   **Annullér redigering** kasserer ændringerne og genskaber den gemte note.
   Tidsstyringen pauses under redigering. Gem eller annullér, før du skifter note
   eller starter præsentationen.

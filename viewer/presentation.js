@@ -43,13 +43,27 @@ let activePresentationNote=null,presentationOwnsFullscreen=false;
 let editingNote=null,noteDraft=null;
 let placingNote=false;
 const annotationHelp='Skriv en tekst, og placér den på kortet. Noten husker tidspunkt, udsnit og valgte lag.';
+const eventDateFormatter=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Copenhagen',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+function eventTimeInputValue(time){
+ const p=Object.fromEntries(eventDateFormatter.formatToParts(new Date(time*1000)).map(p=>[p.type,p.value]));
+ return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}`;
+}
+function parseEventTimeInput(value){
+ const match=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value);if(!match)return null;
+ const [,year,month,day,hour,minute,second='00']=match;
+ const target=Date.UTC(+year,+month-1,+day,+hour,+minute,+second)/1000;
+ let time=target;
+ // Resolve the entered Copenhagen wall time independently of the browser zone.
+ for(let i=0;i<3;i++)time+=target-Date.parse(eventTimeInputValue(time)+'Z')/1000;
+ return eventTimeInputValue(time)===`${year}-${month}-${day}T${hour}:${minute}:${second}`?time:null;
+}
 function stopPlayback() {
  if(interval) {clearInterval(interval);interval=null;$('play').textContent='Afspil';}
 }
 function cancelPlacement() {
  placingNote=false;$('map').classList.remove('placing');$('cancelNote').hidden=true;
  $('placeNote').textContent=editingNote?'Flyt / tilføj markør':'Placér på kortet';
- $('annotationStatus').textContent=editingNote?'Redigér tekst, markør eller tegninger. Gem ændringer bevarer notens tidspunkt og gemmer det aktuelle kortudsnit og lag.':annotationHelp;
+ $('annotationStatus').textContent=editingNote?'Redigér tidspunkt, tekst, markør eller tegninger. Gem ændringer gemmer også det aktuelle kortudsnit og lag.':annotationHelp;
 }
 function persistNotes(next){
  if(window.SR_READONLY)return false;
@@ -123,8 +137,15 @@ function saveAnnotation(point) {
  if(!text&&!currentAttachedImage()&&!currentAttachedVideo()){$('annotationStatus').textContent='Skriv en tekst, vælg et billede, eller indsæt et YouTube-link til eventet.';$('note').focus();return;}
  if(editingNote){
   if(point){noteDraft.point=point;noteDraft.lon=9.5+point[0]*4.5/1000;noteDraft.lat=57-point[1]*3/1180;cancelPlacement();renderAnnotations();return;}
+  const time=parseEventTimeInput($('noteTime').value);
+  if(!$('noteTime').validity.valid||time===null||time<D.start||time>D.end){
+   $('annotationStatus').textContent='Vælg et gyldigt tidspunkt inden for sejladsens tidsrum (dansk tid).';$('noteTime').focus();return;
+  }
   cancelDrawingGesture();
   const updated={...noteDraft,text,view:[...view],settings:sceneSettings()};
+  if(time!==Math.floor(editingNote.time)){
+   updated.time=time;updated.utc=new Date(time*1000).toISOString();
+  }
   if(!persistNotes(notes.map(n=>n===editingNote?updated:n)))return;
   Object.assign(editingNote,updated);
   const saved=editingNote;finishNoteEditing();showNotes();updateTimeline();restoreNote(saved);return;
@@ -163,6 +184,7 @@ function beginNoteEditing(n){
  if(editingNote){if(editingNote!==n)noteNavigationAllowed();return;}
  if(!noteNavigationAllowed())return;
  restoreNote(n);editingNote=n;noteDraft=JSON.parse(JSON.stringify(n));
+ $('noteTimeField').hidden=false;$('noteTime').min=eventTimeInputValue(D.start);$('noteTime').max=eventTimeInputValue(D.end);$('noteTime').value=eventTimeInputValue(n.time);
  $('noteVideo').value=validatedEventVideo(n.video)?.url||'';updateVideoEditor();
  $('note').value=n.text;$('drawingTools').hidden=false;$('cancelEdit').hidden=false;
  $('noteEditorTitle').textContent=`Redigerer note ${notes.indexOf(n)+1} · ${fmt(n.time)}`;
@@ -176,6 +198,7 @@ function finishNoteEditing(){
  cancelDrawingGesture();setDrawingTool('pan');editingNote=null;noteDraft=null;
  clearPendingEventVideo();
  $('note').value='';$('drawingTools').hidden=true;$('cancelEdit').hidden=true;
+ $('noteTimeField').hidden=true;$('noteTime').value='';
  $('noteEditorTitle').textContent='Ny note · vælg Redigér ved en eksisterende note for at ændre den eller tegne.';
  updateImageEditor();cancelPlacement();updateTimeline();
 }
