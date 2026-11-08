@@ -39,6 +39,7 @@ body.presenting #map .speed-marker circle{pointer-events:none}
 .legend{font-size:13px}.boat{margin:7px 0}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
 footer{padding:8px 12px;background:#162e3e;min-width:0;min-height:0;border-top:1px solid #38505f}
 .controls{display:flex;align-items:center;gap:10px;height:100%}#clock{display:block;font-size:20px;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums;flex-shrink:0}
+#playbackSpeed{width:auto;flex-shrink:0;padding:6px;font-size:12px}
 #timelineTrack{position:relative;flex:1;min-width:0}
 #time{display:block;margin:0;min-width:0}#timelineEvents{position:absolute;inset:0;pointer-events:none}
 .timeline-event{position:absolute;top:50%;width:3px;height:12px;background:#ffce5c;border:1px solid #10212d;transform:translate(-50%,-50%);border-radius:2px}
@@ -109,4 +110,4 @@ body.presenting header{padding:10px 22px}
 #presentationMessage:empty{display:none}
 @media(max-width:1050px){main{--editor-width:240px;--event-width:260px}#eventPanel{padding:16px}#clock{font-size:16px}.controls{gap:6px}}
 @media(max-width:750px){main{grid-template-columns:220px minmax(0,1fr);grid-template-rows:minmax(180px,1fr) auto minmax(0,140px) auto}aside{grid-row:1;padding:10px}#map{grid-column:2;grid-row:1}#editingTimeline{grid-column:1/-1;grid-row:2}#eventPanel{grid-column:1/-1;grid-row:3;border-left:0;border-top:1px solid #38505f}#presentationFooter{grid-column:1/-1;grid-row:4;border-left:0}body.presenting main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(200px,1fr) auto minmax(0,180px) auto}body.presenting #map,body.presenting #editingTimeline,body.presenting #eventPanel,body.presenting #presentationFooter{grid-column:1}header span{display:none}.colour-legend{font-size:8px}#eventImage{max-height:230px;width:auto;max-width:100%}}
-@media(max-width:600px){header,body.presenting header{padding:10px;gap:8px}h1{font-size:16px}.header-actions{gap:5px}.header-actions button{font-size:12px;padding:7px}#eventText{font-size:16px}.event-navigation button,.event-navigation select{font-size:12px;padding:7px}.event-meta{gap:10px}#eventPanel{padding:12px}.controls{display:grid;grid-template-columns:auto auto auto minmax(0,1fr)}#clock{justify-self:end}#timelineTrack{grid-column:1/-1}}
+@media(max-width:600px){header,body.presenting header{padding:10px;gap:8px}h1{font-size:16px}.header-actions{gap:5px}.header-actions button{font-size:12px;padding:7px}#eventText{font-size:16px}.event-navigation button,.event-navigation select{font-size:12px;padding:7px}.event-meta{gap:10px}#eventPanel{padding:12px}.controls{display:grid;grid-template-columns:auto auto auto auto minmax(0,1fr)}#clock{justify-self:end}#timelineTrack{grid-column:1/-1}}

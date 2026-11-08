@@ -91,7 +91,7 @@ export function validateDocument(doc) {
     for (const k of ['lon', 'lat']) if (note[k] !== undefined && !Number.isFinite(note[k])) fail(400, 'Ugyldig koordinat.');
     if (note.settings !== undefined) {
       const s = note.settings; if (!object(s)) fail(400, 'Ugyldige indstillinger.');
-      for (const k of ['wind', 'windNumbers', 'rain', 'traffic', 'military']) if (s[k] !== undefined && typeof s[k] !== 'boolean') fail(400, 'Ugyldige indstillinger.');
+      for (const k of ['wind', 'windNumbers', 'rain', 'traffic', 'military', 'annotationsVisible']) if (s[k] !== undefined && typeof s[k] !== 'boolean') fail(400, 'Ugyldige indstillinger.');
       for (const k of ['boats', 'boatNames']) if (s[k] !== undefined && (!Array.isArray(s[k]) || s[k].length > 2000 || !s[k].every(v => string(v, 200)))) fail(400, 'Ugyldigt bådvalg.');
       if (s.windModel !== undefined && !['dmi_harmonie_arome_europe', 'ecmwf_ifs', 'era5'].includes(s.windModel)) fail(400, 'Ugyldig vindmodel.');
       if (s.rainOpacity !== undefined && (!Number.isFinite(s.rainOpacity) || s.rainOpacity < 0 || s.rainOpacity > 1)) fail(400, 'Ugyldig gennemsigtighed.');

@@ -234,9 +234,29 @@ function renderTracks(t=currentTime()){
 
  resizeSymbols();renderSpeedPins();
 }
-function step(n){if(finishInlineTextEditing()&&!$('time').disabled){setCurrentTime(timeAtOffset(+$('time').value+n));render()}}
+function step(n){if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));render()}}
 for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=render;$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value)};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
-$('play').onclick=()=>{if(interval){stopPlayback()}else if(!$('time').disabled){$('play').textContent='Pause';interval=setInterval(()=>{if($('time').disabled||+$('time').value>=+$('time').max){stopPlayback();return}step(60)},800)}};
+// Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
+let playbackTickTime=0,playbackRate=1,playbackOffset=0;
+function advancePlayback(now){
+ if($('time').disabled){stopPlayback();return;}
+ playbackOffset=Math.min(timelineLength-1,playbackOffset+(now-playbackTickTime)/1000*playbackRate);
+ playbackTickTime=now;
+ setCurrentTime(timeAtOffset(playbackOffset,{fractional:true}),{fractional:true});render();
+ if(playbackOffset>=timelineLength-1)stopPlayback();
+}
+$('play').onclick=()=>{
+ if(interval){stopPlayback();return;}
+ if($('time').disabled||!finishInlineTextEditing())return;
+ playbackOffset=offsetAtTime(currentTime());
+ if(playbackOffset>=timelineLength-1)return;
+ playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
+ $('play').textContent='Pause';interval=setInterval(()=>advancePlayback(performance.now()),100);
+};
+$('playbackSpeed').onchange=()=>{
+ if(interval)advancePlayback(performance.now());
+ playbackRate=+$('playbackSpeed').value;
+};
 document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
 $('all').onclick=()=>changeBoatSelection(()=>{const all=boats.every(b=>chosen.has(b.name));chosen.clear();if(!all)for(const b of boats)chosen.add(b.name);});
 let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();resizeSymbols();renderAnnotations();renderMapCredit()} }$('reset').onclick=()=>{view=[230,250,620,760];setview()};

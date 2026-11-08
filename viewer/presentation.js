@@ -63,14 +63,44 @@ function saveNotes() {
 }
 function sceneSettings() {
  return {wind:$('wind').checked,windModel:$('windModel').value,windNumbers:$('windNumbers').checked,
-  rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,traffic:$('traffic').checked,military:$('military').checked,boats:[...chosen],boatNames:[...shownBoatNames]};
+  rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,traffic:$('traffic').checked,military:$('military').checked,annotationsVisible:$('annotationsVisible').checked,boats:[...chosen],boatNames:[...shownBoatNames]};
 }
+const EVENT_LAYER_KEYS=['wind','windNumbers','rain','traffic','military','annotationsVisible','windModel','rainOpacity'];
+function layerSettings(){
+ const settings=sceneSettings();
+ return Object.fromEntries(EVENT_LAYER_KEYS.map(key=>[key,settings[key]]));
+}
+function applyLayerSettings(settings){
+ for(const id of EVENT_LAYER_KEYS){
+  if(typeof settings[id]==='boolean')$(id).checked=settings[id];
+ }
+ if(D.wind_models[settings.windModel])$('windModel').value=settings.windModel;
+ if(Number.isFinite(settings.rainOpacity))$('rainOpacity').value=settings.rainOpacity;
+}
+function editableSettingsEvent(){
+ return !window.SR_READONLY&&!document.body.classList.contains('presenting')&&!editingNote&&!pendingEventImage&&!hasPendingEventVideo()&&!eventImageLoading&&!$('note').value.trim()
+  &&notes.includes(activePresentationNote)&&activePresentationNote.time===currentTime()?activePresentationNote:null;
+}
+let lastLayerSettings=layerSettings();
+function changeEventLayers(event){
+ const next=layerSettings(),key=event.currentTarget.id,changes={[key]:next[key]};
+ if(!finishInlineTextEditing()){applyLayerSettings(lastLayerSettings);render();return;}
+ const target=editableSettingsEvent();
+ if(target){
+  const updated={...target,settings:{...target.settings,...changes}};
+  if(!persistNotes(notes.map(n=>n===target?updated:n))){
+   applyLayerSettings(lastLayerSettings);render();return;
+  }
+  target.settings=updated.settings;
+ }else if(editingNote)noteDraft.settings={...noteDraft.settings,...changes};
+ lastLayerSettings=next;render();
+}
+for(const id of EVENT_LAYER_KEYS)$(id).onchange=changeEventLayers;
 function changeBoatSelection(change){
  if(!finishInlineTextEditing()){syncBoatChoices();return;}
  stopPlayback();
  const before=[...chosen],time=currentTime();
- const target=!document.body.classList.contains('presenting')&&!editingNote&&!pendingEventImage&&!hasPendingEventVideo()&&!eventImageLoading&&!$('note').value.trim()
-  &&notes.includes(activePresentationNote)&&activePresentationNote.time===time?activePresentationNote:null;
+ const target=editableSettingsEvent();
  change();
  if(target){
   const updated={...target,settings:{...target.settings,boats:[...chosen]}};
@@ -120,7 +150,7 @@ function placeAnnotation(e) {
  saveAnnotation([p.x,p.y]);
 }
 $('save').onclick=()=>saveAnnotation();
-$('annotationsVisible').onchange=renderAnnotations;
+
 function noteNavigationAllowed(){
  if(!finishInlineTextEditing())return false;
  if(!editingNote&&!eventImageLoading&&!pendingEventImage&&!hasPendingEventVideo())return true;
@@ -158,9 +188,7 @@ function restoreNote(n,{showImage=false}={}) {
  stopPlayback();cancelPlacement();selectedTime=n.time;
  if(n.settings) {
   const s=n.settings;
-  for(const id of ['wind','windNumbers','rain','traffic','military']) if(typeof s[id]==='boolean')$(id).checked=s[id];
-  if(D.wind_models[s.windModel]) $('windModel').value=s.windModel;
-  if(Number.isFinite(s.rainOpacity)) $('rainOpacity').value=s.rainOpacity;
+  applyLayerSettings(s);
   if(Array.isArray(s.boats)) {
    chosen.clear();s.boats.forEach(name=>chosen.add(name));
    syncBoatChoices();
@@ -172,7 +200,8 @@ function restoreNote(n,{showImage=false}={}) {
  if(Array.isArray(n.view)&&n.view.length===4&&n.view.every(Number.isFinite)&&n.view[2]>0&&n.view[3]>0) {view=[...n.view];setview();}
  updateTimeline();selectedTime=n.time;$('time').value=offsetAtTime(n.time);
  $('time').setAttribute('aria-valuetext',fmt(n.time));
- $('annotationsVisible').checked=true;render();updatePresentationControls();
+ $('annotationsVisible').checked=typeof n.settings?.annotationsVisible==='boolean'?n.settings.annotationsVisible:true;
+ lastLayerSettings=layerSettings();render();updatePresentationControls();
  if(showImage&&n.image)showMapEventImage(n.image,n);
 }
 function showNotes() {
