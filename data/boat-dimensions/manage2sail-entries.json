@@ -1,0 +1,1062 @@
+[
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "a479f88c-1ff7-4429-a19a-0119e162a3e8",
+    "SailNumber": "HR 37",
+    "SailNumberCountry": "HR",
+    "BoatName": "Popeye",
+    "BoatType": "Hallberg Rassy 37",
+    "BowNumber": "2836",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "3157094d-7935-4395-ae31-0ea0380aca5b",
+    "SailNumber": "DEN 121",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Little Wing",
+    "BoatType": "Dufour 40",
+    "BowNumber": "2826",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "1bb048af-5e14-488e-b3f8-1f94d782f9f4",
+    "SailNumber": "DEN 7",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Viento",
+    "BoatType": "Møn 341",
+    "BowNumber": "2847",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "b083f321-6ce8-4b45-9a78-2383603e8729",
+    "SailNumber": "DEN 435",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Alex",
+    "BoatType": "Dehler 343",
+    "BowNumber": "2598",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "059f0d33-6960-4c67-a873-26c0cd8e6fb6",
+    "SailNumber": "44 DEN",
+    "SailNumberCountry": "44",
+    "BoatName": "Mary",
+    "BoatType": "Hallberg-Rassy 37",
+    "BowNumber": "2828",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "b8f6fbcc-6e32-463d-890a-26d89c82552a",
+    "SailNumber": "DEN Y11",
+    "SailNumberCountry": "DEN",
+    "BoatName": "SABRINA",
+    "BoatType": null,
+    "BowNumber": "2838",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "2646c9c1-151e-459b-8c5f-2985d8ce841d",
+    "SailNumber": "SWE 307",
+    "SailNumberCountry": "SWE",
+    "BoatName": "Mette",
+    "BoatType": "Hanse 400e",
+    "BowNumber": "2829",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "e8d126c2-6dd7-4238-9a2e-2bb246feb529",
+    "SailNumber": "SWE 432",
+    "SailNumberCountry": "SWE",
+    "BoatName": "Frida II",
+    "BoatType": "Hanse 320",
+    "BowNumber": "2821",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "e0231f2e-07cb-4a1b-98e8-2bd9ec72672b",
+    "SailNumber": "DEN 61",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Laguna",
+    "BoatType": "Mamba 29",
+    "BowNumber": "2602",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "237b57c4-f555-4e4c-9ee6-30dc3ebfba7c",
+    "SailNumber": "DEN 6",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Banner Viking",
+    "BoatType": "Banner 41 R",
+    "BowNumber": "2625",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "15f8a5c1-69d5-4c55-b0ee-329f6d04c4c6",
+    "SailNumber": "K25 S27",
+    "SailNumberCountry": "K25",
+    "BoatName": "Abelone 3",
+    "BoatType": "Kosterbåd/spidsgatter",
+    "BowNumber": "2597",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "e92e9e22-5e92-4312-a878-385100f4aaf5",
+    "SailNumber": "DEN No name",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Tjørn",
+    "BoatType": "Luffe 40 one off",
+    "BowNumber": "2843",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "505be10e-54eb-4d20-8366-392757ba7dd5",
+    "SailNumber": "GBR 3921",
+    "SailNumberCountry": "GBR",
+    "BoatName": "Andraste",
+    "BoatType": "Sloop, \"One off\"",
+    "BowNumber": "2619",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "5723c47f-c9f5-427c-b56f-399f66e5064c",
+    "SailNumber": "DEN 1",
+    "SailNumberCountry": "DEN",
+    "BoatName": "DenAnden",
+    "BoatType": "Bavaria 42",
+    "BowNumber": "2637",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "6118db79-48d5-4ccf-8e65-44c842babd58",
+    "SailNumber": "-- --",
+    "SailNumberCountry": "--",
+    "BoatName": "GAIA",
+    "BoatType": "Najad 340",
+    "BowNumber": "2601",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "9ba6c03e-76a0-4ac0-81c0-4df7c7369a9a",
+    "SailNumber": "DEN 269",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Pandora",
+    "BoatType": "Bavaria 42C",
+    "BowNumber": "2834",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "7b6f331c-342d-40cd-add0-514f75f34259",
+    "SailNumber": "DEN 110",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Bibs",
+    "BoatType": "Omega 42",
+    "BowNumber": "2635",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "1b3814aa-eaf9-45ed-87a5-6549f7398dec",
+    "SailNumber": "DEN 92",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Irma",
+    "BoatType": "Trio 92",
+    "BowNumber": "2823",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "71efea4e-a5f6-49be-abd2-67e9bf0805d8",
+    "SailNumber": "XXX xxx",
+    "SailNumberCountry": "XXX",
+    "BoatName": "Margrethe",
+    "BoatType": "Jeanneau sun magic",
+    "BowNumber": "2827",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "4f236197-cea0-432a-b890-6b69e3f52641",
+    "SailNumber": "DEN 436",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Vi Ses",
+    "BoatType": "Dehler 34",
+    "BowNumber": "2846",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "c5e374d5-8b52-42ca-8265-6da99a629f7b",
+    "SailNumber": "DEN 62",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Norma",
+    "BoatType": "Hunter 33",
+    "BowNumber": "2607",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "6f982799-2262-4104-965e-71736041a57f",
+    "SailNumber": "BA 35",
+    "SailNumberCountry": "BA",
+    "BoatName": "Dina 2",
+    "BoatType": "Banholm 35",
+    "BowNumber": "2639",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "1df43e77-5f69-4968-b716-745e15aa26ae",
+    "SailNumber": "DEN 35",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Xanadu",
+    "BoatType": "Hanse 371",
+    "BowNumber": "2848",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "5184aa5d-f6c5-48bf-8977-7c5badda1a54",
+    "SailNumber": "BV 34",
+    "SailNumberCountry": "BV",
+    "BoatName": "NJOY",
+    "BoatType": "Bavaria 34",
+    "BowNumber": "2832",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "ab1a67bc-183d-4a28-aeba-869a36b6fc1f",
+    "SailNumber": "DEN 20",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Nordstjernen",
+    "BoatType": "FAURBY 36",
+    "BowNumber": "2833",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "7bd163df-871c-4c7d-991f-875f11d3c3de",
+    "SailNumber": "DEN 107",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Julianehåb",
+    "BoatType": "Bianca 107",
+    "BowNumber": "2824",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "cf6e3a2d-c7de-47ca-beb4-8d6f289ac8c1",
+    "SailNumber": "DEN 15",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Sneppen",
+    "BoatType": "Faurby 424",
+    "BowNumber": "2842",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "152dcf86-be43-4005-abc5-9eb305d59693",
+    "SailNumber": "B 42",
+    "SailNumberCountry": "B",
+    "BoatName": "Vaiana",
+    "BoatType": "Bavaria C42",
+    "BowNumber": "2845",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "519a1557-a7a8-4c55-b7c5-a6f5b0bde998",
+    "SailNumber": "DEN 53",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Allegra",
+    "BoatType": "Bianca 107",
+    "BowNumber": "2617",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "95ea300f-504b-409a-9356-b049629c7191",
+    "SailNumber": "DEN 385",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Petrix",
+    "BoatType": "Hanse 385",
+    "BowNumber": "2835",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "61bd6b26-4b6a-40f2-ac3f-b5a675bbfdd0",
+    "SailNumber": "DEN 3",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Salka Valka",
+    "BoatType": null,
+    "BowNumber": "2610",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "60c9d6c2-e857-4cd9-982d-b87eafbf520b",
+    "SailNumber": "DEN 384",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Frigg",
+    "BoatType": "SunFast 32",
+    "BowNumber": "2653",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "7f917ee9-db2f-4637-947d-b93b674a61c3",
+    "SailNumber": "221 Bianca",
+    "SailNumberCountry": "221",
+    "BoatName": "Rafi",
+    "BoatType": "Bianca 27",
+    "BowNumber": "2609",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "7372cf9b-8076-4ce3-a45b-c50fcbc24764",
+    "SailNumber": "DK 44",
+    "SailNumberCountry": "DK",
+    "BoatName": "munje",
+    "BoatType": "Dufour 44",
+    "BowNumber": "2830",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "14237450-c783-4d4d-9d10-cd245aaa5551",
+    "SailNumber": "DEN 101",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Amalie",
+    "BoatType": "Møn 431",
+    "BowNumber": "2618",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "3360ec4e-d14c-49f4-985b-d01c049da844",
+    "SailNumber": "DEN 145",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Blue Bird",
+    "BoatType": "Sunwind 31",
+    "BowNumber": "2600",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "fb9770e3-fea1-4923-a6d4-d0d0f9afbd86",
+    "SailNumber": "NO Name",
+    "SailNumberCountry": "NO",
+    "BoatName": "Vaiana",
+    "BoatType": "Malö 50",
+    "BowNumber": "2849",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "e8ab9533-64f5-4343-9eca-db8fc591457f",
+    "SailNumber": "DEN 1",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Dream on",
+    "BoatType": "Frers 49'",
+    "BowNumber": "2652",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "c0df54bf-1951-4626-be7e-e4b3e6cd0b5b",
+    "SailNumber": "DEN 45",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Dorthea",
+    "BoatType": "Luffe 40",
+    "BowNumber": "2650",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "e317420f-9e99-44cb-9c80-e722ae4cfc9d",
+    "SailNumber": "D 26",
+    "SailNumberCountry": "D",
+    "BoatName": "Luna",
+    "BoatType": "Solus 29",
+    "BowNumber": "2604",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "972abbf7-8565-48fa-8adf-ef852b7a328f",
+    "SailNumber": "SWE 12430",
+    "SailNumberCountry": "SWE",
+    "BoatName": "Lacee Bee",
+    "BoatType": "Hanse 430",
+    "BowNumber": "2825",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "cffe79ea-48f4-426c-8b51-f3854c816cec",
+    "SailNumber": "DEN 477",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Sanne",
+    "BoatType": "SAGITTA 35",
+    "BowNumber": "2841",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "81771572-575b-4860-80d1-f3ee959b644b",
+    "SailNumber": "DDS Ran",
+    "SailNumberCountry": "DDS",
+    "BoatName": "Ran",
+    "BoatType": "40 fods Ketch",
+    "BowNumber": "2837",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "90c8c33c-6122-460e-8668-f48af44c8a2f",
+    "SailNumber": "SWE 73",
+    "SailNumberCountry": "SWE",
+    "BoatName": "Triumph",
+    "BoatType": "Delphia 37",
+    "BowNumber": "2844",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "77457d12-6b86-42ae-bc99-f9915cfbfefd",
+    "SailNumber": "DEN 693",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Freja",
+    "BoatType": "SunFast 32",
+    "BowNumber": "2822",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "94910c0a-73b3-4cb1-ac87-cbb45f202583",
+    "EntryId": "ede9e54d-4a2a-46c8-9b8b-ff7fc2efa7ac",
+    "SailNumber": "DEN 452",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Neptun",
+    "BoatType": "J105",
+    "BowNumber": "2831",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=94910c0a-73b3-4cb1-ac87-cbb45f202583"
+  },
+  {
+    "RegattaId": "5b3407a2-3895-4fc1-a05e-e0522d898f98",
+    "EntryId": "bf8b87e6-cb68-49bc-bf4f-51d6386e7abf",
+    "SailNumber": "DEN 35",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Joujou 2",
+    "BoatType": "Luffe 37",
+    "BowNumber": "2595",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=5b3407a2-3895-4fc1-a05e-e0522d898f98"
+  },
+  {
+    "RegattaId": "5b3407a2-3895-4fc1-a05e-e0522d898f98",
+    "EntryId": "0430f1ca-20c8-4048-9340-626c5d317c2c",
+    "SailNumber": "SWE 129",
+    "SailNumberCountry": "SWE",
+    "BoatName": "XAR",
+    "BoatType": "XP-44",
+    "BowNumber": "2593",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=5b3407a2-3895-4fc1-a05e-e0522d898f98"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "8abcc7fa-913d-4c87-9438-273661cd891b",
+    "SailNumber": "SWE 73",
+    "SailNumberCountry": "SWE",
+    "BoatName": "Vera",
+    "BoatType": "Seascape 27",
+    "BowNumber": "3081",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "2f5dbb44-7138-4dca-9662-2e36972ee302",
+    "SailNumber": "DEN 79",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Tignanello",
+    "BoatType": "X-372",
+    "BowNumber": "3077",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "9da782d9-5175-4e28-8823-32bd70bd02dc",
+    "SailNumber": "DEN 338",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Zenobia",
+    "BoatType": "ALBIN NOVA",
+    "BowNumber": "2850",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "a5896595-d172-42cd-a94c-5f474678363f",
+    "SailNumber": "DEN 48",
+    "SailNumberCountry": "DEN",
+    "BoatName": "THE HULK",
+    "BoatType": "DEHLER 30 OD",
+    "BowNumber": "3084",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "f8003b00-1959-4366-85c6-71e76a6dcea2",
+    "SailNumber": "DEN 162",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Mercutio",
+    "BoatType": "Seascape 27",
+    "BowNumber": "3080",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "614a4347-7e49-4024-b7aa-744f1a669aa8",
+    "SailNumber": "SWE 27",
+    "SailNumberCountry": "SWE",
+    "BoatName": "My",
+    "BoatType": "Seascape 27",
+    "BowNumber": "3082",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "5499ad14-f0e9-456b-bced-7c7a942127cd",
+    "SailNumber": "DEN 9",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Xilje",
+    "BoatType": "IMX 40",
+    "BowNumber": "3085",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "e1dc2769-a35f-4179-a935-aa87db64e897",
+    "SailNumber": "SWE 74",
+    "SailNumberCountry": "SWE",
+    "BoatName": "XUSIDUS",
+    "BoatType": "X-382",
+    "BowNumber": "3083",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "30554ca7-5a06-4ff8-a6ac-f146e418ab5b",
+    "SailNumber": "DEN 414",
+    "SailNumberCountry": "DEN",
+    "BoatName": "FARR-WELL II",
+    "BoatType": "FIRST 27.7",
+    "BowNumber": "3079",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "9307bb92-b8d6-4b08-9f96-a09f2946d33c",
+    "EntryId": "0a8b2af5-1de7-4722-88c1-40361c953640",
+    "SailNumber": "DEN 318",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Esmeralda",
+    "BoatType": "HR 31/310",
+    "BowNumber": "3078",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=9307bb92-b8d6-4b08-9f96-a09f2946d33c"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "9f266cb0-54a4-46fe-ac1d-14934c0c2e39",
+    "SailNumber": "DEN 2606",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Siroque",
+    "BoatType": "First 31.7",
+    "BowNumber": "3102",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "6f9c28d3-2204-4d02-91b0-155a15c47199",
+    "SailNumber": "DEN 271",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Charlotte",
+    "BoatType": "MAMBA 31/311",
+    "BowNumber": "3090",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "ef526080-5258-4f13-943d-1ddff6821386",
+    "SailNumber": "DEN 362",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Miss-X",
+    "BoatType": "X-332",
+    "BowNumber": "3103",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "1b9b024d-aa83-4670-89a9-1f60e8512169",
+    "SailNumber": "DEN 60",
+    "SailNumberCountry": "DEN",
+    "BoatName": "MorGrethe",
+    "BoatType": "OMEGA 42",
+    "BowNumber": "3107",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "26729b30-3a07-4745-b559-2e2f3f676540",
+    "SailNumber": "DEN 1",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Stormy",
+    "BoatType": "STIMSON IRC 42",
+    "BowNumber": "3322",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "8c036236-695a-4cda-a5e6-380c1fcea910",
+    "SailNumber": "GER 6540",
+    "SailNumberCountry": "GER",
+    "BoatName": "Sagitta",
+    "BoatType": "ALBIN STRATUS",
+    "BowNumber": "3100",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "2b13d24b-6656-4cf6-8e30-45a9191bbed7",
+    "SailNumber": "DEN 66",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Sonja fra Sydhavnen",
+    "BoatType": "LYNÆS SENIOR",
+    "BowNumber": "3086",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "0c362d0a-8c59-49c0-8316-502e284884d7",
+    "SailNumber": "DEN 520",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Rosa-Lux",
+    "BoatType": "X-99",
+    "BowNumber": "3104",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "9c799039-0a1d-464f-96d2-52fa822702a2",
+    "SailNumber": "DEN 1",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Joy",
+    "BoatType": "J 112",
+    "BowNumber": "3316",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "d14f9296-2179-4c65-8e86-536a9171029f",
+    "SailNumber": "DEN 5",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Festina",
+    "BoatType": "ARCONA 380/385",
+    "BowNumber": "3123",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "e544f724-4cd8-4d49-b31d-5cdeaf28fe17",
+    "SailNumber": "DEN 15",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Fifty",
+    "BoatType": "BANNER 41",
+    "BowNumber": "3117",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "2911e83e-9811-4ac5-bb53-635170876cce",
+    "SailNumber": "SWE 399",
+    "SailNumberCountry": "SWE",
+    "BoatName": "Guldfisken",
+    "BoatType": "FIRST 36.7",
+    "BowNumber": "3109",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "786d8103-a5bf-493a-8d04-68af08c3fa01",
+    "SailNumber": "DEN 245",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Andrea",
+    "BoatType": "X-362 SPORT",
+    "BowNumber": "3114",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "3a2b0b78-3e60-4917-8107-6a3e73754656",
+    "SailNumber": "DEN 3601",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Laolao",
+    "BoatType": "JEANNEAU SUN FAST 3600",
+    "BowNumber": "3122",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "f6bd49c0-4914-4729-a5a7-6fd9b8ed2731",
+    "SailNumber": "DEN 67",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Solhverv",
+    "BoatType": "ARCONA 400",
+    "BowNumber": "3313",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "e96f4375-5d02-4652-b222-70645caf5a47",
+    "SailNumber": "DEN 1100",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Enjoy Life",
+    "BoatType": "KER 11.3",
+    "BowNumber": "3321",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "7898c915-7301-45a4-8139-71674786aec2",
+    "SailNumber": "SWE 237",
+    "SailNumberCountry": "SWE",
+    "BoatName": "saltamalin",
+    "BoatType": "Seascape 27",
+    "BowNumber": "3105",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "16da03f1-0bbd-466b-9e71-72da235a930b",
+    "SailNumber": "DEN 1130",
+    "SailNumberCountry": "DEN",
+    "BoatName": "XAVIA",
+    "BoatType": "X-362 SPORT",
+    "BowNumber": "3111",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "8d98e0c0-def5-489c-b53a-7c3260ddc409",
+    "SailNumber": "DEN 121",
+    "SailNumberCountry": "DEN",
+    "BoatName": "PING",
+    "BoatType": "ARCONA 400",
+    "BowNumber": "3312",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "44106557-703c-4562-b945-80b65edfa069",
+    "SailNumber": "SWE 65",
+    "SailNumberCountry": "SWE",
+    "BoatName": "SPIDER PIG",
+    "BoatType": "CORBY 25",
+    "BowNumber": "3099",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "a8702fca-a90d-45d6-980d-83a16be5a772",
+    "SailNumber": "DEN 11",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Scarlet",
+    "BoatType": "JEANNEAU SUN FAST 36",
+    "BowNumber": "3106",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "e0901b67-219a-4917-aa48-8a440b91f3ec",
+    "SailNumber": "DEN 1239",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Buksesnedkeren",
+    "BoatType": null,
+    "BowNumber": "3327",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "995ff939-c077-428c-94af-94acd0d9a921",
+    "SailNumber": "DEN 56",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Blåregn",
+    "BoatType": "X-99",
+    "BowNumber": "3098",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "5098664c-653f-4d9a-b40e-9a5a012c565c",
+    "SailNumber": "DEN 103",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Casa Bent",
+    "BoatType": "DEHLER 46",
+    "BowNumber": "3323",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "0c45b68c-e6ea-4884-92d4-9b6e1b7c78b8",
+    "SailNumber": "DEN 705",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Moster",
+    "BoatType": "EXPRESS",
+    "BowNumber": "3088",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "97c5b26b-7479-4ef9-a247-9c98274d6da7",
+    "SailNumber": "SWE 102",
+    "SailNumberCountry": "SWE",
+    "BoatName": "Thermidor",
+    "BoatType": "FIRST 36.7",
+    "BowNumber": "3116",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "b4d4b63a-369e-406e-841a-9e668e13ac11",
+    "SailNumber": "DEN 68",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Ambra",
+    "BoatType": "BB 10 METER",
+    "BowNumber": "3095",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "b762330f-656a-4f90-89b7-a07c4b3168aa",
+    "SailNumber": "DEN 25",
+    "SailNumberCountry": "DEN",
+    "BoatName": "DS37",
+    "BoatType": "SCANDINAVIAN MATCH RACER",
+    "BowNumber": "3120",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "c435b720-181c-42a6-b1d9-a37a7f7ecfbb",
+    "SailNumber": "DEN 11",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Friendship 2",
+    "BoatType": "Aphrodite 101",
+    "BowNumber": "3092",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "75ce11e0-576e-4fcb-84a3-aa3171bc6278",
+    "SailNumber": "DEN 45",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Annibeth",
+    "BoatType": "DUFOUR 45",
+    "BowNumber": "3319",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "2d1005e7-995b-4da4-b4c7-ae3c9184d637",
+    "SailNumber": "DEN 42",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Slipstik",
+    "BoatType": "BB 10 METER",
+    "BowNumber": "3094",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "962d0498-6329-4492-bcf7-c1545c8041f7",
+    "SailNumber": "SWE 134",
+    "SailNumberCountry": "SWE",
+    "BoatName": "Valkyria",
+    "BoatType": "ARCONA 380/385",
+    "BowNumber": "3315",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "0dc9813e-5c9c-4ea7-9ade-c1f1ac431158",
+    "SailNumber": "DEN 2215",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Quokka",
+    "BoatType": "GRAND SOLEIL 43",
+    "BowNumber": "3318",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "1197f1ca-2ce9-4dbf-8a04-c6cd3518434a",
+    "SailNumber": "DEN 21",
+    "SailNumberCountry": "DEN",
+    "BoatName": "NINI",
+    "BoatType": "DRABANT 38",
+    "BowNumber": "3097",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "c2167e77-074b-4d2d-8938-c91f6f41c743",
+    "SailNumber": "SWE 10172",
+    "SailNumberCountry": "SWE",
+    "BoatName": "Eldkvarn",
+    "BoatType": "RIDAS 31 racer",
+    "BowNumber": "3101",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "3ff4ba14-8c08-41bb-89b0-c969366bc3c4",
+    "SailNumber": "DEN 322",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Irmgard II",
+    "BoatType": "DEHLER 38",
+    "BowNumber": "3118",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "a64fa96c-c1f5-4f9e-97ab-cff3b2c7da36",
+    "SailNumber": "DEN 5",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Quinta Light",
+    "BoatType": "HH 42",
+    "BowNumber": "3326",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "a0769073-0de0-432e-9a6e-d2bcf6b068b1",
+    "SailNumber": "GBR 722r",
+    "SailNumberCountry": "GBR",
+    "BoatName": "Voador",
+    "BoatType": "J105",
+    "BowNumber": "3113",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "9e323dac-d083-47f3-a652-d37238d6c7e0",
+    "SailNumber": "DEN 127",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Alvilda",
+    "BoatType": "Scan-Kap 99",
+    "BowNumber": "3093",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "2167c05b-369a-49ef-a550-d41e2d4540d8",
+    "SailNumber": "DEN 28",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Easy L♥️ver",
+    "BoatType": "Soto 40",
+    "BowNumber": "3325",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "1585be69-b47c-410f-b31a-d967ca57b560",
+    "SailNumber": "DEN 17",
+    "SailNumberCountry": "DEN",
+    "BoatName": "VELOCE",
+    "BoatType": "EXPLORER 38",
+    "BowNumber": "3119",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "15ed6c4f-7240-4508-ae3c-e25c3c13fe54",
+    "SailNumber": "DEN 7",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Blacq Magic",
+    "BoatType": "MAX FUN 35",
+    "BowNumber": "3317",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "5c7fd480-0b54-462b-b068-e52d3cf171b2",
+    "SailNumber": "DEN 468",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Alice",
+    "BoatType": "J 80",
+    "BowNumber": "3096",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "77c054f3-4621-428b-8ea0-eec798192ae5",
+    "SailNumber": "DEN 41",
+    "SailNumberCountry": "DEN",
+    "BoatName": "XBOX",
+    "BoatType": "XR 41",
+    "BowNumber": "3320",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "6aa2fa0a-d230-4034-982e-efdaa16968a8",
+    "SailNumber": "DEN 531",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Delizia",
+    "BoatType": "BALLAD",
+    "BowNumber": "3089",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "3c968edf-730c-4dee-8cd1-f0210151f0da",
+    "SailNumber": "DEN 35551",
+    "SailNumberCountry": "DEN",
+    "BoatName": "HANSEN 3.5",
+    "BoatType": "ELLIOT 35 SS",
+    "BowNumber": "3324",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "be83b615-6c75-41a3-9282-fa7ef6aaec71",
+    "SailNumber": "DEN 1",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Grand Delice",
+    "BoatType": "FIRST 36.7",
+    "BowNumber": "3110",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  },
+  {
+    "RegattaId": "3e6bfdda-f403-4a1d-a2c0-06a49b25707b",
+    "EntryId": "063a30e6-e0f1-4983-b292-fbbad4f26862",
+    "SailNumber": "DEN 76",
+    "SailNumberCountry": "DEN",
+    "BoatName": "Pixie",
+    "BoatType": "XP 38",
+    "BowNumber": "3314",
+    "source": "https://www.manage2sail.com/api/event/3a4bd78c-acfb-474f-b47d-160705d3b0aa/regattaentry?regattaId=3e6bfdda-f403-4a1d-a2c0-06a49b25707b"
+  }
+]

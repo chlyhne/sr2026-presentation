@@ -1,0 +1,1941 @@
+{
+  "updatedAt": "2026-11-08T16:53:54.024850+00:00",
+  "boats": [
+    {
+      "trackName": "Abelone 3",
+      "metadata": {
+        "lengthM": 10,
+        "beamM": 3,
+        "estimated": true,
+        "hull": "common"
+      },
+      "boatType": "Kosterbåd/spidsgatter",
+      "sailNumber": "K25 S27",
+      "lookupStatus": "not-matched"
+    },
+    {
+      "trackName": "Alex",
+      "metadata": {
+        "lengthM": 10.11,
+        "beamM": 3.43,
+        "source": "https://websejler.dk/da/baadtype/285",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "DEHLER 34/343",
+        "sailNumber": "DEN 435",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Dehler 343",
+      "sailNumber": "DEN 435",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Alice",
+      "metadata": {
+        "lengthM": 8,
+        "beamM": 2.51,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": "J 80",
+      "sailNumber": "DEN 468",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Allegra",
+      "metadata": {
+        "lengthM": 10.69,
+        "beamM": 3.16,
+        "source": "https://websejler.dk/da/baadtype/161",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "BIANCA 107",
+        "sailNumber": "DEN 53",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Bianca 107",
+      "sailNumber": "DEN 53",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Alvilda",
+      "metadata": {
+        "lengthM": 9.86,
+        "beamM": 2.61,
+        "source": "https://websejler.dk/da/certifikat/11532",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "SCAN-KAP 99",
+        "sailNumber": "DEN 127",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Scan-Kap 99",
+      "sailNumber": "DEN 127",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Amalie",
+      "metadata": {
+        "lengthM": 12.8,
+        "beamM": 3.87,
+        "source": "https://websejler.dk/da/baadtype/10016",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "MØN 431",
+        "sailNumber": "DEN 101",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Møn 431",
+      "sailNumber": "DEN 101",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Ambra",
+      "metadata": {
+        "lengthM": 10,
+        "beamM": 2.3,
+        "measurementBasis": "user",
+        "hull": "classic"
+      },
+      "boatType": "BB 10 METER",
+      "sailNumber": "DEN 68",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Andraste",
+      "metadata": {
+        "lengthM": 10,
+        "beamM": 3,
+        "estimated": true,
+        "hull": "common"
+      },
+      "boatType": "Sloop, \"One off\"",
+      "sailNumber": "GBR 3921",
+      "lookupStatus": "not-matched"
+    },
+    {
+      "trackName": "Andrea",
+      "metadata": {
+        "lengthM": 10.72,
+        "beamM": 3.47,
+        "source": "https://websejler.dk/da/certifikat/37461",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "X-362 SPORT",
+        "sailNumber": "DEN 245",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "X-362 SPORT",
+      "sailNumber": "DEN 245",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Annibeth",
+      "metadata": {
+        "lengthM": 13.6,
+        "beamM": 4.3,
+        "source": "https://websejler.dk/da/certifikat/33195",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "DUFOUR 45",
+        "sailNumber": "DEN 45",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "DUFOUR 45",
+      "sailNumber": "DEN 45",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Banner Viking",
+      "metadata": {
+        "lengthM": 12.33,
+        "beamM": 3.25,
+        "source": "https://websejler.dk/da/certifikat/9243",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "BANNER 41",
+        "sailNumber": "DEN 6",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Banner 41 R",
+      "sailNumber": "DEN 6",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Bibs",
+      "metadata": {
+        "lengthM": 12.88,
+        "beamM": 3.1,
+        "source": "https://websejler.dk/da/baadtype/248",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "OMEGA 42",
+        "sailNumber": "DEN 110",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Omega 42",
+      "sailNumber": "DEN 110",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Blacq Magic",
+      "metadata": {
+        "lengthM": 10.58,
+        "beamM": 3.21,
+        "source": "https://websejler.dk/da/certifikat/37022",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "MAX FUN 35",
+        "sailNumber": "DEN 7",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "MAX FUN 35",
+      "sailNumber": "DEN 7",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Blue Bird",
+      "metadata": {
+        "lengthM": 9.31,
+        "beamM": 2.92,
+        "source": "https://websejler.dk/da/baadtype/251",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "SUNWIND 31",
+        "sailNumber": "DEN 145",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Sunwind 31",
+      "sailNumber": "DEN 145",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Blåregn",
+      "metadata": {
+        "lengthM": 10,
+        "beamM": 3,
+        "source": "https://websejler.dk/da/certifikat/7169",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "X-99",
+        "sailNumber": "DEN 56",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "X-99",
+      "sailNumber": "DEN 56",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Buksesnedkeren",
+      "metadata": {
+        "lengthM": 19.24,
+        "beamM": 4.91,
+        "source": "https://websejler.dk/da/certifikat/9852",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "ONE OFF",
+        "sailNumber": "DEN 1239",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": null,
+      "sailNumber": "DEN 1239",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Casa Bent",
+      "metadata": {
+        "lengthM": 13.89,
+        "beamM": 4.32,
+        "source": "https://websejler.dk/da/certifikat/37834",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "DEHLER 46",
+        "sailNumber": "DEN 103",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "DEHLER 46",
+      "sailNumber": "DEN 103",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Charlotte",
+      "metadata": {
+        "lengthM": 9.29,
+        "beamM": 3.06,
+        "source": "https://websejler.dk/da/certifikat/8646",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "MAMBA 31/311",
+        "sailNumber": "DEN 271",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "MAMBA 31/311",
+      "sailNumber": "DEN 271",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Delizia",
+      "metadata": {
+        "lengthM": 9.16,
+        "beamM": 2.97,
+        "source": "https://websejler.dk/da/certifikat/37862",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "BALLAD",
+        "sailNumber": "DEN 531",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "BALLAD",
+      "sailNumber": "DEN 531",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "DenAnden",
+      "metadata": {
+        "lengthM": 12.83,
+        "beamM": 3.99,
+        "source": "https://websejler.dk/da/baadtype/10301",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "BAVARIA 42",
+        "sailNumber": "DEN 1",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Bavaria 42",
+      "sailNumber": "DEN 1",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Dina 2",
+      "metadata": {
+        "lengthM": 10.62,
+        "beamM": 3.3,
+        "source": "https://sailboatdata.com/sailboat/bandholm-35/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "Banholm 35",
+        "sailNumber": "BA 35",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Banholm 35",
+      "sailNumber": "BA 35",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "Dorthea",
+      "metadata": {
+        "lengthM": 12.17,
+        "beamM": 3.28,
+        "source": "https://websejler.dk/da/certifikat/11517",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "LUFFE 40 NY KØL",
+        "sailNumber": "DEN 45",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Luffe 40",
+      "sailNumber": "DEN 45",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Dream on",
+      "metadata": {
+        "lengthM": 15.88,
+        "beamM": 3.86,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": "Frers 49'",
+      "sailNumber": "DEN 1",
+      "lookupStatus": "not-matched"
+    },
+    {
+      "trackName": "DS37",
+      "metadata": {
+        "lengthM": 11.25,
+        "beamM": 3.23,
+        "source": "https://sailboatdata.com/sailboat/ds-37-match-racer/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "SCANDINAVIAN MATCH RACER",
+        "sailNumber": "DEN 25",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "SCANDINAVIAN MATCH RACER",
+      "sailNumber": "DEN 25",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "Easy L♥️ver",
+      "metadata": {
+        "lengthM": 12.3,
+        "beamM": 3.76,
+        "source": "https://websejler.dk/da/baadtype/10683",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "SOTO 40",
+        "sailNumber": "DEN 28",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Soto 40",
+      "sailNumber": "DEN 28",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Eldkvarn",
+      "metadata": {
+        "lengthM": 9.35,
+        "beamM": 3.12,
+        "source": "https://websejler.dk/da/certifikat/37905",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "RIDAS 31",
+        "sailNumber": "SWE 10172",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "RIDAS 31 racer",
+      "sailNumber": "SWE 10172",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Enjoy Life",
+      "metadata": {
+        "lengthM": 11.3,
+        "beamM": 3.63,
+        "source": "https://websejler.dk/da/certifikat/34294",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "KER 11.3",
+        "sailNumber": "DEN 1100",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "KER 11.3",
+      "sailNumber": "DEN 1100",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Esmeralda",
+      "metadata": {
+        "lengthM": 9.62,
+        "beamM": 3.3,
+        "source": "https://websejler.dk/da/certifikat/37912",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "HR 31/310",
+        "sailNumber": "DEN 318",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "HR 31/310",
+      "sailNumber": "DEN 318",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "FARR-WELL II",
+      "metadata": {
+        "lengthM": 8.3,
+        "beamM": 3,
+        "source": "https://websejler.dk/da/certifikat/37289",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "FIRST 27.7",
+        "sailNumber": "DEN 414",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "FIRST 27.7",
+      "sailNumber": "DEN 414",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Festina",
+      "metadata": {
+        "lengthM": 11.28,
+        "beamM": 3.79,
+        "source": "https://websejler.dk/da/certifikat/37630",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "ARCONA 380/385",
+        "sailNumber": "DEN 5",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "ARCONA 380/385",
+      "sailNumber": "DEN 5",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Fifty",
+      "metadata": {
+        "lengthM": 12.33,
+        "beamM": 3.25,
+        "source": "https://websejler.dk/da/certifikat/11252",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "BANNER 41",
+        "sailNumber": "DEN 15",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "BANNER 41",
+      "sailNumber": "DEN 15",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Freja",
+      "metadata": {
+        "lengthM": 9.5,
+        "beamM": 3.3,
+        "source": "https://sailboatdata.com/sailboat/sun-fast-32-jeanneau/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "SunFast 32",
+        "sailNumber": "DEN 384",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "SunFast 32",
+      "sailNumber": "DEN 384",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "Frida II",
+      "metadata": {
+        "lengthM": 9.55,
+        "beamM": 3.3,
+        "source": "https://websejler.dk/da/baadtype/10466",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "HANSE 320",
+        "sailNumber": "SWE 432",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Hanse 320",
+      "sailNumber": "SWE 432",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Friendship 2",
+      "metadata": {
+        "lengthM": 9.92,
+        "beamM": 2.42,
+        "source": "https://websejler.dk/da/baadtype/12",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "APHRODITE 101",
+        "sailNumber": "DEN 11",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Aphrodite 101",
+      "sailNumber": "DEN 11",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Frigg",
+      "metadata": {
+        "lengthM": 9.5,
+        "beamM": 3.3,
+        "source": "https://sailboatdata.com/sailboat/sun-fast-32-jeanneau/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "SunFast 32",
+        "sailNumber": "DEN 693",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "SunFast 32",
+      "sailNumber": "DEN 693",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "GAIA",
+      "metadata": {
+        "lengthM": 10.1,
+        "beamM": 3.47,
+        "source": "https://websejler.dk/da/baadtype/2294",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "NAJAD 340",
+        "sailNumber": "-- --",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Najad 340",
+      "sailNumber": "-- --",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Grand Delice",
+      "metadata": {
+        "lengthM": 10.62,
+        "beamM": 3.45,
+        "source": "https://websejler.dk/da/certifikat/36100",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "FIRST 36.7",
+        "sailNumber": "DEN 1",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "FIRST 36.7",
+      "sailNumber": "DEN 1",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Guldfisken",
+      "metadata": {
+        "lengthM": 10.64,
+        "beamM": 3.45,
+        "source": "https://websejler.dk/da/certifikat/37484",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "FIRST 36.7",
+        "sailNumber": "SWE 399",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "FIRST 36.7",
+      "sailNumber": "SWE 399",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "HANSEN 3.5",
+      "metadata": {
+        "lengthM": 10.65,
+        "beamM": 3.53,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": "ELLIOT 35 SS",
+      "sailNumber": "DEN 35551",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Irma",
+      "metadata": {
+        "lengthM": 9.2,
+        "beamM": 3.2,
+        "source": "https://websejler.dk/da/baadtype/1971",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "TRIO 92",
+        "sailNumber": "DEN 92",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Trio 92",
+      "sailNumber": "DEN 92",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Irmgard II",
+      "metadata": {
+        "lengthM": 11.28,
+        "beamM": 3.76,
+        "source": "https://websejler.dk/da/certifikat/36980",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "DEHLER 38 (2014)",
+        "sailNumber": "DEN 322",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "DEHLER 38",
+      "sailNumber": "DEN 322",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Joujou 2",
+      "metadata": {
+        "lengthM": 11.16,
+        "beamM": 2.73,
+        "source": "https://websejler.dk/da/certifikat/3984",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "LUFFE 37",
+        "sailNumber": "DEN 35",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Luffe 37",
+      "sailNumber": "DEN 35",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Joy",
+      "metadata": {
+        "lengthM": 10.97,
+        "beamM": 3.58,
+        "source": "https://websejler.dk/da/certifikat/35884",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "J 112",
+        "sailNumber": "DEN 1",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "J 112",
+      "sailNumber": "DEN 1",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Julianehåb",
+      "metadata": {
+        "lengthM": 10.69,
+        "beamM": 3.16,
+        "source": "https://websejler.dk/da/baadtype/161",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "BIANCA 107",
+        "sailNumber": "DEN 107",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Bianca 107",
+      "sailNumber": "DEN 107",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Lacee Bee",
+      "metadata": {
+        "lengthM": 13.15,
+        "beamM": 4.18,
+        "source": "https://websejler.dk/da/baadtype/10423",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "HANSE 430",
+        "sailNumber": "SWE 12430",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Hanse 430",
+      "sailNumber": "SWE 12430",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Laguna",
+      "metadata": {
+        "lengthM": 8.9,
+        "beamM": 2.93,
+        "source": "https://websejler.dk/da/certifikat/31936",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "MAMBA 29",
+        "sailNumber": "DEN 61",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Mamba 29",
+      "sailNumber": "DEN 61",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Laolao",
+      "metadata": {
+        "lengthM": 10.8,
+        "beamM": 3.56,
+        "source": "https://websejler.dk/da/certifikat/36240",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "JEANNEAU SUN FAST 3600",
+        "sailNumber": "DEN 3601",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "modern"
+      },
+      "boatType": "JEANNEAU SUN FAST 3600",
+      "sailNumber": "DEN 3601",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Little Wing",
+      "metadata": {
+        "lengthM": 11.99,
+        "beamM": 3.91,
+        "source": "https://websejler.dk/da/baadtype/10254",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "DUFOUR 40",
+        "sailNumber": "DEN 121",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Dufour 40",
+      "sailNumber": "DEN 121",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Luna",
+      "metadata": {
+        "lengthM": 8.72,
+        "beamM": 2.92,
+        "source": "https://websejler.dk/da/baadtype/190",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "SOLUS 29",
+        "sailNumber": "D 26",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Solus 29",
+      "sailNumber": "D 26",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Margrethe",
+      "metadata": {
+        "lengthM": 13.34,
+        "beamM": 4.24,
+        "source": "https://sailboatdata.com/sailboat/sun-magic-44-jeanneau/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "Jeanneau sun magic",
+        "sailNumber": "XXX xxx",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Jeanneau sun magic",
+      "sailNumber": "XXX xxx",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "Mary",
+      "metadata": {
+        "lengthM": 11.32,
+        "beamM": 3.55,
+        "source": "https://sailboatdata.com/sailboat/hallberg-rassy-37/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "Hallberg-Rassy 37",
+        "sailNumber": "44 DEN",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Hallberg-Rassy 37",
+      "sailNumber": "44 DEN",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "Mercutio",
+      "metadata": {
+        "lengthM": 8,
+        "beamM": 2.54,
+        "measurementBasis": "user",
+        "hull": "modern"
+      },
+      "boatType": "Seascape 27",
+      "sailNumber": "DEN 162",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Mette",
+      "metadata": {
+        "lengthM": 11.99,
+        "beamM": 4.04,
+        "source": "https://sailboatdata.com/sailboat/hanse-400-2006-2007/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "Hanse 400e",
+        "sailNumber": "SWE 307",
+        "measurementFields": [
+          "LOD",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Hanse 400e",
+      "sailNumber": "SWE 307",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "Miss-X",
+      "metadata": {
+        "lengthM": 10.05,
+        "beamM": 3.29,
+        "source": "https://websejler.dk/da/certifikat/35567",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "X-332",
+        "sailNumber": "DEN 362",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "X-332",
+      "sailNumber": "DEN 362",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "MorGrethe",
+      "metadata": {
+        "lengthM": 12.88,
+        "beamM": 3.1,
+        "source": "https://websejler.dk/da/certifikat/9534",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "OMEGA 42",
+        "sailNumber": "DEN 60",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "OMEGA 42",
+      "sailNumber": "DEN 60",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Moster",
+      "metadata": {
+        "lengthM": 7.77,
+        "beamM": 2.5,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": "EXPRESS",
+      "sailNumber": "DEN 705",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "munje",
+      "metadata": {
+        "lengthM": 13.35,
+        "beamM": 4.25,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": "Dufour 44",
+      "sailNumber": "DK 44",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "My",
+      "metadata": {
+        "lengthM": 8,
+        "beamM": 2.54,
+        "measurementBasis": "user",
+        "hull": "modern"
+      },
+      "boatType": "Seascape 27",
+      "sailNumber": "SWE 27",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Neptun",
+      "metadata": {
+        "lengthM": 10.57,
+        "beamM": 3.34,
+        "source": "https://websejler.dk/da/baadtype/10255",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "J105",
+        "sailNumber": "DEN 452",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "J105",
+      "sailNumber": "DEN 452",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "NINI",
+      "metadata": {
+        "lengthM": 11.5,
+        "beamM": 3.03,
+        "source": "https://websejler.dk/da/certifikat/37831",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "DRABANT 38",
+        "sailNumber": "DEN 21",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "DRABANT 38",
+      "sailNumber": "DEN 21",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "NJOY",
+      "metadata": {
+        "lengthM": 10.36,
+        "beamM": 3.5,
+        "source": "https://websejler.dk/da/baadtype/2406",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "BAVARIA 34",
+        "sailNumber": "BV 34",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Bavaria 34",
+      "sailNumber": "BV 34",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Nordstjernen",
+      "metadata": {
+        "lengthM": 11.1,
+        "beamM": 3,
+        "source": "https://websejler.dk/da/certifikat/6708",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "FAURBY 36",
+        "sailNumber": "DEN 20",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "FAURBY 36",
+      "sailNumber": "DEN 20",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Norma",
+      "metadata": {
+        "lengthM": 9.96,
+        "beamM": 3.1,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": "Hunter 33",
+      "sailNumber": "DEN 62",
+      "lookupStatus": "not-matched"
+    },
+    {
+      "trackName": "Pandora",
+      "metadata": {
+        "lengthM": 12.85,
+        "beamM": 3.98,
+        "source": "https://websejler.dk/da/certifikat/36099",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "BAVARIA 42",
+        "sailNumber": "DEN 269",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Bavaria 42C",
+      "sailNumber": "DEN 269",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Petrix",
+      "metadata": {
+        "lengthM": 10.99,
+        "beamM": 3.92,
+        "source": "https://websejler.dk/da/baadtype/10629",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "HANSE 385",
+        "sailNumber": "DEN 385",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Hanse 385",
+      "sailNumber": "DEN 385",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "PING",
+      "metadata": {
+        "lengthM": 11.98,
+        "beamM": 3.82,
+        "source": "https://websejler.dk/da/certifikat/36066",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "ARCONA 400",
+        "sailNumber": "DEN 121",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "ARCONA 400",
+      "sailNumber": "DEN 121",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Pixie",
+      "metadata": {
+        "lengthM": 11.6,
+        "beamM": 3.7,
+        "source": "https://websejler.dk/da/certifikat/35621",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "XP 38",
+        "sailNumber": "DEN 76",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "XP 38",
+      "sailNumber": "DEN 76",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Popeye",
+      "metadata": {
+        "lengthM": 11.32,
+        "beamM": 3.55,
+        "source": "https://sailboatdata.com/sailboat/hallberg-rassy-37/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "Hallberg Rassy 37",
+        "sailNumber": "HR 37",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Hallberg Rassy 37",
+      "sailNumber": "HR 37",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "Quinta Light",
+      "metadata": {
+        "lengthM": 12.55,
+        "beamM": 4.3,
+        "measurementBasis": "user",
+        "hull": "modern"
+      },
+      "boatType": "HH 42",
+      "sailNumber": "DEN 5",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Quokka",
+      "metadata": {
+        "lengthM": 12.95,
+        "beamM": 3.91,
+        "source": "https://websejler.dk/da/certifikat/36624",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "GRAND SOLEIL 43",
+        "sailNumber": "DEN 2215",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "GRAND SOLEIL 43",
+      "sailNumber": "DEN 2215",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Rafi",
+      "metadata": {
+        "lengthM": 8.25,
+        "beamM": 2.43,
+        "source": "https://websejler.dk/da/baadtype/118",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "BIANCA 27",
+        "sailNumber": "221 Bianca",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Bianca 27",
+      "sailNumber": "221 Bianca",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Ran",
+      "metadata": {
+        "lengthM": 10,
+        "beamM": 3,
+        "estimated": true,
+        "hull": "common"
+      },
+      "boatType": "40 fods Ketch",
+      "sailNumber": "DDS Ran",
+      "lookupStatus": "not-matched"
+    },
+    {
+      "trackName": "Rosa-Lux",
+      "metadata": {
+        "lengthM": 10,
+        "beamM": 3,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": "X-99",
+      "sailNumber": "DEN 520",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "SABRINA",
+      "metadata": {
+        "lengthM": 11.8872,
+        "beamM": 3.784314606741573,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": null,
+      "sailNumber": "DEN Y11",
+      "lookupStatus": "not-matched"
+    },
+    {
+      "trackName": "Sagitta",
+      "metadata": {
+        "lengthM": 10.76,
+        "beamM": 3.28,
+        "source": "https://websejler.dk/da/certifikat/33871",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "ALBIN STRATUS",
+        "sailNumber": "GER 6540",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "ALBIN STRATUS",
+      "sailNumber": "GER 6540",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Salka Valka",
+      "metadata": {
+        "lengthM": 10,
+        "beamM": 3,
+        "estimated": true,
+        "hull": "common"
+      },
+      "boatType": null,
+      "sailNumber": "DEN 3",
+      "lookupStatus": "not-matched"
+    },
+    {
+      "trackName": "saltamalin",
+      "metadata": {
+        "lengthM": 8,
+        "beamM": 2.54,
+        "measurementBasis": "user",
+        "hull": "modern"
+      },
+      "boatType": "Seascape 27",
+      "sailNumber": "SWE 237",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Sanne",
+      "metadata": {
+        "lengthM": 10.47,
+        "beamM": 3.05,
+        "source": "https://websejler.dk/da/certifikat/8591",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "SAGITTA 35",
+        "sailNumber": "DEN 477",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "SAGITTA 35",
+      "sailNumber": "DEN 477",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Scarlet",
+      "metadata": {
+        "lengthM": 11.09,
+        "beamM": 3.5,
+        "source": "https://websejler.dk/da/certifikat/35796",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "JEANNEAU SUN FAST 36",
+        "sailNumber": "DEN 11",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "JEANNEAU SUN FAST 36",
+      "sailNumber": "DEN 11",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Siroque",
+      "metadata": {
+        "lengthM": 9.5,
+        "beamM": 3.23,
+        "source": "https://websejler.dk/da/certifikat/37895",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "FIRST 31.7",
+        "sailNumber": "DEN 2606",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "First 31.7",
+      "sailNumber": "DEN 2606",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Slipstik",
+      "metadata": {
+        "lengthM": 10,
+        "beamM": 2.3,
+        "measurementBasis": "user",
+        "hull": "classic"
+      },
+      "boatType": "BB 10 METER",
+      "sailNumber": "DEN 42",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Sneppen",
+      "metadata": {
+        "lengthM": 12.62,
+        "beamM": 3.4,
+        "source": "https://websejler.dk/da/baadtype/10064",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "FAURBY 424",
+        "sailNumber": "DEN 15",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Faurby 424",
+      "sailNumber": "DEN 15",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Solhverv",
+      "metadata": {
+        "lengthM": 11.98,
+        "beamM": 3.82,
+        "source": "https://websejler.dk/da/certifikat/37252",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "ARCONA 400",
+        "sailNumber": "DEN 67",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "ARCONA 400",
+      "sailNumber": "DEN 67",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Sonja fra Sydhavnen",
+      "metadata": {
+        "lengthM": 5.71,
+        "beamM": 2.36,
+        "source": "https://websejler.dk/da/certifikat/37910",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "LYNÆS SENIOR",
+        "sailNumber": "DEN 66",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "LYNÆS SENIOR",
+      "sailNumber": "DEN 66",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "SPIDER PIG",
+      "metadata": {
+        "lengthM": 7.7,
+        "beamM": 2.47,
+        "source": "https://websejler.dk/da/certifikat/37889",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "CORBY 25",
+        "sailNumber": "SWE 65",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "CORBY 25",
+      "sailNumber": "SWE 65",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Stormy",
+      "metadata": {
+        "lengthM": 12.88,
+        "beamM": 3.93,
+        "source": "https://websejler.dk/da/certifikat/36595",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "STIMSON IRC 42",
+        "sailNumber": "DEN 1",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "STIMSON IRC 42",
+      "sailNumber": "DEN 1",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "THE HULK",
+      "metadata": {
+        "lengthM": 10.3,
+        "beamM": 3.18,
+        "measurementBasis": "user",
+        "hull": "modern"
+      },
+      "boatType": "DEHLER 30 OD",
+      "sailNumber": "DEN 48",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Thermidor",
+      "metadata": {
+        "lengthM": 10.64,
+        "beamM": 3.45,
+        "source": "https://websejler.dk/da/certifikat/36170",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "FIRST 36.7",
+        "sailNumber": "SWE 102",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "FIRST 36.7",
+      "sailNumber": "SWE 102",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Tignanello",
+      "metadata": {
+        "lengthM": 11.05,
+        "beamM": 3.57,
+        "source": "https://websejler.dk/da/certifikat/37494",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "X-372",
+        "sailNumber": "DEN 79",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "X-372",
+      "sailNumber": "DEN 79",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Tjørn",
+      "metadata": {
+        "lengthM": 12.25,
+        "beamM": 3.3,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": "Luffe 40 one off",
+      "sailNumber": "DEN No name",
+      "lookupStatus": "not-matched"
+    },
+    {
+      "trackName": "Triumph",
+      "metadata": {
+        "lengthM": 10.74,
+        "beamM": 3.61,
+        "source": "https://websejler.dk/da/baadtype/10376",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "DELPHIA 37",
+        "sailNumber": "SWE 73",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Delphia 37",
+      "sailNumber": "SWE 73",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Vaiana - DEN",
+      "metadata": {
+        "lengthM": 11.98,
+        "beamM": 4.29,
+        "source": "https://sailboatdata.com/sailboat/c42-bavaria/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "Bavaria C42",
+        "sailNumber": "B 42",
+        "measurementFields": [
+          "LOD",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Bavaria C42",
+      "sailNumber": "B 42",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "Vaiana - NO",
+      "metadata": {
+        "lengthM": 11.1,
+        "beamM": 3.35,
+        "source": "https://sailboatdata.com/sailboat/malo-50/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "Malö 50",
+        "sailNumber": "NO Name",
+        "measurementFields": [
+          "LOA",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Malö 50",
+      "sailNumber": "NO Name",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "Valkyria",
+      "metadata": {
+        "lengthM": 11.28,
+        "beamM": 3.8,
+        "source": "https://websejler.dk/da/certifikat/36073",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "ARCONA 380/385",
+        "sailNumber": "SWE 134",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "ARCONA 380/385",
+      "sailNumber": "SWE 134",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "VELOCE",
+      "metadata": {
+        "lengthM": 11.62,
+        "beamM": 3.58,
+        "source": "https://websejler.dk/da/certifikat/34776",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "EXPLORER 38",
+        "sailNumber": "DEN 17",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "EXPLORER 38",
+      "sailNumber": "DEN 17",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Vera",
+      "metadata": {
+        "lengthM": 8,
+        "beamM": 2.54,
+        "measurementBasis": "user",
+        "hull": "modern"
+      },
+      "boatType": "Seascape 27",
+      "sailNumber": "SWE 73",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Vi Ses",
+      "metadata": {
+        "lengthM": 10.21,
+        "beamM": 3.21,
+        "measurementBasis": "user",
+        "hull": "common"
+      },
+      "boatType": "Dehler 34",
+      "sailNumber": "DEN 436",
+      "lookupStatus": "not-matched"
+    },
+    {
+      "trackName": "Viento",
+      "metadata": {
+        "lengthM": 10.32,
+        "beamM": 3.2,
+        "source": "https://websejler.dk/da/baadtype/2318",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "MØN 341",
+        "sailNumber": "DEN 7",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Møn 341",
+      "sailNumber": "DEN 7",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "Voador",
+      "metadata": {
+        "lengthM": 10.55,
+        "beamM": 3.34,
+        "source": "https://websejler.dk/da/certifikat/36507",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "J105",
+        "sailNumber": "GBR 722r",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "J105",
+      "sailNumber": "GBR 722r",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Xanadu",
+      "metadata": {
+        "lengthM": 11.25,
+        "beamM": 3.63,
+        "source": "https://websejler.dk/da/baadtype/10072",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "HANSE 371",
+        "sailNumber": "DEN 35",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "Hanse 371",
+      "sailNumber": "DEN 35",
+      "lookupStatus": "matched-type"
+    },
+    {
+      "trackName": "XAR",
+      "metadata": {
+        "lengthM": 13.29,
+        "beamM": 4.07,
+        "source": "https://sailboatdata.com/sailboat/xp-44/",
+        "measurementBasis": "type",
+        "estimated": true,
+        "boatType": "XP-44",
+        "sailNumber": "SWE 129",
+        "measurementFields": [
+          "Hull length in notes",
+          "Beam"
+        ],
+        "hull": "common"
+      },
+      "boatType": "XP-44",
+      "sailNumber": "SWE 129",
+      "lookupStatus": "matched-sailboatdata-type"
+    },
+    {
+      "trackName": "XAVIA",
+      "metadata": {
+        "lengthM": 10.72,
+        "beamM": 3.47,
+        "source": "https://websejler.dk/da/certifikat/36710",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "X-362 SPORT",
+        "sailNumber": "DEN 1130",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "X-362 SPORT",
+      "sailNumber": "DEN 1130",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "XBOX",
+      "metadata": {
+        "lengthM": 12.75,
+        "beamM": 4.18,
+        "measurementBasis": "user",
+        "hull": "modern"
+      },
+      "boatType": "XR 41",
+      "sailNumber": "DEN 41",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Xilje",
+      "metadata": {
+        "lengthM": 12.1,
+        "beamM": 3.77,
+        "source": "https://websejler.dk/da/certifikat/36114",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "IMX 40",
+        "sailNumber": "DEN 9",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "IMX 40",
+      "sailNumber": "DEN 9",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "XUSIDUS",
+      "metadata": {
+        "lengthM": 11.45,
+        "beamM": 3.72,
+        "source": "https://websejler.dk/da/certifikat/37406",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "X-382",
+        "sailNumber": "SWE 74",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "X-382",
+      "sailNumber": "SWE 74",
+      "lookupStatus": "matched"
+    },
+    {
+      "trackName": "Zenobia",
+      "metadata": {
+        "lengthM": 9.86,
+        "beamM": 3.15,
+        "source": "https://websejler.dk/da/certifikat/5907",
+        "measurementBasis": "certificate",
+        "estimated": false,
+        "boatType": "ALBIN NOVA",
+        "sailNumber": "DEN 338",
+        "measurementFields": [
+          "LOA",
+          "Bmax"
+        ],
+        "hull": "common"
+      },
+      "boatType": "ALBIN NOVA",
+      "sailNumber": "DEN 338",
+      "lookupStatus": "matched"
+    }
+  ]
+}

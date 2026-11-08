@@ -1,0 +1,136 @@
+{
+  "verifiedAt": "2026-11-08",
+  "source": "SailboatData public boat specification pages",
+  "models": [
+    {
+      "entryTypes": [
+        "SunFast 32"
+      ],
+      "lengthM": 9.5,
+      "beamM": 3.3,
+      "source": "https://sailboatdata.com/sailboat/sun-fast-32-jeanneau/",
+      "measurementFields": [
+        "LOA",
+        "Beam"
+      ],
+      "estimated": true
+    },
+    {
+      "entryTypes": [
+        "Hallberg-Rassy 37",
+        "Hallberg Rassy 37"
+      ],
+      "lengthM": 11.32,
+      "beamM": 3.55,
+      "source": "https://sailboatdata.com/sailboat/hallberg-rassy-37/",
+      "measurementFields": [
+        "LOA",
+        "Beam"
+      ],
+      "estimated": true
+    },
+    {
+      "entryTypes": [
+        "Malö 50"
+      ],
+      "lengthM": 11.1,
+      "beamM": 3.35,
+      "source": "https://sailboatdata.com/sailboat/malo-50/",
+      "measurementFields": [
+        "LOA",
+        "Beam"
+      ],
+      "estimated": true
+    },
+    {
+      "entryTypes": [
+        "Bavaria C42"
+      ],
+      "lengthM": 11.98,
+      "beamM": 4.29,
+      "source": "https://sailboatdata.com/sailboat/c42-bavaria/",
+      "measurementFields": [
+        "LOD",
+        "Beam"
+      ],
+      "estimated": true,
+      "loaM": 12.38,
+      "note": "Use reported length on deck for the hull icon; LOA with bowsprit is 12.9 m."
+    },
+    {
+      "entryTypes": [
+        "XP-44"
+      ],
+      "lengthM": 13.29,
+      "beamM": 4.07,
+      "source": "https://sailboatdata.com/sailboat/xp-44/",
+      "measurementFields": [
+        "Hull length in notes",
+        "Beam"
+      ],
+      "estimated": true,
+      "loaM": 13.88,
+      "note": "Use the explicit hull length from the notes rather than overall length."
+    },
+    {
+      "entryTypes": [
+        "Hanse 400e"
+      ],
+      "lengthM": 11.99,
+      "beamM": 4.04,
+      "source": "https://sailboatdata.com/sailboat/hanse-400-2006-2007/",
+      "measurementFields": [
+        "LOD",
+        "Beam"
+      ],
+      "estimated": true,
+      "loaM": 12.1,
+      "note": "The page identifies the epoxy option and a 400e owner; both 400 generations list the same hull dimensions."
+    },
+    {
+      "entryTypes": [
+        "SCANDINAVIAN MATCH RACER"
+      ],
+      "lengthM": 11.25,
+      "beamM": 3.23,
+      "source": "https://sailboatdata.com/sailboat/ds-37-match-racer/",
+      "measurementFields": [
+        "LOA",
+        "Beam"
+      ],
+      "estimated": true,
+      "trackNames": [
+        "DS37"
+      ],
+      "note": "The track name DS37 identifies the 37-foot Scandinavian Match Racer."
+    },
+    {
+      "entryTypes": [
+        "Jeanneau sun magic"
+      ],
+      "lengthM": 13.34,
+      "beamM": 4.24,
+      "source": "https://sailboatdata.com/sailboat/sun-magic-44-jeanneau/",
+      "measurementFields": [
+        "LOA",
+        "Beam"
+      ],
+      "estimated": true,
+      "note": "Manage2Sail omits 44 from the Sun Magic model name. Treat as a reviewed model estimate."
+    },
+    {
+      "entryTypes": [
+        "Banholm 35"
+      ],
+      "lengthM": 10.62,
+      "beamM": 3.3,
+      "source": "https://sailboatdata.com/sailboat/bandholm-35/",
+      "measurementFields": [
+        "LOA",
+        "Beam"
+      ],
+      "estimated": true,
+      "note": "Reviewed spelling correction: Manage2Sail Banholm 35 is interpreted as Bandholm 35."
+    }
+  ]
+}
