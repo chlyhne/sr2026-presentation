@@ -7299,5 +7299,31 @@
       "lat": 56.07776607416444
     }
   ],
-  "speedPins": []
+  "speedPins": [
+    {
+      "id": "393e4d0d-2d95-4d58-8e9e-a87998b11981",
+      "boatId": "groensund:cf8e6940-4624-013f-2973-04421a259aad",
+      "time": 1781269945.5128312
+    },
+    {
+      "id": "58ae6569-f948-41b7-9c27-e122b5d29207",
+      "boatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+      "time": 1781269875.77485
+    },
+    {
+      "id": "b6e90692-1bfe-4e3d-b3b3-94e06c9ef521",
+      "boatId": "groensund:cf9aff90-4624-013f-297e-04421a259aad",
+      "time": 1781270797.498528
+    },
+    {
+      "id": "fd82e90e-7e80-4272-ad30-b6cee3d30d11",
+      "boatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+      "time": 1781273954.0026164
+    },
+    {
+      "id": "de687539-ea06-4431-aad7-5dff335843bb",
+      "boatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+      "time": 1781276774.7749534
+    }
+  ]
 }
