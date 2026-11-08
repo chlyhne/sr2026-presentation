@@ -14,6 +14,7 @@ function resizeSymbols(){
  for(const group of $('map').querySelectorAll('[data-screen-x]')){
   group.setAttribute('transform',`translate(${group.dataset.screenX} ${group.dataset.screenY}) scale(${inverseScale})`);
  }
+ resizeBoatIcons(matrix);
 }
 // Find a time boundary without scanning the full track.
 function timeBoundary(points,time,after=false){
@@ -85,7 +86,7 @@ function renderMapCredit(){
 const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff84'};
 const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
 const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set(featured);
-const boats=[...D.boats].sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
+const boats=D.boats.map(b=>({...b,dimensions:boatDimensions(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
 const shownBoatNames=new Set(boats.filter(b=>featured.has(b.name)).map(b=>b.id));
 function syncBoatChoices(){
  for(const [i,b] of boats.entries()){
@@ -223,7 +224,7 @@ function renderTracks(t=currentTime()){
   group.setAttribute('aria-pressed',String(shownBoatNames.has(b.id)));
   el('title',{},group).textContent=`${b.name} · ${position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
   el('circle',{cx:0,cy:0,r:10,fill:'transparent','pointer-events':'all'},group);
-  el('circle',{class:'boat-dot',cx:0,cy:0,r:4,fill:color,stroke:'#14212a','stroke-width':1},group);
+  renderBoatIcon(group,b,position,t,color);
   if(shownBoatNames.has(b.id)){
    const text=el('text',{class:'boat-name','pointer-events':'none',x:7,y:({Mercutio:-12,Vera:15,My:-4,'THE HULK':27}[b.name]||3),fill:color,
     'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},group);
@@ -239,7 +240,7 @@ $('play').onclick=()=>{if(interval){stopPlayback()}else if(!$('time').disabled){
 document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
 $('all').onclick=()=>changeBoatSelection(()=>{const all=boats.every(b=>chosen.has(b.name));chosen.clear();if(!all)for(const b of boats)chosen.add(b.name);});
 let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));if(updateTimeline())render();else{renderCoast();renderWindArrows();renderTraffic();renderMilitary();resizeSymbols();renderAnnotations();renderMapCredit()} }$('reset').onclick=()=>{view=[230,250,620,760];setview()};
-const MIN_MAP_VIEW_WIDTH=2,MAX_MAP_VIEW_WIDTH=1800;
+const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
 $('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture)return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*(e.deltaY>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform($('map').getScreenCTM().inverse());view=[anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f];setview()},{passive:false});
 let drag=null;
 const map=$('map');
