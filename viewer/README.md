@@ -545,3 +545,12 @@ Fartfarver og deres faste tidsgrænser beregnes ved forberedelsen af tracket.
 Afspilning klipper kun geometrien i de allerede farvelagte stykker.
 Farvegrupperne tegnes i en fast rækkefølge, så overlap ikke skifter farve,
 når gamle punkter forlader to-timersvinduet.
+
+## Dobbelt buffer til vejrkort
+
+Radar og vindfarvefelt har hver to SVG-billedbuffere. Det næste radartidspunkt
+og næste vindtime indlæses og afkodes på forhånd. Den færdige buffer vises ved
+tidsskiftet. Et uventet tidsspring beholder det aktuelle billede, indtil det
+nye er klart; forældede indlæsninger kan ikke overtage visningen. Manglende
+radardata skjules fortsat og markeres som manglende. PNG-eksport afventer
+det valgte radar- og vindbillede og medtager kun de synlige buffere.
