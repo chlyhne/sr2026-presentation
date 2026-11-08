@@ -6086,46 +6086,6 @@
       "lat": 55.02023152677437
     },
     {
-      "time": 1781254842,
-      "utc": "2026-06-12T09:00:42.000Z",
-      "text": "Vera planer!",
-      "view": [
-        375.08559571563137,
-        640.3683030620298,
-        115.88243311573302,
-        142.04943414186624
-      ],
-      "settings": {
-        "wind": true,
-        "windModel": "dmi_harmonie_arome_europe",
-        "windNumbers": false,
-        "rain": true,
-        "rainOpacity": 0.75,
-        "traffic": true,
-        "military": true,
-        "boats": [
-          "Mercutio",
-          "Vera",
-          "My",
-          "THE HULK",
-          "Rosa-Lux"
-        ],
-        "boatNames": [
-          "groensund:cf8a8000-4624-013f-296f-04421a259aad",
-          "groensund:cf92fb10-4624-013f-2977-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
-          "groensund:cf9aff90-4624-013f-297e-04421a259aad",
-          "groensund:cf8e6940-4624-013f-2973-04421a259aad"
-        ]
-      },
-      "video": {
-        "provider": "youtube",
-        "id": "t8qbqoZe2EI",
-        "start": 0,
-        "url": "https://www.youtube.com/watch?v=t8qbqoZe2EI"
-      }
-    },
-    {
       "time": 1781259218,
       "utc": "2026-06-12T10:13:38.000Z",
       "text": "Vi har hentet meget på Rosa-Lux og 10 minutter på Hulk. Ikke mange kan følge med os på de vinkler i den nu friske luft. Men nu bliver vores A5 for langsom da vi falder af.",
@@ -6393,6 +6353,46 @@
       ],
       "lon": 11.03756252593547,
       "lat": 55.518308450508925
+    },
+    {
+      "time": 1781270065,
+      "utc": "2026-06-12T13:14:25.000Z",
+      "text": "Vera planer!",
+      "view": [
+        310.52844825161867,
+        550.8735764414162,
+        16.377508756414827,
+        20.07565589496011
+      ],
+      "settings": {
+        "wind": true,
+        "windModel": "dmi_harmonie_arome_europe",
+        "windNumbers": false,
+        "rain": true,
+        "rainOpacity": 0.75,
+        "traffic": true,
+        "military": true,
+        "boats": [
+          "Mercutio",
+          "Vera",
+          "My",
+          "THE HULK",
+          "Rosa-Lux"
+        ],
+        "boatNames": [
+          "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+          "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
+          "groensund:cf9aff90-4624-013f-297e-04421a259aad",
+          "groensund:cf8e6940-4624-013f-2973-04421a259aad"
+        ]
+      },
+      "video": {
+        "provider": "youtube",
+        "id": "t8qbqoZe2EI",
+        "start": 0,
+        "url": "https://www.youtube.com/watch?v=t8qbqoZe2EI"
+      }
     },
     {
       "time": 1781272710,
