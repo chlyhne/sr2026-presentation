@@ -9,7 +9,7 @@ async function check(type){
   await page.addInitScript(()=>window.SR_TRACK_RENDERER='webgl');
   await page.route('**/config.js',r=>r.fulfill({contentType:'application/javascript',body:'window.SR_CONFIG={local:false,admin:false};'}));
   await page.route('**/presentation.json',r=>r.fulfill({json:presentation}));
-  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('#onlineStatus');
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('#onlineStatus',{state:'attached'});
   let samples=0;
   for(const fullscreen of [false,true,false]){
    if(fullscreen)await page.locator('#presentationFullscreen').click();
@@ -22,9 +22,8 @@ async function check(type){
      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
      const check=(ok,message)=>{if(!ok)throw Error('Event '+i+': '+message);};
      check(webglTracks.active,'GPU renderer stopped: '+webglTracks.error);
-     const {matrix,rect,viewBox}=mapViewport(),gl=webglTracks.gl;
-     const host=['x','y','width','height'].map(name=>+webglTracks.host.getAttribute(name));
-     check(viewBox.every((n,j)=>Math.abs(n-host[j])<1e-7),'Track clipping disagrees with map viewport');
+     const {matrix,rect}=mapViewport(),gl=webglTracks.gl,host=webglTracks.host.getBoundingClientRect();
+     check(['left','top','right','bottom'].every(k=>Math.abs(rect[k]-host[k])<.1),'Track clipping disagrees with map viewport');
      for(const text of $('map').querySelectorAll('#places text,.boat-name')){
       const transform=text.getScreenCTM(),pixels=parseFloat(getComputedStyle(text).fontSize)*Math.hypot(transform.a,transform.b);
       check(pixels>=10&&pixels<=13,'Map text size changed to '+pixels+' px');

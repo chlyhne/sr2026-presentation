@@ -139,7 +139,7 @@ void main(){
   if(!this.active)return false;
   try{
    const viewport=mapViewport();if(!viewport)return true;
-   const {rect,matrix,topLeft:top,viewBox}=viewport;
+   const {rect,matrix,inverse,topLeft:top}=viewport;
    const ratio=window.devicePixelRatio||1,width=Math.max(1,Math.round(rect.width*ratio)),height=Math.max(1,Math.round(rect.height*ratio));
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
    const key=[time,viewportKey,...order.map(b=>b.id)].join(':');
@@ -148,7 +148,13 @@ void main(){
    const gl=this.gl,u=this.uniforms;
    gl.useProgram(this.program);
    if(this.viewportKey!==viewportKey){
-    for(const [i,name] of ['x','y','width','height'].entries())this.host.setAttribute(name,viewBox[i]);
+    // Lay out the embedded HTML in screen pixels. A foreignObject positioned
+    // at fractional map coordinates is rounded by the browser's canvas
+    // compositor before SVG zoom, shifting the bitmap by many screen pixels.
+    // Cancel the map transform here; the shader still uses the shared map camera.
+    this.host.setAttribute('x',0);this.host.setAttribute('y',0);
+    this.host.setAttribute('width',rect.width);this.host.setAttribute('height',rect.height);
+    this.host.setAttribute('transform',`matrix(${inverse.a} ${inverse.b} ${inverse.c} ${inverse.d} ${top.x} ${top.y})`);
     if(this.canvas.width!==width)this.canvas.width=width;if(this.canvas.height!==height)this.canvas.height=height;
     gl.uniform4f(u.origin,Math.fround(top.x),Math.fround(top.y),top.x-Math.fround(top.x),top.y-Math.fround(top.y));
     gl.uniformMatrix2fv(u.screen,false,new Float32Array([matrix.a,matrix.b,matrix.c,matrix.d]));

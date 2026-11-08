@@ -71,7 +71,7 @@ body.presenting #annotations [data-note-index]{cursor:inherit}
 body.presenting main{--event-width:clamp(280px,28vw,440px);grid-template-columns:minmax(0,1fr) var(--event-width)}
 body.presenting #map,body.presenting #mapEventImage,body.presenting #editingTimeline{grid-column:1}
 body.presenting #eventPanel,body.presenting #presentationFooter{grid-column:2}
-body.presenting aside{display:none}
+body.presenting aside,body.presenting #onlineStatus{display:none}
 body.presenting header{padding:10px 22px}
 #presentationFooter{display:flex;align-items:center;border-left:1px solid #38505f}
 #eventPanel{padding:22px;overflow:auto;min-width:0;min-height:0;background:#142937;border-left:1px solid #38505f}

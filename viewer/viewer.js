@@ -34,7 +34,7 @@ function mapViewport(){
  const inverse=matrix.inverse();
  const a=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
  const b=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
- return {rect,matrix,topLeft:a,viewBox:[a.x,a.y,b.x-a.x,b.y-a.y],
+ return {rect,matrix,inverse,topLeft:a,viewBox:[a.x,a.y,b.x-a.x,b.y-a.y],
   bounds:{west:9.5+a.x*4.5/1000,east:9.5+b.x*4.5/1000,south:57-b.y*3/1180,north:57-a.y*3/1180}};
 }
 function visibleMapBounds(){return mapViewport()?.bounds||null;}
