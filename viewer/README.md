@@ -56,8 +56,8 @@ python3 scripts/serve_viewer.py
   Tidsvinduet er 1 % af tidslinjens viste tid og følger dermed automatisk dens
   tidsomfang ved zoom og panorering. Der er ingen ekstra tidsgrænse baseret på zoom.
   Snap springer ikke over skjulte tidshuller. Resten af skyderen kan bruges frit.
-  Snap ændrer ikke kortudsnit eller lag. Forrige/Næste og eventlisten genskaber
-  fortsat hele eventets gemte kortvisning. Flere noter på samme tidspunkt deler
+  Snap ændrer ikke kortudsnit eller lag. Direkte hop med Forrige/Næste og eventlisten
+  genskaber hele eventets gemte kortvisning. Flere noter på samme tidspunkt deler
   en markering; et allerede valgt event på dette tidspunkt bevares.
   Events i tidshuller mellem bådenes passager vises ikke som snapmål. De er stadig
   tilgængelige med Forrige/Næste, eventlisten og notelisten. Et manuelt hop til
@@ -75,7 +75,10 @@ python3 scripts/serve_viewer.py
   **Næste**. Afspilning frem til et bestemt event følger tiden, også uden synlige
   både undervejs. Kortet følger Mercutio i midten med uændret zoomniveau, også
   når båden ikke er valgt. Uden en aktuel position flyttes kortet ikke.
-  Ved ankomst gendannes eventets gemte udsnit. Zoom afbryder ikke forløbet;
+  Ved ankomst stopper afspilningen uden at ændre det fulgte udsnit; eventets
+  øvrige indstillinger og eventuelle billede gendannes. Et ekstra tryk på Næste
+  undervejs hopper direkte til eventet med dets gemte udsnit.
+  Zoom afbryder ikke forløbet;
   panorering centreres igen på Mercutio ved næste opdatering. Brug tidsskyderen,
   Forrige, eventlisten eller Pause for at afbryde det. **Afspil** alene ændrer
   aldrig kortets opsætning ved passage af et event og åbner ikke billeder over

@@ -39,6 +39,11 @@ async function check(type){
    event:activePresentationNote.text,settings:sceneSettings(),view:[...view],
    mercutio:xy(trackPosition(boats.find(boat=>boat.name==='Mercutio').points,currentTime()).point)}));
   const sceneMatches=(actual,index)=>{assert.deepEqual(actual.settings,fixture.notes[index].settings);assert.deepEqual(actual.view,fixture.notes[index].view);};
+  const arrivalMatches=(actual,index,zoomIndex)=>{
+   assert.deepEqual(actual.settings,fixture.notes[index].settings);
+   assert.deepEqual(actual.view.slice(2),fixture.notes[zoomIndex].view.slice(2));
+   assert.notDeepEqual(actual.view,fixture.notes[index].view,'Timed arrival does not restore the saved viewport');
+  };
   const followingMatches=(actual,index)=>{
    assert.deepEqual(actual.settings,fixture.notes[index].settings);
    assert.deepEqual(actual.view.slice(2),fixture.notes[index].view.slice(2));
@@ -52,9 +57,10 @@ async function check(type){
   await page.locator('#playbackSpeed').selectOption('20');await page.clock.runFor(50);
   await page.evaluate(()=>updateTimeline());await page.clock.runFor(350);
   s=await state();assert.ok(Math.abs(s.time-fixture.time-10)<.001);assert.equal(s.playing,true);followingMatches(s,0);
+  const arrivalView=s.view;
   await page.clock.runFor(100);
-  s=await state();assert.equal(s.time,fixture.notes[1].time);assert.equal(s.event,'B');assert.equal(s.playing,false);assert.equal(s.target,null);sceneMatches(s,1);
-  await page.clock.runFor(1000);assert.equal((await state()).time,fixture.notes[1].time,'Arrival stops without overshooting');
+  s=await state();assert.equal(s.time,fixture.notes[1].time);assert.equal(s.event,'B');assert.equal(s.playing,false);assert.equal(s.target,null);arrivalMatches(s,1,0);assert.deepEqual(s.view,arrivalView,'Arrival keeps the last followed viewport without a jump');
+  await page.clock.runFor(1000);s=await state();assert.equal(s.time,fixture.notes[1].time,'Arrival stops without overshooting');assert.deepEqual(s.view,arrivalView);
   // Same-time events have no transition duration. Keyboard forwards follows the same rules.
   await page.locator('#map').focus();await page.keyboard.press('PageDown');
   s=await state();assert.equal(s.event,'B samme tid');assert.equal(s.playing,false);sceneMatches(s,2);
@@ -90,22 +96,23 @@ async function check(type){
   },fixture.time);
   await page.locator('#playbackSpeed').selectOption('10');await page.locator('#nextEvent').click();await page.clock.runFor(200);
   s=await state();assert.ok(Math.abs(s.time-fixture.time-2)<.001,JSON.stringify(s));assert.equal(s.playing,true);
-  await page.clock.runFor(900);s=await state();assert.equal(s.time,fixture.notes[1].time);sceneMatches(s,1);
+  await page.clock.runFor(900);s=await state();assert.equal(s.time,fixture.notes[1].time);arrivalMatches(s,1,0);
   await page.locator('#eventSelect').selectOption('0');
   await page.evaluate(()=>{visibleTimeRanges=[];boatTimeRanges=[];timelineLength=0;$('time').disabled=$('play').disabled=true;});
   await page.locator('#nextEvent').click();assert.equal(await page.locator('#play').isEnabled(),true);
-  await page.clock.runFor(1100);s=await state();assert.equal(s.time,fixture.notes[1].time);assert.equal(s.playing,false);sceneMatches(s,1);
+  await page.clock.runFor(1100);s=await state();assert.equal(s.time,fixture.notes[1].time);assert.equal(s.playing,false);arrivalMatches(s,1,0);
   // Arrival via Next restores photos as well as the scene, and stops at the final event.
   await page.locator('#eventSelect').selectOption('3');await page.locator('#playbackSpeed').selectOption('400');
   await page.locator('#nextEvent').click();assert.equal(await page.locator('#mapEventImage').isVisible(),false);
-  await page.clock.runFor(200);s=await state();assert.equal(s.time,fixture.notes[4].time);assert.equal(s.playing,false);sceneMatches(s,4);
+  await page.clock.runFor(150);const photoArrivalView=(await state()).view;
+  await page.clock.runFor(50);s=await state();assert.equal(s.time,fixture.notes[4].time);assert.equal(s.playing,false);arrivalMatches(s,4,3);assert.deepEqual(s.view,photoArrivalView,'Photo arrival also keeps the followed viewport');
   await page.locator('#mapEventImageContent').waitFor({state:'visible'});
   assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
   assert.equal(await page.locator('#nextEvent').isDisabled(),true);
   assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify(notes))),fixture.notes,'Navigation never edits the published events');
   assert.equal(await page.evaluate(()=>window.SR_READONLY&&document.body.classList.contains('presenting')),true);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'public presentation, timed Next follows Mercutio with unchanged zoom even when unselected, selected/live speed, exact arrival and full saved settings, same-time events, keyboard/second press, ordinary playback preserves setup, between-event skip, scrub cancellation, direct previous/dropdown, excluded time ranges, disabled slider, image arrival, final event, unchanged notes',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'public presentation, timed Next follows Mercutio with unchanged zoom even when unselected, selected/live speed, exact arrival preserves followed viewport and restores other settings, same-time events, keyboard/second press restores saved viewport, ordinary playback preserves setup, between-event skip, scrub cancellation, direct previous/dropdown, excluded time ranges, disabled slider, image arrival preserves viewport, final event, unchanged notes',errors}));
  }finally{await browser.close();}
 }
 check(firefox).catch(error=>{console.error(error);process.exit(1)});

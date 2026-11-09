@@ -206,7 +206,7 @@ function finishNoteEditing(){
  updateImageEditor();cancelPlacement();updateTimeline();
 }
 $('cancelEdit').onclick=()=>{finishInlineTextEditing(true);const original=editingNote;finishNoteEditing();showNotes();if(original)restoreNote(original);};
-function restoreNote(n,{showImage=false}={}) {
+function restoreNote(n,{showImage=false,restoreView=true}={}) {
  if(!finishInlineTextEditing())return;
  if(editingNote){if(editingNote!==n)noteNavigationAllowed();return;}
  if(!noteNavigationAllowed())return;
@@ -225,7 +225,7 @@ function restoreNote(n,{showImage=false}={}) {
   }
  }
  prepareSelectedTracks();
- if(Array.isArray(n.view)&&n.view.length===4&&n.view.every(Number.isFinite)&&n.view[2]>0&&n.view[3]>0) {view=[...n.view];setview();}
+ if(restoreView&&Array.isArray(n.view)&&n.view.length===4&&n.view.every(Number.isFinite)&&n.view[2]>0&&n.view[3]>0) {view=[...n.view];setview();}
  updateTimeline();selectedTime=n.time;$('time').value=offsetAtTime(n.time);
  $('time').setAttribute('aria-valuetext',fmt(n.time));
  $('annotationsVisible').checked=typeof n.settings?.annotationsVisible==='boolean'?n.settings.annotationsVisible:true;
