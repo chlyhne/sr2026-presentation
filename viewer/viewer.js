@@ -104,7 +104,7 @@ function renderMapCredit(){
 const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff84'};
 const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
 const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set(featured);
-const boats=D.boats.map(b=>({...b,metadata:boatMetadata(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
+const boats=D.boats.map(b=>({...b,...boatDetails[b.id],metadata:boatMetadata(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
 const shownBoatNames=new Set(boats.filter(b=>featured.has(b.name)).map(b=>b.id));
 function syncBoatChoices(){
  for(const [i,b] of boats.entries()){
@@ -250,6 +250,7 @@ function drawMap(){const t=currentTime();$('clock').textContent=fmt(t);$('clock'
 }
 function drawViewport(){
  renderCoast();window.SRBackground?.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit();
+ updateVisibleBoats();
 }
 // Keep each boat's paths alive. Most speed buckets are unchanged between frames.
 const trackLayers=new Map();
@@ -292,6 +293,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
   }
  }
  resizeSymbols();if(includeSpeedPins)renderSpeedPins();
+ updateVisibleBoats(t);
 }
 // Retained for browsers without WebGL and for exact vector PNG snapshots.
 function renderSVGTracks(t,drawingOrder){

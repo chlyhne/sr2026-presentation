@@ -60,8 +60,9 @@ function renderBoatIcon(group,boat,position,time,colour){
  const icon=el('g',{class:'boat-icon','data-hull':boat.metadata.hull,'data-lat':position.point[1],
   'data-course':boatCourse(boat.points,time),'data-length-m':boat.metadata.lengthM,
   'data-beam-m':boat.metadata.beamM},group);
+ const emphasis=el('g',{class:'boat-emphasis'},icon);
  el('path',{class:'boat-hull',d:hull.d,transform:hull.transform,
-  fill:colour,stroke:'#14212a','stroke-width':1,'vector-effect':'non-scaling-stroke'},icon);
+  fill:colour,stroke:'#14212a','stroke-width':1,'vector-effect':'non-scaling-stroke'},emphasis);
 }
 function resizeBoatIcons(matrix){
  // The map is linear in longitude/latitude, so east and north have distinct scales.

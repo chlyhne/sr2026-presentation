@@ -106,6 +106,24 @@ python3 scripts/serve_viewer.py
   en jet-farveskala fra 0 til 15 knob. Farven mættes ved 15 knob. Kortets farvebjælke
   viser 0, 5, 10 og 15+ knob og følger med i præsentationen og PNG-billedet.
   Gråt spor betyder manglende fartdata. Sporene har en mørk kant mod vejrkortets farver.
+- **Både i udsnittet** ligger som en lille bjælke lige under fartskalaen med
+  samme bredde. Klik på bjælken for at folde listen ud eller sammen. Listen kan
+  rulles og viser bådnavn, skipper, SOG i knob og bådtype for valgte både, hvis
+  aktuelle ikon er i kortudsnittet. Den følger tidspunkt, afspilning, panorering,
+  zoom og bådvalg; gamle spor uden et aktuelt ikon tæller ikke med. Farten bruger
+  TracTracs registrerede SOG med samme tidsinterpolation som fartmærkerne. Ved en
+  kort trackingpause vises seneste kendte position og dens målte fart, indtil
+  ikonet udløber efter fem minutter. Manglende felter angives i listen.
+  Hold musen over en række, eller fokusér den med Tab, for at forstørre det
+  tilsvarende bådikon midlertidigt. Op/ned, Home og End flytter fokus i listen;
+  Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,
+  og skjules, når et eventbillede dækker kortet. Listen ændrer ikke gemte events
+  og indgår ikke i kortets PNG-eksport.
+  Skippernavnene kommer fra de gemte TracTrac-deltageres `description`.
+  Bådtypen hentes fra Manage2Sail via `uniqueId`/`BowNumber`, med TracTracs
+  bådtype som reserve. Genskab `boat-details.js` med
+  `python scripts/prepare_boat_details.py`; det genbruger projektets kildedata.
+  `node scripts/test_viewer_boat_list.cjs` kontrollerer listen i Chromium og Firefox.
 - Klik på en båds bådikon for at vise eller skjule navnet. Det gælder alle
   både. Tab og Enter/mellemrum kan også bruges. Navnevalget bevares ved zoom,
   tidsskift og til-/fravalg af både, gemmes med noter og kommer med i PNG-billedet.

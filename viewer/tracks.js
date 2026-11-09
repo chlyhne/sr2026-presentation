@@ -97,13 +97,18 @@ function trackSpeedGeometry(points,speeds,start,end){
  // Stable paint order also keeps colours stable where thick strokes overlap.
  return [...buckets].sort(([a],[b])=>a-b).map(([bin,paths])=>({bin,colour:bin<0?TRACK_SPEED_MISSING:TRACK_SPEED_COLOURS[bin],d:paths.join(' ')}));
 }
+function trackSpeedLegendLayout(){
+ const rect=$('map').getBoundingClientRect();
+ return {left:12,top:12,width:Math.max(110,Math.min(230,rect.width-24)),height:63};
+}
 function renderTrackSpeedLegend(){
  const layer=$('trackSpeedLegend');layer.replaceChildren();
  const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();if(!matrix)return;
- const point=new DOMPoint(rect.left+12,rect.top+12).matrixTransform(matrix.inverse());
- const group=screenGroup(point.x,point.y,layer),width=Math.max(110,Math.min(230,rect.width-24));
+ const layout=trackSpeedLegendLayout(),{width}=layout;
+ const point=new DOMPoint(rect.left+layout.left,rect.top+layout.top).matrixTransform(matrix.inverse());
+ const group=screenGroup(point.x,point.y,layer);
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
- el('rect',{width,height:63,rx:5,fill:'#ffffff',opacity:.94},group);
+ el('rect',{width,height:layout.height,rx:5,fill:'#ffffff',opacity:.94},group);
  el('text',{x:10,y:17,fill:'#173d4c','font-size':11,'font-weight':650},group).textContent='Bådfart · SOG · knob';
  const gradient=el('linearGradient',{id:'trackSpeedJetGradient',x1:0,x2:1,y1:0,y2:0},el('defs',{},group));
  for(let i=0;i<=128;i++)el('stop',{offset:i/128,'stop-color':trackSpeedColour(TRACK_SPEED_MAX*i/128)},gradient);

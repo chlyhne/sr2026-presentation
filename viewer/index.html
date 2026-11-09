@@ -85,6 +85,13 @@
   <img id="mapEventImageContent" alt="" draggable="false" hidden>
   <span id="mapEventImageStatus" role="status"></span>
 </button>
+<section id="visibleBoats" aria-label="Både i kortudsnittet">
+  <button id="visibleBoatsToggle" type="button" aria-expanded="false" aria-controls="visibleBoatsPanel"><span>Både i udsnittet <span id="visibleBoatsCount">· 0</span></span><span class="boat-list-chevron" aria-hidden="true">⌄</span></button>
+  <div id="visibleBoatsPanel" hidden>
+    <ul id="visibleBoatsList" aria-label="Synlige både"></ul>
+    <p id="visibleBoatsEmpty" hidden>Ingen både i udsnittet ved dette tidspunkt.</p>
+  </div>
+</section>
 <section id="eventPanel" aria-label="Valgt event">
   <div class="event-summary" aria-live="polite" aria-atomic="true">
     <div class="event-meta"><span id="eventCounter"></span><time id="eventTime"></time></div>
