@@ -148,6 +148,8 @@ python3 scripts/serve_viewer.py
   Ryd feltet, tryk **Færdig** eller Escape, eller fold listen sammen for at afslutte
   søgningen; så vises kun de afkrydsede både igen. Både kan også fravælges uden
   søgning. Mellemrum på en fokuseret række skifter afkrydsningen.
+  **Vælg alle / Fravælg alle** øverst i menuen skifter alle både på én gang.
+  Under søgning gælder knappen kun søgeresultaterne; andre bådvalg bevares.
   Hold musen over en række, eller fokusér den med Tab, for at forstørre det
   tilsvarende bådikon midlertidigt. Op/ned, Home og End flytter fokus i listen;
   Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,

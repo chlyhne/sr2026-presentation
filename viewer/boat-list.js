@@ -55,6 +55,10 @@ function updateVisibleBoats(time=currentTime()){
  }
  entries.sort((a,b)=>a.boat.name.localeCompare(b.boat.name,'da'));
  visibleBoatEntries=entries;
+ const scope=boatSelectionScope(),allSelected=scope.length>0&&scope.every(boat=>chosen.has(boat.name));
+ setBoatListText($('boatSelectAll'),allSelected?'Fravælg alle':'Vælg alle');
+ $('boatSelectAll').disabled=!scope.length;
+ $('boatSelectAll').title=(allSelected?'Fravælg':'Vælg')+(isBoatSearchActive()?' alle søgeresultater':' alle både');
  setBoatListText($('visibleBoatsTitle'),isBoatSearchActive()?'Søgeresultater':'Både i udsnittet');
  setBoatListText($('visibleBoatsCount'),'· '+entries.length);
  $('visibleBoatsEmpty').hidden=!!entries.length;
@@ -116,6 +120,7 @@ function setBoatSearch(value){
  updateTimeline({preserveTime:true});requestRender();
 }
 $('boatSearchInput').oninput=event=>setBoatSearch(event.target.value);
+$('boatSelectAll').onclick=toggleAllBoats;
 $('boatSearchClear').onclick=()=>{$('boatSearchInput').value='';setBoatSearch('');$('boatSearchInput').focus();};
 $('visibleBoatsToggle').onclick=()=>setVisibleBoatsExpanded($('visibleBoatsPanel').hidden);
 document.addEventListener('keydown',event=>{

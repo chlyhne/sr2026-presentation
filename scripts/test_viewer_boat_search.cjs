@@ -122,6 +122,36 @@ async function check(readonly){
    assert.match(await page.locator('#eventBoatStatus').textContent(),/kunne ikke gemmes/);
    await page.evaluate(()=>{Storage.prototype.setItem=originalSearchStorage;});
   }
+  await page.evaluate(()=>setVisibleBoatsExpanded(true));await search.fill('match');
+  await page.waitForFunction(()=>webglTracks.order.length===5);
+  const selectAll=page.locator('#boatSelectAll');
+  assert.equal(await selectAll.textContent(),'Vælg alle');
+  await selectAll.click();
+  await page.waitForFunction(()=>chosen.size===6);
+  assert.equal(await selectAll.textContent(),'Fravælg alle');
+  assert.equal(await page.locator('.visible-boat-choice:checked').count(),5,'Select all includes every search match');
+  await selectAll.click();
+  await page.waitForFunction(()=>chosen.size===1);
+  assert.deepEqual(await chosenNames(),['Mercutio'],'Deselecting all search matches preserves hidden selections');
+  assert.deepEqual(await tracks(),['future','name','outside','skipper','type'],'Bulk deselection keeps search previews');
+  await search.fill('Ingen matcher dette');
+  await page.waitForFunction(()=>$('boatSelectAll').disabled);
+  assert.deepEqual(await chosenNames(),['Mercutio']);
+  await page.locator('#boatSearchClear').click();
+  await page.waitForFunction(()=>webglTracks.order.length===1);
+  assert.equal(await selectAll.isEnabled(),true);
+  await selectAll.click();await page.waitForFunction(()=>webglTracks.order.length===6);
+  assert.equal((await chosenNames()).length,6,'Without search, select all covers the whole fleet, including boats outside the viewport');
+  await selectAll.click();await page.waitForFunction(()=>webglTracks.order.length===0);
+  assert.deepEqual(await chosenNames(),[]);assert.deepEqual(await rows(),[]);
+  assert.equal(await selectAll.textContent(),'Vælg alle');assert.equal(await selectAll.isEnabled(),true);
+  await selectAll.focus();await page.keyboard.press('Enter');
+  await page.waitForFunction(()=>webglTracks.order.length===6);
+  if(readonly){
+   assert.equal(await page.evaluate(()=>JSON.stringify(notes)),scene.notes,'Public bulk selection does not modify saved events');
+  }else{
+   assert.equal(await page.evaluate(()=>notes[0].settings.boats.length),6,'Bulk selection uses event autosave');
+  }
   await page.screenshot({path:path.join(os.tmpdir(),`sr2026-boat-search-${readonly?'public':'editor'}.png`)});
   assert.deepEqual(errors,[]);
   console.log(JSON.stringify({browser:'firefox',readonly,checks:'live metadata search, filtered WebGL tracks and markers, preview without changing saved choices, checkbox and map selection, keyboard, clear/collapse, per-event save and rollback',errors}));
