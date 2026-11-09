@@ -6,6 +6,8 @@ const validEventImageURL=url=>/^\/?event-images\/[0-9a-f-]{36}\.(webp|png|jpg)$/
 function syncEventImageVisibility(){
  $('eventImageFigure').hidden=!!mapImageView||!$('eventImage').getAttribute('src');
  $('eventImageStatus').hidden=!!mapImageView;
+ $('visibleBoats').hidden=!!mapImageView;
+ if(mapImageView)highlightVisibleBoat(null);
 }
 function hideMapEventImage(){
  const wasFocused=document.activeElement===$('mapEventImage');
