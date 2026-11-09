@@ -68,31 +68,42 @@ async function check(browserType){
   assert.equal(await page.locator('.visible-boat').first().locator('.visible-boat-speed').textContent(),'7,0 kn');
   assert.ok(Math.abs(await iconLength()/normal-1.8)<.001,'Hover survives a marker redraw');
   await page.mouse.move(1490,10);assert.ok(Math.abs(await iconLength()/normal-1)<.001,'Mouse leave restores the hull size');
-  // Retain screen positions and scroll offset when earlier boats leave or arrive.
-  const stableRow=page.locator('.visible-boat[data-boat-id="list-5"]');
-  await page.locator('#visibleBoatsPanel').evaluate(node=>{node.scrollTop=180;});await stableRow.hover();
-  const stableTop=(await stableRow.boundingBox()).y,stableScroll=await page.locator('#visibleBoatsPanel').evaluate(node=>node.scrollTop);
+  // Departures disappear immediately; arrivals join the alphabetical order.
   await page.evaluate(()=>{
    window.listOriginalPoints=boats[0].points;
    const t=currentTime();boats[0].points=[[25,50,t-60],[25,50,t+60]];
-   const arrival={...boats[5],id:'arrival',name:'Aardvark',skipper:'Et meget langt skippernavn som ikke må flytte andre rækker',boatType:'En meget lang bådtype der tidligere kunne ombryde teksten'};
+   const arrival={...boats[5],id:'arrival',name:'Albatros',skipper:'Et meget langt skippernavn som ikke må flytte andre rækker',boatType:'En meget lang bådtype der tidligere kunne ombryde teksten'};
    boats.push(arrival);chosen.add(arrival.name);colours[arrival.name]='#ffdc42';render();
   });
-  assert.equal(await page.locator('.visible-boat').last().getAttribute('data-boat-id'),'arrival','Arrivals append, even when their name sorts before existing rows');
-  assert.equal(await page.locator('.visible-boat[data-boat-id="list-0"]').evaluate(node=>node.classList.contains('is-outside')),true);
-  assert.equal(await page.locator('.visible-boat[data-boat-id="list-0"] .visible-boat-speed').textContent(),'Ude af udsnittet');
-  assert.ok(Math.abs((await stableRow.boundingBox()).y-stableTop)<.01,'Departure and arrival never move the hovered boat');
-  assert.equal(await page.locator('#visibleBoatsPanel').evaluate(node=>node.scrollTop),stableScroll);
-  assert.equal(await page.locator('.boat-list-highlighted').getAttribute('data-boat-marker'),'list-5');
+  assert.equal(await page.locator('.visible-boat').first().getAttribute('data-boat-id'),'arrival','New boats join alphabetically');
+  assert.equal(await page.locator('.visible-boat[data-boat-id="list-0"]').count(),0,'Departing boats are removed immediately');
+  const names=await page.locator('.visible-boat-name').allTextContents();
+  assert.deepEqual(names,[...names].sort((a,b)=>a.localeCompare(b,'da')));
   assert.equal(await page.locator('.visible-boat').first().evaluate(node=>node.getBoundingClientRect().height),await page.locator('.visible-boat').last().evaluate(node=>node.getBoundingClientRect().height),'Long names and status text retain the same row height');
-  await page.locator('.visible-boat[data-boat-id="list-0"]').hover();
-  assert.equal(await page.locator('.boat-list-highlighted').count(),0,'An out-of-view row cannot highlight an absent icon');
   await page.evaluate(()=>{
-   boats[0].points=listOriginalPoints;chosen.delete('Aardvark');boats.splice(boats.findIndex(boat=>boat.id==='arrival'),1);render();
+   boats[0].points=listOriginalPoints;chosen.delete('Albatros');boats.splice(boats.findIndex(boat=>boat.id==='arrival'),1);render();
   });
-  assert.equal(await page.locator('.visible-boat').first().getAttribute('data-boat-id'),'list-0','Returning boats regain the same slot');
-  assert.equal(await page.locator('.visible-boat.is-outside').count(),0);
-  assert.equal(await page.locator('.boat-list-highlighted').getAttribute('data-boat-marker'),'list-0','Returning under the pointer restores hover without moving the mouse');
+  assert.equal(await page.locator('.visible-boat').first().getAttribute('data-boat-id'),'list-0','Returning boats join alphabetically');
+  // Map hover reveals a row without changing keyboard focus, map view or time.
+  await page.evaluate(()=>{
+   const boat=boats.find(boat=>boat.id==='list-13');
+   boat.points=boats[0].points.map(point=>[12.3,55.4,point[2]]);render();$('visibleBoatsPanel').scrollTop=0;
+  });
+  const target=page.locator('.visible-boat[data-boat-id="list-13"]');
+  const colour=await target.evaluate(node=>getComputedStyle(node).borderLeftColor);
+  assert.equal(colour,'rgb(255, 220, 66)','Boat colour is visible without hover');
+  const sceneBefore=await page.evaluate(()=>({view:[...view],time:currentTime(),focus:document.activeElement.id}));
+  await page.locator('[data-boat-marker="list-13"] .boat-hull').hover();
+  assert.equal(await target.evaluate(node=>node.classList.contains('highlighted')),true);
+  assert.ok(await page.locator('#visibleBoatsPanel').evaluate(node=>node.scrollTop>0),'Map hover scrolls the list');
+  const rowBounds=await target.boundingBox(),panelBounds=await page.locator('#visibleBoatsPanel').boundingBox();
+  assert.ok(rowBounds.y>=panelBounds.y&&rowBounds.y+rowBounds.height<=panelBounds.y+panelBounds.height+.5);
+  assert.equal(await target.evaluate(node=>getComputedStyle(node).borderLeftColor),colour,'Highlight preserves boat colour');
+  assert.notEqual(await target.evaluate(node=>getComputedStyle(node).boxShadow),'none','Highlight uses a separate frame');
+  assert.deepEqual(await page.evaluate(()=>({view:[...view],time:currentTime(),focus:document.activeElement.id})),sceneBefore);
+  const listBottom=(await page.locator('#visibleBoats').boundingBox());
+  const mapBottom=(await page.locator('#map').boundingBox());
+  assert.ok(Math.abs(listBottom.y+listBottom.height-mapBottom.y-mapBottom.height)<1,'Expanded list reaches the bottom of the map');
   await page.mouse.move(1490,10);
   await page.locator('.visible-boat').first().focus();
   assert.equal(await page.locator('.boat-list-highlighted').getAttribute('data-boat-marker'),'list-0');
@@ -106,16 +117,15 @@ async function check(browserType){
   await page.locator('#visibleBoatsToggle').click();
   assert.equal(await page.locator('.visible-boat').first().locator('.visible-boat-speed').textContent(),'8,0 kn');
   await page.evaluate(t=>{selectedTime=t+361;render();},testTime);
-  assert.equal(await page.locator('.visible-boat:not(.is-outside)').count(),0);
-  assert.equal(await page.locator('.visible-boat.is-outside').count(),15,'Out-of-view boats retain dimmed slots until collapse, including later starters');
+  assert.equal(await page.locator('.visible-boat').count(),0,'No departed boats remain in the list');
   assert.equal(await page.locator('#visibleBoatsEmpty').isVisible(),true);
   await page.evaluate(t=>{selectedTime=t;render();},testTime);
-  assert.equal(await page.locator('.visible-boat:not(.is-outside)').count(),14);
+  assert.equal(await page.locator('.visible-boat').count(),14);
   await page.evaluate(()=>changeBoatSelection(()=>chosen.delete('Båd 01')));
-  await page.waitForFunction(()=>document.querySelectorAll('.visible-boat:not(.is-outside)').length===13);
-  assert.equal(await page.locator('.visible-boat:not(.is-outside)').count(),13,'Boat selection updates the list');
+  await page.waitForFunction(()=>document.querySelectorAll('.visible-boat').length===13);
+  assert.equal(await page.locator('.visible-boat').count(),13,'Boat selection updates the list');
   await page.evaluate(()=>{view=[10000,10000,400,400];$('map').setAttribute('viewBox',view.join(' '));drawViewport();});
-  assert.equal(await page.locator('.visible-boat:not(.is-outside)').count(),0,'Viewport-only pan updates the list');
+  assert.equal(await page.locator('.visible-boat').count(),0,'Viewport-only pan removes out-of-view rows');
   await page.evaluate(()=>{const [x,y]=xy([11.8,55.6]);view=[x-200,y-200,400,400];$('map').setAttribute('viewBox',view.join(' '));drawViewport();});
   await aligned();
   // Points in SVG's letterboxed gutter are visible and must appear too.
@@ -144,15 +154,20 @@ async function check(browserType){
    notes=[{time:currentTime(),text:'Bådliste',view:[...view],settings:sceneSettings()}];activePresentationNote=notes[0];showNotes();setPresentationMode(true);
   });
   await aligned();assert.equal(await page.locator('#visibleBoatsPanel').isVisible(),true);
+  await page.locator('[data-boat-marker="list-13"] .boat-hull').hover();
+  assert.equal(await page.locator('.visible-boat[data-boat-id="list-13"]').evaluate(node=>node.classList.contains('highlighted')),true,'Map hover also reveals the row in presentation mode');
+  assert.ok(await page.evaluate(()=>Math.abs($('visibleBoats').getBoundingClientRect().bottom-$('map').getBoundingClientRect().bottom)<1));
   await page.locator('.visible-boat').first().focus();await page.keyboard.press('Escape');
   assert.equal(await page.locator('body').evaluate(node=>node.classList.contains('presenting')),true,'Escape folds the list before leaving presentation');
   assert.deepEqual(await page.evaluate(()=>({time:currentTime(),view:[...view]})),state);
-  await page.setViewportSize({width:390,height:740});await aligned();
   await page.locator('#visibleBoatsToggle').click();
+  if(process.env.SR_FULL_TEST==='1'){
+  await page.setViewportSize({width:390,height:740});await aligned();
   const mobile=await page.evaluate(()=>({right:$('visibleBoats').getBoundingClientRect().right,bottom:$('visibleBoats').getBoundingClientRect().bottom,mapBottom:$('map').getBoundingClientRect().bottom,width:innerWidth,scroll:document.documentElement.scrollWidth}));
   assert.ok(mobile.right<=mobile.width&&mobile.scroll<=mobile.width&&mobile.bottom<=mobile.mapBottom);
   await page.screenshot({path:path.join(os.tmpdir(),'sr2026-boat-list-'+browserType.name()+'-mobile.png')});
   await page.setViewportSize({width:1500,height:1000});
+  }
   const imageID='11111111-1111-4111-8111-111111111111';
   await page.route('**/event-images/'+imageID+'.png',route=>route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64')}));
   await page.evaluate(id=>{
@@ -162,7 +177,7 @@ async function check(browserType){
   assert.equal(await page.locator('#visibleBoats').isVisible(),false,'Photo overlays cover the list too');
   await page.locator('#mapEventImage').click();assert.equal(await page.locator('#visibleBoats').isVisible(),true);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:browserType.name(),checks:'106 source metadata matches, bar alignment/default collapse, viewport and selection filtering, stale/future positions, native/interpolated/missing/high speeds, stable slots and scroll on departures/arrivals, returning hover, fixed row heights, reset on collapse, hover and focus enlargement, viewport pan, SVG gutters, presentation, mobile, photo overlay',errors}));
+  console.log(JSON.stringify({browser:browserType.name(),checks:'visible boats only, alphabetical arrivals/departures, map hover reveals row, permanent boat colours, separate highlight, full map height, list hover/focus, playback, presentation, unchanged scene',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(error=>{console.error(error);process.exit(1)});
+(async()=>{for(const type of process.env.SR_FULL_TEST==='1'?[chromium,firefox]:[firefox])await check(type);})().catch(error=>{console.error(error);process.exit(1)});

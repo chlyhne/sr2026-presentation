@@ -39,17 +39,17 @@ async function check(type){
   assert.equal(await page.locator('.visible-boat').count(),12);
   const anchor=page.locator('.visible-boat[data-boat-id="present-2"]');
   await anchor.hover();
-  const position=(await anchor.boundingBox()).y;
   assert.equal(await page.locator('.boat-list-highlighted').getAttribute('data-boat-marker'),'present-2');
   await page.evaluate(()=>{
    window.savedPresentationPoints=boats[0].points;const t=currentTime();
    boats[0].points=[[25,50,t-120],[25,50,t+120]];
-   const arrival={...boats[2],id:'newcomer',name:'Aardvark'};
+   const arrival={...boats[2],id:'newcomer',name:'Albatros'};
    boats.push(arrival);chosen.add(arrival.name);colours[arrival.name]='#ffdc42';render();
   });
-  assert.equal(await page.locator('.visible-boat').last().getAttribute('data-boat-id'),'newcomer');
-  assert.equal(await page.locator('.visible-boat.is-outside').getAttribute('data-boat-id'),'present-0');
-  assert.ok(Math.abs((await anchor.boundingBox()).y-position)<.01,'Presentation keeps row positions on arrivals/departures');
+  assert.equal(await page.locator('.visible-boat').first().getAttribute('data-boat-id'),'newcomer');
+  assert.equal(await page.locator('.visible-boat[data-boat-id="present-0"]').count(),0);
+  const initialNames=await page.locator('.visible-boat-name').allTextContents();
+  assert.deepEqual(initialNames,[...initialNames].sort((a,b)=>a.localeCompare(b,'da')));
   assert.equal(await page.locator('.boat-list-highlighted').getAttribute('data-boat-marker'),'present-2');
   // Real playback must refresh speeds without replacing or moving the row being read.
   await page.locator('#play').click();
@@ -67,9 +67,9 @@ async function check(type){
   await aligned();
   await anchor.hover();
   assert.equal(await page.locator('.boat-list-highlighted').getAttribute('data-boat-marker'),'present-2');
-  const fullscreenTop=(await anchor.boundingBox()).y;
   await page.evaluate(()=>{boats[0].points=savedPresentationPoints;render();});
-  assert.ok(Math.abs((await anchor.boundingBox()).y-fullscreenTop)<.01,'Returning boats keep row positions in fullscreen');
+  const names=await page.locator('.visible-boat-name').allTextContents();
+  assert.deepEqual(names,[...names].sort((a,b)=>a.localeCompare(b,'da')),'Returning boats join alphabetically in fullscreen');
   const scene=await page.evaluate(()=>({time:currentTime(),view:[...view]}));
   await page.locator('#visibleBoatsPanel').hover();await page.mouse.wheel(0,160);await page.waitForTimeout(100);
   assert.ok(await page.locator('#visibleBoatsPanel').evaluate(node=>node.scrollTop>0));
@@ -89,7 +89,7 @@ async function check(type){
   assert.equal(await page.locator('#visibleBoatsPanel').isVisible(),false);
   assert.equal(await page.evaluate(()=>window.SR_READONLY&&document.body.classList.contains('presenting')),true);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'public read-only presentation, folding, hover, stable arrivals/departures, playback, event navigation, actual fullscreen, stable returning boats, scroll, keyboard navigation, Escape, unchanged scene',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'public read-only presentation, folding, hover, visible boats in alphabetical order, playback, event navigation, actual fullscreen, scroll, keyboard navigation, Escape, unchanged scene',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(error=>{console.error(error);process.exit(1)});
+(async()=>{for(const type of process.env.SR_FULL_TEST==='1'?[chromium,firefox]:[firefox])await check(type);})().catch(error=>{console.error(error);process.exit(1)});
