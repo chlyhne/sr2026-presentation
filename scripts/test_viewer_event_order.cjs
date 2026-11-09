@@ -26,11 +26,15 @@ async function check(type){
   const storage=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-notes')));
   assert.deepEqual(await storage(),expected,'Existing events are migrated into stable full-timestamp order');
   async function labels(){return await page.evaluate(()=>notes.map(n=>n.text));}
+  async function nextNow(){
+   await page.locator('#nextEvent').click();
+   if(await page.evaluate(()=>!!eventPlaybackTarget))await page.locator('#nextEvent').click();
+  }
   assert.deepEqual(await labels(),['Først','Samme tid A','Samme tid B','Næste dag']);
   await page.locator('#startPresentation').click();
   assert.equal(await page.locator('#previousEvent').isDisabled(),true);
   for(const text of ['Samme tid A','Samme tid B','Næste dag']){
-   await page.locator('#nextEvent').click();assert.equal(await page.locator('#eventText').textContent(),text);
+   await nextNow();assert.equal(await page.locator('#eventText').textContent(),text);
   }
   assert.equal(await page.locator('#nextEvent').isDisabled(),true);
   // The first event and next-day event have the same displayed clock time.
@@ -59,14 +63,14 @@ async function check(type){
   assert.equal(await page.locator('#eventSelect').inputValue(),'5','New same-time event is inserted after existing ties and stays selected');
   await page.locator('#startPresentation').click();assert.equal(await page.locator('#eventText').textContent(),'Tilføjet på samme tid');
   await page.keyboard.press('Home');assert.equal(await page.locator('#eventText').textContent(),order[0]);
-  for(const text of order.slice(1)){await page.locator('#nextEvent').click();assert.equal(await page.locator('#eventText').textContent(),text);}
+  for(const text of order.slice(1)){await nextNow();assert.equal(await page.locator('#eventText').textContent(),text);}
   for(const text of order.slice(0,-1).reverse()){await page.locator('#previousEvent').click();assert.equal(await page.locator('#eventText').textContent(),text);}
   await page.locator('#endPresentation').click();
   await page.locator('#eventSelect').selectOption('1');await page.locator('#eventText').click();
   await page.locator('#eventTextEditor').fill('Først, med rettet tekst');await page.keyboard.press('Control+Enter');
   expected[1]={...expected[1],text:'Først, med rettet tekst'};assert.deepEqual(await storage(),expected);
   const download=page.waitForEvent('download');await page.evaluate(()=>exportEventNotes());
-  const exported=JSON.parse(fs.readFileSync(await(await download).path(),'utf8'));
+  const exported=JSON.parse(fs.readFileSync(await(await download).path(),'utf8')).notes;
   assert.deepEqual(exported.map(n=>n.time),expected.map(n=>n.time));
   assert.ok(exported[6].image.dataUrl.startsWith('data:image/png;base64,'));
   await page.evaluate(()=>{window.originalOrderStorage=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='sr2026-notes')throw new Error('quota');return originalOrderStorage.call(this,key,value);};});

@@ -149,11 +149,11 @@ function offsetAtTime(time){
  return Math.max(0,timelineLength-1);
 }
 
-function setCurrentTime(time,{fractional=false,crossedEvents=false}={}){
+function setCurrentTime(time,{fractional=false,crossedEvents=false,allowOutsideVisibleRanges=false}={}){
  const previousTime=selectedTime;
  time=Math.max(D.start,Math.min(D.end,fractional?time:Math.round(time)));
  let nearest=time,distance=Infinity;
- for(const range of visibleTimeRanges){
+ for(const range of allowOutsideVisibleRanges?[]:visibleTimeRanges){
   const candidate=Math.max(range.start,Math.min(range.end,time));
   if(Math.abs(candidate-time)<distance){nearest=candidate;distance=Math.abs(candidate-time);}
  }
@@ -182,8 +182,9 @@ function updateTimeline(){
  visibleTimeRanges=boatTimeRanges.length?boatTimeRanges:presenting?[{start:D.start,end:D.end}]:[];
  timelineLength=visibleTimeRanges.reduce((sum,r)=>sum+r.end-r.start+1,0);
  const slider=$('time');slider.min=0;slider.max=Math.max(0,timelineLength-1);slider.step=1;slider.disabled=timelineLength<2;
- $('back').disabled=$('next').disabled=$('play').disabled=timelineLength<2;
- if(slider.disabled&&interval)stopPlayback();
+ $('back').disabled=$('next').disabled=timelineLength<2;
+ $('play').disabled=timelineLength<2&&!eventPlaybackTarget;
+ if(slider.disabled&&interval&&!eventPlaybackTarget)stopPlayback();
  const before=selectedTime;
  if(presenting){$('time').value=offsetAtTime(selectedTime);$('time').setAttribute('aria-valuetext',fmt(selectedTime));}
  else setCurrentTime(selectedTime);
@@ -191,7 +192,7 @@ function updateTimeline(){
  $('timeWindow').textContent=timelineLength
   ? `I udsnittet: ${fmt(visibleTimeRanges[0].start)} – ${fmt(visibleTimeRanges.at(-1).end)} · ${visibleTimeRanges.length} ${visibleTimeRanges.length===1?'periode':'perioder'} · trin: 1 sekund · pauser uden både springes over`
   : chosen.size?'Ingen valgte både passerer dette udsnit. Zoom ud eller flyt kortet.':'Vælg mindst én båd for at bruge tidslinjen.';
- if(interval){playbackOffset=offsetAtTime(selectedTime);playbackTickTime=performance.now();}
+ if(interval&&!eventPlaybackTarget){playbackOffset=offsetAtTime(selectedTime);playbackTickTime=performance.now();}
  return selectedTime!==before;
 }
 

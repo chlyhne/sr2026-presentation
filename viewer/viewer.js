@@ -332,22 +332,35 @@ function renderSVGTracks(t,drawingOrder){
 function step(n){if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
 for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
-let playbackTickTime=0,playbackRate=1,playbackOffset=0;
+let playbackTickTime=0,playbackRate=1,playbackOffset=0,eventPlaybackTarget=null;
 function advancePlayback(now){
+ if(eventPlaybackTarget){
+  const target=eventPlaybackTarget;
+  if(!notes.includes(target)){stopPlayback();return;}
+  const nextTime=currentTime()+Math.max(0,now-playbackTickTime)/1000*playbackRate;
+  playbackTickTime=now;
+  if(nextTime>=target.time-1e-6)restoreNote(target,{showImage:true});
+  else{setCurrentTime(nextTime,{fractional:true,allowOutsideVisibleRanges:true});requestRender();}
+  return;
+ }
  if($('time').disabled){stopPlayback();return;}
  playbackOffset=Math.min(timelineLength-1,playbackOffset+(now-playbackTickTime)/1000*playbackRate);
  playbackTickTime=now;
  setCurrentTime(timeAtOffset(playbackOffset,{fractional:true}),{fractional:true,crossedEvents:true});requestRender();
  if(playbackOffset>=timelineLength-1)stopPlayback();
 }
-$('play').onclick=()=>{
- if(interval){stopPlayback();return;}
- if($('time').disabled||!finishInlineTextEditing())return;
+function startPlayback({target=null}={}){
+ if((!target&&$('time').disabled)||!finishInlineTextEditing())return;
  prepareSelectedTracks();
  playbackOffset=offsetAtTime(currentTime());
- if(playbackOffset>=timelineLength-1)return;
+ if(!target&&playbackOffset>=timelineLength-1)return;
+ eventPlaybackTarget=target;
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
- $('play').textContent='Pause';interval=setInterval(()=>advancePlayback(performance.now()),100);
+ $('play').disabled=false;$('play').textContent='Pause';interval=setInterval(()=>advancePlayback(performance.now()),100);
+}
+$('play').onclick=()=>{
+ if(interval){stopPlayback();return;}
+ startPlayback();
 };
 $('playbackSpeed').onchange=()=>{
  if(interval)advancePlayback(performance.now());

@@ -8,6 +8,8 @@ async function check(type){
  const browser=await type.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
+  // Stroke-width assertions below inspect the SVG fallback rather than GPU buffers.
+  await page.addInitScript(()=>{window.SR_TRACK_RENDERER='svg';});
   page.on('pageerror',e=>errors.push(e.message));
   const start=Date.parse('2026-06-11T08:00:00Z')/1000;
   const fixtures=[{time:start+3600,text:'Event A',view:[230,250,620,760],settings:{wind:false,rain:false,boats:[]},point:[650,400],drawings:[]},
@@ -51,7 +53,9 @@ async function check(type){
   await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),standard);
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),['My','Vera']);
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),['Mercutio',extra]);
-  await page.locator('#startPresentation').click();await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),['My','Vera']);
+  await page.locator('#startPresentation').click();await page.locator('#nextEvent').click();
+  if(await page.evaluate(()=>!!eventPlaybackTarget))await page.locator('#nextEvent').click();
+  assert.deepEqual(await chosenNames(),['My','Vera']);
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),['Mercutio',extra]);await page.locator('#endPresentation').click();
   await page.locator('.note-edit').first().click();await checkbox(extra).uncheck();
   assert.deepEqual(await store(),afterB,'Full editor keeps boat changes in the draft');

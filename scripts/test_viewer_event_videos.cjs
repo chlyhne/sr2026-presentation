@@ -15,7 +15,7 @@ async function check(type){
    return route.fulfill({contentType:'text/html',body:'<!doctype html><body style="background:black;color:white"><button>YouTube-afspiller (test)</button></body>'});
   });
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>typeof parseYouTubeVideo==='function'&&typeof notes!=='undefined');
+  await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
   const parsed=await page.evaluate(()=>{
    const urls=['https://www.youtube.com/watch?v=M7lc1UVf-VE','https://youtu.be/M7lc1UVf-VE?t=1m30s',
     'https://m.youtube.com/shorts/M7lc1UVf-VE','https://www.youtube.com/live/M7lc1UVf-VE',
@@ -110,7 +110,9 @@ async function check(type){
   assert.equal(await page.locator('#eventVideoFigure').isVisible(),true);
   const numberOfEmbeds=embeds.length;
   await page.locator('#previousEvent').click();assert.equal(await page.locator('#eventVideoFigure').isVisible(),false);
-  await page.locator('#nextEvent').click();assert.equal(await page.locator('#eventVideoFigure').isVisible(),true);
+  await page.locator('#nextEvent').click();
+  if(await page.evaluate(()=>!!eventPlaybackTarget))await page.locator('#nextEvent').click();
+  assert.equal(await page.locator('#eventVideoFigure').isVisible(),true);
   assert.equal(embeds.length,numberOfEmbeds,'Event navigation never starts video automatically');
   await openVideo();await page.keyboard.press('Escape');
   await page.waitForFunction(()=>$('eventVideoOverlay').hidden&&!document.fullscreenElement);

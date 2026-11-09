@@ -56,6 +56,7 @@ async function check(type){
   assert.match(await page.locator('#eventTime').textContent(),/^\d{2}:\d{2}:\d{2}$/);
   assert.equal(await page.evaluate(()=>currentTime()),fixtures[1].time);
   await scrubNear(0,-5);
+  await page.waitForFunction(()=>$('annotations').children.length===1);
   assert.equal(await page.locator('#annotations > g').count(),1);
   const savedView=await page.evaluate(()=>[...view]);
   await scrubNear(1);
@@ -139,7 +140,8 @@ async function check(type){
     restoreNote(notes[1]);
     check(currentTime()===notes[1].time,'Manual jump to a gap event preserves exact time');
     if(presenting){
-     movePresentationEvent(1);check(currentTime()===notes[2].time,'Next event can enter the gap');
+     movePresentationEvent(1);if(eventPlaybackTarget)movePresentationEvent(1);
+     check(currentTime()===notes[2].time,'Next event can enter the gap with a second press');
      movePresentationEvent(-1);check(currentTime()===notes[1].time,'Previous event can enter the gap');
      view=[...mapView];setview();check(currentTime()===notes[1].time,'Gap event survives view updates');
     }
