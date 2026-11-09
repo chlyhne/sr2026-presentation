@@ -10,6 +10,20 @@ const origin = 'https://admin.example.com';
 const document = {version:1, notes:[{time:123, text:'En hændelse', view:[0,0,1000,1000], settings:{boats:['Mercutio'],rainOpacity:.5}}], speedPins:[]};
 const sha = 'a'.repeat(40);
 const reply = (value, status=200) => new Response(JSON.stringify(value), {status});
+test('shared rhumbline and comparison validate without changing older documents',()=>{
+ assert.equal(validateDocument(document),document);
+ const doc=structuredClone(document);
+ doc.comparison={route:[[12.6,56],[12.7,55.5],[12.4,55]],enabled:true,basis:'handicap'};
+ assert.equal(validateDocument(doc),doc);
+ for(const invalid of [null,{route:[],enabled:true,basis:'absolute'},
+  {route:[[12,55]],enabled:false,basis:'absolute'},
+  {route:[[12,55],[12,55]],enabled:true,basis:'absolute'},
+  {route:[[12,55],[13,90]],enabled:true,basis:'absolute'},
+  {route:[[12,55],[13,56]],enabled:true,basis:'unknown'},
+  {route:Array.from({length:201},(_,i)=>[12+i/100,55]),enabled:false,basis:'absolute'}]){
+  assert.throws(()=>validateDocument({...doc,comparison:invalid}),/rhumbline/);
+ }
+});
 async function request(path, options={}, session={id:7, token:'user-secret', exp:Math.floor(Date.now()/1000)+600}) {
  const headers = new Headers(options.headers);
  if(session) headers.set('Cookie', '__Host-sr-session='+await seal(session,env,'session'));

@@ -2,426 +2,532 @@
 const boatDetails={
  "groensund:cefbcb60-4624-013f-2900-04421a259aad": {
   "skipper": "Hans Jacobsson",
-  "boatType": "Hanse 320"
+  "boatType": "Hanse 320",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf9e9de0-4624-013f-2981-04421a259aad": {
   "skipper": "Morten Kirkelund",
-  "boatType": "IMX 40"
+  "boatType": "IMX 40",
+  "handicapSecondsPerNm": 519.4
  },
  "groensund:cf40a610-4624-013f-2929-04421a259aad": {
   "skipper": "Niklas Joensen",
-  "boatType": "FAURBY 36"
+  "boatType": "FAURBY 36",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf0732e0-4624-013f-290a-04421a259aad": {
   "skipper": "Lars Møller Larsen",
-  "boatType": "Bianca 107"
+  "boatType": "Bianca 107",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:d01fd840-4624-013f-29f6-04421a259aad": {
   "skipper": "Jan Madsen",
-  "boatType": "XP 38"
+  "boatType": "XP 38",
+  "handicapSecondsPerNm": 534.4
  },
  "groensund:ceff8000-4624-013f-2903-04421a259aad": {
   "skipper": "Peter Bisgaard-Frantzen",
-  "boatType": "SunFast 32"
+  "boatType": "SunFast 32",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf0ae510-4624-013f-290d-04421a259aad": {
   "skipper": "Anders Ellers",
-  "boatType": "Hanse 430"
+  "boatType": "Hanse 430",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf2ecd90-4624-013f-2921-04421a259aad": {
   "skipper": "Peter Lillelund",
-  "boatType": "J105"
+  "boatType": "J105",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf1f8dd0-4624-013f-291a-04421a259aad": {
   "skipper": "Nils Rømer",
-  "boatType": "Hanse 400e"
+  "boatType": "Hanse 400e",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf186800-4624-013f-2916-04421a259aad": {
   "skipper": "Ole Ertmann Nielsen",
-  "boatType": "Hallberg-Rassy 37"
+  "boatType": "Hallberg-Rassy 37",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf267bd0-4624-013f-291d-04421a259aad": {
   "skipper": "Peter Skov",
-  "boatType": "Dufour 44"
+  "boatType": "Dufour 44",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf44cf30-4624-013f-292d-04421a259aad": {
   "skipper": "Bent Knudsen",
-  "boatType": "Bavaria 42C"
+  "boatType": "Bavaria 42C",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf48fde0-4624-013f-2930-04421a259aad": {
   "skipper": "Henrik Kim Christensen",
-  "boatType": "Hanse 385"
+  "boatType": "Hanse 385",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf8a8000-4624-013f-296f-04421a259aad": {
   "skipper": "Kåre Gibsholm-Madsen",
-  "boatType": "Seascape 27"
+  "boatType": "Seascape 27",
+  "handicapSecondsPerNm": 580.6
  },
  "groensund:cf0e8b80-4624-013f-2910-04421a259aad": {
   "skipper": "Sune Johansson",
-  "boatType": "Dufour 40"
+  "boatType": "Dufour 40",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:d0156a30-4624-013f-29ed-04421a259aad": {
   "skipper": "Frederik Zacho",
-  "boatType": "ARCONA 380/385"
+  "boatType": "ARCONA 380/385",
+  "handicapSecondsPerNm": 538.6
  },
  "groensund:cf512990-4624-013f-2937-04421a259aad": {
   "skipper": "Nichlas Jordt-Rasmussen",
-  "boatType": "40 fods Ketch"
+  "boatType": "40 fods Ketch",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf4cfb40-4624-013f-2933-04421a259aad": {
   "skipper": "Tim DuBois",
-  "boatType": "Hallberg Rassy 37"
+  "boatType": "Hallberg Rassy 37",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf67f030-4624-013f-294c-04421a259aad": {
   "skipper": "Henrik Thystrup",
-  "boatType": "Bavaria C42"
+  "boatType": "Bavaria C42",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf608a70-4624-013f-2946-04421a259aad": {
   "skipper": "Thomas Lindum",
-  "boatType": "Luffe 40 one off"
+  "boatType": "Luffe 40 one off",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf5cb670-4624-013f-2942-04421a259aad": {
   "skipper": "Andreas Heyn Fallesen",
-  "boatType": "Faurby 424"
+  "boatType": "Faurby 424",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf590bf0-4624-013f-293f-04421a259aad": {
   "skipper": "Lasse Hinke",
-  "boatType": "SAGITTA 35"
+  "boatType": "SAGITTA 35",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf774910-4624-013f-295b-04421a259aad": {
   "skipper": "Christian Tolstrup",
-  "boatType": "Malö 50"
+  "boatType": "Malö 50",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf6bd310-4624-013f-2950-04421a259aad": {
   "skipper": "Peter Bjerring",
-  "boatType": "Dehler 34"
+  "boatType": "Dehler 34",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cfde6e50-4624-013f-29bb-04421a259aad": {
   "skipper": "Kristian Mikkelsen",
-  "boatType": "X-99"
+  "boatType": "X-99",
+  "handicapSecondsPerNm": 571.2
  },
  "groensund:cf9742f0-4624-013f-297b-04421a259aad": {
   "skipper": "Göran Artman",
-  "boatType": "X-382"
+  "boatType": "X-382",
+  "handicapSecondsPerNm": 551.2
  },
  "groensund:d0448170-4624-013f-2a18-04421a259aad": {
   "skipper": "Michael Mollmann",
-  "boatType": "ELLIOT 35 SS"
+  "boatType": "ELLIOT 35 SS",
+  "handicapSecondsPerNm": 476.2
  },
  "groensund:cf9aff90-4624-013f-297e-04421a259aad": {
   "skipper": "Kasper Wedersøe",
-  "boatType": "DEHLER 30 OD"
+  "boatType": "DEHLER 30 OD",
+  "handicapSecondsPerNm": 545.6
  },
  "groensund:cfcfc630-4624-013f-29af-04421a259aad": {
   "skipper": "Tillmann Frank",
-  "boatType": "ALBIN STRATUS"
+  "boatType": "ALBIN STRATUS",
+  "handicapSecondsPerNm": 592.6
  },
  "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad": {
   "skipper": "Jonas Nilsson",
-  "boatType": "CORBY 25"
+  "boatType": "CORBY 25",
+  "handicapSecondsPerNm": 619.8
  },
  "groensund:cfdad3d0-4624-013f-29b8-04421a259aad": {
   "skipper": "Lars Henrik Nielsen",
-  "boatType": "X-332"
+  "boatType": "X-332",
+  "handicapSecondsPerNm": 580.2
  },
  "groensund:cfe5ee70-4624-013f-29c3-04421a259aad": {
   "skipper": "Martin Ottesen",
-  "boatType": "JEANNEAU SUN FAST 36"
+  "boatType": "JEANNEAU SUN FAST 36",
+  "handicapSecondsPerNm": 565.0
  },
  "groensund:cfe1fae0-4624-013f-29be-04421a259aad": {
   "skipper": "Filip Stål",
-  "boatType": "Seascape 27"
+  "boatType": "Seascape 27",
+  "handicapSecondsPerNm": 571.0
  },
  "groensund:cff53330-4624-013f-29d0-04421a259aad": {
   "skipper": "Christian Sørensen",
-  "boatType": "X-362 SPORT"
+  "boatType": "X-362 SPORT",
+  "handicapSecondsPerNm": 554.4
  },
  "groensund:cff8d1b0-4624-013f-29d3-04421a259aad": {
   "skipper": "Bo Laybourn",
-  "boatType": "J105"
+  "boatType": "J105",
+  "handicapSecondsPerNm": 551.8
  },
  "groensund:cfed4030-4624-013f-29ca-04421a259aad": {
   "skipper": "Per Oskarsson",
-  "boatType": "FIRST 36.7"
+  "boatType": "FIRST 36.7",
+  "handicapSecondsPerNm": 557.2
  },
  "groensund:d00726f0-4624-013f-29e0-04421a259aad": {
   "skipper": "Flemming Eske Hansen",
-  "boatType": "DEHLER 38"
+  "boatType": "DEHLER 38",
+  "handicapSecondsPerNm": 546.0
  },
  "groensund:d0039c60-4624-013f-29dd-04421a259aad": {
   "skipper": "Gorm Arildsen",
-  "boatType": "BANNER 41"
+  "boatType": "BANNER 41",
+  "handicapSecondsPerNm": 546.0
  },
  "groensund:d00aa040-4624-013f-29e3-04421a259aad": {
   "skipper": "Anders Steenfeldt-Jensen",
-  "boatType": "EXPLORER 38"
+  "boatType": "EXPLORER 38",
+  "handicapSecondsPerNm": 543.8
  },
  "groensund:d023a320-4624-013f-29fa-04421a259aad": {
   "skipper": "Gustav Johansson",
-  "boatType": "ARCONA 380/385"
+  "boatType": "ARCONA 380/385",
+  "handicapSecondsPerNm": 528.2
  },
  "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad": {
   "skipper": "Anders Bogason",
-  "boatType": "HH 42"
+  "boatType": "HH 42",
+  "handicapSecondsPerNm": 466.6
  },
  "groensund:d011b3e0-4624-013f-29e9-04421a259aad": {
   "skipper": "Claus Poulsen",
-  "boatType": "JEANNEAU SUN FAST 3600"
+  "boatType": "JEANNEAU SUN FAST 3600",
+  "handicapSecondsPerNm": 540.2
  },
  "groensund:d01c6220-4624-013f-29f3-04421a259aad": {
   "skipper": "Karsten Normand",
-  "boatType": "ARCONA 400"
+  "boatType": "ARCONA 400",
+  "handicapSecondsPerNm": 537.4
  },
  "groensund:d02f3110-4624-013f-2a05-04421a259aad": {
   "skipper": "Søren Pedersen",
-  "boatType": "GRAND SOLEIL 43"
+  "boatType": "GRAND SOLEIL 43",
+  "handicapSecondsPerNm": 517.6
  },
  "groensund:ced83f10-4624-013f-28dd-04421a259aad": {
   "skipper": "Erik Andersen",
-  "boatType": "Møn 431"
+  "boatType": "Møn 431",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:d032b8e0-4624-013f-2a08-04421a259aad": {
   "skipper": "Richard Tøpholm",
-  "boatType": "DUFOUR 45"
+  "boatType": "DUFOUR 45",
+  "handicapSecondsPerNm": 510.4
  },
  "groensund:d018e3c0-4624-013f-29f0-04421a259aad": {
   "skipper": "Christian Rømer",
-  "boatType": "ARCONA 400"
+  "boatType": "ARCONA 400",
+  "handicapSecondsPerNm": 538.2
  },
  "groensund:d0410370-4624-013f-2a15-04421a259aad": {
   "skipper": "Jean Mørck",
-  "boatType": "DEHLER 46"
+  "boatType": "DEHLER 46",
+  "handicapSecondsPerNm": 490.4
  },
  "groensund:cfd38280-4624-013f-29b2-04421a259aad": {
   "skipper": "Maria Westeman",
-  "boatType": "RIDAS 31 racer"
+  "boatType": "RIDAS 31 racer",
+  "handicapSecondsPerNm": 590.4
  },
  "groensund:d04eccd0-4624-013f-2a21-04421a259aad": {
   "skipper": "Søren Due Olsen",
-  "boatType": ""
+  "boatType": "",
+  "handicapSecondsPerNm": 415.8
  },
  "groensund:d039c5a0-4624-013f-2a0e-04421a259aad": {
   "skipper": "Peter Michael Wøldike",
-  "boatType": "KER 11.3"
+  "boatType": "KER 11.3",
+  "handicapSecondsPerNm": 504.0
  },
  "groensund:d047e6d0-4624-013f-2a1b-04421a259aad": {
   "skipper": "Tomas Toft",
-  "boatType": "Soto 40"
+  "boatType": "Soto 40",
+  "handicapSecondsPerNm": 467.4
  },
  "groensund:d03d5f50-4624-013f-2a11-04421a259aad": {
   "skipper": "Jacob Guhle",
-  "boatType": "STIMSON IRC 42"
+  "boatType": "STIMSON IRC 42",
+  "handicapSecondsPerNm": 500.6
  },
  "groensund:cfffdb60-4624-013f-29d9-04421a259aad": {
   "skipper": "Lars Lindqvist",
-  "boatType": "FIRST 36.7"
+  "boatType": "FIRST 36.7",
+  "handicapSecondsPerNm": 543.4
  },
  "groensund:cfd73960-4624-013f-29b5-04421a259aad": {
   "skipper": "Andreas Elkjær",
-  "boatType": "First 31.7"
+  "boatType": "First 31.7",
+  "handicapSecondsPerNm": 583.8
  },
  "groensund:ceb43140-4624-013f-28bd-04421a259aad": {
   "skipper": "Kai Schneider",
-  "boatType": "Dehler 343"
+  "boatType": "Dehler 343",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:d0363810-4624-013f-2a0b-04421a259aad": {
   "skipper": "Henrik Jørgensen",
-  "boatType": "XR 41"
+  "boatType": "XR 41",
+  "handicapSecondsPerNm": 504.4
  },
  "groensund:cff0fff0-4624-013f-29cd-04421a259aad": {
   "skipper": "Anders Hansen",
-  "boatType": "FIRST 36.7"
+  "boatType": "FIRST 36.7",
+  "handicapSecondsPerNm": 557.0
  },
  "groensund:cf8e6940-4624-013f-2973-04421a259aad": {
   "skipper": "Janne Magnusson",
-  "boatType": "Seascape 27"
+  "boatType": "Seascape 27",
+  "handicapSecondsPerNm": 572.6
  },
  "groensund:d00e2f90-4624-013f-29e6-04421a259aad": {
   "skipper": "Morten Munch",
-  "boatType": "SCANDINAVIAN MATCH RACER"
+  "boatType": "SCANDINAVIAN MATCH RACER",
+  "handicapSecondsPerNm": 543.0
  },
  "groensund:cf643a90-4624-013f-2949-04421a259aad": {
   "skipper": "Søren Johannesen",
-  "boatType": "Delphia 37"
+  "boatType": "Delphia 37",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf86cb90-4624-013f-296c-04421a259aad": {
   "skipper": "Henrik Alstrøm",
-  "boatType": "FIRST 27.7"
+  "boatType": "FIRST 27.7",
+  "handicapSecondsPerNm": 615.8
  },
  "groensund:cf6fb6c0-4624-013f-2954-04421a259aad": {
   "skipper": "Kenneth Bjergsted",
-  "boatType": "Møn 341"
+  "boatType": "Møn 341",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cffc5650-4624-013f-29d6-04421a259aad": {
   "skipper": "Christian de Lichtenberg",
-  "boatType": "X-362 SPORT"
+  "boatType": "X-362 SPORT",
+  "handicapSecondsPerNm": 551.6
  },
  "groensund:cf552280-4624-013f-293b-04421a259aad": {
   "skipper": "Rasmus Højring",
-  "boatType": ""
+  "boatType": "",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:ce9ba240-4624-013f-28b0-04421a259aad": {
   "skipper": "Rikard Roth",
-  "boatType": "XP-44"
+  "boatType": "XP-44",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cef7b8f0-4624-013f-28fc-04421a259aad": {
   "skipper": "Ludvig Schrøder",
-  "boatType": "SunFast 32"
+  "boatType": "SunFast 32",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cee42c80-4624-013f-28e9-04421a259aad": {
   "skipper": "Kim Kristensen",
-  "boatType": "Omega 42"
+  "boatType": "Omega 42",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:ced44e40-4624-013f-28d9-04421a259aad": {
   "skipper": "Troels Engell",
-  "boatType": "Bianca 107"
+  "boatType": "Bianca 107",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf123d90-4624-013f-2913-04421a259aad": {
   "skipper": "Rebekka Rudolph",
-  "boatType": "Jeanneau sun magic"
+  "boatType": "Jeanneau sun magic",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:d0275120-4624-013f-29fd-04421a259aad": {
   "skipper": "Remi Provost",
-  "boatType": "J 112"
+  "boatType": "J 112",
+  "handicapSecondsPerNm": 528.0
  },
  "groensund:cedc3de0-4624-013f-28e1-04421a259aad": {
   "skipper": "Karl Friedrich Bachmann",
-  "boatType": "Sloop, \"One off\""
+  "boatType": "Sloop, \"One off\"",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cee02030-4624-013f-28e5-04421a259aad": {
   "skipper": "Jan Bisp",
-  "boatType": "Banner 41 R"
+  "boatType": "Banner 41 R",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cfe976c0-4624-013f-29c6-04421a259aad": {
   "skipper": "Flemming Andersen",
-  "boatType": "OMEGA 42"
+  "boatType": "OMEGA 42",
+  "handicapSecondsPerNm": 561.0
  },
  "groensund:ceec1b50-4624-013f-28f1-04421a259aad": {
   "skipper": "Michael Jørgensen",
-  "boatType": "Banholm 35"
+  "boatType": "Banholm 35",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cef01130-4624-013f-28f5-04421a259aad": {
   "skipper": "Thomas Krarup",
-  "boatType": "Luffe 40"
+  "boatType": "Luffe 40",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cee826e0-4624-013f-28ed-04421a259aad": {
   "skipper": "Niels Stillhoff Nielsen",
-  "boatType": "Bavaria 42"
+  "boatType": "Bavaria 42",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf73a4d0-4624-013f-2958-04421a259aad": {
   "skipper": "Flemming Wiberg",
-  "boatType": "Hanse 371"
+  "boatType": "Hanse 371",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf3c32b0-4624-013f-2925-04421a259aad": {
   "skipper": "Oliver Sellmann",
-  "boatType": "Bavaria 34"
+  "boatType": "Bavaria 34",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cef3cca0-4624-013f-28f8-04421a259aad": {
   "skipper": "Jan Møller",
-  "boatType": "Frers 49'"
+  "boatType": "Frers 49'",
+  "handicapSecondsPerNm": 100.0
  },
  "groensund:cf92fb10-4624-013f-2977-04421a259aad": {
   "skipper": "Peder Edman",
-  "boatType": "Seascape 27"
+  "boatType": "Seascape 27",
+  "handicapSecondsPerNm": 568.6
  },
  "groensund:cfc7fa20-4624-013f-29a7-04421a259aad": {
   "skipper": "Mads Bonde",
-  "boatType": "X-99"
+  "boatType": "X-99",
+  "handicapSecondsPerNm": 620.2
  },
  "groensund:d02b1920-4624-013f-2a00-04421a259aad": {
   "skipper": "Lars Schmidt Larsen",
-  "boatType": "MAX FUN 35"
+  "boatType": "MAX FUN 35",
+  "handicapSecondsPerNm": 518.8
  },
  "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad": {
   "skipper": "Sten Brogaard",
-  "boatType": "BALLAD"
+  "boatType": "BALLAD",
+  "handicapSecondsPerNm": 636.6
  },
  "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad": {
   "skipper": "Erik Svennevig",
-  "boatType": "Sunwind 31"
+  "boatType": "Sunwind 31",
+  "handicapSecondsPerNm": 100.0
  },
  "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad": {
   "skipper": "Jan Lauridsen",
-  "boatType": "Scan-Kap 99"
+  "boatType": "Scan-Kap 99",
+  "handicapSecondsPerNm": 608.4
  },
  "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad": {
   "skipper": "Jakob Iversen",
-  "boatType": "DRABANT 38"
+  "boatType": "DRABANT 38",
+  "handicapSecondsPerNm": 572.6
  },
  "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad": {
   "skipper": "Troels Wohlfeldt",
-  "boatType": "Trio 92"
+  "boatType": "Trio 92",
+  "handicapSecondsPerNm": 100.0
  },
  "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad": {
   "skipper": "Simon Svenstrup",
-  "boatType": "ALBIN NOVA"
+  "boatType": "ALBIN NOVA",
+  "handicapSecondsPerNm": 615.8
  },
  "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad": {
   "skipper": "Birk Münster-Swendsen",
-  "boatType": "Aphrodite 101"
+  "boatType": "Aphrodite 101",
+  "handicapSecondsPerNm": 610.8
  },
  "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad": {
   "skipper": "Kasper Worsøe",
-  "boatType": "X-372"
+  "boatType": "X-372",
+  "handicapSecondsPerNm": 560.0
  },
  "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad": {
   "skipper": "Ulf Brandt",
-  "boatType": "EXPRESS"
+  "boatType": "EXPRESS",
+  "handicapSecondsPerNm": 650.6
  },
  "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad": {
   "skipper": "Emil Midé Erichsen",
-  "boatType": "LYNÆS SENIOR"
+  "boatType": "LYNÆS SENIOR",
+  "handicapSecondsPerNm": 788.2
  },
  "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad": {
   "skipper": "Per Rosenkilde",
-  "boatType": "MAMBA 31/311"
+  "boatType": "MAMBA 31/311",
+  "handicapSecondsPerNm": 634.2
  },
  "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad": {
   "skipper": "Michael Frank Hansen",
-  "boatType": "BB 10 METER"
+  "boatType": "BB 10 METER",
+  "handicapSecondsPerNm": 598.0
  },
  "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad": {
   "skipper": "Lars Schaldemose",
-  "boatType": "BB 10 METER"
+  "boatType": "BB 10 METER",
+  "handicapSecondsPerNm": 597.4
  },
  "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad": {
   "skipper": "Erik Hechmann",
-  "boatType": "HR 31/310"
+  "boatType": "HR 31/310",
+  "handicapSecondsPerNm": 647.4
  },
  "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad": {
   "skipper": "Folmer Teilmann",
-  "boatType": "Kosterbåd/spidsgatter"
+  "boatType": "Kosterbåd/spidsgatter",
+  "handicapSecondsPerNm": 100.0
  },
  "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad": {
   "skipper": "Frank Maar",
-  "boatType": "Mamba 29"
+  "boatType": "Mamba 29",
+  "handicapSecondsPerNm": 100.0
  },
  "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad": {
   "skipper": "Olivier Plas",
-  "boatType": "Najad 340"
+  "boatType": "Najad 340",
+  "handicapSecondsPerNm": 100.0
  },
  "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad": {
   "skipper": "Mikkel Walmod Hyttel",
-  "boatType": "Solus 29"
+  "boatType": "Solus 29",
+  "handicapSecondsPerNm": 100.0
  },
  "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad": {
   "skipper": "Claus Rørbech",
-  "boatType": "Hunter 33"
+  "boatType": "Hunter 33",
+  "handicapSecondsPerNm": 100.0
  },
  "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad": {
   "skipper": "David Ipsen",
-  "boatType": "Luffe 37"
+  "boatType": "Luffe 37",
+  "handicapSecondsPerNm": 100.0
  },
  "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad": {
   "skipper": "Jonas Mathiasen",
-  "boatType": "J 80"
+  "boatType": "J 80",
+  "handicapSecondsPerNm": 595.4
  },
  "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad": {
   "skipper": "Kent Nielsen",
-  "boatType": "Bianca 27"
+  "boatType": "Bianca 27",
+  "handicapSecondsPerNm": 100.0
  },
  "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad": {
   "skipper": "August Taankvist",
-  "boatType": ""
+  "boatType": "",
+  "handicapSecondsPerNm": 100.0
  }
 };

@@ -26,15 +26,16 @@
   window.SR_SHA=sha;
   const draftKey='sr2026-draft:'+location.pathname+':'+(window.SR_LOGIN||'');
   if(config.admin){try{const draft=JSON.parse(localStorage.getItem(draftKey));if(draft&&draft.sha===sha){initial=draft.document;window.SR_RESTORED=true;}else if(draft){localStorage.setItem(draftKey+':previous',JSON.stringify(draft));}window.SR_PREVIOUS_DRAFT=JSON.parse(localStorage.getItem(draftKey+':previous')||'null');}catch{}}
-  const memory=new Map([['sr2026-notes',JSON.stringify(initial.notes)],['sr2026-speed-pins',JSON.stringify(initial.speedPins)]]);
+  const memory=new Map([['sr2026-notes',JSON.stringify(initial.notes)],['sr2026-speed-pins',JSON.stringify(initial.speedPins)],['sr2026-comparison',JSON.stringify(initial.comparison===undefined?{route:[],enabled:false,basis:'absolute'}:initial.comparison)]]);
   window.SRStorage={getItem:key=>memory.get(key)||null,setItem:(key,value)=>{
    if(window.SR_READONLY)return;
+   const next=new Map(memory);next.set(key,value);
+   if(config.admin){localStorage.setItem(draftKey,JSON.stringify({sha:window.SR_SHA,document:{version:1,notes:JSON.parse(next.get('sr2026-notes')),speedPins:JSON.parse(next.get('sr2026-speed-pins')),comparison:JSON.parse(next.get('sr2026-comparison'))}}));}
    memory.set(key,value);
-   if(config.admin){localStorage.setItem(draftKey,JSON.stringify({sha:window.SR_SHA,document:{version:1,notes:JSON.parse(memory.get('sr2026-notes')),speedPins:JSON.parse(memory.get('sr2026-speed-pins'))}}));}
   }};
   window.SR_DRAFT_KEY=draftKey;
  }
- for(const file of ['data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','track-renderer','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','presentation','online']){
+ for(const file of ['data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','navigation','track-renderer','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','presentation','online']){
   await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=file+'.js';s.onload=resolve;s.onerror=reject;document.body.append(s);});
   if(file==='boat-icons')await loadBoatHulls();
   if(file==='track-renderer')prepareSelectedTracks();

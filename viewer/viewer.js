@@ -247,6 +247,7 @@ function render(){consumeRenderRequest();drawMap();}
 function drawMap(){if(hasRenderingFailure())return;const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderWindField(t);renderRadar(t);webglBackground.render();status(t);renderWindArrows(t);renderTraffic();renderMilitary();
  renderTracks(t,{includeSpeedPins:false});
  renderAnnotations();
+ renderNavigation();
  renderMapCredit();
 }
 function drawViewport(){
@@ -385,7 +386,8 @@ function endPan(e){
  drag=null;map.classList.remove('panning');
  if(map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);
  if(click){
-  if(placingNote)placeAnnotation(e);
+  if(navigationMode)addNavigationPoint(e);
+  else if(placingNote)placeAnnotation(e);
   else if(noteIndex!==undefined&&!document.body.classList.contains('presenting'))beginNoteEditing(notes[+noteIndex]);
   else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
   else if(boatId)activateBoatMarker(boatId);

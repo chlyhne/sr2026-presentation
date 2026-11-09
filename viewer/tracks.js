@@ -21,7 +21,7 @@ function prepareSelectedTracks(){
 }
 function trackSpeedLegendLayout(){
  const rect=$('map').getBoundingClientRect();
- return {left:12,top:12,width:Math.max(110,Math.min(230,rect.width-24)),height:63};
+ return {left:12,top:12,width:Math.max(110,Math.min(230,rect.width-24)),height:comparison.enabled?103:63};
 }
 function renderTrackSpeedLegend(){
  const layer=$('trackSpeedLegend');layer.replaceChildren();
@@ -31,14 +31,21 @@ function renderTrackSpeedLegend(){
  const group=screenGroup(point.x,point.y,layer);
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
  el('rect',{width,height:layout.height,rx:5,fill:'#ffffff',opacity:.94},group);
- el('text',{x:10,y:17,fill:'#173d4c','font-size':11,'font-weight':650},group).textContent='Bådfart · SOG · knob';
+ const relative=comparison.enabled;
+ layer.setAttribute('aria-label',relative?'Fartforskel fra Mercutio ved samme sted: blå taber, rød henter':'Bådfart over grunden, jet-farveskala fra 0 til 15 knob');
+ el('text',{x:10,y:17,fill:'#173d4c','font-size':11,'font-weight':650},group).textContent=relative?`Mod Mercutio · ${comparison.basis==='handicap'?'ToD':'absolut'} · kn`:'Bådfart · SOG · knob';
  const gradient=el('linearGradient',{id:'trackSpeedJetGradient',x1:0,x2:1,y1:0,y2:0},el('defs',{},group));
- for(let i=0;i<=128;i++)el('stop',{offset:i/128,'stop-color':trackSpeedColour(TRACK_SPEED_MAX*i/128)},gradient);
+ for(let i=0;i<=128;i++)el('stop',{offset:i/128,'stop-color':relative?trackGainColour(-TRACK_GAIN_LIMIT+2*TRACK_GAIN_LIMIT*i/128):trackSpeedColour(TRACK_SPEED_MAX*i/128)},gradient);
  el('rect',{x:10,y:24,width:width-20,height:13,fill:'url(#trackSpeedJetGradient)'},group);
- for(const value of [0,5,10,15]){
-  const x=10+(width-20)*value/TRACK_SPEED_MAX;
+ for(const value of relative?[-2,0,2]:[0,5,10,15]){
+  const x=10+(width-20)*(relative?(value+2)/4:value/TRACK_SPEED_MAX);
   el('line',{x1:x,x2:x,y1:37,y2:41,stroke:'#173d4c'},group);
-  el('text',{x,y:54,fill:'#173d4c','font-size':11,'text-anchor':value===0?'start':value===15?'end':'middle'},group).textContent=value===15?'15+':value;
+  el('text',{x,y:54,fill:'#173d4c','font-size':11,'text-anchor':value===(relative?-2:0)?'start':value===(relative?2:15)?'end':'middle'},group).textContent=relative?(value===-2?'−2':value===2?'+2':0):value===15?'15+':value;
+ }
+ if(relative){
+  el('text',{x:10,y:69,fill:'#173d4c','font-size':10},group).textContent='Blå: taber · Rød: henter · Samme sted';
+  el('text',{x:10,y:83,fill:'#173d4c','font-size':10},group).textContent='Grå: mangler fælles passage/data';
+  el('text',{x:10,y:96,fill:'#173d4c','font-size':10},group).textContent='Mercutio: uændret SOG-farve';
  }
 }
 

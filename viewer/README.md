@@ -113,6 +113,32 @@ python3 scripts/serve_viewer.py
   PNG-billedet bruger de valgte lag. Vindmodel og radarens synlighed justeres
   fortsat i sidepanelet.
   `node scripts/test_viewer_layers.cjs` tester lagmenuen lokalt i Firefox på PC.
+- **Mål** står ved siden af **Lag** øverst til højre på kortet. Vælg **Mål afstand**,
+  og klik punkter på kortet. Hver lige delstrækning viser distance i sømil og
+  kurs i grader; målingen viser også den samlede distance. Træk kortet og zoom
+  undervejs. **Færdig** eller Enter afslutter; **Fortryd punkt** fjerner sidste
+  punkt, og Escape annullerer den igangværende linje. **Ryd måling** fjerner den
+  afsluttede måling. Måleværktøjet virker også i præsentation og fuld skærm.
+- Vælg **Mål → Tegn rhumbline**, og klik ruten i sejlretningen med lige
+  delstrækninger. Afslut med **Færdig**. Ruten er fælles for alle events og
+  gemmes sammen med præsentationen; i den offentlige visning gælder ændringer
+  kun den åbne visning. **Vend ruten** vender retningen. Tegn igen for at erstatte
+  ruten; en annulleret tegning bevarer den hidtidige rute. **Ryd rhumbline**
+  fjerner ruten og slår sammenligningen fra. Rhumbline og måling kommer med i PNG.
+- **Mod Mercutio** skifter mellem de almindelige SOG-farver og en blå–rød skala
+  for forskellen i fremdrift langs rhumblinen. Rød betyder hurtigere end Mercutio
+  ved **samme sted på ruten**; blå betyder langsommere. Bådenes passagetidspunkter
+  kan være forskellige. Mercutio beholder altid sine almindelige SOG-farver.
+  Vælg **Absolut** eller **Handicap · ToD** ved siden af knappen. Skalaen mættes
+  ved ±2 knob og er lys ved nul. Hold musen over et spor i redigering for at se
+  forskellen og tidspunktet for Mercutios passage. Der kræves en tegnet rhumbline.
+  Grå betyder manglende fælles passage, fart, retning eller nødvendigt måltal;
+  der skiftes ikke til en anden beregningsmetode.
+  `node scripts/test_viewer_navigation.cjs` kontrollerer måling, tegning,
+  samme-sted-sammenligning, handicap, WebGL-farver, PNG, gemning og fuld skærm
+  lokalt i Firefox på PC. `node scripts/test_viewer_navigation_online.cjs`
+  kontrollerer offentlig visning, redaktørkladde, import, eksport og udgivelse
+  med simulerede netværkssvar.
 - Hvert event gemmer sit eget udvalg af aktive både. Ved Forrige/Næste, valg i
   eventlisten eller klik på en note genskabes netop dette udvalg, også et tomt udvalg.
   Når du står ved et gemt events tidspunkt i redigering og ændrer bådvalget,
@@ -776,3 +802,43 @@ THE HULK, My, Vera, Mercutio, saltamalin, Laolao, XBOX og Quinta Light bruger
 
 Se `../data/boat-dimensions/dimensions.csv` for hele oversigten og
 `../data/boat-dimensions/README.md` for metode og genskabelse.
+
+### Måling og fartforskel langs rhumblinen
+
+`navigation.js` beregner sfæriske rhumbline-distancer med jordradius
+6.371.008,8 m og 1 sømil = 1.852 m. Klikpunkter gemmes som længde/breddegrader;
+skærmens zoom ændrer ikke målingen. Hvert delstræk har konstant geografisk kurs.
+Bådens sted findes ved vinkelret projektion på rutens nærmeste delstræk i
+Mercator-koordinater og omsættes til fysisk distance fra rutens begyndelse.
+Der ekstrapoleres ikke før/efter den tegnede rute.
+
+Den målte TracTrac-SOG projiceres på delstrækkets kurs ved hjælp af retningen fra
+den nominelle PCHIP-kurve. Sideværts sejlads tæller derfor ikke som fremdrift.
+Mercutios gyldige trackintervaller samples med højst fem sekunders afstand.
+Fremdriften interpoleres derefter ved den anden båds **samme langs-rute-position**,
+uanset klokkeslæt og tværgående afstand fra ruten. Hvis Mercutio passerer samme
+rute-position flere gange, bruges den første fremadgående passage. Sammenligningen
+kan bruge Mercutios senere passage, også når den ligger efter kortets aktuelle tid.
+Trackinghuller over fem minutter forbindes ikke, og der ekstrapoleres ikke til
+rute-positioner, som Mercutio ikke har passeret med gyldige data.
+
+Absolut forskel er `v_båd − v_Mercutio`, hvor begge farter er den projicerede
+fremdrift i knob ved samme sted. Handicapvisningen bruger løbets TracTrac-felt
+`handicapDistance` som ToD-sømiletid `TA` i sekunder/sømil, ført med via
+`prepare_boat_details.py`. ToD-tillægget i Mercutios reference er
+`TA_Mercutio − TA_båd`. Det omregnes til sammenlignelig fart som
+`v_korrigeret = v_båd / (1 + (TA_Mercutio − TA_båd) × v_båd / 3600)`;
+farven viser `v_korrigeret − v_Mercutio`. Manglende måltal eller en ikke-positiv
+nævner giver manglende sammenligning. Beregningen er en lokal sammenligning af
+fremdrift, ikke en resultatliste med starttidskorrektion.
+Baggrund: [Dansk Sejlunions forklaring af DH og tid på distance](https://dansksejlunion.dk/kapsejlads/regler-og-vejledning/dh-reglen).
+
+Forskellen beregnes ved bådens oprindelige trackpunkter og interpoleres langs
+sporet i den fælles WebGL 2-renderer, som også bruges til PNG. Geometribufferne
+bevares ved afspilning; nye farvebuffere dannes kun ved ny rute eller nyt grundlag.
+Mercutio bruger altid den eksisterende SOG-palette. Farver uden sammenligningsdata
+er grå og bruger aldrig SOG som erstatning. Den fælles rute, aktivering og grundlag
+ligger i præsentationens valgfrie `comparison`-felt, som indgår i redaktørkladde,
+JSON-import/-eksport og udgivelse. Ældre dokumenter uden feltet starter uden en
+rhumbline og med sammenligningen slået fra. Målelinjen er midlertidig og gemmes
+kun i et eventuelt PNG-billede.
