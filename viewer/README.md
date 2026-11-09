@@ -73,13 +73,16 @@ python3 scripts/serve_viewer.py
   og deaktiverede navigationsknapper, indtil du opretter events i redigeringen.
   Fremad med **→**, **↓**, **Page Down** eller mellemrum følger samme regler som
   **Næste**. Afspilning frem til et bestemt event følger tiden, også uden synlige
-  både undervejs. Zoom og panorering afbryder ikke forløbet. Brug tidsskyderen,
+  både undervejs. Kortet følger Mercutio i midten med uændret zoomniveau, også
+  når båden ikke er valgt. Uden en aktuel position flyttes kortet ikke.
+  Ved ankomst gendannes eventets gemte udsnit. Zoom afbryder ikke forløbet;
+  panorering centreres igen på Mercutio ved næste opdatering. Brug tidsskyderen,
   Forrige, eventlisten eller Pause for at afbryde det. **Afspil** alene ændrer
   aldrig kortets opsætning ved passage af et event og åbner ikke billeder over
   kortet; snap på tidslinjen bevarer også den aktuelle opsætning.
   `node scripts/test_viewer_next_event_playback.cjs` kontrollerer forskellen på
   de to afspilningsformer, hastighed, ekstra klik, ankomst og gemte indstillinger
-  i Chromium og Firefox, inklusive den offentlige præsentationsmode.
+  i lokal Firefox på PC, inklusive den offentlige præsentationsmode.
 - Tidskyderen dækker 11. juni kl. 10.00 til 13. juni kl. 04.00 dansk sommertid.
 - Tidslinjen følger kortudsnittet og de valgte både. Den indeholder perioder,
   hvor mindst én valgt båds aktuelle markør er i udsnittet; pauser uden både er
@@ -88,7 +91,7 @@ python3 scripts/serve_viewer.py
   udsnittet; der er ingen snapmål i denne situation. Uden synlige passager er
   skyderen deaktiveret i redigering, mens noterne stadig kan åbnes direkte.
 - Tiden kan flyttes i **1-sekunds trin** med skyderen, knapperne eller piletasterne.
-  Shift+piletast flytter 1 minut. Afspilning opdaterer 10 gange pr. sekund og kan køre med 1×, 2×, 5×, 10×,
+  Shift+piletast flytter 1 minut. Afspilning opdaterer 20 gange pr. sekund og kan køre med 1×, 2×, 5×, 10×,
   20×, 100×, 200× eller 400×. Ved 1× svarer ét sekund til ét sekund i sejladsen.
   Bådpositionerne interpoleres også mellem hele sekunder under afspilning.
   Piletaster på selve skyderen og sekundknapperne snapper ikke, så du kan flytte
