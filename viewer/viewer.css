@@ -25,11 +25,12 @@ body.presenting #renderingError{grid-column:1}
 #boatSearch{position:sticky;top:0;z-index:1;height:72px;padding:9px 10px;background:#f7fafb;border-bottom:1px solid #b8cbd5}
 #boatSearch label{margin:0;font-size:11px;color:#365766}
 .boat-search-heading{display:flex;align-items:center;justify-content:space-between;gap:4px;height:20px;margin-bottom:4px}
+.boat-selection-actions{display:flex;gap:4px}
 .boat-search-field{display:flex;gap:4px}
 #boatSearchInput{width:100%;min-width:0;padding:6px;border:1px solid #607e90;border-radius:4px;background:white;color:#173d4c;font-size:12px}
-#boatSearchClear,#boatSelectAll{padding:5px;border:1px solid #607e90;background:#dcecf0;color:#173d4c;font-size:11px}
-#boatSelectAll{padding:2px 5px}
-#boatSelectAll:disabled{cursor:default}
+#boatSearchClear,#boatSelectAll,#boatDeselectAll{padding:5px;border:1px solid #607e90;background:#dcecf0;color:#173d4c;font-size:11px}
+#boatSelectAll,#boatDeselectAll{padding:2px 5px;white-space:nowrap}
+#boatSelectAll:disabled,#boatDeselectAll:disabled{cursor:default}
 #visibleBoatsList{margin:0;padding:0;list-style:none}
 .visible-boat{height:72px;padding:9px 10px;border-left:4px solid var(--boat-colour);border-bottom:1px solid #d5e1e7;overflow-wrap:anywhere;outline:none;cursor:default;scroll-margin-top:72px}
 .visible-boat:last-child{border-bottom-color:transparent}
