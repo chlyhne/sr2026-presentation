@@ -275,7 +275,7 @@ function advancePlayback(now){
   if(!notes.includes(target)){stopPlayback();return;}
   const nextTime=currentTime()+Math.max(0,now-playbackTickTime)/1000*playbackRate;
   playbackTickTime=now;
-  if(nextTime>=target.time-1e-6)restoreNote(target,{showImage:true});
+  if(nextTime>=target.time-1e-6)restoreNote(target,{showImage:true,restoreView:false});
   else{setCurrentTime(nextTime,{fractional:true,allowOutsideVisibleRanges:true});centerPlaybackOnMercutio();requestRender();}
   return;
  }
