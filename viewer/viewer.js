@@ -83,7 +83,7 @@ const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff8
 const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
 const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set(featured);
 const boats=D.boats.map(b=>({...b,...boatDetails[b.id],metadata:boatMetadata(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
-const shownBoatNames=new Set(boats.filter(b=>featured.has(b.name)).map(b=>b.id));
+const shownBoatNames=new Set(boats.map(b=>b.id));
 let boatSearchQuery='';
 function isBoatSearchActive(){return boatSearchQuery.length>0;}
 function boatIsDisplayed(boat){

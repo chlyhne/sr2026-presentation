@@ -181,7 +181,8 @@ python3 scripts/serve_viewer.py
 - Klik på en båds bådikon for at vise eller skjule navnet. Det gælder alle
   både. Tab og Enter/mellemrum kan også bruges. Navnevalget bevares ved zoom,
   tidsskift og til-/fravalg af både, gemmes med noter og kommer med i PNG-billedet.
-  De fem standardbådes navne er vist fra start. At trække fra et bådikon flytter kortet.
+  Alle bådes navne er vist som standard, også når flere både vælges eller findes
+  med søgning. At trække fra et bådikon flytter kortet.
   Alle eksisterende events får én gang vist navnene på deres aktive både.
   Bådudvalgene ændres ikke, og senere manuelle navneskjul bevares ved genindlæsning.
 - Klik på et sted på et spor i redigering for at vise farten i knob
