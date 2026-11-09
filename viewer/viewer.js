@@ -100,6 +100,12 @@ function syncBoatChoices(){
 function setBoatSelected(boat,selected){
  changeBoatSelection(()=>{if(selected)chosen.add(boat.name);else chosen.delete(boat.name);});
 }
+function boatSelectionScope(){return isBoatSearchActive()?boats.filter(boatIsDisplayed):boats;}
+function toggleAllBoats(){
+ const scope=boatSelectionScope();if(!scope.length)return;
+ const select=!scope.every(boat=>chosen.has(boat.name));
+ changeBoatSelection(()=>{for(const boat of scope){if(select)chosen.add(boat.name);else chosen.delete(boat.name);}});
+}
 function activateBoatMarker(id,focus=false){
  if(!isBoatSearchActive()){toggleBoatName(id,focus);return;}
  const boat=boats.find(boat=>boat.id===id);if(!boat)return;
@@ -322,7 +328,7 @@ $('playbackSpeed').onchange=()=>{
  playbackRate=+$('playbackSpeed').value;
 };
 document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
-$('all').onclick=()=>changeBoatSelection(()=>{const all=boats.every(b=>chosen.has(b.name));chosen.clear();if(!all)for(const b of boats)chosen.add(b.name);});
+$('all').onclick=toggleAllBoats;
 let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));requestRender({viewportOnly:!updateTimeline()}); }$('reset').onclick=()=>{view=[230,250,620,760];setview()};
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
 $('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture)return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*(e.deltaY>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform($('map').getScreenCTM().inverse());view=[anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f];setview()},{passive:false});
