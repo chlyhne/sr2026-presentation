@@ -131,6 +131,10 @@ python3 scripts/serve_viewer.py
   bådtype som reserve. Genskab `boat-details.js` med
   `python scripts/prepare_boat_details.py`; det genbruger projektets kildedata.
   `node scripts/test_viewer_boat_list.cjs` kontrollerer listen i Chromium og Firefox.
+  `node scripts/test_viewer_boat_list_presentation.cjs` kontrollerer desuden den
+  offentlige præsentationsmode uden redigering: faste pladser, mouseover,
+  afspilning, eventskift, rulning og browserens faktiske fuldskærmsvisning i
+  begge browsere. Testens events er simulerede; den gemmer ikke på serveren.
 - Klik på en båds bådikon for at vise eller skjule navnet. Det gælder alle
   både. Tab og Enter/mellemrum kan også bruges. Navnevalget bevares ved zoom,
   tidsskift og til-/fravalg af både, gemmes med noter og kommer med i PNG-billedet.
