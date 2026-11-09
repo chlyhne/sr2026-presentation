@@ -651,6 +651,9 @@ tidspunkt langs kurven; nyere passager dækker ældre, uanset båd og fartfarve.
 Tidens høje og lave del gemmes separat, så millisekunder også kan skelnes sent
 i sejladsen. Dybden sættes i vertex-shaderen, så GPU'en kan afvise skjulte
 fragmenter tidligt. Kant og sporfarve tegnes i én passage med samme tidsdybde.
+Sammenhængende kildeintervaller deler en kant uden runde afslutninger imellem;
+ellers ville et nyere stykkes mørke rand stribe det foregående stykke.
+Runde afslutninger bruges ved sporets ender, reelle huller og tidsvinduets klip.
 Huller over fem minutter forbindes fortsat ikke. Der fjernes ingen kildepunkter
 efter zoomniveau eller geografisk udsnit. Ikoner og interaktive kortlag er fortsat SVG.
 
@@ -679,6 +682,8 @@ Det generelle princip om én nominel implementering er beskrevet i
 `node scripts/test_viewer_track_time_layers.cjs` tester lokalt i Firefox på PC:
 modsatrettede krydsninger, selvkrydsning, millisekunder, pauser, tidsvindue,
 tilbagespoling, klik, genbrug af GPU-buffere og PNG med den nominelle renderer.
+`node scripts/test_viewer_track_joins.cjs` kontrollerer tætte lige og buede spor
+ved flere zoomniveauer, samlinger uden striber, runde ender og PNG i lokal Firefox.
 
 Baggrunden bruger én WebGL 2-flade i `background-renderer.js`, med fast
 lagrækkefølge: vindfarvefelt, land, radar og kyst. Landpolygoner, inklusive
