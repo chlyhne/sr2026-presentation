@@ -18,9 +18,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    const gl=webglTracks.gl,record=webglTracks.buffers.get(boat.points),uploads=webglTracks.uploads;
    check($('routes').querySelectorAll('path').length===0,'Live paths still exist');
    const pixel=(x,y)=>{
-    const matrix=$('map').getScreenCTM(),rect=$('map').getBoundingClientRect(),screen=new DOMPoint(x,y).matrixTransform(matrix),ratio=devicePixelRatio||1;
+    const matrix=$('map').getScreenCTM(),rect=$('map').getBoundingClientRect(),screen=new DOMPoint(x,y).matrixTransform(matrix);
     const value=new Uint8Array(4);
-    gl.readPixels(Math.floor((screen.x-rect.left)*ratio),gl.drawingBufferHeight-1-Math.floor((screen.y-rect.top)*ratio),1,1,gl.RGBA,gl.UNSIGNED_BYTE,value);
+    gl.readPixels(Math.floor((screen.x-rect.left)/rect.width*gl.drawingBufferWidth),gl.drawingBufferHeight-1-Math.floor((screen.y-rect.top)/rect.height*gl.drawingBufferHeight),1,1,gl.RGBA,gl.UNSIGNED_BYTE,value);
     return [...value];
    };
    webglTracks.render(selectedTime,webglTracks.order,true);

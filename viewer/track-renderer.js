@@ -79,8 +79,10 @@ uniform float innerRatio;
 out vec4 colour;
 void main(){
  int bin=(speeds.x<0.0||speeds.y<0.0)?0:1+int(floor(clamp(mix(speeds.x,speeds.y,sourceU),0.0,15.0)*127.0/15.0+0.5));
- bool outline=dot(strokeOffset,strokeOffset)>innerRatio*innerRatio;
- colour=outline?vec4(23.0/255.0,49.0/255.0,62.0/255.0,1.0):texelFetch(palette,ivec2(bin,0),0);
+ float distance=length(strokeOffset);
+ float feather=max(fwidth(distance)*0.5,0.000001);
+ float outline=smoothstep(innerRatio-feather,innerRatio+feather,distance);
+ colour=mix(texelFetch(palette,ivec2(bin,0),0),vec4(23.0/255.0,49.0/255.0,62.0/255.0,1.0),outline);
 }`);
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
@@ -155,7 +157,8 @@ void main(){
   if(!this.active)return false;
   try{
    if(this.gl.isContextLost())throw Error('WebGL-konteksten er mistet.');
-   const viewport=viewportOverride||mapViewport();if(!viewport)return true;
+   const baseViewport=viewportOverride||mapViewport();if(!baseViewport)return true;
+   const viewport={...baseViewport,pixelWidth:baseViewport.pixelWidth*2,pixelHeight:baseViewport.pixelHeight*2};
    const {rect,matrix,topLeft:top,pixelWidth:width,pixelHeight:height}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
    const key=[time,viewportKey,...order.map(b=>b.id)].join(':');
