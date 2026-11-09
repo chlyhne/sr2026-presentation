@@ -286,7 +286,7 @@ function startPlayback({target=null}={}){
  if(!target&&playbackOffset>=timelineLength-1)return;
  eventPlaybackTarget=target;
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
- $('play').disabled=false;$('play').textContent='Pause';interval=setInterval(()=>advancePlayback(performance.now()),100);
+ $('play').disabled=false;$('play').textContent='Pause';interval=setInterval(()=>advancePlayback(performance.now()),50);
 }
 $('play').onclick=()=>{
  if(interval){stopPlayback();return;}
