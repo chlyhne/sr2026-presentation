@@ -14,7 +14,7 @@ function trackSpeedSample(boat,time){
 }
 function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
  const matrix=$('map').getScreenCTM();if(!matrix)return null;
- const now=currentTime(),start=now-7200,limit=topmost?8*8:12*12;
+ const now=currentTime(),start=now-trackWindowSeconds(),limit=topmost?8*8:12*12;
  let best=null,bestDistance=limit,bestPainted=false;
  const paintedRadius2=(TRACK_OUTLINE_WIDTH/2+.5)**2;
  function consider(boat,time,d){
@@ -134,7 +134,7 @@ function renderSpeedPins(){
  entries.sort((a,b)=>mercutioIds.has(a.boatId)-mercutioIds.has(b.boatId));
  for(const entry of entries){
   const boat=boats.find(b=>b.id===entry.boatId);
-  if(!boat||!boatIsDisplayed(boat)||entry.time<now-7200||entry.time>now)continue;
+  if(!boat||!boatIsDisplayed(boat)||entry.time<now-trackWindowSeconds()||entry.time>now)continue;
   const sample=trackSpeedSample(boat,entry.time);if(!sample)continue;
   const [x,y]=xy(sample.point),screen=new DOMPoint(x,y).matrixTransform(matrix);
   if(screen.x<rect.left||screen.x>rect.right||screen.y<rect.top||screen.y>rect.bottom)continue;

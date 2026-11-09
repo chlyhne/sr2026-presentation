@@ -24,8 +24,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    await page.route('**/rhumbline.json',route=>route.fulfill({json:permanent}));
    await page.goto(origin+'/');await page.waitForSelector('#onlineStatus',{state:'attached'});
    assert.deepEqual(await page.evaluate(()=>SR_RHUMBLINE),permanent);
-   await page.locator('#trackComparisonToggle').click();
-   await page.locator('#comparisonBasis').selectOption('handicap');
+   await page.locator('#mapTracksToggle').click();
+   await page.locator('#trackStyle').selectOption('handicap');
    if(!admin){
     assert.equal(await page.evaluate(()=>comparison.enabled),true);
     assert.equal(await page.evaluate(()=>SRStorage.getItem('sr2026-comparison')),null,'Route definitions are not presentation storage');

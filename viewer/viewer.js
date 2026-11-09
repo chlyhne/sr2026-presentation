@@ -286,13 +286,20 @@ function setMapLayersExpanded(expanded){
  $('mapLayersPanel').hidden=!expanded;
  $('mapLayersToggle').setAttribute('aria-expanded',String(expanded));
 }
+function setMapTracksExpanded(expanded){
+ $('mapTracksPanel').hidden=!expanded;
+ $('mapTracksToggle').setAttribute('aria-expanded',String(expanded));
+}
 $('mapLayersToggle').onclick=()=>setMapLayersExpanded($('mapLayersPanel').hidden);
+$('mapTracksToggle').onclick=()=>setMapTracksExpanded($('mapTracksPanel').hidden);
+$('mapLayersToggle').addEventListener('click',()=>{if(!$('mapLayersPanel').hidden)setMapTracksExpanded(false);});
 document.addEventListener('pointerdown',event=>{
  if(!$('mapLayers').contains(event.target))setMapLayersExpanded(false);
+ if(!$('mapTracks').contains(event.target))setMapTracksExpanded(false);
 });
 document.addEventListener('keydown',event=>{
- if(event.key==='Escape'&&!$('mapLayersPanel').hidden){
-  event.preventDefault();event.stopImmediatePropagation();setMapLayersExpanded(false);$('mapLayersToggle').focus();
+ if(event.key==='Escape')for(const name of ['mapLayers','mapTracks'])if(!$(name+'Panel').hidden){
+  event.preventDefault();event.stopImmediatePropagation();$(name+'Panel').hidden=true;$(name+'Toggle').setAttribute('aria-expanded','false');$(name+'Toggle').focus();return;
  }
 },true);
 for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);

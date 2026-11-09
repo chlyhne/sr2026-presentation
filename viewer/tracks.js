@@ -19,6 +19,17 @@ function prepareBoatTrack(boat){webglTracks.prepare(boat);}
 function prepareSelectedTracks(){
  for(const boat of boats)if(boatIsDisplayed(boat))prepareBoatTrack(boat);
 }
+async function prepareFleetTracks(){
+ for(const boat of boats){
+  // The renderer has already displayed its error. Finish loading its controls
+  // so the user can reload; no alternative rendering or calculation is used.
+  if(!webglTracks.active)return false;
+  prepareBoatTrack(boat);
+  // Let the loading message paint between boats while interaction is locked.
+  await new Promise(resolve=>setTimeout(resolve,0));
+ }
+ return true;
+}
 function trackSpeedLegendLayout(){
  const rect=$('map').getBoundingClientRect();
  return {left:12,top:12,width:Math.max(110,Math.min(230,rect.width-24)),height:comparison.enabled?103:63};

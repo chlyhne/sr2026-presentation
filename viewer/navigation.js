@@ -1,5 +1,9 @@
 // The route comes only from the permanent project asset loaded by boot.js.
 const TRACK_GAIN_LIMIT=2,TRACK_GAIN_MISSING=-1e20,TRACK_COMPARISON_KEY='sr2026-track-comparison';
+const TRACK_LENGTH_KEY='sr2026-track-length',TRACK_LENGTHS=new Set([0,900,1800,3600,7200,14400,28800]);
+const TRACK_FULL_WINDOW=boats.reduce((span,boat)=>boat.points.length?Math.max(span,D.end-boat.points[0][2]+1):span,D.end-D.start+1);
+let trackLengthSeconds=7200;
+function trackWindowSeconds(){return trackLengthSeconds===0?TRACK_FULL_WINDOW:trackLengthSeconds;}
 function validComparison(value){
  return value&&typeof value.enabled==='boolean'&&['absolute','handicap'].includes(value.basis)
   &&Object.keys(value).every(key=>['enabled','basis'].includes(key));
@@ -11,6 +15,10 @@ try{
  const stored=localStorage.getItem(TRACK_COMPARISON_KEY);
  if(stored){const value=JSON.parse(stored);if(!validComparison(value))throw Error('Ugyldigt sammenligningsvalg.');comparison=value;}
 }catch(error){comparisonMessage('Sammenligning kunne ikke indlæses: '+error.message);}
+try{
+ const stored=localStorage.getItem(TRACK_LENGTH_KEY);
+ if(stored!==null){const value=JSON.parse(stored);if(!TRACK_LENGTHS.has(value))throw Error('Ugyldig sporlængde.');trackLengthSeconds=value;}
+}catch(error){comparisonMessage('Sporlængde kunne ikke indlæses: '+error.message);}
 const rhumbRoute=buildRhumbRoute(window.SR_RHUMBLINE.points);
 if(comparison.enabled&&!rhumbRoute.legs.length){comparison.enabled=false;comparisonMessage('Den permanente rhumbline er endnu ikke defineret.');}
 // A sample uses recorded SOG and the direction of the nominal PCHIP track.
@@ -53,20 +61,47 @@ function mercutioPassages(){
    a=b;
   }
  }
- intervals.sort((a,b)=>a.low-b.low||a.a.time-b.a.time);
- let maximum=-Infinity;
- const maxHigh=intervals.map(interval=>maximum=Math.max(maximum,interval.high));
- referencePassages={points:boat?.points,boat,revision:comparisonRevision,intervals,maxHigh};return referencePassages;
+ const stations=prepareReferenceStations(intervals);
+ referencePassages={points:boat?.points,boat,revision:comparisonRevision,stations};return referencePassages;
 }
-function referenceAtProgress(progress){
- const {intervals,maxHigh}=mercutioPassages();
- let lo=0,hi=intervals.length;
- while(lo<hi){const mid=(lo+hi)>>>1;if(intervals[mid].low<=progress)lo=mid+1;else hi=mid;}
- let first=null;
- for(let i=lo-1;i>=0&&maxHigh[i]>=progress;i--){
-  const candidate=intervals[i];if(candidate.high<progress)continue;
-  if(!first||candidate.a.time<first.a.time)first=candidate;
+// Resolve overlapping passages once. Every query then needs only a binary
+// search, including routes where the start and finish are close together.
+function prepareReferenceStations(intervals){
+ const events=[];
+ for(const interval of intervals){events.push({at:interval.low,start:interval},{at:interval.high,end:interval});}
+ events.sort((a,b)=>a.at-b.at);
+ const heap=[],active=new Set(),stations=[];
+ function push(interval){
+  active.add(interval);heap.push(interval);let i=heap.length-1;
+  while(i){const parent=(i-1)>>>1;if(heap[parent].a.time<=interval.a.time)break;heap[i]=heap[parent];i=parent;}
+  heap[i]=interval;
  }
+ function firstActive(){
+  while(heap.length&&!active.has(heap[0])){
+   const last=heap.pop();if(!heap.length)break;
+   let i=0;
+   while(i*2+1<heap.length){
+    let child=i*2+1;if(child+1<heap.length&&heap[child+1].a.time<heap[child].a.time)child++;
+    if(last.a.time<=heap[child].a.time)break;heap[i]=heap[child];i=child;
+   }
+   heap[i]=last;
+  }
+  return heap[0]||null;
+ }
+ for(let i=0;i<events.length;){
+  const at=events[i].at;let end=i;while(end<events.length&&events[end].at===at)end++;
+  for(let j=i;j<end;j++)if(events[j].start)push(events[j].start);
+  const point=firstActive();
+  for(let j=i;j<end;j++)if(events[j].end)active.delete(events[j].end);
+  stations.push({at,point,after:firstActive()});i=end;
+ }
+ return stations;
+}
+function referenceAtProgress(progress,stations=mercutioPassages().stations){
+ let lo=0,hi=stations.length;
+ while(lo<hi){const mid=(lo+hi)>>>1;if(stations[mid].at<=progress)lo=mid+1;else hi=mid;}
+ if(!lo)return null;
+ const station=stations[lo-1],first=progress===station.at?station.point:station.after;
  if(!first)return null;
  const fraction=(progress-first.low)/(first.high-first.low);
  return {vmg:first.a.vmg+(first.b.vmg-first.a.vmg)*fraction,time:first.a.time+(first.b.time-first.a.time)*fraction};
@@ -78,13 +113,32 @@ function correctedProjectedSpeed(speed,handicap,referenceHandicap){
  const factor=1+(referenceHandicap-handicap)*speed/3600;
  return factor>0?speed/factor:null;
 }
-function trackGainSample(boat,time){
+function trackComparisonSample(boat,time){
  const sample=projectedTrackSample(boat,time);if(!sample)return null;
  const reference=referenceAtProgress(sample.progress);if(!reference)return null;
- let speed=sample.vmg;
- if(comparison.basis==='handicap')speed=correctedProjectedSpeed(speed,boat.handicapSecondsPerNm,mercutioPassages().boat?.handicapSecondsPerNm);
- if(speed===null)return null;
- return {gain:speed-reference.vmg,vmg:sample.vmg,referenceVmg:reference.vmg,referenceTime:reference.time,progress:sample.progress};
+ const corrected=correctedProjectedSpeed(sample.vmg,boat.handicapSecondsPerNm,mercutioPassages().boat?.handicapSecondsPerNm);
+ return {absoluteGain:sample.vmg-reference.vmg,handicapGain:corrected===null?null:corrected-reference.vmg,
+  vmg:sample.vmg,referenceVmg:reference.vmg,referenceTime:reference.time,progress:sample.progress};
+}
+function trackGainSample(boat,time){
+ const sample=trackComparisonSample(boat,time);if(!sample)return null;
+ const gain=comparison.basis==='handicap'?sample.handicapGain:sample.absoluteGain;
+ return gain===null?null:{...sample,gain};
+}
+// Both modes share the projection and Mercutio lookup. Keep this CPU data
+// independently of the GPU, so context restoration only uploads it again.
+const trackComparisonCache=new WeakMap();
+function prepareTrackComparison(boat){
+ if(trackComparisonCache.has(boat.points))return trackComparisonCache.get(boat.points);
+ const values=new Float32Array(boat.points.length*4);
+ let a=boat.points.length?trackComparisonSample(boat,boat.points[0][2]):null;
+ for(let i=0;i<boat.points.length;i++){
+  const b=i+1<boat.points.length?trackComparisonSample(boat,boat.points[i+1][2]):a;
+  values.set([a?.absoluteGain??TRACK_GAIN_MISSING,b?.absoluteGain??TRACK_GAIN_MISSING,
+   a?.handicapGain??TRACK_GAIN_MISSING,b?.handicapGain??TRACK_GAIN_MISSING],i*4);
+  a=b;
+ }
+ trackComparisonCache.set(boat.points,values);return values;
 }
 function trackGainColour(value){
  if(!Number.isFinite(value))return TRACK_SPEED_MISSING;
@@ -101,7 +155,8 @@ function saveComparison(next){
  comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
 }
 function syncNavigationControls(){
- $('trackComparisonToggle').setAttribute('aria-pressed',String(comparison.enabled));$('comparisonBasis').value=comparison.basis;
+ $('trackStyle').value=comparison.enabled?comparison.basis:'speed';$('trackLength').value=String(trackLengthSeconds);
+ $('trackLengthSummary').textContent=trackLengthSeconds?`Spor: seneste ${$('trackLength').selectedOptions[0].textContent}`:'Spor: hele forløbet';
  $('clearMeasurement').disabled=!measurement.length||!!navigationMode;
  $('finishMapLine').disabled=!navigationMode||navigationDraft.length<2;
  $('undoMapPoint').disabled=!navigationMode||!navigationDraft.length;$('cancelMapLine').hidden=!navigationMode;
@@ -111,6 +166,7 @@ function syncNavigationControls(){
 function setMeasurementExpanded(expanded){
  $('mapMeasurePanel').hidden=!expanded;$('mapMeasureToggle').setAttribute('aria-expanded',String(expanded));
  if(expanded){setMapLayersExpanded(false);$('comparisonStatus').hidden=true;}
+ if(expanded)setMapTracksExpanded(false);
 }
 function startMapLine(mode){
  stopPlayback();cancelPlacement();cancelDrawingGesture();setDrawingTool('pan');clearTrackHover();
@@ -165,10 +221,17 @@ $('measureDistance').onclick=()=>startMapLine('measure');
 $('finishMapLine').onclick=finishMapLine;$('cancelMapLine').onclick=cancelMapLine;
 $('undoMapPoint').onclick=()=>{navigationDraft.pop();syncNavigationControls();renderNavigation();};
 $('clearMeasurement').onclick=()=>{measurement=[];syncNavigationControls();renderNavigation();};
-$('trackComparisonToggle').onclick=()=>{
- saveComparison({...comparison,enabled:!comparison.enabled});
+$('trackStyle').onchange=()=>{
+ const style=$('trackStyle').value;
+ if(!saveComparison({enabled:style!=='speed',basis:style==='speed'?comparison.basis:style}))syncNavigationControls();
 };
-$('comparisonBasis').onchange=()=>{if(!saveComparison({...comparison,basis:$('comparisonBasis').value}))syncNavigationControls();};
+$('trackLength').onchange=()=>{
+ const length=+$('trackLength').value;
+ try{if(!TRACK_LENGTHS.has(length))throw Error('Ugyldig sporlængde.');localStorage.setItem(TRACK_LENGTH_KEY,JSON.stringify(length));}
+ catch{comparisonMessage('Sporlængden kunne ikke gemmes.');syncNavigationControls();return;}
+ trackLengthSeconds=length;comparisonMessage('');syncNavigationControls();requestRender();
+};
+$('mapTracksToggle').addEventListener('click',()=>{if(!$('mapTracksPanel').hidden){setMeasurementExpanded(false);setMapLayersExpanded(false);}});
 $('mapLayersToggle').addEventListener('click',()=>setMeasurementExpanded(false));
 document.addEventListener('pointerdown',event=>{if(!$('mapTools').contains(event.target)&&!navigationMode)setMeasurementExpanded(false);});
 document.addEventListener('keydown',event=>{

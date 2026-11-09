@@ -82,6 +82,12 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   near(projectionChecks.crosswind.vmg,0);near(projectionChecks.crosswind.gain,-6);
   assert.equal(projectionChecks.noPassage,null);assert.equal(projectionChecks.nextLeg.leg,1);
   near(projectionChecks.nextLeg.bearing,0);near(projectionChecks.hiddenReference.gain,0);
+  const overlap=await page.evaluate(()=>{
+   const interval=(low,high,time,vmg)=>({low,high,a:{time,vmg},b:{time:time+60,vmg}});
+   const stations=prepareReferenceStations([interval(0,100,100,4),interval(10,20,10,8),interval(20,30,20,6)]);
+   return [0,10,20,20.1,30,30.1,100,101].map(progress=>referenceAtProgress(progress,stations)?.vmg??null);
+  });
+  assert.deepEqual(overlap,[4,8,8,6,6,4,4,null],'Overlaps and exact endpoints keep the first forward passage');
   // Read actual WebGL pixels, so the sign and Mercutio exception are tested
   // through the nominal renderer rather than only through a colour helper.
   async function pixels(){return page.evaluate(()=>{
@@ -97,13 +103,24 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   const coloured=await pixels();
   assert.ok(coloured.red[0]>coloured.red[2]+80,JSON.stringify(coloured));
   assert.ok(coloured.blue[2]>coloured.blue[0]+80,JSON.stringify(coloured));
-  await page.locator('#trackComparisonToggle').click();
+  await page.locator('#mapTracksToggle').click();
+  await page.locator('#trackStyle').selectOption('speed');
   const original=await pixels();assert.deepEqual(coloured.reference,original.reference,'Mercutio keeps the recorded-SOG colour');
-  await page.locator('#trackComparisonToggle').click();
-  await page.locator('#comparisonBasis').selectOption('handicap');
+  await page.locator('#trackStyle').selectOption('absolute');
+  await page.locator('#trackStyle').selectOption('handicap');
   const rated=await page.evaluate(()=>trackGainSample(boats[2],boats[2].points[4][2]));
   near(rated.gain,numeric.handicap-6);
   assert.match(await page.locator('#trackSpeedLegend').textContent(),/ToD/);
+  await page.locator('#trackLength').selectOption('900');
+  const short=await pixels();assert.equal(short.reference[3],0);assert.equal(short.red[3],0);assert.equal(short.blue[3],255);
+  const oldReferenceHit=await page.evaluate(()=>{
+   const p=new DOMPoint(...xy([12.035,55.6])).matrixTransform($('map').getScreenCTM());
+   return nearestTrackSpeed(p.x,p.y,'reference');
+  });
+  assert.equal(oldReferenceHit,null,'Hidden old tracks cannot be picked');
+  await page.locator('#trackLength').selectOption('0');
+  const full=await pixels();assert.deepEqual(full.reference,original.reference);assert.equal(full.red[3],255);
+  await page.locator('#trackLength').selectOption('7200');
   const uploads=await page.evaluate(()=>webglTracks.uploads);
   await page.evaluate(()=>{selectedTime-=1;render();selectedTime+=1;render();});
   assert.equal(await page.evaluate(()=>webglTracks.uploads),uploads,'Playback retains geometry buffers');
@@ -123,7 +140,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(TRACK_COMPARISON_KEY)));
   await page.reload();await page.waitForSelector('#onlineStatus');
   assert.deepEqual(await page.evaluate(()=>comparison),saved);
-  assert.equal(await page.locator('#trackComparisonToggle').getAttribute('aria-pressed'),'true');
+  assert.equal(await page.locator('#trackStyle').inputValue(),'handicap');
   await page.evaluate(()=>setPresentationMode(true));
   await page.locator('#mapMeasureToggle').click();await page.locator('#measureDistance').click();
   await page.keyboard.press('Escape');

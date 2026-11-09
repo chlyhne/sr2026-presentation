@@ -11,7 +11,7 @@ class WebGLTrackRenderer {
    e.preventDefault();this.fail(Error('WebGL-konteksten er mistet.'));
   });
   this.canvas.addEventListener('webglcontextrestored',()=>{
-   this.buffers.clear();this.initialize();if(this.active){prepareSelectedTracks();requestRender();}
+   this.buffers.clear();this.initialize();if(this.active){for(const boat of boats)this.prepare(boat);requestRender();}
   });
   this.initialize();
  }
@@ -34,7 +34,7 @@ layout(location=1) in vec4 position;
 layout(location=2) in vec4 curve;
 layout(location=3) in vec4 ending;
 layout(location=4) in vec4 timing;
-layout(location=5) in vec2 comparisonValues;
+layout(location=5) in vec4 comparisonValues;
 uniform vec4 origin;
 uniform mat2 screen;
 uniform vec2 size;
@@ -43,16 +43,17 @@ uniform float radius;
 out float sourceU;
 out vec2 strokeOffset;
 flat out vec2 speeds;
-flat out vec2 gains;
+flat out vec4 gains;
 void main(){
  float duration=timing.y;
  float age=(timing.x-windowTime.y)+(timing.z-windowTime.w);
- float from=duration>0.0?clamp((-7200.0-age)/duration,0.0,1.0):0.0;
+ float tail=windowTime.x;
+ float from=duration>0.0?clamp((-tail-age)/duration,0.0,1.0):0.0;
  float to=duration>0.0?clamp(-age/duration,0.0,1.0):1.0;
- bool visible=duration>0.0?age+duration>-7200.0&&age<0.0:timing.w>0.0&&age>=-7200.0&&age<=0.0;
+ bool visible=duration>0.0?age+duration>-tail&&age<0.0:timing.w>0.0&&age>=-tail&&age<=0.0;
  // Adjacent cubics share an edge, not overlapping round caps. A newer start
  // cap would otherwise paint its dark rim across the preceding coloured body.
- bool startCap=mod(timing.w,2.0)>0.5||age<=-7200.0;
+ bool startCap=mod(timing.w,2.0)>0.5||age<=-tail;
  bool endCap=timing.w>=2.0||age+duration>=0.0;
  if((shape.w<0.0&&!startCap)||(shape.w>0.0&&!endCap))visible=false;
  if(!visible){gl_Position=vec4(2.0,2.0,2.0,1.0);return;}
@@ -67,7 +68,7 @@ void main(){
  vec2 pixel=screen*p+radius*(normal*shape.y+tangent*shape.z);
  // Time is interpolated by the rasterizer. Newer samples have smaller depth.
  // Keeping depth in gl_Position allows early depth rejection on the GPU.
- float depth=0.1-0.8*(age+duration*u)/7200.0;
+ float depth=0.1-0.8*(age+duration*u)/tail;
  gl_Position=vec4(pixel.x*2.0/size.x-1.0,1.0-pixel.y*2.0/size.y,depth*2.0-1.0,1.0);
  sourceU=u;speeds=ending.zw;gains=comparisonValues;strokeOffset=shape.yz;
 }`);
@@ -76,13 +77,14 @@ precision highp float;
 in float sourceU;
 in vec2 strokeOffset;
 flat in vec2 speeds;
-flat in vec2 gains;
+flat in vec4 gains;
 uniform sampler2D palette;
 uniform float innerRatio;
 uniform bool relativeMode;
+uniform bool handicapMode;
 out vec4 colour;
 void main(){
- vec2 values=relativeMode?gains:speeds;
+ vec2 values=relativeMode?(handicapMode?gains.zw:gains.xy):speeds;
  bool missing=relativeMode?(values.x<-1e19||values.y<-1e19):(values.x<0.0||values.y<0.0);
  float value=mix(values.x,values.y,sourceU);
  float fraction=relativeMode?(clamp(value,-2.0,2.0)+2.0)/4.0:clamp(value,0.0,15.0)/15.0;
@@ -95,7 +97,7 @@ void main(){
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
-   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
+   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','handicapMode'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
    // Fixed mesh used for every interval. shape.w marks optional outer caps.
    // Subdivision evaluates the cubic without discarding source points.
    const mesh=[];
@@ -160,23 +162,20 @@ void main(){
   const vao=gl.createVertexArray();gl.bindVertexArray(vao);
   gl.bindBuffer(gl.ARRAY_BUFFER,this.mesh);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,4,gl.FLOAT,false,16,0);
   for(let i=1;i<=4;i++){gl.enableVertexAttribArray(i);gl.vertexAttribDivisor(i,1);}
-  this.buffers.set(points,{buffer,vao,bytes:data.byteLength,first:null});this.uploads++;
- }
- prepareComparison(boat,record,first){
-  const gl=this.gl,key=`${comparisonRevision}:${comparison.basis}`;
-  if(record.comparisonKey!==key){
-   const values=new Float32Array(boat.points.length*2);
-   const samples=boat.points.map(point=>trackGainSample(boat,point[2])?.gain??TRACK_GAIN_MISSING);
-   for(let i=0;i<boat.points.length;i++){
-    values[i*2]=samples[i];values[i*2+1]=samples[Math.min(i+1,samples.length-1)];
-   }
-   if(!record.comparisonBuffer)record.comparisonBuffer=gl.createBuffer();
+  const record={buffer,vao,bytes:data.byteLength,first:null};
+  if(boat.name!=='Mercutio'&&rhumbRoute.legs.length){
+   const values=prepareTrackComparison(boat);record.comparisonBuffer=gl.createBuffer();record.comparisonFirst=null;
    gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.bufferData(gl.ARRAY_BUFFER,values,gl.STATIC_DRAW);
-   record.comparisonKey=key;record.comparisonFirst=null;
+   record.bytes+=values.byteLength;
   }
+  this.buffers.set(points,record);this.uploads++;
+ }
+ bindComparison(record,first){
+  if(!record.comparisonBuffer)throw Error('Sammenligningsdata er ikke forberedt.');
   if(record.comparisonFirst!==first){
+   const gl=this.gl;
    gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.enableVertexAttribArray(5);gl.vertexAttribDivisor(5,1);
-   gl.vertexAttribPointer(5,2,gl.FLOAT,false,8,first*8);record.comparisonFirst=first;
+   gl.vertexAttribPointer(5,4,gl.FLOAT,false,16,first*16);record.comparisonFirst=first;
   }
  }
  render(time,order,force=false,viewportOverride=null){
@@ -188,7 +187,7 @@ void main(){
    const viewport={...baseViewport,pixelWidth:baseViewport.pixelWidth*2,pixelHeight:baseViewport.pixelHeight*2};
    const {rect,matrix,topLeft:top,pixelWidth:width,pixelHeight:height}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
-   const key=[time,viewportKey,comparison.enabled,comparison.basis,comparisonRevision,...order.map(b=>b.id)].join(':');
+   const key=[time,viewportKey,trackLengthSeconds,comparison.enabled,comparison.basis,comparisonRevision,...order.map(b=>b.id)].join(':');
    if(!force&&this.lastKey===key)return true;
    this.lastKey=key;
    const gl=this.gl,u=this.uniforms;
@@ -206,18 +205,19 @@ void main(){
    gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);gl.clearColor(0,0,0,0);gl.clearDepth(1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
    gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.useProgram(this.program);
    const stamp=time-D.start,high=Math.fround(stamp);
-   gl.uniform4f(u.windowTime,0,high,0,stamp-high);
+   gl.uniform4f(u.windowTime,trackWindowSeconds(),high,0,stamp-high);
    gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2);
    gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
+   gl.uniform1i(u.handicapMode,comparison.basis==='handicap'?1:0);
    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.palette);gl.uniform1i(u.palette,0);
    for(const boat of order){
-    const points=boat.points,first=Math.max(0,timeBoundary(points,time-7200)-1),last=timeBoundary(points,time,true);
+    const points=boat.points,first=Math.max(0,timeBoundary(points,time-trackWindowSeconds())-1),last=timeBoundary(points,time,true);
     if(last<=first)continue;
     this.prepare(boat);const record=this.buffers.get(points);
     gl.bindVertexArray(record.vao);
     const relative=comparison.enabled&&boat.name!=='Mercutio';
     gl.uniform1i(u.relativeMode,relative?1:0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
-    if(relative)this.prepareComparison(boat,record,first);
+    if(relative)this.bindComparison(record,first);
     // WebGL has no base-instance draw: adjust the view into the same immutable
     // buffer. No buffer allocation or upload occurs when advancing or seeking.
     if(record.first!==first){
