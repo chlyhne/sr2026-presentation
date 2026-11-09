@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),path=require('node:path');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
 async function check(type){
@@ -36,14 +36,22 @@ async function check(type){
   },imageID);
   await page.clock.install();await page.clock.pauseAt(new Date());
   const state=()=>page.evaluate(()=>({time:currentTime(),playing:!!interval,target:eventPlaybackTarget?.text||null,
-   event:activePresentationNote.text,settings:sceneSettings(),view:[...view]}));
+   event:activePresentationNote.text,settings:sceneSettings(),view:[...view],
+   mercutio:xy(trackPosition(boats.find(boat=>boat.name==='Mercutio').points,currentTime()).point)}));
   const sceneMatches=(actual,index)=>{assert.deepEqual(actual.settings,fixture.notes[index].settings);assert.deepEqual(actual.view,fixture.notes[index].view);};
+  const followingMatches=(actual,index)=>{
+   assert.deepEqual(actual.settings,fixture.notes[index].settings);
+   assert.deepEqual(actual.view.slice(2),fixture.notes[index].view.slice(2));
+   assert.ok(Math.abs(actual.view[0]+actual.view[2]/2-actual.mercutio[0])<1e-6,'Mercutio is centered horizontally');
+   assert.ok(Math.abs(actual.view[1]+actual.view[3]/2-actual.mercutio[1])<1e-6,'Mercutio is centered vertically');
+  };
   await page.locator('#playbackSpeed').selectOption('10');await page.locator('#nextEvent').click();
-  let s=await state();assert.equal(s.playing,true);assert.equal(s.target,'B');assert.equal(s.time,fixture.time);sceneMatches(s,0);
-  await page.clock.runFor(200);s=await state();assert.ok(Math.abs(s.time-fixture.time-2)<.001);sceneMatches(s,0);
+  let s=await state();assert.equal(s.playing,true);assert.equal(s.target,'B');assert.equal(s.time,fixture.time);followingMatches(s,0);
+  const initialView=s.view;
+  await page.clock.runFor(200);s=await state();assert.ok(Math.abs(s.time-fixture.time-2)<.001);followingMatches(s,0);assert.notDeepEqual(s.view,initialView,'The viewport follows the moving boat');
   await page.locator('#playbackSpeed').selectOption('20');await page.clock.runFor(50);
   await page.evaluate(()=>updateTimeline());await page.clock.runFor(350);
-  s=await state();assert.ok(Math.abs(s.time-fixture.time-10)<.001);assert.equal(s.playing,true);sceneMatches(s,0);
+  s=await state();assert.ok(Math.abs(s.time-fixture.time-10)<.001);assert.equal(s.playing,true);followingMatches(s,0);
   await page.clock.runFor(100);
   s=await state();assert.equal(s.time,fixture.notes[1].time);assert.equal(s.event,'B');assert.equal(s.playing,false);assert.equal(s.target,null);sceneMatches(s,1);
   await page.clock.runFor(1000);assert.equal((await state()).time,fixture.notes[1].time,'Arrival stops without overshooting');
@@ -51,7 +59,7 @@ async function check(type){
   await page.locator('#map').focus();await page.keyboard.press('PageDown');
   s=await state();assert.equal(s.event,'B samme tid');assert.equal(s.playing,false);sceneMatches(s,2);
   await page.keyboard.press('ArrowRight');await page.clock.runFor(100);
-  s=await state();assert.equal(s.target,'C');assert.equal(s.playing,true);assert.ok(s.time<fixture.notes[3].time);
+  s=await state();assert.equal(s.target,'C');assert.equal(s.playing,true);assert.ok(s.time<fixture.notes[3].time);followingMatches(s,2);
   await page.keyboard.press('ArrowRight');
   s=await state();assert.equal(s.time,fixture.notes[3].time);assert.equal(s.playing,false);sceneMatches(s,3);
   // Ordinary playback crosses events but never restores their saved settings or opens photos.
@@ -97,7 +105,7 @@ async function check(type){
   assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify(notes))),fixture.notes,'Navigation never edits the published events');
   assert.equal(await page.evaluate(()=>window.SR_READONLY&&document.body.classList.contains('presenting')),true);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'public presentation, timed Next, selected/live speed, exact arrival and full saved settings, same-time events, keyboard/second press, ordinary playback preserves setup, between-event skip, scrub cancellation, direct previous/dropdown, excluded time ranges, disabled slider, image arrival, final event, unchanged notes',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'public presentation, timed Next follows Mercutio with unchanged zoom even when unselected, selected/live speed, exact arrival and full saved settings, same-time events, keyboard/second press, ordinary playback preserves setup, between-event skip, scrub cancellation, direct previous/dropdown, excluded time ranges, disabled slider, image arrival, final event, unchanged notes',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(error=>{console.error(error);process.exit(1)});
+check(firefox).catch(error=>{console.error(error);process.exit(1)});

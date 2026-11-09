@@ -261,6 +261,13 @@ function step(n){if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback
 for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
 let playbackTickTime=0,playbackRate=1,playbackOffset=0,eventPlaybackTarget=null;
+function centerPlaybackOnMercutio(){
+ const boat=boats.find(boat=>boat.name==='Mercutio');
+ const position=boat&&trackPosition(boat.points,currentTime());
+ if(!position)return;
+ const [x,y]=xy(position.point);
+ view=[x-view[2]/2,y-view[3]/2,view[2],view[3]];setview();
+}
 function advancePlayback(now){
  if(hasRenderingFailure()){stopPlayback();return;}
  if(eventPlaybackTarget){
@@ -269,7 +276,7 @@ function advancePlayback(now){
   const nextTime=currentTime()+Math.max(0,now-playbackTickTime)/1000*playbackRate;
   playbackTickTime=now;
   if(nextTime>=target.time-1e-6)restoreNote(target,{showImage:true});
-  else{setCurrentTime(nextTime,{fractional:true,allowOutsideVisibleRanges:true});requestRender();}
+  else{setCurrentTime(nextTime,{fractional:true,allowOutsideVisibleRanges:true});centerPlaybackOnMercutio();requestRender();}
   return;
  }
  if($('time').disabled){stopPlayback();return;}
@@ -287,6 +294,7 @@ function startPlayback({target=null}={}){
  eventPlaybackTarget=target;
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
  $('play').disabled=false;$('play').textContent='Pause';interval=setInterval(()=>advancePlayback(performance.now()),50);
+ if(target)centerPlaybackOnMercutio();
 }
 $('play').onclick=()=>{
  if(interval){stopPlayback();return;}
