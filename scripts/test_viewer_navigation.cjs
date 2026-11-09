@@ -8,6 +8,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
+  await page.route('**/rhumbline.json',route=>route.fulfill({json:{version:1,points:[[11.99,55.6],[12.09,55.6]]}}));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('#onlineStatus');
   assert.equal(await page.evaluate(()=>boats.every(b=>b.handicapSecondsPerNm>0)),true);
@@ -24,9 +25,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   });
   assert.equal(compact.overlap,false);assert.equal(compact.aligned,true);
   await page.setViewportSize({width:1500,height:1000});
-  await page.locator('#trackComparisonToggle').click();
-  assert.match(await page.locator('#comparisonStatus').textContent(),/Tegn først/);
-  assert.equal(await page.locator('#trackComparisonToggle').getAttribute('aria-pressed'),'false');
+  assert.equal(await page.locator('#drawRhumbline,#clearRhumbline,#reverseRhumbline').count(),0,'The presentation cannot define the permanent route');
   const geographicClick=async coordinate=>{
    const p=await page.evaluate(coordinate=>{
     const [x,y]=xy(coordinate),p=new DOMPoint(x,y).matrixTransform($('map').getScreenCTM());return {x:p.x,y:p.y};
@@ -39,18 +38,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   near(await page.evaluate(()=>buildRhumbRoute(navigationDraft).total),1.00067567,.15);
   await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>navigationMode),null);
   assert.match(await page.locator('#measurementResult').textContent(),/1,\d\d sømil/);
-  await page.locator('#drawRhumbline').click();
-  await geographicClick([12,55.6]);await geographicClick([12.04,55.6]);await geographicClick([12.08,55.6]);
-  await page.locator('#undoMapPoint').click();assert.equal(await page.evaluate(()=>navigationDraft.length),2);
-  await geographicClick([12.08,55.6]);await page.locator('#finishMapLine').click();
-  const route=await page.evaluate(()=>comparison.route);
-  assert.equal(route.length,3);near(route[0][0],12,.005);near(route[2][0],12.08,.005);
-  const persisted=await page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-comparison')));
-  assert.deepEqual(persisted.route,route);
-  await page.locator('#drawRhumbline').click();await geographicClick([11,55]);await page.keyboard.press('Escape');
-  assert.deepEqual(await page.evaluate(()=>comparison.route),route,'Escape discards an unfinished route');
-  await page.locator('#reverseRhumbline').click();assert.deepEqual(await page.evaluate(()=>comparison.route),[...route].reverse());
-  await page.locator('#reverseRhumbline').click();
+  assert.deepEqual(await page.evaluate(()=>SR_RHUMBLINE.points),[[11.99,55.6],[12.09,55.6]]);
   // All boats pass the same positions at different times; cross-track offsets
   // must not change the comparison, and Mercutio need not be selected.
   await page.evaluate(()=>{
@@ -67,7 +55,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
    chosen.clear();chosen.add('Mercutio');chosen.add('Rival');chosen.add('Hurtig rating');
    selectedTime=time+1680;
    const [x,y]=xy([12.04,55.6]);view=[x-18,y-15,36,30];$('map').setAttribute('viewBox',view.join(' '));
-   saveComparison({...comparison,route:[[11.99,55.6],[12.09,55.6]],basis:'absolute',enabled:true});
+   saveComparison({basis:'absolute',enabled:true});
    prepareSelectedTracks();updateTimeline();selectedTime=time+1680;render();
   });
   const numeric=await page.evaluate(()=>{
@@ -132,7 +120,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   await (await download).saveAs('/tmp/sr2026-navigation-export.png');
   assert.match(await page.locator('#captureStatus').textContent(),/PNG klar/);
   // Saved global geometry survives event changes and a page reload.
-  const saved=await page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-comparison')));
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(TRACK_COMPARISON_KEY)));
   await page.reload();await page.waitForSelector('#onlineStatus');
   assert.deepEqual(await page.evaluate(()=>comparison),saved);
   assert.equal(await page.locator('#trackComparisonToggle').getAttribute('aria-pressed'),'true');
@@ -145,7 +133,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.equal(await page.locator('#mapMeasureToggle').isVisible(),true);
   await page.locator('#presentationFullscreen').click();
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:'firefox',checks:'rhumb geometry and measurement, draw/undo/cancel/reverse, same-place speed independent of passage time, red/blue WebGL pixels, Mercutio unchanged, ToD, missing data, immutable geometry, PNG, persistence, presentation/fullscreen',numeric,coloured,errors}));
+  console.log(JSON.stringify({browser:'firefox',checks:'permanent route asset, rhumb geometry and measurement, same-place speed independent of passage time, red/blue WebGL pixels, Mercutio unchanged, ToD, missing data, immutable geometry, PNG, persistence, presentation/fullscreen',numeric,coloured,errors}));
   await page.close();
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

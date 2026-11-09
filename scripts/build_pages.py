@@ -25,7 +25,7 @@ def build():
         stage.mkdir()
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
-            if any(part.startswith('.') for part in relative.parts) or path.name == 'validation.json':
+            if any(part.startswith('.') for part in relative.parts) or path.name in {'validation.json', 'rhumbline-editor.js'}:
                 continue
             if path.is_symlink():
                 raise ValueError(f'Symbolic links cannot be published: {relative}')

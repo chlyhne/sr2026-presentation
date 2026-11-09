@@ -126,7 +126,7 @@ async function exportEventNotes(){
    const blob=await response.blob();
    note.image.dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
   }
-  download(new Blob([JSON.stringify({version:1,notes:output,speedPins,comparison},null,2)],{type:'application/json'}),'sr2026-haendelser.json');
+  download(new Blob([JSON.stringify({version:1,notes:output,speedPins},null,2)],{type:'application/json'}),'sr2026-haendelser.json');
  }catch(error){$('annotationStatus').textContent=error.message||'Noterne kunne ikke eksporteres.';}
  finally{button.disabled=false;}
 }

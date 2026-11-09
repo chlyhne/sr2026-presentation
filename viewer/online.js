@@ -21,7 +21,7 @@
    if(!finishInlineTextEditing()||!noteNavigationAllowed())return;
    publish.disabled=true;
    try{
-    const response=await fetch(config.apiBase+'/api/presentation',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha:window.SR_SHA,document:{version:1,notes,speedPins,comparison}})});
+    const response=await fetch(config.apiBase+'/api/presentation',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha:window.SR_SHA,document:{version:1,notes,speedPins}})});
     const result=await response.json();
     if(!response.ok)throw Error(response.status===409?'En anden version er gemt. Eksportér din kladde, og genindlæs før du fortsætter.':result.error||'Udgivelsen mislykkedes.');
     window.SR_SHA=result.sha;localStorage.removeItem(window.SR_DRAFT_KEY);
@@ -37,8 +37,6 @@
    if(!noteNavigationAllowed())return;
    const data=JSON.parse(await file.text()),incoming=Array.isArray(data)?data:data.notes,pins=Array.isArray(data)?[]:data.speedPins||[];
    if(!Array.isArray(incoming)||!Array.isArray(pins)||incoming.some(n=>!n||!Number.isFinite(n.time)||typeof n.text!=='string'))throw Error('Filen indeholder ikke gyldige noter.');
-   const importedComparison=Array.isArray(data)||data.comparison===undefined?{route:[],enabled:false,basis:'absolute'}:data.comparison;
-   if(!validComparison(importedComparison))throw Error('Filen indeholder en ugyldig rhumbline eller sammenligning.');
    if(notes.length&&!confirm('Erstat den aktuelle kladde med noterne fra filen? Eksportér først, hvis du vil beholde begge.'))return;
    status.textContent='Importerer noter og billeder …';
    for(const note of incoming){
@@ -51,7 +49,6 @@
    }
    if(!persistNotes(incoming))throw Error('Noterne kunne ikke gemmes.');
    SRStorage.setItem('sr2026-speed-pins',JSON.stringify(pins));
-   if(!saveComparison(importedComparison))throw Error('Rhumbline kunne ikke importeres.');
    notes=chronologicalNotes(incoming);speedPins=pins;activePresentationNote=null;finishNoteEditing();showNotes();updateTimeline();render();
    status.textContent=config.admin?'Importeret til kladden. Klik Udgiv for at offentliggøre.':'Noter og fart-pins er importeret.';
   }catch(e){status.textContent=e.message;}finally{input.value='';}

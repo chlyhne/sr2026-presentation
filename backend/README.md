@@ -71,11 +71,9 @@ refresh tokens.
 | `GET /admin/*` | Proxy til samme sti under Pages-basen |
 
 Præsentationen gemmes kun i `presentation/presentation.json` med formatet
-`{version:1,notes:[],speedPins:[]}` med et valgfrit `comparison`-felt:
-`{route:[[lon,lat],...],enabled:false,basis:"absolute"}`. Ruten er fælles for alle
-events; `basis` kan også være `"handicap"`. Backenden validerer højst 200 punkter,
-gyldige koordinater og mindst to forskellige punkter, når sammenligningen er slået til.
-Ældre dokumenter uden feltet accepteres fortsat. Billeder får servergenererede UUID-navne under
+`{version:1,notes:[],speedPins:[]}`. Rhumbline er et fast projektaktiv i
+`viewer/rhumbline.json` og indgår ikke i præsentationen. Billeder får
+servergenererede UUID-navne under
 `viewer/event-images/`. Relative billedadresser er `event-images/<uuid>.<ext>`.
 Andre repository-stier kan ikke angives af klienten. Billeder må højst fylde
 16 MiB, JSON højst 4 MiB. Indholdstyper, billedsignaturer og centrale eventfelter
