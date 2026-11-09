@@ -1,8 +1,8 @@
-// Use a real display/GPU by default. Headless Chromium often uses SwiftShader.
+// Local Firefox benchmark. Use a real display/GPU by default.
 const path=require('node:path');
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 (async()=>{
- const browser=await chromium.launch({headless:process.env.SR_HEADLESS==='1'});
+ const browser=await firefox.launch({headless:process.env.SR_HEADLESS==='1'});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}});
   await page.addInitScript(()=>window.SR_TRACK_RENDERER='webgl');
@@ -14,7 +14,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
    prepareSelectedTracks();
    const initialMemoryMB=[...webglTracks.buffers.values()].reduce((sum,b)=>sum+b.bytes,0)/1e6;
    const output=[];
-   for(const renderer of ['webgl','svg']){
+   for(const renderer of ['webgl','software']){
     webglTracks.active=renderer==='webgl';webglTracks.host.setAttribute('display',webglTracks.active?'inline':'none');
     for(const offset of [14400,43200]){
      selectedTime=D.start+offset;render();
