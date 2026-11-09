@@ -59,6 +59,9 @@ function parseEventTimeInput(value){
 }
 function stopPlayback() {
  if(interval) {clearInterval(interval);interval=null;$('play').textContent='Afspil';}
+ if(eventPlaybackTarget){$('presentationMessage').textContent='';$('nextEvent').title='Afspil frem til næste event';}
+ eventPlaybackTarget=null;
+ $('play').disabled=$('time').disabled;
 }
 function cancelPlacement() {
  placingNote=false;$('map').classList.remove('placing');$('cancelNote').hidden=true;
@@ -264,7 +267,8 @@ function updatePresentationControls(){
  const pendingMedia=!!pendingEventImage||hasPendingEventVideo();
  const preview=editingNote?{...noteDraft,text:$('note').value}:pendingMedia?{time:currentTime(),text:$('note').value,image:pendingEventImage,video:pendingEventVideo}:note;
  $('previousEvent').disabled=!note||index===0;
- $('nextEvent').disabled=!note||index===notes.length-1;
+ $('nextEvent').disabled=document.body.classList.contains('presenting')?!nextPresentationNote():!note||index===notes.length-1;
+ $('nextEvent').title=eventPlaybackTarget?'Spring direkte til næste event':document.body.classList.contains('presenting')?'Afspil frem til næste event':'Næste event';
  $('eventSelect').disabled=!note;
  if(note)$('eventSelect').value=String(index);
  if(preview){
@@ -288,7 +292,26 @@ function showPresentationEvent(index){
  restoreNote(notes[Math.max(0,Math.min(notes.length-1,index))],{showImage:true});
 }
 function movePresentationEvent(delta){
+ if(delta===1&&document.body.classList.contains('presenting')){playToNextPresentationEvent();return;}
  showPresentationEvent(Math.max(0,notes.indexOf(activePresentationNote))+delta);
+}
+function nextPresentationNote(){
+ if(eventPlaybackTarget&&notes.includes(eventPlaybackTarget))return eventPlaybackTarget;
+ const time=currentTime(),index=notes.indexOf(activePresentationNote);
+ if(index>=0&&Math.abs(activePresentationNote.time-time)<1e-6)return notes[index+1]||null;
+ return notes.find(note=>note.time>time+1e-6)||null;
+}
+function playToNextPresentationEvent(){
+ if(!noteNavigationAllowed())return;
+ const target=nextPresentationNote();if(!target)return;
+ const onEvent=notes.some(note=>Math.abs(note.time-currentTime())<1e-6);
+ if(eventPlaybackTarget||target.time<=currentTime()||(interval&&!onEvent)){
+  restoreNote(target,{showImage:true});return;
+ }
+ stopPlayback();hideMapEventImage();hideEventVideo();cancelPlacement();
+ startPlayback({target});
+ $('presentationMessage').textContent=`Afspiller frem til event ${notes.indexOf(target)+1}. Tryk Næste event igen for at springe frem.`;
+ updatePresentationControls();
 }
 function setPresentationMode(enabled){
  if(!enabled&&window.SR_READONLY)return;
@@ -319,11 +342,12 @@ function handlePresentationKey(event){
  }
  if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
  let index;
- if(['ArrowRight','ArrowDown','PageDown'].includes(event.key))index=Math.max(0,notes.indexOf(activePresentationNote))+1;
+ if(['ArrowRight','ArrowDown','PageDown'].includes(event.key)||(event.key===' '&&event.target.tagName!=='BUTTON')){
+  event.preventDefault();event.stopImmediatePropagation();movePresentationEvent(1);return;
+ }
  else if(['ArrowLeft','ArrowUp','PageUp'].includes(event.key))index=Math.max(0,notes.indexOf(activePresentationNote))-1;
  else if(event.key==='Home')index=0;
  else if(event.key==='End')index=notes.length-1;
- else if(event.key===' '&&event.target.tagName!=='BUTTON')index=Math.max(0,notes.indexOf(activePresentationNote))+1;
  if(index!==undefined){event.preventDefault();event.stopImmediatePropagation();showPresentationEvent(index);}
 }
 function updateFullscreenButton(){

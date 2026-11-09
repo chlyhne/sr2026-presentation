@@ -60,7 +60,9 @@ async function check(type){
   await page.keyboard.press('Escape');await imageOpen(false);
   assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('presenting')),true,'Escape closes image before leaving presentation');
   await page.locator('#previousEvent').click();await imageOpen(false);
-  await page.keyboard.press('ArrowRight');await imageOpen();
+  await page.keyboard.press('ArrowRight');
+  if(await page.evaluate(()=>!!eventPlaybackTarget))await page.keyboard.press('ArrowRight');
+  await imageOpen();
   await page.locator('#eventSelect').selectOption('3');await imageOpen();
   assert.equal(await page.evaluate(()=>mapImageView.note===notes[3]),true,'Same image on another event has its own navigation state');
   // Input inside the temporal snap window must not open the large image.

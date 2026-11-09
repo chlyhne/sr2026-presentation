@@ -82,7 +82,9 @@ async function check(type){
   await page.waitForFunction(()=>$('mapEventImageContent').naturalWidth>0&&!$('mapEventImage').hidden);
   assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
   await page.locator('#previousEvent').click();assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
-  await page.locator('#nextEvent').click();await page.waitForFunction(()=>$('mapEventImageContent').naturalWidth>0&&!$('mapEventImage').hidden);
+  await page.locator('#nextEvent').click();
+  if(await page.evaluate(()=>!!eventPlaybackTarget))await page.locator('#nextEvent').click();
+  await page.waitForFunction(()=>$('mapEventImageContent').naturalWidth>0&&!$('mapEventImage').hidden);
   assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
   await page.screenshot({path:'/tmp/sr2026-event-panel-'+type.name()+'-desktop.png'});
   await page.setViewportSize({width:390,height:740});await page.waitForTimeout(150);

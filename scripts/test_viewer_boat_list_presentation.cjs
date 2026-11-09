@@ -57,6 +57,7 @@ async function check(type){
   await page.locator('#play').click();
   const idsBefore=await page.locator('.visible-boat').evaluateAll(rows=>rows.map(row=>row.dataset.boatId));
   await page.locator('#nextEvent').click();
+  if(await page.evaluate(()=>!!eventPlaybackTarget))await page.locator('#nextEvent').click();
   assert.deepEqual(await page.locator('.visible-boat').evaluateAll(rows=>rows.map(row=>row.dataset.boatId)),idsBefore,'Event navigation keeps the same boat slots');
   assert.equal(await page.locator('#eventText').textContent(),'Andet event');
   await page.screenshot({path:path.join(os.tmpdir(),'sr2026-boat-list-presentation-'+type.name()+'.png')});

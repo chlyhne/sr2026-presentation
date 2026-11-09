@@ -18,7 +18,14 @@ python3 scripts/serve_viewer.py
   klokkeslættet, så rækkefølgen også er korrekt over midnat. Events med samme
   tidspunkt beholder deres indbyrdes rækkefølge.
   Tilstanden starter ved den senest valgte note, eller ved den første note.
-  Brug **Forrige**, **Næste** eller eventlisten til at hoppe direkte mellem dem.
+  **Forrige** og eventlisten hopper direkte. I præsentationsmode afspiller
+  **Næste** frem til næste event med den valgte afspilningshastighed og stopper
+  præcist ved eventets tidspunkt. Tryk **Næste** igen undervejs for at springe
+  direkte frem. Ved ankomst indlæses hele eventets gemte opsætning: kortudsnit,
+  lag, vindmodel, både, bådnavne, annotationer og eventuelt billede.
+  Er almindelig **Afspil** allerede i gang mellem events, springer **Næste**
+  direkte til det næste kommende event. Events med samme tidspunkt skifter
+  direkte. I redigering hopper **Næste** fortsat direkte.
   Eventets tekst og tidspunkt vises i eventpanelet, også for noter uden markør.
   Gemte kortudsnit, vejrlag, vindmodel, både og bådnavne genskabes ved hvert hop.
   Tidspunktet fastholdes, også når ingen valgte både er synlige i udsnittet og
@@ -42,7 +49,7 @@ python3 scripts/serve_viewer.py
   hvor mindst én valgt båds aktuelle markør er i kortudsnittet. Når du trækker
   inden for cirka 1 % af skyderens bevægelige længde på hver side af en markering,
   snapper tiden til eventets præcise tidspunkt, og det pågældende event vælges.
-  Ved afspilning vælges det senest passerede event, også når et hurtigt tidsstep
+  Med almindelig **Afspil** vælges det senest passerede event, også når et hurtigt tidsstep
   springer over eventets præcise sekund. Afspilningen fortsætter uden pause eller
   ændring af hastighed. Hurtige træk i skyderen vælger også passerede events,
   både fremad og bagud, selv når trækket ender uden for snapvinduet.
@@ -64,6 +71,15 @@ python3 scripts/serve_viewer.py
   Hvis et billede er åbnet over kortet, lukker Escape først billedet.
   Præsentationen ændrer ikke dine gemte noter. Uden noter vises en forklaring
   og deaktiverede navigationsknapper, indtil du opretter events i redigeringen.
+  Fremad med **→**, **↓**, **Page Down** eller mellemrum følger samme regler som
+  **Næste**. Afspilning frem til et bestemt event følger tiden, også uden synlige
+  både undervejs. Zoom og panorering afbryder ikke forløbet. Brug tidsskyderen,
+  Forrige, eventlisten eller Pause for at afbryde det. **Afspil** alene ændrer
+  aldrig kortets opsætning ved passage af et event og åbner ikke billeder over
+  kortet; snap på tidslinjen bevarer også den aktuelle opsætning.
+  `node scripts/test_viewer_next_event_playback.cjs` kontrollerer forskellen på
+  de to afspilningsformer, hastighed, ekstra klik, ankomst og gemte indstillinger
+  i Chromium og Firefox, inklusive den offentlige præsentationsmode.
 - Tidskyderen dækker 11. juni kl. 10.00 til 13. juni kl. 04.00 dansk sommertid.
 - Tidslinjen følger kortudsnittet og de valgte både. Den indeholder perioder,
   hvor mindst én valgt båds aktuelle markør er i udsnittet; pauser uden både er
