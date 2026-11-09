@@ -81,7 +81,7 @@ function clearTrackHover(){
  if(trackHoverTip&&!trackHoverTip.hidden){trackHoverTip.hidden=true;$('map').classList.remove('track-hover');}
 }
 function updateTrackHover(e){
- if(interval||placingNote||drawingTool!=='pan'||document.body.classList.contains('presenting')||
+ if(interval||placingNote||navigationMode||drawingTool!=='pan'||document.body.classList.contains('presenting')||
   e.target.closest('[data-boat-marker],[data-note-index],[data-speed-key]')){clearTrackHover();return;}
  if(trackHoverTimer!==null)clearTimeout(trackHoverTimer);
  const {clientX,clientY}=e;
@@ -93,7 +93,12 @@ function updateTrackHover(e){
   if(!sample){clearTrackHover();return;}
   if(!trackHoverTip){trackHoverTip=document.createElement('div');trackHoverTip.id='trackHover';trackHoverTip.setAttribute('role','tooltip');document.body.append(trackHoverTip);}
   const speed=sample.speed===null?'fart mangler':`SOG ${sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})} knob`;
-  trackHoverTip.textContent=`${boat.name} · ${speed} · TracTrac`;
+  let difference='';
+  if(comparison.enabled&&boat.name!=='Mercutio'){
+   const relative=trackGainSample(boat,hit.time),basis=comparison.basis==='handicap'?'ToD':'absolut';
+   difference=relative?` · ${relative.gain>=0?'Henter +':'Taber '}${relative.gain.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kn (${basis}) · Mercutio samme sted kl. ${fmt(relative.referenceTime)}`:' · Sammenligning mangler ved dette sted';
+  }
+  trackHoverTip.textContent=`${boat.name} · ${speed}${difference} · TracTrac`;
   trackHoverTip.hidden=false;trackHoverTip.style.left=Math.max(4,Math.min(clientX+12,innerWidth-trackHoverTip.offsetWidth-4))+'px';
   trackHoverTip.style.top=Math.max(4,Math.min(clientY+16,innerHeight-trackHoverTip.offsetHeight-4))+'px';
   $('map').classList.add('track-hover');

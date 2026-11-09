@@ -1,0 +1,151 @@
+const assert=require('node:assert/strict'),path=require('node:path');
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
+ paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
+}));
+const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)<tolerance,`${actual} ≈ ${expected}`);
+(async()=>{
+ const browser=await firefox.launch({headless:false});
+ try{
+  const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
+  await page.waitForSelector('#onlineStatus');
+  assert.equal(await page.evaluate(()=>boats.every(b=>b.handicapSecondsPerNm>0)),true);
+  const alignment=await page.evaluate(()=>{
+   const map=$('map').getBoundingClientRect(),measure=$('mapMeasureToggle').getBoundingClientRect(),layers=$('mapLayersToggle').getBoundingClientRect();
+   return {gap:layers.left-measure.right,top:layers.top-map.top,right:map.right-layers.right,aligned:measure.top===layers.top};
+  });
+  assert.ok(alignment.aligned);near(alignment.gap,6,1);near(alignment.top,12,1);near(alignment.right,12,1);
+  await page.setViewportSize({width:1200,height:900});
+  const compact=await page.evaluate(()=>{
+   const tools=$('mapTools').getBoundingClientRect(),legend=$('trackSpeedLegend').getBoundingClientRect();
+   return {overlap:tools.left<legend.right&&tools.right>legend.left&&tools.top<legend.bottom&&tools.bottom>legend.top,
+    aligned:$('mapMeasureToggle').getBoundingClientRect().top===$('mapLayersToggle').getBoundingClientRect().top};
+  });
+  assert.equal(compact.overlap,false);assert.equal(compact.aligned,true);
+  await page.setViewportSize({width:1500,height:1000});
+  await page.locator('#trackComparisonToggle').click();
+  assert.match(await page.locator('#comparisonStatus').textContent(),/Tegn først/);
+  assert.equal(await page.locator('#trackComparisonToggle').getAttribute('aria-pressed'),'false');
+  const geographicClick=async coordinate=>{
+   const p=await page.evaluate(coordinate=>{
+    const [x,y]=xy(coordinate),p=new DOMPoint(x,y).matrixTransform($('map').getScreenCTM());return {x:p.x,y:p.y};
+   },coordinate);
+   await page.mouse.click(p.x,p.y);
+  };
+  await page.locator('#mapMeasureToggle').click();await page.locator('#measureDistance').click();
+  await geographicClick([12,55.5]);await geographicClick([12,55.5+1/60]);
+  // A mouse click is quantized to screen pixels at this overview zoom.
+  near(await page.evaluate(()=>buildRhumbRoute(navigationDraft).total),1.00067567,.15);
+  await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>navigationMode),null);
+  assert.match(await page.locator('#measurementResult').textContent(),/1,\d\d sømil/);
+  await page.locator('#drawRhumbline').click();
+  await geographicClick([12,55.6]);await geographicClick([12.04,55.6]);await geographicClick([12.08,55.6]);
+  await page.locator('#undoMapPoint').click();assert.equal(await page.evaluate(()=>navigationDraft.length),2);
+  await geographicClick([12.08,55.6]);await page.locator('#finishMapLine').click();
+  const route=await page.evaluate(()=>comparison.route);
+  assert.equal(route.length,3);near(route[0][0],12,.005);near(route[2][0],12.08,.005);
+  const persisted=await page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-comparison')));
+  assert.deepEqual(persisted.route,route);
+  await page.locator('#drawRhumbline').click();await geographicClick([11,55]);await page.keyboard.press('Escape');
+  assert.deepEqual(await page.evaluate(()=>comparison.route),route,'Escape discards an unfinished route');
+  await page.locator('#reverseRhumbline').click();assert.deepEqual(await page.evaluate(()=>comparison.route),[...route].reverse());
+  await page.locator('#reverseRhumbline').click();
+  // All boats pass the same positions at different times; cross-track offsets
+  // must not change the comparison, and Mercutio need not be selected.
+  await page.evaluate(()=>{
+   stopPlayback();$('wind').checked=$('rain').checked=$('traffic').checked=$('military').checked=false;
+   const time=D.start+3600,metadata=boatMetadata('Mercutio');
+   function boat(id,name,offset,latitude,speeds,handicap=580.6){return {id,name,metadata,handicapSecondsPerNm:handicap,
+    points:Array.from({length:9},(_,i)=>[12+i*.01,latitude,time+offset+i*60]),speeds};}
+   boats.splice(0,boats.length,
+    boat('reference','Mercutio',0,55.6,Array.from({length:9},(_,i)=>4+i*.5)),
+    boat('rival','Rival',600,55.602,Array(9).fill(6)),
+    boat('rated','Hurtig rating',1200,55.604,Array(9).fill(6),500),
+    boat('later','Senere passage',1800,55.606,Array(9).fill(6)));
+   for(const boat of boats){colours[boat.name]='#ffdc42';shownBoatNames.add(boat.id);}
+   chosen.clear();chosen.add('Mercutio');chosen.add('Rival');chosen.add('Hurtig rating');
+   selectedTime=time+1680;
+   const [x,y]=xy([12.04,55.6]);view=[x-18,y-15,36,30];$('map').setAttribute('viewBox',view.join(' '));
+   saveComparison({...comparison,route:[[11.99,55.6],[12.09,55.6]],basis:'absolute',enabled:true});
+   prepareSelectedTracks();updateTimeline();selectedTime=time+1680;render();
+  });
+  const numeric=await page.evaluate(()=>{
+   const rival=boats[1],time=boats[0].points[0][2];
+   const at=i=>trackGainSample(rival,rival.points[i][2]);
+   return {early:at(0),middle:at(4),late:at(8),shifted:trackGainSample(boats[3],boats[3].points[4][2]),
+    handicap:correctedProjectedSpeed(6,500,580.6),sameRating:correctedProjectedSpeed(6,580.6,580.6),
+    north:rhumbLeg([12,55],[12,55+1/60]),east:rhumbLeg([12,55],[12.1,55]),
+    projection:projectOnRhumbRoute([12.04,55.7]),missingRating:correctedProjectedSpeed(6,null,580.6)};
+  });
+  near(numeric.early.gain,2);near(numeric.middle.gain,0);near(numeric.late.gain,-2);
+  near(numeric.middle.referenceTime,await page.evaluate(()=>boats[0].points[4][2]),.001);
+  near(numeric.shifted.gain,numeric.middle.gain);near(numeric.sameRating,6);
+  near(numeric.handicap,6/(1+80.6*6/3600));assert.equal(numeric.missingRating,null);
+  near(numeric.north.bearing,0);near(numeric.east.bearing,90);
+  near(numeric.north.distance,1.00067567,.00001);
+  const projectionChecks=await page.evaluate(()=>{
+   const time=boats[1].points[4][2],northbound={...boats[1],points:[[12.04,55.59,time-60],[12.04,55.61,time+60]],speeds:[6,6]};
+   const noPassage={...boats[1],points:[[12.085,55.6,time],[12.086,55.6,time+60]],speeds:[6,6]};
+   const result={crosswind:trackGainSample(northbound,time),noPassage:trackGainSample(noPassage,time),
+    nextLeg:projectOnRhumbRoute([12.11,55.05],buildRhumbRoute([[12,55],[12.1,55],[12.1,55.1]]))};
+   chosen.delete('Mercutio');result.hiddenReference=trackGainSample(boats[1],time);chosen.add('Mercutio');return result;
+  });
+  near(projectionChecks.crosswind.vmg,0);near(projectionChecks.crosswind.gain,-6);
+  assert.equal(projectionChecks.noPassage,null);assert.equal(projectionChecks.nextLeg.leg,1);
+  near(projectionChecks.nextLeg.bearing,0);near(projectionChecks.hiddenReference.gain,0);
+  // Read actual WebGL pixels, so the sign and Mercutio exception are tested
+  // through the nominal renderer rather than only through a colour helper.
+  async function pixels(){return page.evaluate(()=>{
+   webglTracks.render(currentTime(),boats.filter(boatIsDisplayed),true);
+   const gl=webglTracks.gl,matrix=$('map').getScreenCTM(),rect=$('map').getBoundingClientRect();
+   function pixel(lon,lat){
+    const [x,y]=xy([lon,lat]),screenPoint=new DOMPoint(x,y).matrixTransform(matrix);
+    const px=Math.floor((screenPoint.x-rect.left)/rect.width*gl.drawingBufferWidth),py=Math.floor((rect.bottom-screenPoint.y)/rect.height*gl.drawingBufferHeight);
+    const rgba=new Uint8Array(4);gl.readPixels(px,py,1,1,gl.RGBA,gl.UNSIGNED_BYTE,rgba);return [...rgba];
+   }
+   return {red:pixel(12.005,55.602),blue:pixel(12.075,55.602),reference:pixel(12.035,55.6)};
+  });}
+  const coloured=await pixels();
+  assert.ok(coloured.red[0]>coloured.red[2]+80,JSON.stringify(coloured));
+  assert.ok(coloured.blue[2]>coloured.blue[0]+80,JSON.stringify(coloured));
+  await page.locator('#trackComparisonToggle').click();
+  const original=await pixels();assert.deepEqual(coloured.reference,original.reference,'Mercutio keeps the recorded-SOG colour');
+  await page.locator('#trackComparisonToggle').click();
+  await page.locator('#comparisonBasis').selectOption('handicap');
+  const rated=await page.evaluate(()=>trackGainSample(boats[2],boats[2].points[4][2]));
+  near(rated.gain,numeric.handicap-6);
+  assert.match(await page.locator('#trackSpeedLegend').textContent(),/ToD/);
+  const uploads=await page.evaluate(()=>webglTracks.uploads);
+  await page.evaluate(()=>{selectedTime-=1;render();selectedTime+=1;render();});
+  assert.equal(await page.evaluate(()=>webglTracks.uploads),uploads,'Playback retains geometry buffers');
+  await page.evaluate(()=>{
+   const missing={...boats[1],points:[[12.2,55.6,selectedTime],[12.21,55.6,selectedTime+60]],speeds:[6,6]};
+   window.navigationMissingChecks={outside:trackGainSample(missing,selectedTime),
+    gap:projectedTrackSample({...boats[1],points:[[12,55.6,0],[12.01,55.6,600]],speeds:[6,6]},300),
+    missingSog:projectedTrackSample({...boats[1],speeds:Array(9).fill(null)},boats[1].points[4][2])};
+  });
+  assert.deepEqual(await page.evaluate(()=>navigationMissingChecks),{outside:null,gap:null,missingSog:null});
+  await page.locator('#mapMeasureToggle').click();
+  await page.screenshot({path:'/tmp/sr2026-navigation-comparison.png'});
+  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());
+  await (await download).saveAs('/tmp/sr2026-navigation-export.png');
+  assert.match(await page.locator('#captureStatus').textContent(),/PNG klar/);
+  // Saved global geometry survives event changes and a page reload.
+  const saved=await page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-comparison')));
+  await page.reload();await page.waitForSelector('#onlineStatus');
+  assert.deepEqual(await page.evaluate(()=>comparison),saved);
+  assert.equal(await page.locator('#trackComparisonToggle').getAttribute('aria-pressed'),'true');
+  await page.evaluate(()=>setPresentationMode(true));
+  await page.locator('#mapMeasureToggle').click();await page.locator('#measureDistance').click();
+  await page.keyboard.press('Escape');
+  assert.equal(await page.evaluate(()=>document.body.classList.contains('presenting')),true);
+  await page.keyboard.press('Escape');assert.equal(await page.locator('#mapMeasurePanel').isVisible(),false);
+  await page.locator('#presentationFullscreen').click();await page.waitForFunction(()=>!!document.fullscreenElement);
+  assert.equal(await page.locator('#mapMeasureToggle').isVisible(),true);
+  await page.locator('#presentationFullscreen').click();
+  assert.deepEqual(errors,[]);
+  console.log(JSON.stringify({browser:'firefox',checks:'rhumb geometry and measurement, draw/undo/cancel/reverse, same-place speed independent of passage time, red/blue WebGL pixels, Mercutio unchanged, ToD, missing data, immutable geometry, PNG, persistence, presentation/fullscreen',numeric,coloured,errors}));
+  await page.close();
+ }finally{await browser.close();}
+})().catch(error=>{console.error(error);process.exit(1);});

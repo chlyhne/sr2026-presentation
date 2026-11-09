@@ -34,6 +34,7 @@ layout(location=1) in vec4 position;
 layout(location=2) in vec4 curve;
 layout(location=3) in vec4 ending;
 layout(location=4) in vec4 timing;
+layout(location=5) in vec2 comparisonValues;
 uniform vec4 origin;
 uniform mat2 screen;
 uniform vec2 size;
@@ -42,6 +43,7 @@ uniform float radius;
 out float sourceU;
 out vec2 strokeOffset;
 flat out vec2 speeds;
+flat out vec2 gains;
 void main(){
  float duration=timing.y;
  float age=(timing.x-windowTime.y)+(timing.z-windowTime.w);
@@ -67,18 +69,24 @@ void main(){
  // Keeping depth in gl_Position allows early depth rejection on the GPU.
  float depth=0.1-0.8*(age+duration*u)/7200.0;
  gl_Position=vec4(pixel.x*2.0/size.x-1.0,1.0-pixel.y*2.0/size.y,depth*2.0-1.0,1.0);
- sourceU=u;speeds=ending.zw;strokeOffset=shape.yz;
+ sourceU=u;speeds=ending.zw;gains=comparisonValues;strokeOffset=shape.yz;
 }`);
    const fragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
 precision highp float;
 in float sourceU;
 in vec2 strokeOffset;
 flat in vec2 speeds;
+flat in vec2 gains;
 uniform sampler2D palette;
 uniform float innerRatio;
+uniform bool relativeMode;
 out vec4 colour;
 void main(){
- int bin=(speeds.x<0.0||speeds.y<0.0)?0:1+int(floor(clamp(mix(speeds.x,speeds.y,sourceU),0.0,15.0)*127.0/15.0+0.5));
+ vec2 values=relativeMode?gains:speeds;
+ bool missing=relativeMode?(values.x<-1e19||values.y<-1e19):(values.x<0.0||values.y<0.0);
+ float value=mix(values.x,values.y,sourceU);
+ float fraction=relativeMode?(clamp(value,-2.0,2.0)+2.0)/4.0:clamp(value,0.0,15.0)/15.0;
+ int bin=missing?0:1+int(floor(fraction*127.0+0.5));
  float distance=length(strokeOffset);
  float feather=max(fwidth(distance)*0.5,0.000001);
  float outline=smoothstep(innerRatio-feather,innerRatio+feather,distance);
@@ -87,7 +95,7 @@ void main(){
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
-   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
+   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
    // Fixed mesh used for every interval. shape.w marks optional outer caps.
    // Subdivision evaluates the cubic without discarding source points.
    const mesh=[];
@@ -105,14 +113,16 @@ void main(){
    }
    this.vertexCount=mesh.length/4;
    this.mesh=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.mesh);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(mesh),gl.STATIC_DRAW);
-   this.palette=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this.palette);
-   const colours=[TRACK_SPEED_MISSING,...TRACK_SPEED_COLOURS],pixels=new Uint8Array(colours.length*4);
-   colours.forEach((c,i)=>{
-    const rgb=c[0]==='#'?[1,3,5].map(offset=>parseInt(c.slice(offset,offset+2),16)):c.match(/\d+/g).map(Number);
-    pixels.set([...rgb,255],i*4);
-   });
-   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,colours.length,1,0,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
-   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+   for(const [name,scale] of [['palette',TRACK_SPEED_COLOURS],['gainPalette',TRACK_GAIN_COLOURS]]){
+    this[name]=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this[name]);
+    const colours=[TRACK_SPEED_MISSING,...scale],pixels=new Uint8Array(colours.length*4);
+    colours.forEach((c,i)=>{
+     const rgb=c[0]==='#'?[1,3,5].map(offset=>parseInt(c.slice(offset,offset+2),16)):c.match(/\d+/g).map(Number);
+     pixels.set([...rgb,255],i*4);
+    });
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,colours.length,1,0,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+   }
    this.active=true;this.host.removeAttribute('display');this.lastKey=null;this.viewportKey=null;
    clearRenderingFailure('Spor');
   }catch(error){
@@ -152,6 +162,23 @@ void main(){
   for(let i=1;i<=4;i++){gl.enableVertexAttribArray(i);gl.vertexAttribDivisor(i,1);}
   this.buffers.set(points,{buffer,vao,bytes:data.byteLength,first:null});this.uploads++;
  }
+ prepareComparison(boat,record,first){
+  const gl=this.gl,key=`${comparisonRevision}:${comparison.basis}`;
+  if(record.comparisonKey!==key){
+   const values=new Float32Array(boat.points.length*2);
+   const samples=boat.points.map(point=>trackGainSample(boat,point[2])?.gain??TRACK_GAIN_MISSING);
+   for(let i=0;i<boat.points.length;i++){
+    values[i*2]=samples[i];values[i*2+1]=samples[Math.min(i+1,samples.length-1)];
+   }
+   if(!record.comparisonBuffer)record.comparisonBuffer=gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.bufferData(gl.ARRAY_BUFFER,values,gl.STATIC_DRAW);
+   record.comparisonKey=key;record.comparisonFirst=null;
+  }
+  if(record.comparisonFirst!==first){
+   gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.enableVertexAttribArray(5);gl.vertexAttribDivisor(5,1);
+   gl.vertexAttribPointer(5,2,gl.FLOAT,false,8,first*8);record.comparisonFirst=first;
+  }
+ }
  render(time,order,force=false,viewportOverride=null){
   this.time=time;this.order=order;
   if(!this.active)return false;
@@ -161,7 +188,7 @@ void main(){
    const viewport={...baseViewport,pixelWidth:baseViewport.pixelWidth*2,pixelHeight:baseViewport.pixelHeight*2};
    const {rect,matrix,topLeft:top,pixelWidth:width,pixelHeight:height}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
-   const key=[time,viewportKey,...order.map(b=>b.id)].join(':');
+   const key=[time,viewportKey,comparison.enabled,comparison.basis,comparisonRevision,...order.map(b=>b.id)].join(':');
    if(!force&&this.lastKey===key)return true;
    this.lastKey=key;
    const gl=this.gl,u=this.uniforms;
@@ -188,6 +215,9 @@ void main(){
     if(last<=first)continue;
     this.prepare(boat);const record=this.buffers.get(points);
     gl.bindVertexArray(record.vao);
+    const relative=comparison.enabled&&boat.name!=='Mercutio';
+    gl.uniform1i(u.relativeMode,relative?1:0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
+    if(relative)this.prepareComparison(boat,record,first);
     // WebGL has no base-instance draw: adjust the view into the same immutable
     // buffer. No buffer allocation or upload occurs when advancing or seeking.
     if(record.first!==first){

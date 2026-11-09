@@ -77,8 +77,24 @@
   <g id="land" pointer-events="none"></g>
   <g id="precipitation"><image id="radarImage" x="0" y="0" width="1000" height="1180" visibility="hidden"/></g>
   <g id="baseMap"><g id="coast"></g><g id="trafficSeparation"></g><g id="militaryAreas"></g><g id="routeT" pointer-events="none"></g><g id="courseLines" pointer-events="none"></g></g>
-  <g id="winds"></g><g id="routes"></g><g id="boatMarkers"></g><g id="places"></g><g id="seamarks" pointer-events="none"></g><g id="speedMarkers"></g><g id="noteDrawings" pointer-events="none"></g><g id="drawingPreview" pointer-events="none"></g><g id="annotations"></g><g id="mapCredit" pointer-events="none"></g><g id="trackSpeedLegend" pointer-events="none" aria-label="Bådfart over grunden, jet-farveskala fra 0 til 15 knob"></g>
+  <g id="winds"></g><g id="mapNavigation" pointer-events="none"></g><g id="routes"></g><g id="boatMarkers"></g><g id="places"></g><g id="seamarks" pointer-events="none"></g><g id="speedMarkers"></g><g id="noteDrawings" pointer-events="none"></g><g id="drawingPreview" pointer-events="none"></g><g id="annotations"></g><g id="mapCredit" pointer-events="none"></g><g id="trackSpeedLegend" pointer-events="none" aria-label="Bådfart over grunden, jet-farveskala fra 0 til 15 knob"></g>
 </svg>
+<div id="mapTools">
+<section id="trackComparison" aria-label="Sammenlign spor med Mercutio">
+  <button id="trackComparisonToggle" type="button" aria-pressed="false" title="Farv spor efter fartforskellen fra Mercutio ved samme sted på rhumblinen">Mod Mercutio</button>
+  <select id="comparisonBasis" aria-label="Grundlag for sammenligning"><option value="absolute">Absolut</option><option value="handicap">Handicap · ToD</option></select>
+</section>
+<section id="mapMeasure" aria-label="Måleværktøj og rhumbline">
+  <button id="mapMeasureToggle" type="button" aria-expanded="false" aria-controls="mapMeasurePanel">Mål <span aria-hidden="true">⌄</span></button>
+  <div id="mapMeasurePanel" hidden>
+    <div class="map-tool-actions"><button id="measureDistance" type="button">Mål afstand</button><button id="drawRhumbline" type="button">Tegn rhumbline</button></div>
+    <p id="measurementHelp">Klik Mål afstand eller Tegn rhumbline, og klik punkterne på kortet i sejlretningen.</p>
+    <output id="measurementResult" aria-live="polite"></output>
+    <div class="map-tool-actions"><button id="finishMapLine" type="button" disabled>Færdig</button><button id="undoMapPoint" type="button" disabled>Fortryd punkt</button><button id="cancelMapLine" type="button" hidden>Annullér</button></div>
+    <div class="map-tool-actions"><button id="clearMeasurement" type="button" disabled>Ryd måling</button><button id="clearRhumbline" type="button" disabled>Ryd rhumbline</button><button id="reverseRhumbline" type="button" disabled>Vend ruten</button></div>
+    <p id="rhumblineSummary"></p>
+  </div>
+</section>
 <section id="mapLayers" aria-label="Kortlag">
   <button id="mapLayersToggle" type="button" aria-expanded="false" aria-controls="mapLayersPanel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 5-10 5L2 8Z M2 12l10 5 10-5 M2 16l10 5 10-5"/></svg> Lag <span aria-hidden="true">⌄</span></button>
   <div id="mapLayersPanel" hidden>
@@ -86,6 +102,8 @@
     <label title="Nedbørsradar fra DMI"><input id="rain" type="checkbox" checked> Byger</label>
   </div>
 </section>
+<p id="comparisonStatus" role="status" hidden></p>
+</div>
 <button id="mapEventImage" type="button" aria-label="Luk billedet og vis kortet" title="Klik for at vise kortet igen" hidden>
   <img id="mapEventImageContent" alt="" draggable="false" hidden>
   <span id="mapEventImageStatus" role="status"></span>
