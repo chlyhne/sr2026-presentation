@@ -1,4 +1,4 @@
-// One background surface, in the same order as the SVG fallback:
+// The sole background renderer:
 // wind texture -> land triangles -> radar texture -> coastline triangles.
 function prepareBackgroundGeometry(polygons,chunks){
  const landCount=polygons.reduce((n,p)=>n+p.rings.reduce((s,r)=>s+r.length,0),0);
@@ -44,29 +44,24 @@ class WebGLBackgroundRenderer {
  constructor(){
   this.active=false;this.geometry=null;this.uploads=0;this.textureUploads=0;this.draws=0;
   this.sourceNodes=['windField','land','precipitation','coast'].map(id=>$(id));
-  this.originalDisplay=this.sourceNodes.map(node=>node.getAttribute('display'));
+  for(const node of this.sourceNodes)node.setAttribute('display','none');
   this.host=el('foreignObject',{'data-webgl-background':'','pointer-events':'none',display:'none'});
   $('map').insertBefore(this.host,$('windField'));
   this.canvas=document.createElementNS('http://www.w3.org/1999/xhtml','canvas');
   this.canvas.style.cssText='display:block;width:100%;height:100%;pointer-events:none';this.host.append(this.canvas);
-  this.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();this.setActive(false);renderCoast();requestRender();});
+  this.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();this.fail(Error('WebGL-konteksten er mistet.'));});
   this.canvas.addEventListener('webglcontextrestored',()=>{this.initialize();requestRender();});
-  if(window.SR_BACKGROUND_RENDERER!=='svg')this.initialize();
+  this.initialize();
  }
  setActive(active){
-  this.active=active;this.lastKey=null;landKey=coastKey=null;
+  this.active=active;this.lastKey=null;
   this.host.setAttribute('display',active?'inline':'none');
-  this.sourceNodes.forEach((node,i)=>{
-   if(active)node.setAttribute('display','none');
-   else if(this.originalDisplay[i]===null)node.removeAttribute('display');
-   else node.setAttribute('display',this.originalDisplay[i]);
-  });
   if(active){
-   $('land').replaceChildren();$('coast').replaceChildren();
+   clearRenderingFailure('Baggrund');
    if(this.weatherSlots)for(const buffer of [windImageBuffer,radarImageBuffer])for(const entry of [buffer.front,buffer.back])if(entry?.ready)this.prepareWeather(buffer,entry);
   }
  }
- fail(error){this.error=error.message;this.setActive(false);renderCoast();requestRender();}
+ fail(error){this.error=error.message;this.setActive(false);reportRenderingFailure('Baggrund',error);}
  program(vertex,fragment){
   const gl=this.gl,shaders=[];let program;
   try{
@@ -84,7 +79,6 @@ class WebGLBackgroundRenderer {
    const gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,depth:false,stencil:false,premultipliedAlpha:true});
    if(!gl)throw Error('WebGL 2 unavailable');this.gl=gl;
    const debug=gl.getExtension('WEBGL_debug_renderer_info');this.renderer=debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):'';
-   if(/swiftshader|llvmpipe|softpipe|software rasterizer/i.test(this.renderer)&&window.SR_BACKGROUND_RENDERER!=='webgl')throw Error('Software graphics: use SVG');
    const projection=`
 uniform vec4 origin;uniform mat2 screen;uniform vec2 size;
 vec2 project(vec4 p){return screen*((p.xy-origin.xy)+(p.zw-origin.zw));}
@@ -123,7 +117,7 @@ void main(){colour=texture(image,texCoord)*opacity;}`);
    this.layers=[{id:'wind',buffer:windImageBuffer,node:$('windField')},{id:'land',mesh:this.landMesh,node:$('land')},
     {id:'radar',buffer:radarImageBuffer,node:$('precipitation')},{id:'coast',mesh:this.coastMesh,node:$('coast')}];
    this.viewportKey=null;this.setActive(true);
-  }catch(error){this.error=error.message;this.setActive(false);}
+  }catch(error){this.fail(error);}
  }
  mesh(data,stride){
   const gl=this.gl,vao=gl.createVertexArray();gl.bindVertexArray(vao);
@@ -168,10 +162,11 @@ void main(){colour=texture(image,texCoord)*opacity;}`);
   }
   for(let i=0;i<count;i+=2)gl.drawElements(gl.TRIANGLES,mesh.ranges[i+1],gl.UNSIGNED_INT,mesh.ranges[i]*4);
  }
- render(force=false){
+ render(force=false,viewportOverride=null){
   if(!this.active)return false;
   try{
-   const viewport=mapViewport();if(!viewport)return true;
+   if(this.gl.isContextLost())throw Error('WebGL-konteksten er mistet.');
+   const viewport=viewportOverride||mapViewport();if(!viewport)return true;
    const {rect,matrix,pixelWidth,pixelHeight}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,pixelWidth,pixelHeight].join(':');
    const states=this.layers.map(layer=>{
@@ -196,14 +191,14 @@ void main(){colour=texture(image,texCoord)*opacity;}`);
    gl.bindVertexArray(null);this.draws++;return true;
   }catch(error){this.fail(error);return false;}
  }
- exportSVG(clone,bounds){
-  this.sourceNodes.forEach((node,i)=>{
-   const copy=clone.querySelector('#'+node.id);if(this.originalDisplay[i]===null)copy.removeAttribute('display');else copy.setAttribute('display',this.originalDisplay[i]);
-  });
-  const land=clone.querySelector('#land'),coast=clone.querySelector('#coast');land.replaceChildren();coast.replaceChildren();
-  for(const polygon of landPolygons)if(mapBoundsIntersect(polygon,bounds))el('path',{d:polygon.d,fill:LAND_FILL,'fill-rule':'evenodd'},land);
-  for(const chunk of coastChunks)if(mapBoundsIntersect(chunk,bounds))el('path',{d:chunk.d,fill:'none',stroke:'#365766','stroke-width':1,
-   'stroke-linejoin':'round','stroke-linecap':'round','vector-effect':'non-scaling-stroke'},coast);
+ snapshot(scale=2){
+  if(!this.active)throw Error(this.error||'Baggrundens WebGL-rendering er ikke tilgængelig.');
+  const viewport=mapViewport();
+  try{
+   this.render(true,{...viewport,pixelWidth:Math.round(viewport.rect.width*scale),pixelHeight:Math.round(viewport.rect.height*scale)});
+   if(!this.active)throw Error(this.error||'Baggrunden kunne ikke eksporteres.');
+   return this.canvas.toDataURL('image/png');
+  }finally{if(this.active)this.render(true);}
  }
 }
 const webglBackground=window.SRBackground=new WebGLBackgroundRenderer();

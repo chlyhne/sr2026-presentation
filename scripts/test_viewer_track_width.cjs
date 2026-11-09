@@ -25,7 +25,6 @@ async function check(type){
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000},deviceScaleFactor:1}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  if(type===chromium)await page.addInitScript(()=>window.SR_TRACK_RENDERER='webgl');
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');await page.waitForFunction(()=>typeof changeBoatSelection==='function');
   const names=await page.evaluate(()=>{
    const names=['Mercutio','Vera',boats.find(b=>!featured.has(b.name)).name];

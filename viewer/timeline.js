@@ -183,7 +183,7 @@ function updateTimeline(){
  timelineLength=visibleTimeRanges.reduce((sum,r)=>sum+r.end-r.start+1,0);
  const slider=$('time');slider.min=0;slider.max=Math.max(0,timelineLength-1);slider.step=1;slider.disabled=timelineLength<2;
  $('back').disabled=$('next').disabled=timelineLength<2;
- $('play').disabled=timelineLength<2&&!eventPlaybackTarget;
+ $('play').disabled=hasRenderingFailure()||(timelineLength<2&&!eventPlaybackTarget);
  if(slider.disabled&&interval&&!eventPlaybackTarget)stopPlayback();
  const before=selectedTime;
  if(presenting){$('time').value=offsetAtTime(selectedTime);$('time').setAttribute('aria-valuetext',fmt(selectedTime));}

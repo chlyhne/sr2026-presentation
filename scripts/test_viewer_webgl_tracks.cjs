@@ -5,12 +5,11 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.addInitScript(()=>window.SR_TRACK_RENDERER='webgl');
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForFunction(()=>typeof captureMap==='function');
   const result=await page.evaluate(()=>{
    const check=(ok,message)=>{if(!ok)throw Error(message);};
-   check(webglTracks.active,'WebGL 2 must be exercised, not the SVG fallback: '+webglTracks.error);
+   check(webglTracks.active,'Nominal WebGL 2 must be active: '+webglTracks.error);
    $('wind').checked=$('rain').checked=false;
    const boat=boats.find(b=>b.name==='Mercutio'),point=(x,y,t)=>[9.5+x*4.5/1000,57-y*3/1180,D.start+t];
    boat.points=[point(600,460,100),point(610,468,160),point(630,465,220),point(640,480,280),point(645,470,1000),point(650,465,1060)];
@@ -38,12 +37,10 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    gl.bufferData=(...args)=>{allocations++;return originalUpload(...args);};
    gl.bufferSubData=(...args)=>{allocations++;return originalSubUpload(...args);};
    gl.createBuffer=(...args)=>{allocations++;return originalBuffer(...args);};
-   const originalGeometry=trackGeometry,originalSpeedGeometry=trackSpeedGeometry;
-   trackGeometry=trackSpeedGeometry=()=>{throw Error('SVG geometry rebuilt during WebGL playback');};
    try{
     for(const offset of [100,.1,200,1000,9000,50,1100]){selectedTime=D.start+offset;render();}
     view=[590,450,80,45];setview();
-   }finally{trackGeometry=originalGeometry;trackSpeedGeometry=originalSpeedGeometry;gl.bufferData=originalUpload;gl.bufferSubData=originalSubUpload;gl.createBuffer=originalBuffer;}
+   }finally{gl.bufferData=originalUpload;gl.bufferSubData=originalSubUpload;gl.createBuffer=originalBuffer;}
    check(!allocations&&webglTracks.uploads===uploads,'Playback/seek/zoom allocated or uploaded buffers');
    check(webglTracks.buffers.get(boat.points)===record,'Immutable voyage buffer replaced');
    // Repeated crossings must show the newest local sample, including
@@ -81,15 +78,15 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    const doc=new DOMParser().parseFromString(exportedTrackSVG,'image/svg+xml');
    return {image:!!doc.querySelector('#routes image'),canvas:doc.querySelectorAll('canvas,foreignObject').length};
   }),{image:true,canvas:0});
-  // A lost GPU context must show the depth-buffered fallback and recover.
+  // A lost GPU context must fail visibly, then recover using the same renderer.
   const contextLoss=await page.evaluate(()=>{
    const extension=webglTracks.gl.getExtension('WEBGL_lose_context');
    if(!extension)return false;window.testContextLoss=extension;extension.loseContext();return true;
   });
   if(contextLoss){
-   await page.waitForFunction(()=>!webglTracks.active&&softwareTracks.host.getAttribute('display')!=='none');
+   await page.waitForFunction(()=>!webglTracks.active&&!$('renderingError').hidden);
    await page.evaluate(()=>testContextLoss.restoreContext());
-   await page.waitForFunction(()=>webglTracks.active&&softwareTracks.host.getAttribute('display')==='none');
+   await page.waitForFunction(()=>webglTracks.active&&$('renderingError').hidden);
    assert.equal(await page.evaluate(()=>webglTracks.gl.getError()),0);
   }
   assert.deepEqual(errors,[]);console.log(JSON.stringify({...result,png:true,contextLoss,errors}));

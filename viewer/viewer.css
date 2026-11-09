@@ -9,6 +9,12 @@ h1{font-size:20px;margin:0}header span{color:#a9c2d2}
 main{--editor-width:300px;--event-width:clamp(260px,25vw,380px);display:grid;grid-template-columns:var(--editor-width) minmax(0,1fr) var(--event-width);grid-template-rows:minmax(0,1fr) auto;flex:1;min-height:0}
 aside{grid-column:1;grid-row:1/3;padding:20px;overflow:auto;background:#142937}
 #map,#mapEventImage{grid-column:2;grid-row:1}#eventPanel{grid-column:3;grid-row:1}
+#renderingError{grid-column:2;grid-row:1;z-index:20;min-width:0;overflow:auto;padding:24px;background:#10212d;border:2px solid #ffce5c}
+#renderingError h2{font-size:20px;margin-top:0}
+#renderingError pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px system-ui;color:#ffce5c}
+body.presenting #renderingError{grid-column:1}
+.rendering-failed #map,.rendering-failed #mapEventImage,.rendering-failed #visibleBoats{visibility:hidden}
+#eventVideoStatus:empty{display:none}
 #visibleBoats{grid-column:2;grid-row:1;align-self:start;justify-self:start;z-index:1;margin:83px 0 0 12px;width:230px;max-height:calc(100% - 95px);min-height:0;display:flex;flex-direction:column;overflow:hidden;border-radius:5px;background:#fffffff0;color:#173d4c;box-shadow:0 2px 8px #10212d26;font-size:12px}
 #visibleBoatsToggle{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;min-height:32px;padding:7px 10px;border:0;border-radius:0;background:transparent;color:#173d4c;text-align:left;font-size:11px;font-weight:650;flex-shrink:0}
 #visibleBoatsToggle:hover{background:#dcecf0}

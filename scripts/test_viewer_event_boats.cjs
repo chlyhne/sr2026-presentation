@@ -8,8 +8,6 @@ async function check(type){
  const browser=await type.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
-  // Stroke-width assertions below inspect the SVG fallback rather than GPU buffers.
-  await page.addInitScript(()=>{window.SR_TRACK_RENDERER='svg';});
   page.on('pageerror',e=>errors.push(e.message));
   const start=Date.parse('2026-06-11T08:00:00Z')/1000;
   const fixtures=[{time:start+3600,text:'Event A',view:[230,250,620,760],settings:{wind:false,rain:false,boats:[]},point:[650,400],drawings:[]},
@@ -36,9 +34,7 @@ async function check(type){
   await checkbox(extra).check();assert.deepEqual(await chosenNames(),['Mercutio',extra]);
   const afterA=await store();assert.deepEqual(afterA[0].settings.boats,['Mercutio',extra]);assert.deepEqual(afterA.slice(1),initialized.slice(1));
   assert.equal(await page.evaluate(()=>currentTime()),fixtures[0].time);
-  const widths=await page.evaluate(()=>({colour:[...new Set([...$('routes').querySelectorAll('[data-colouring] path')].map(p=>getComputedStyle(p).strokeWidth))],
-   outline:[...new Set([...$('routes').querySelectorAll('.track-outline')].map(p=>getComputedStyle(p).strokeWidth))]}));
-  assert.deepEqual(widths,{colour:['2.7px'],outline:['4.7px']},'Standard and additional boats have the same screen stroke widths');
+  assert.equal(await page.evaluate(()=>webglTracks.active),true);
   await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),standard);
   for(const name of ['Mercutio','Vera','THE HULK','Rosa-Lux'])await checkbox(name).uncheck();await checkbox('Vera').check();
   assert.deepEqual(await chosenNames(),['My','Vera']);
@@ -81,7 +77,7 @@ async function check(type){
   assert.equal(await checkbox('Mercutio').isChecked(),false);assert.match(await page.locator('#eventBoatStatus').textContent(),/kunne ikke gemmes/);
   await page.evaluate(()=>{Storage.prototype.setItem=originalBoatStorage;});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'one-time standard-boat initialization, per-event autosave, draft save/cancel, next/previous restore, snap leaves choices/storage unchanged, empty selection, reload, new event, exploration, equal stroke widths, failed save rollback',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'one-time standard-boat initialization, per-event autosave, draft save/cancel, next/previous restore, snap leaves choices/storage unchanged, empty selection, reload, new event, exploration, failed save rollback',errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

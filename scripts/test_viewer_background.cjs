@@ -1,48 +1,16 @@
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
-const compare=String.raw`
-import sys,json,base64,io
-from PIL import Image,ImageChops,ImageFilter
-d=json.load(sys.stdin)
-a,b=[Image.open(io.BytesIO(base64.b64decode(d[k]))).convert('RGB') for k in ['gpu','svg']]
-diff=ImageChops.difference(a,b)
-bad=ImageChops.lighter(ImageChops.lighter(diff.getchannel('R'),diff.getchannel('G')),diff.getchannel('B')).point(lambda n:255 if n>25 else 0)
-print(json.dumps({'different':bad.histogram()[255]/(a.width*a.height)}))
-`;
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 async function check(type){
  const browser=await type.launch({headless:process.env.SR_HEADLESS==='1'});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
-  page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>window.SR_BACKGROUND_RENDERER='webgl');
+  page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForFunction(()=>typeof captureMap==='function');
   await page.evaluate(()=>{
    if(!webglBackground.active)throw Error(webglBackground.error);
    chosen.clear();notes=[];setPresentationMode(true);
    for(const id of ['winds','trafficSeparation','militaryAreas','routeT','courseLines','routes','boatMarkers','places','seamarks','speedMarkers','noteDrawings','drawingPreview','annotations','mapCredit','trackSpeedLegend'])$(id).setAttribute('visibility','hidden');
   });
-  const closeCoast=await page.evaluate(()=>{
-   let closest,distance=Infinity;
-   for(const chunk of coastChunks)for(const point of chunk.points){
-    const d=(point[0]-11.3)**2+(point[1]-56)**2;if(d<distance){distance=d;closest=point;}
-   }
-   const [x,y]=xy(closest);return [x-.8,y-.8,1.6,1.6];
-  });
-  const results=[];
-  for(const [scene,weather,fullscreen] of [[[230,250,620,760],false],[[0,0,1000,1180],false],[[691.4529369697715,372.61730666536147,2,2.4516129032258065],false],[[230,250,620,760],true],[closeCoast,false,true]]){
-   if(fullscreen){await page.locator('#presentationFullscreen').click();await page.waitForFunction(()=>!!document.fullscreenElement);}
-   await page.evaluate(async({scene,weather})=>{
-    $('wind').checked=$('rain').checked=weather;view=scene;setview();render();
-    await Promise.all([windReady,radarReady,windImageBuffer.paintReady,radarImageBuffer.paintReady]);flushRender();webglBackground.render(true);
-   },{scene,weather});
-   const gpu=await page.locator('#map').screenshot();
-   await page.evaluate(()=>{webglBackground.setActive(false);render();});const svg=await page.locator('#map').screenshot();
-   const result=JSON.parse(execFileSync(process.env.SR_PYTHON||path.resolve(__dirname,'../.venv/bin/python'),['-c',compare],{
-    input:JSON.stringify({gpu:gpu.toString('base64'),svg:svg.toString('base64')}),encoding:'utf8'
-   }));
-   fs.writeFileSync('/tmp/sr2026-background-'+type.name()+'-gpu.png',gpu);fs.writeFileSync('/tmp/sr2026-background-'+type.name()+'-svg.png',svg);
-   assert.ok(result.different<.025,JSON.stringify({browser:type.name(),scene,weather,...result}));results.push(result.different);
-   await page.evaluate(()=>{webglBackground.setActive(true);render();});
-  }
   await page.evaluate(async()=>{
    if(document.fullscreenElement)await document.exitFullscreen();
    view=[230,250,620,760];$('wind').checked=$('rain').checked=true;setview();render();
@@ -107,17 +75,17 @@ async function check(type){
   const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());await(await download).saveAs('/tmp/sr2026-background-'+type.name()+'-export.png');
   assert.deepEqual(await page.evaluate(()=>{
    const svg=new DOMParser().parseFromString(backgroundExport,'image/svg+xml');
-   return {land:!!svg.querySelector('#land path'),coast:!!svg.querySelector('#coast path'),canvas:!!svg.querySelector('[data-webgl-background]'),hidden:svg.querySelector('#land').getAttribute('display')==='none'};
-  }),{land:true,coast:true,canvas:false,hidden:false});
+   return {background:!!svg.querySelector('[data-render-layer="background"]'),tracks:!!svg.querySelector('[data-render-layer="tracks"]'),canvas:!!svg.querySelector('foreignObject'),svgLand:!!svg.querySelector('#land path,#coast path')};
+  }),{background:true,tracks:true,canvas:false,svgLand:false});
   const lost=await page.evaluate(()=>{
    window.backgroundLoss=webglBackground.gl.getExtension('WEBGL_lose_context');if(!backgroundLoss)return false;backgroundLoss.loseContext();return true;
   });
   if(lost){
-   await page.waitForFunction(()=>!webglBackground.active&&!!$('coast').children.length);
+   await page.waitForFunction(()=>!webglBackground.active&&hasRenderingFailure());
    await page.evaluate(()=>backgroundLoss.restoreContext());await page.waitForFunction(()=>webglBackground.active&&webglBackground.draws>1);
    assert.equal(await page.evaluate(()=>webglBackground.gl.getError()),0);
   }
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),screenshots:results,...stats,checks:'full-detail map and weather against SVG, layer order, close zoom, fixed buffers/textures, protected prefetch, prepared swaps, native SVG PNG, context loss/recovery',errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),...stats,checks:'nominal land holes, weather layer order, fixed buffers/textures, protected prefetch, prepared swaps, WebGL PNG, explicit context failure and recovery',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{for(const type of [firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

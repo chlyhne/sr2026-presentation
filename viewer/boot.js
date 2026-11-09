@@ -34,9 +34,9 @@
   }};
   window.SR_DRAFT_KEY=draftKey;
  }
- for(const file of ['data','boat-measurements','boat-details','boat-icons','weather','viewer','vendor/earcut','background-renderer','traffic','military','tracks','track-renderer','software-tracks','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','presentation','online']){
+ for(const file of ['data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','track-renderer','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','presentation','online']){
   await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=file+'.js';s.onload=resolve;s.onerror=reject;document.body.append(s);});
   if(file==='boat-icons')await loadBoatHulls();
-  if(file==='software-tracks')prepareSelectedTracks();
+  if(file==='track-renderer')prepareSelectedTracks();
  }
 })().catch(()=>{document.body.append(Object.assign(document.createElement('p'),{textContent:'Siden kunne ikke indlæses. Genindlæs for at prøve igen.'}));});

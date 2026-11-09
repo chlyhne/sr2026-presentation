@@ -302,6 +302,7 @@ function nextPresentationNote(){
  return notes.find(note=>note.time>time+1e-6)||null;
 }
 function playToNextPresentationEvent(){
+ if(hasRenderingFailure())return;
  if(!noteNavigationAllowed())return;
  const target=nextPresentationNote();if(!target)return;
  const onEvent=notes.some(note=>Math.abs(note.time-currentTime())<1e-6);
@@ -419,6 +420,7 @@ async function captureMap() {
  stopPlayback();const button=$('capture');button.disabled=true;$('captureStatus').textContent='Gør kortbilledet klar …';
  let svgURL;
  try {
+  assertRenderingReady();
   await document.fonts.ready;
   // Await the currently requested radar frame, even after a rapid time change.
   let radarPending,windPending;
@@ -436,14 +438,17 @@ async function captureMap() {
   // Expand viewBox to include the exact visible area, including SVG's side gutters.
   const bounds=[topLeft.x,topLeft.y,bottomRight.x-topLeft.x,bottomRight.y-topLeft.y];
   const clone=map.cloneNode(true),width=Math.round(rect.width),height=Math.round(rect.height);
-  if(window.SRBackground?.active)window.SRBackground.exportSVG(clone,mapViewport().bounds);
+  const backgroundImage=webglBackground.snapshot(2);
+  const backgroundHost=clone.querySelector('[data-webgl-background]');
+  const backgroundLayer=el('image',{'data-render-layer':'background',x:bounds[0],y:bounds[1],width:bounds[2],height:bounds[3],preserveAspectRatio:'none',href:backgroundImage});
+  backgroundHost.replaceWith(backgroundLayer);
+  for(const id of ['windField','land','precipitation','coast'])clone.querySelector('#'+id)?.remove();
   // Re-render tracks at the final PNG resolution with the same local-time depth rule.
   const routes=clone.querySelector('#routes');routes.replaceChildren();
   const order=boats.filter(boat=>chosen.has(boat.name)).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
-  const renderer=webglTracks.active?webglTracks:softwareTracks;
-  const trackImage=renderer.snapshot(currentTime(),order,2);
-  el('image',{x:bounds[0],y:bounds[1],width:bounds[2],height:bounds[3],preserveAspectRatio:'none',href:trackImage},routes);
-  for(const host of clone.querySelectorAll('[data-webgl-tracks],[data-webgl-background],[data-software-tracks]'))host.remove();
+  const trackImage=webglTracks.snapshot(currentTime(),order,2);
+  el('image',{'data-render-layer':'tracks',x:bounds[0],y:bounds[1],width:bounds[2],height:bounds[3],preserveAspectRatio:'none',href:trackImage},routes);
+  for(const host of clone.querySelectorAll('[data-webgl-tracks],[data-webgl-background]'))host.remove();
   for(const control of clone.querySelectorAll('[data-speed-action],.track-hit-targets'))control.remove();
   const time=currentTime(),model=$('windModel').value,radarMissing=$('rain').checked&&radarStatus==='mangler';
   clone.setAttribute('width',width);clone.setAttribute('height',height);clone.setAttribute('viewBox',bounds.join(' '));
