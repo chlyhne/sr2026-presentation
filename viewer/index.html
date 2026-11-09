@@ -9,7 +9,7 @@
   <button id="presentationFullscreen" aria-pressed="false" hidden>Fuld skærm</button>
   <button id="endPresentation" hidden>Redigér</button>
 </div></header>
-<main><aside>
+<main inert><aside>
   <div class="presentation-tools">
     <button id="capture" class="primary">Gem kort som PNG</button>
     <p class="help">Zoom og træk til det ønskede udsnit. Billedet indeholder kun kortet med de synlige lag og annotationer, i dobbelt opløsning.</p>
@@ -84,15 +84,14 @@
   <button id="trackComparisonToggle" type="button" aria-pressed="false" title="Farv spor efter fartforskellen fra Mercutio ved samme sted på rhumblinen">Mod Mercutio</button>
   <select id="comparisonBasis" aria-label="Grundlag for sammenligning"><option value="absolute">Absolut</option><option value="handicap">Handicap · ToD</option></select>
 </section>
-<section id="mapMeasure" aria-label="Måleværktøj og rhumbline">
+<section id="mapMeasure" aria-label="Måleværktøj">
   <button id="mapMeasureToggle" type="button" aria-expanded="false" aria-controls="mapMeasurePanel">Mål <span aria-hidden="true">⌄</span></button>
   <div id="mapMeasurePanel" hidden>
-    <div class="map-tool-actions"><button id="measureDistance" type="button">Mål afstand</button><button id="drawRhumbline" type="button">Tegn rhumbline</button></div>
-    <p id="measurementHelp">Klik Mål afstand eller Tegn rhumbline, og klik punkterne på kortet i sejlretningen.</p>
+    <div class="map-tool-actions"><button id="measureDistance" type="button">Mål afstand</button></div>
+    <p id="measurementHelp">Klik Mål afstand, og klik punkterne på kortet.</p>
     <output id="measurementResult" aria-live="polite"></output>
     <div class="map-tool-actions"><button id="finishMapLine" type="button" disabled>Færdig</button><button id="undoMapPoint" type="button" disabled>Fortryd punkt</button><button id="cancelMapLine" type="button" hidden>Annullér</button></div>
-    <div class="map-tool-actions"><button id="clearMeasurement" type="button" disabled>Ryd måling</button><button id="clearRhumbline" type="button" disabled>Ryd rhumbline</button><button id="reverseRhumbline" type="button" disabled>Vend ruten</button></div>
-    <p id="rhumblineSummary"></p>
+    <div class="map-tool-actions"><button id="clearMeasurement" type="button" disabled>Ryd måling</button></div>
   </div>
 </section>
 <section id="mapLayers" aria-label="Kortlag">

@@ -31,6 +31,14 @@ body.presenting #renderingError{grid-column:1}
 #measurementResult{display:block;margin:8px 0;font-weight:650;font-variant-numeric:tabular-nums}
 #comparisonStatus{position:absolute;right:0;top:calc(100% + 6px);max-width:330px;margin:0;padding:10px;pointer-events:none}
 #map.measuring,#map.measuring:active,#map.measuring .boat-marker{cursor:crosshair}
+body.rhumbline-setup header,body.rhumbline-setup aside,body.rhumbline-setup #onlineStatus,body.rhumbline-setup #eventPanel,body.rhumbline-setup footer,body.rhumbline-setup #visibleBoats,body.rhumbline-setup #trackSpeedLegend,body.rhumbline-setup #trackComparison,body.rhumbline-setup #mapLayers,body.rhumbline-setup #mapMeasureToggle,body.rhumbline-setup #measureDistance,body.rhumbline-setup #clearMeasurement,body.rhumbline-setup #cancelMapLine{display:none!important}
+body.rhumbline-setup.presenting main{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+body.rhumbline-setup #map,body.rhumbline-setup #mapTools,body.rhumbline-setup #renderingError{grid-column:1;grid-row:1}
+body.rhumbline-setup #mapTools{display:block}
+body.rhumbline-setup #mapMeasurePanel{position:static;width:330px}
+body.rhumbline-setup #mapMeasurePanel h1{font-size:18px;margin-bottom:8px}
+body.rhumbline-setup #finishMapLine{background:#173d4c;color:white}
+body.rhumbline-setup #rhumblineSaveStatus:empty{display:none}
 @media(max-width:1300px){#mapTools{display:grid;grid-template-columns:auto auto}#trackComparison{grid-column:1/3;grid-row:2;justify-content:end}#mapMeasure{grid-column:1;grid-row:1;justify-self:end}#mapLayers{grid-column:2;grid-row:1;justify-self:end}}
 #mapLayersToggle,#mapLayersPanel{background:#fffffff0;color:#173d4c;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26}
 #mapLayersToggle{display:flex;align-items:center;gap:7px;padding:8px 10px;font-weight:650}

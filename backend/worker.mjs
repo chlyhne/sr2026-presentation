@@ -101,16 +101,8 @@ export function validateDocument(doc) {
     if (note.video != null && (!object(note.video) || note.video.provider !== 'youtube' || !/^[\w-]{11}$/.test(note.video.id) || !Number.isInteger(note.video.start) || note.video.start < 0 || note.video.start > 2147483647)) fail(400, 'Ugyldig video.');
   }
   for (const pin of doc.speedPins) if (!object(pin) || !string(pin.id, 200) || !string(pin.boatId, 200) || !Number.isFinite(pin.time)) fail(400, 'Ugyldigt fartmærke.');
-  if (doc.comparison !== undefined) {
-    const c = doc.comparison;
-    if (!object(c) || typeof c.enabled !== 'boolean' || !['absolute', 'handicap'].includes(c.basis)
-      || !Array.isArray(c.route) || c.route.length > 200 || (c.route.length !== 0 && c.route.length < 2)
-      || !c.route.every(p => vector(p, 2) && Math.abs(p[0]) <= 180 && Math.abs(p[1]) < 85)
-      || !c.route.every((p, i) => !i || (Math.abs(p[0] - c.route[i - 1][0]) < 180 && Math.hypot(p[0] - c.route[i - 1][0], p[1] - c.route[i - 1][1]) > 1e-8))
-      || (c.enabled && c.route.length < 2)) fail(400, 'Ugyldig rhumbline eller sammenligning.');
-  }
   // JSON is served as data, never executable HTML; disallow unexpected bulk/secret fields.
-  if (Object.keys(doc).some(k => !['version', 'notes', 'speedPins', 'comparison'].includes(k))) fail(400, 'Ukendte præsentationsfelter.');
+  if (Object.keys(doc).some(k => !['version', 'notes', 'speedPins'].includes(k))) fail(400, 'Ukendte præsentationsfelter.');
   return doc;
 }
 const contentsPath = (env, path) => `${repo(env)}/contents/${path}`;

@@ -1,53 +1,18 @@
-// Spherical rhumb geometry. Coordinates stay geographic; distances are nautical miles.
-const NAV_RADIUS_NM=6371008.8/1852,NAV_RAD=Math.PI/180,TRACK_GAIN_LIMIT=2,TRACK_GAIN_MISSING=-1e20;
-const mercatorLatitude=latitude=>Math.asinh(Math.tan(latitude*NAV_RAD));
-const inverseMercatorLatitude=y=>Math.atan(Math.sinh(y))/NAV_RAD;
-function rhumbLeg(a,b){
- const dx=(b[0]-a[0])*NAV_RAD,dy=mercatorLatitude(b[1])-mercatorLatitude(a[1]);
- const dp=(b[1]-a[1])*NAV_RAD,q=Math.abs(dy)>1e-12?dp/dy:Math.cos(a[1]*NAV_RAD);
- return {distance:NAV_RADIUS_NM*Math.hypot(dp,q*dx),bearing:(Math.atan2(dx,dy)/NAV_RAD+360)%360};
-}
+// The route comes only from the permanent project asset loaded by boot.js.
+const TRACK_GAIN_LIMIT=2,TRACK_GAIN_MISSING=-1e20,TRACK_COMPARISON_KEY='sr2026-track-comparison';
 function validComparison(value){
  return value&&typeof value.enabled==='boolean'&&['absolute','handicap'].includes(value.basis)
-  &&Array.isArray(value.route)&&value.route.length<=200&&(value.route.length===0||value.route.length>=2)
-  &&value.route.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&Math.abs(p[0])<=180&&Math.abs(p[1])<85)
-  &&value.route.every((p,i)=>!i||(Math.abs(p[0]-value.route[i-1][0])<180&&rhumbLeg(value.route[i-1],p).distance>1e-6))
-  &&(!value.enabled||value.route.length>=2);
+  &&Object.keys(value).every(key=>['enabled','basis'].includes(key));
 }
-let comparison={route:[],enabled:false,basis:'absolute'},comparisonRevision=0,referencePassages=null;
+let comparison={enabled:false,basis:'absolute'},comparisonRevision=0,referencePassages=null;
 let navigationMode=null,navigationDraft=[],measurement=[],lastNavigationKey=null;
 function comparisonMessage(message){$('comparisonStatus').textContent=message;$('comparisonStatus').hidden=!message;}
 try{
- const stored=SRStorage.getItem('sr2026-comparison');
- if(stored){const value=JSON.parse(stored);if(!validComparison(value))throw Error('Ugyldig rhumbline eller sammenligning.');comparison=value;}
-}catch(error){comparisonMessage('Rhumbline kunne ikke indlæses: '+error.message);}
-let rhumbRoute=buildRhumbRoute(comparison.route);
-function buildRhumbRoute(points){
- let total=0;
- const legs=[];
- for(let i=1;i<points.length;i++){
-  const a=points[i-1],b=points[i],x=a[0]*NAV_RAD,y=mercatorLatitude(a[1]);
-  const dx=(b[0]-a[0])*NAV_RAD,dy=mercatorLatitude(b[1])-y,length2=dx*dx+dy*dy;
-  const {distance,bearing}=rhumbLeg(a,b);
-  legs.push({a,b,x,y,dx,dy,length2,distance,bearing,start:total,index:i-1});total+=distance;
- }
- return {legs,total};
-}
-function projectOnRhumbRoute(point,route=rhumbRoute){
- const x=point[0]*NAV_RAD,y=mercatorLatitude(point[1]);
- let best=null;
- for(const leg of route.legs){
-  const raw=((x-leg.x)*leg.dx+(y-leg.y)*leg.dy)/leg.length2;
-  const u=Math.max(0,Math.min(1,raw)),px=leg.x+u*leg.dx,py=leg.y+u*leg.dy;
-  // Compare actual local distances rather than screen distances or Mercator scale.
-  const distance=Math.hypot(x-px,y-py)*Math.cos(point[1]*NAV_RAD);
-  if(best&&distance>=best.distance)continue;
-  const foot=[px/NAV_RAD,inverseMercatorLatitude(py)];
-  best={distance,progress:leg.start+rhumbLeg(leg.a,foot).distance,leg:leg.index,bearing:leg.bearing,
-   outside:(leg.index===0&&raw< -1e-10)||(leg.index===route.legs.length-1&&raw>1+1e-10)};
- }
- return best;
-}
+ const stored=localStorage.getItem(TRACK_COMPARISON_KEY);
+ if(stored){const value=JSON.parse(stored);if(!validComparison(value))throw Error('Ugyldigt sammenligningsvalg.');comparison=value;}
+}catch(error){comparisonMessage('Sammenligning kunne ikke indlæses: '+error.message);}
+const rhumbRoute=buildRhumbRoute(window.SR_RHUMBLINE.points);
+if(comparison.enabled&&!rhumbRoute.legs.length){comparison.enabled=false;comparisonMessage('Den permanente rhumbline er endnu ikke defineret.');}
 // A sample uses recorded SOG and the direction of the nominal PCHIP track.
 // Tracking holes, missing SOG and an unknown direction remain missing data.
 function projectedTrackSample(boat,time){
@@ -128,23 +93,19 @@ function trackGainColour(value){
 }
 const TRACK_GAIN_COLOURS=Array.from({length:TRACK_SPEED_BINS},(_,i)=>trackGainColour(-TRACK_GAIN_LIMIT+2*TRACK_GAIN_LIMIT*i/(TRACK_SPEED_BINS-1)));
 function saveComparison(next){
- if(!validComparison(next)){comparisonMessage('Ugyldig rhumbline. Brug mindst to forskellige punkter i sejlretningen.');return false;}
- try{if(!window.SR_READONLY)SRStorage.setItem('sr2026-comparison',JSON.stringify(next));}
- catch{comparisonMessage('Rhumbline og sammenligning kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
- const routeChanged=JSON.stringify(next.route)!==JSON.stringify(comparison.route);
+ if(!validComparison(next)){comparisonMessage('Ugyldigt sammenligningsvalg.');return false;}
+ if(next.enabled&&!rhumbRoute.legs.length){comparisonMessage('Den permanente rhumbline er endnu ikke defineret.');return false;}
+ try{localStorage.setItem(TRACK_COMPARISON_KEY,JSON.stringify(next));}
+ catch{comparisonMessage('Sammenligningsvalget kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
  comparison=next;
- if(routeChanged){comparisonRevision++;referencePassages=null;rhumbRoute=buildRhumbRoute(next.route);}
- comparisonMessage('');syncNavigationControls();renderNavigation();renderTrackSpeedLegend();requestRender();return true;
+ comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
 }
 function syncNavigationControls(){
  $('trackComparisonToggle').setAttribute('aria-pressed',String(comparison.enabled));$('comparisonBasis').value=comparison.basis;
- $('clearRhumbline').disabled=$('reverseRhumbline').disabled=comparison.route.length<2||!!navigationMode;
  $('clearMeasurement').disabled=!measurement.length||!!navigationMode;
  $('finishMapLine').disabled=!navigationMode||navigationDraft.length<2;
  $('undoMapPoint').disabled=!navigationMode||!navigationDraft.length;$('cancelMapLine').hidden=!navigationMode;
  $('measureDistance').setAttribute('aria-pressed',String(navigationMode==='measure'));
- $('drawRhumbline').setAttribute('aria-pressed',String(navigationMode==='route'));
- $('rhumblineSummary').textContent=comparison.route.length?`Rhumbline: ${comparison.route.length} punkter · ${rhumbRoute.total.toLocaleString('da-DK',{maximumFractionDigits:2})} sømil. Fælles for hele præsentationen.`:'Ingen rhumbline tegnet endnu.';
  $('map').classList.toggle('measuring',!!navigationMode);
 }
 function setMeasurementExpanded(expanded){
@@ -160,9 +121,9 @@ function startMapLine(mode){
 function cancelMapLine(){navigationMode=null;navigationDraft=[];syncNavigationControls();renderNavigation();}
 function finishMapLine(){
  if(navigationDraft.length<2)return;
- if(navigationMode==='route'&&!saveComparison({...comparison,route:navigationDraft.map(p=>[...p])}))return;
+ if(navigationMode==='route'){savePermanentRhumbline();return;}
  if(navigationMode==='measure')measurement=navigationDraft.map(p=>[...p]);
- cancelMapLine();$('measurementHelp').textContent='Klik Mål afstand eller Tegn rhumbline for at tegne en ny linje.';
+ cancelMapLine();$('measurementHelp').textContent='Klik Mål afstand for at tegne en ny måling.';
 }
 function addNavigationPoint(event){
  const point=new DOMPoint(event.clientX,event.clientY).matrixTransform($('map').getScreenCTM().inverse());
@@ -173,7 +134,7 @@ function addNavigationPoint(event){
  navigationDraft.push(geographic);syncNavigationControls();renderNavigation();
 }
 function renderNavigation(){
- const key=JSON.stringify([comparison.route,navigationMode,navigationDraft,measurement]);
+ const key=JSON.stringify([navigationMode,navigationDraft,measurement]);
  if(key===lastNavigationKey)return;lastNavigationKey=key;
  const layer=$('mapNavigation');layer.replaceChildren();
  function draw(points,colour,label,dashed=false){
@@ -192,22 +153,19 @@ function renderNavigation(){
   const [x,y]=xy(points.at(-1)),group=screenGroup(x,y,layer),total=buildRhumbRoute(points).total;
   el('text',{x:8,y:17,fill:colour,'font-size':12,'font-weight':700,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},group).textContent=`${label} · ${total.toLocaleString('da-DK',{maximumFractionDigits:2})} sm`;
  }
- if(navigationMode!=='route')draw(comparison.route,'#7b3294','Rhumbline',true);
- if(navigationMode!=='measure')draw(measurement,'#173d4c','Måling');
+ if(window.SR_RHUMBLINE_SETUP&&navigationMode!=='route'&&!measurement.length)draw(window.SR_RHUMBLINE.points,'#7b3294','Rhumbline',true);
+ if(navigationMode!=='measure')draw(measurement,window.SR_RHUMBLINE_SETUP?'#7b3294':'#173d4c',window.SR_RHUMBLINE_SETUP?'Rhumbline':'Måling',!!window.SR_RHUMBLINE_SETUP);
  if(navigationMode)draw(navigationDraft,navigationMode==='route'?'#7b3294':'#173d4c',navigationMode==='route'?'Rhumbline':'Måling',navigationMode==='route');
  const active=navigationMode?navigationDraft:measurement;
  $('measurementResult').textContent=active.length?`${buildRhumbRoute(active).total.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} sømil` :'';
  resizeSymbols();
 }
 $('mapMeasureToggle').onclick=()=>{setMeasurementExpanded($('mapMeasurePanel').hidden);if(!$('mapMeasurePanel').hidden)syncNavigationControls();};
-$('measureDistance').onclick=()=>startMapLine('measure');$('drawRhumbline').onclick=()=>startMapLine('route');
+$('measureDistance').onclick=()=>startMapLine('measure');
 $('finishMapLine').onclick=finishMapLine;$('cancelMapLine').onclick=cancelMapLine;
 $('undoMapPoint').onclick=()=>{navigationDraft.pop();syncNavigationControls();renderNavigation();};
 $('clearMeasurement').onclick=()=>{measurement=[];syncNavigationControls();renderNavigation();};
-$('clearRhumbline').onclick=()=>{if(saveComparison({...comparison,route:[],enabled:false}))comparisonMessage('Rhumbline ryddet. Sammenligning er slået fra.');};
-$('reverseRhumbline').onclick=()=>saveComparison({...comparison,route:[...comparison.route].reverse()});
 $('trackComparisonToggle').onclick=()=>{
- if(!comparison.enabled&&comparison.route.length<2){comparisonMessage('Tegn først en rhumbline: Mål → Tegn rhumbline.');return;}
  saveComparison({...comparison,enabled:!comparison.enabled});
 };
 $('comparisonBasis').onchange=()=>{if(!saveComparison({...comparison,basis:$('comparisonBasis').value}))syncNavigationControls();};
@@ -217,6 +175,7 @@ document.addEventListener('keydown',event=>{
  if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
  if(navigationMode&&['Escape','Enter','Backspace'].includes(event.key)){
   event.preventDefault();event.stopImmediatePropagation();
+  if(window.SR_RHUMBLINE_SAVING)return;
   if(event.key==='Escape')cancelMapLine();else if(event.key==='Enter')finishMapLine();else{navigationDraft.pop();syncNavigationControls();renderNavigation();}
  }else if(event.key==='Escape'&&!$('mapMeasurePanel').hidden){
   event.preventDefault();event.stopImmediatePropagation();setMeasurementExpanded(false);$('mapMeasureToggle').focus();

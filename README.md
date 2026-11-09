@@ -18,6 +18,10 @@ python3 scripts/serve_viewer.py
 Åbn <http://127.0.0.1:8097/>. Brug samme browser og adresse som før flytningen;
 browserens eksisterende noter følger adressen, ikke mappens placering.
 Lokalt uploadede billeder ligger i `data/event-images/`.
+Den permanente rhumbline tegnes én gang på det separate lokale kort
+`/rhumbline.html`, fx <http://127.0.0.1:8097/rhumbline.html>. **Gem permanent
+rhumbline** skriver punkterne til `viewer/rhumbline.json`. Rutedefinitionen
+indgår ikke i præsentationsdata og kan ikke overskrives fra tegnekortet.
 Se [viewerens vejledning](viewer/README.md) for kortets betjening og datakilder.
 
 ## Mapper

@@ -119,26 +119,31 @@ python3 scripts/serve_viewer.py
   undervejs. **Færdig** eller Enter afslutter; **Fortryd punkt** fjerner sidste
   punkt, og Escape annullerer den igangværende linje. **Ryd måling** fjerner den
   afsluttede måling. Måleværktøjet virker også i præsentation og fuld skærm.
-- Vælg **Mål → Tegn rhumbline**, og klik ruten i sejlretningen med lige
-  delstrækninger. Afslut med **Færdig**. Ruten er fælles for alle events og
-  gemmes sammen med præsentationen; i den offentlige visning gælder ændringer
-  kun den åbne visning. **Vend ruten** vender retningen. Tegn igen for at erstatte
-  ruten; en annulleret tegning bevarer den hidtidige rute. **Ryd rhumbline**
-  fjerner ruten og slår sammenligningen fra. Rhumbline og måling kommer med i PNG.
+- Den permanente rhumbline tegnes én gang på det separate lokale kort
+  <http://127.0.0.1:18097/rhumbline.html> (start serveren med
+  `python3 scripts/serve_viewer.py --port 18097`). Klik punkterne i sejlretningen,
+  og vælg **Gem permanent rhumbline**. Punkterne gemmes i projektfilen
+  `viewer/rhumbline.json`; et allerede gemt forløb kan ikke overskrives fra kortet.
+  Definitionen findes ikke i præsentationen, dens noter, kladde eller eksport,
+  og der er ingen rutetegning i præsentationens Mål-menu. Alle visninger henter
+  den samme projektfil. Genindlæs visningen efter den første definition.
 - **Mod Mercutio** skifter mellem de almindelige SOG-farver og en blå–rød skala
   for forskellen i fremdrift langs rhumblinen. Rød betyder hurtigere end Mercutio
   ved **samme sted på ruten**; blå betyder langsommere. Bådenes passagetidspunkter
   kan være forskellige. Mercutio beholder altid sine almindelige SOG-farver.
   Vælg **Absolut** eller **Handicap · ToD** ved siden af knappen. Skalaen mættes
   ved ±2 knob og er lys ved nul. Hold musen over et spor i redigering for at se
-  forskellen og tidspunktet for Mercutios passage. Der kræves en tegnet rhumbline.
+  forskellen og tidspunktet for Mercutios passage. Der kræves en defineret permanent rhumbline.
   Grå betyder manglende fælles passage, fart, retning eller nødvendigt måltal;
   der skiftes ikke til en anden beregningsmetode.
   `node scripts/test_viewer_navigation.cjs` kontrollerer måling, tegning,
   samme-sted-sammenligning, handicap, WebGL-farver, PNG, gemning og fuld skærm
   lokalt i Firefox på PC. `node scripts/test_viewer_navigation_online.cjs`
-  kontrollerer offentlig visning, redaktørkladde, import, eksport og udgivelse
-  med simulerede netværkssvar.
+  kontrollerer, at offentlig visning, redaktørkladde, import, eksport og udgivelse
+  bruger projektfilen og aldrig indeholder rutepunkter.
+  `node scripts/test_viewer_rhumbline_setup.cjs` tester det separate tegnekort
+  med simuleret gemning. `python3 scripts/test_rhumbline_server.py` tester den
+  permanente engangsgemning på en isoleret lokal server.
 - Hvert event gemmer sit eget udvalg af aktive både. Ved Forrige/Næste, valg i
   eventlisten eller klik på en note genskabes netop dette udvalg, også et tomt udvalg.
   Når du står ved et gemt events tidspunkt i redigering og ændrer bådvalget,
@@ -805,7 +810,7 @@ Se `../data/boat-dimensions/dimensions.csv` for hele oversigten og
 
 ### Måling og fartforskel langs rhumblinen
 
-`navigation.js` beregner sfæriske rhumbline-distancer med jordradius
+`rhumbline-geometry.js` beregner sfæriske rhumbline-distancer med jordradius
 6.371.008,8 m og 1 sømil = 1.852 m. Klikpunkter gemmes som længde/breddegrader;
 skærmens zoom ændrer ikke målingen. Hvert delstræk har konstant geografisk kurs.
 Bådens sted findes ved vinkelret projektion på rutens nærmeste delstræk i
@@ -835,10 +840,17 @@ Baggrund: [Dansk Sejlunions forklaring af DH og tid på distance](https://dansks
 
 Forskellen beregnes ved bådens oprindelige trackpunkter og interpoleres langs
 sporet i den fælles WebGL 2-renderer, som også bruges til PNG. Geometribufferne
-bevares ved afspilning; nye farvebuffere dannes kun ved ny rute eller nyt grundlag.
+bevares ved afspilning; nye farvebuffere dannes ved nyt sammenligningsgrundlag.
 Mercutio bruger altid den eksisterende SOG-palette. Farver uden sammenligningsdata
-er grå og bruger aldrig SOG som erstatning. Den fælles rute, aktivering og grundlag
-ligger i præsentationens valgfrie `comparison`-felt, som indgår i redaktørkladde,
-JSON-import/-eksport og udgivelse. Ældre dokumenter uden feltet starter uden en
-rhumbline og med sammenligningen slået fra. Målelinjen er midlertidig og gemmes
-kun i et eventuelt PNG-billede.
+er grå og bruger aldrig SOG som erstatning. Den permanente definition ligger kun
+i `viewer/rhumbline.json` som `{version:1,points:[[lon,lat],...]}`. Boot henter og
+validerer denne fil og låser punkterne for resten af visningen; en manglende eller
+ugyldig fil vises som en indlæsningsfejl. En tom punktliste angiver, at ejeren
+endnu ikke har tegnet ruten; sammenligning er da utilgængelig med en tydelig besked.
+Lokalt tegnes ruten på `/rhumbline.html`, som genbruger de samme WebGL-renderere
+med isoleret eventlager. `POST /api/rhumbline` på den lokale server gemmer filen
+atomisk og afviser overskrivning af en allerede defineret rute. Det separate
+tegneværktøj udgives ikke med Pages. Projektfilen følger med Pages-bygget.
+Aktivering og absolut/handicap-valg er lokale visningspræferencer under
+`sr2026-track-comparison`; de gemmes ikke i præsentationsdokumenter. Målelinjen
+er midlertidig og gemmes kun i et eventuelt PNG-billede.
