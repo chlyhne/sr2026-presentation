@@ -29,7 +29,7 @@ class WebGLTrackRenderer {
    };
    const vertex=shader(gl.VERTEX_SHADER,`#version 300 es
 precision highp float;
-layout(location=0) in vec3 shape;
+layout(location=0) in vec4 shape;
 layout(location=1) in vec4 position;
 layout(location=2) in vec4 curve;
 layout(location=3) in vec4 ending;
@@ -47,7 +47,12 @@ void main(){
  float age=(timing.x-windowTime.y)+(timing.z-windowTime.w);
  float from=duration>0.0?clamp((-7200.0-age)/duration,0.0,1.0):0.0;
  float to=duration>0.0?clamp(-age/duration,0.0,1.0):1.0;
- bool visible=duration>0.0?age+duration>-7200.0&&age<0.0:age>=-7200.0&&age<=0.0;
+ bool visible=duration>0.0?age+duration>-7200.0&&age<0.0:timing.w>0.0&&age>=-7200.0&&age<=0.0;
+ // Adjacent cubics share an edge, not overlapping round caps. A newer start
+ // cap would otherwise paint its dark rim across the preceding coloured body.
+ bool startCap=mod(timing.w,2.0)>0.5||age<=-7200.0;
+ bool endCap=timing.w>=2.0||age+duration>=0.0;
+ if((shape.w<0.0&&!startCap)||(shape.w>0.0&&!endCap))visible=false;
  if(!visible){gl_Position=vec4(2.0,2.0,2.0,1.0);return;}
  float u=mix(from,to,shape.x),u2=u*u,u3=u2*u;
  vec2 delta=curve.xy,m0=curve.zw,m1=ending.xy;
@@ -81,10 +86,10 @@ void main(){
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
    this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
-   // Fixed mesh used for every interval, including round caps. Subdivision here
-   // evaluates the cubic; it does not discard or simplify any source points.
+   // Fixed mesh used for every interval. shape.w marks optional outer caps.
+   // Subdivision evaluates the cubic without discarding source points.
    const mesh=[];
-   const put=(u,n,t)=>mesh.push(u,n,t);
+   const put=(u,n,t,cap=0)=>mesh.push(u,n,t,cap);
    const steps=32;
    for(let i=0;i<steps;i++){
     const a=i/steps,b=(i+1)/steps;
@@ -93,9 +98,10 @@ void main(){
    }
    for(const u of [0,1])for(let i=0;i<12;i++){
     const a=-Math.PI/2+i*Math.PI/12,b=-Math.PI/2+(i+1)*Math.PI/12;
-    put(u,0,0);put(u,Math.sin(a),(u?1:-1)*Math.cos(a));put(u,Math.sin(b),(u?1:-1)*Math.cos(b));
+    const cap=u?1:-1;
+    put(u,0,0,cap);put(u,Math.sin(a),cap*Math.cos(a),cap);put(u,Math.sin(b),cap*Math.cos(b),cap);
    }
-   this.vertexCount=mesh.length/3;
+   this.vertexCount=mesh.length/4;
    this.mesh=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.mesh);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(mesh),gl.STATIC_DRAW);
    this.palette=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this.palette);
    const colours=[TRACK_SPEED_MISSING,...TRACK_SPEED_COLOURS],pixels=new Uint8Array(colours.length*4);
@@ -118,10 +124,11 @@ void main(){
  prepare(boat){
   if(!this.active||this.buffers.has(boat.points))return;
   const gl=this.gl,{points,speeds}=boat,model=getTrackModel(points);
+  const connects=(a,b)=>!!a&&!!b&&b[2]>a[2]&&b[2]-a[2]<=TRACK_MAX_GAP;
   // One compact record per observation, not per colour fragment or frame.
   const data=new Float32Array(points.length*16);
   for(let i=0;i<points.length;i++){
-   const a=points[i],b=points[i+1],valid=b&&b[2]>a[2]&&b[2]-a[2]<=TRACK_MAX_GAP;
+   const a=points[i],b=points[i+1],valid=connects(a,b),previous=connects(points[i-1],a);
    const dt=valid?b[2]-a[2]:0,[x,y]=xy(a),hiX=Math.fround(x),hiY=Math.fround(y),offset=i*16;
    data[offset]=hiX;data[offset+1]=hiY;data[offset+2]=x-hiX;data[offset+3]=y-hiY;
    if(valid){
@@ -133,10 +140,13 @@ void main(){
    data[offset+10]=Number.isFinite(s0)&&s0>=0?s0:-1;data[offset+11]=Number.isFinite(s1)&&s1>=0?s1:-1;
    const stamp=a[2]-D.start,high=Math.fround(stamp);
    data[offset+12]=high;data[offset+13]=dt;data[offset+14]=stamp-high;
+   // Reuse the spare float: bits 1/2 mark real start/end caps. An endpoint
+   // already covered by its preceding cubic must not draw a duplicate dot.
+   data[offset+15]=valid?(previous?0:1)+(connects(b,points[i+2])?0:2):previous?0:3;
   }
   const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
   const vao=gl.createVertexArray();gl.bindVertexArray(vao);
-  gl.bindBuffer(gl.ARRAY_BUFFER,this.mesh);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,12,0);
+  gl.bindBuffer(gl.ARRAY_BUFFER,this.mesh);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,4,gl.FLOAT,false,16,0);
   for(let i=1;i<=4;i++){gl.enableVertexAttribArray(i);gl.vertexAttribDivisor(i,1);}
   this.buffers.set(points,{buffer,vao,bytes:data.byteLength,first:null});this.uploads++;
  }
