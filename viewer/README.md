@@ -138,12 +138,23 @@ python3 scripts/serve_viewer.py
   TracTracs registrerede SOG med samme tidsinterpolation som fartmærkerne. Ved en
   kort trackingpause vises seneste kendte position og dens målte fart, indtil
   ikonet udløber efter fem minutter. Manglende felter angives i listen.
+  Øverst er et søgefelt, der filtrerer løbende på bådnavn, skipper eller bådtype
+  uden forskel på store og små bogstaver. Under søgning indeholder listen alle
+  matchende både, også dem uden et aktuelt ikon i udsnittet. Kortet viser kun
+  matchende både og deres spor, uanset om de er afkrydset; afkrydsede både, som
+  ikke matcher, er midlertidigt skjult. Søgningen ændrer ikke det gemte bådvalg.
+  Brug afkrydsningen for at vælge eller fravælge en båd. Under søgning vælger eller
+  fravælger klik på kortets bådikoner også båden i stedet for at vise/skjule navnet.
+  Ryd feltet, tryk **Færdig** eller Escape, eller fold listen sammen for at afslutte
+  søgningen; så vises kun de afkrydsede både igen. Både kan også fravælges uden
+  søgning. Mellemrum på en fokuseret række skifter afkrydsningen.
   Hold musen over en række, eller fokusér den med Tab, for at forstørre det
   tilsvarende bådikon midlertidigt. Op/ned, Home og End flytter fokus i listen;
   Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,
-  og skjules, når et eventbillede dækker kortet. Listen ændrer ikke gemte events
-  og indgår ikke i kortets PNG-eksport.
-  Listen er altid alfabetisk og indeholder kun de aktuelt synlige både.
+  og skjules, når et eventbillede dækker kortet. I præsentation ændrer bådvalg ikke
+  gemte events; i redigering bruges samme eventgemning som det øvrige bådvalg.
+  Selve listen indgår ikke i PNG-eksporten, men kortets søgefilter gør.
+  Listen er altid alfabetisk og indeholder uden søgning kun de aktuelt synlige både.
   Både, der forlader udsnittet, fjernes med det samme. Når listen er foldet ud,
   fylder den ned til kortets bund. Hold musen over et bådikon på kortet for at
   rulle den åbne liste til bådens række og fremhæve den. Det ændrer ikke kortet
@@ -151,12 +162,14 @@ python3 scripts/serve_viewer.py
   En fast farvestribe viser altid bådens farve. Fremhævning bruger baggrund og
   ramme, så bådfarven også er synlig under mouseover.
   Rækkerne har fast højde, så ændringer i fart eller lange navne ikke skubber de
-  andre rækker. Hele navnet vises som tooltip. Fravalg af en båd fjerner dens række.
+  andre rækker. Hele navnet vises som tooltip. Uden søgning fjerner fravalg bådens række.
   Skippernavnene kommer fra de gemte TracTrac-deltageres `description`.
   Bådtypen hentes fra Manage2Sail via `uniqueId`/`BowNumber`, med TracTracs
   bådtype som reserve. Genskab `boat-details.js` med
   `python scripts/prepare_boat_details.py`; det genbruger projektets kildedata.
   `node scripts/test_viewer_boat_list.cjs` kontrollerer listen lokalt i Firefox på PC.
+  `node scripts/test_viewer_boat_search.cjs` kontrollerer søgning, midlertidig
+  kortvisning og bådvalg via liste og kort i redigering og offentlig præsentation.
   `node scripts/test_viewer_boat_list_presentation.cjs` kontrollerer desuden den
   offentlige præsentationsmode uden redigering: alfabetisk rækkefølge, mouseover,
   afspilning, eventskift, rulning og browserens faktiske fuldskærmsvisning i

@@ -31,7 +31,7 @@ function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
  }
  const order=topmost?[...boats].sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio')):boats;
  for(const boat of order){
-  if(!chosen.has(boat.name)||(boatId&&boat.id!==boatId))continue;
+  if(!boatIsDisplayed(boat)||(boatId&&boat.id!==boatId))continue;
   const points=boat.points,model=getTrackModel(points);
   for(let i=Math.max(0,timeBoundary(points,start)-1);i<points.length&&points[i][2]<=now;i++){
    const a=points[i],b=points[i+1],gap=b?b[2]-a[2]:0;
@@ -129,7 +129,7 @@ function renderSpeedPins(){
  entries.sort((a,b)=>mercutioIds.has(a.boatId)-mercutioIds.has(b.boatId));
  for(const entry of entries){
   const boat=boats.find(b=>b.id===entry.boatId);
-  if(!boat||!chosen.has(boat.name)||entry.time<now-7200||entry.time>now)continue;
+  if(!boat||!boatIsDisplayed(boat)||entry.time<now-7200||entry.time>now)continue;
   const sample=trackSpeedSample(boat,entry.time);if(!sample)continue;
   const [x,y]=xy(sample.point),screen=new DOMPoint(x,y).matrixTransform(matrix);
   if(screen.x<rect.left||screen.x>rect.right||screen.y<rect.top||screen.y>rect.bottom)continue;

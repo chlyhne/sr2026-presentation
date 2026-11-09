@@ -92,8 +92,12 @@
   <button id="reloadRendering" type="button">Genindlæs siden</button>
 </section>
 <section id="visibleBoats" aria-label="Både i kortudsnittet">
-  <button id="visibleBoatsToggle" type="button" aria-expanded="false" aria-controls="visibleBoatsPanel"><span>Både i udsnittet <span id="visibleBoatsCount">· 0</span></span><span class="boat-list-chevron" aria-hidden="true">⌄</span></button>
+  <button id="visibleBoatsToggle" type="button" aria-expanded="false" aria-controls="visibleBoatsPanel"><span><span id="visibleBoatsTitle">Både i udsnittet</span> <span id="visibleBoatsCount">· 0</span></span><span class="boat-list-chevron" aria-hidden="true">⌄</span></button>
   <div id="visibleBoatsPanel" hidden>
+    <div id="boatSearch">
+      <label for="boatSearchInput">Søg både, skippere og bådtyper</label>
+      <div class="boat-search-field"><input id="boatSearchInput" type="search" placeholder="Skriv for at søge…" autocomplete="off" spellcheck="false" aria-controls="visibleBoatsList"><button id="boatSearchClear" type="button" aria-label="Afslut søgning" title="Afslut søgning og vis de afkrydsede både" hidden>Færdig</button></div>
+    </div>
     <ul id="visibleBoatsList" aria-label="Synlige både"></ul>
     <p id="visibleBoatsEmpty" hidden>Ingen både i udsnittet ved dette tidspunkt.</p>
   </div>
