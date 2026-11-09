@@ -128,7 +128,7 @@ function changeBoatSelection(change){
   target.settings=updated.settings;
  }else if(editingNote)noteDraft.settings={...noteDraft.settings,boats:[...chosen]};
  prepareSelectedTracks();
- $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline();
+ $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline({preserveTime:isBoatSearchActive()});
  if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
  requestRender();
 }
@@ -342,6 +342,7 @@ function handlePresentationKey(event){
   event.preventDefault();event.stopImmediatePropagation();setPresentationMode(false);return;
  }
  if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+ if(event.target.closest('[data-boat-marker]')&&['Enter',' '].includes(event.key))return;
  let index;
  if(['ArrowRight','ArrowDown','PageDown'].includes(event.key)||(event.key===' '&&event.target.tagName!=='BUTTON')){
   event.preventDefault();event.stopImmediatePropagation();movePresentationEvent(1);return;
@@ -445,7 +446,7 @@ async function captureMap() {
   for(const id of ['windField','land','precipitation','coast'])clone.querySelector('#'+id)?.remove();
   // Re-render tracks at the final PNG resolution with the same local-time depth rule.
   const routes=clone.querySelector('#routes');routes.replaceChildren();
-  const order=boats.filter(boat=>chosen.has(boat.name)).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
+  const order=boats.filter(boatIsDisplayed).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
   const trackImage=webglTracks.snapshot(currentTime(),order,2);
   el('image',{'data-render-layer':'tracks',x:bounds[0],y:bounds[1],width:bounds[2],height:bounds[3],preserveAspectRatio:'none',href:trackImage},routes);
   for(const host of clone.querySelectorAll('[data-webgl-tracks],[data-webgl-background]'))host.remove();

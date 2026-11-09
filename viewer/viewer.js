@@ -84,10 +84,27 @@ const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
 const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set(featured);
 const boats=D.boats.map(b=>({...b,...boatDetails[b.id],metadata:boatMetadata(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
 const shownBoatNames=new Set(boats.filter(b=>featured.has(b.name)).map(b=>b.id));
+let boatSearchQuery='';
+function isBoatSearchActive(){return boatSearchQuery.length>0;}
+function boatIsDisplayed(boat){
+ return isBoatSearchActive()
+  ?[boat.name,boat.skipper,boat.boatType||boat.metadata.boatType].some(value=>String(value||'').toLocaleLowerCase('da').includes(boatSearchQuery))
+  :chosen.has(boat.name);
+}
 function syncBoatChoices(){
  for(const [i,b] of boats.entries()){
   const input=$('choices').children[i]?.querySelector('input');if(input)input.checked=chosen.has(b.name);
  }
+ for(const input of $('visibleBoatsList').querySelectorAll('input'))input.checked=chosen.has(input.value);
+}
+function setBoatSelected(boat,selected){
+ changeBoatSelection(()=>{if(selected)chosen.add(boat.name);else chosen.delete(boat.name);});
+}
+function activateBoatMarker(id,focus=false){
+ if(!isBoatSearchActive()){toggleBoatName(id,focus);return;}
+ const boat=boats.find(boat=>boat.id===id);if(!boat)return;
+ setBoatSelected(boat,!chosen.has(boat.name));flushRender();
+ if(focus)$('boatMarkers').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
 }
 function toggleBoatName(id,focus=false){
  flushRender();
@@ -99,7 +116,7 @@ function toggleBoatName(id,focus=false){
 for(const [i,name] of [...new Set(boats.map(b=>b.name))].sort().entries()){
  if(!Object.hasOwn(colours,name))colours[name]=`hsl(${((18+i*137.507764)%360).toFixed(3)},78%,${42+i%3*7}%)`;
 }
-for(const b of boats){const label=document.createElement('label');label.className='boat';const box=document.createElement('input');box.type='checkbox';box.checked=chosen.has(b.name);box.addEventListener('change',()=>changeBoatSelection(()=>{box.checked?chosen.add(b.name):chosen.delete(b.name);}));const dot=document.createElement('span');dot.className='dot';dot.style.background=colours[b.name];label.append(box,dot,document.createTextNode(b.name));$('choices').append(label)}
+for(const b of boats){const label=document.createElement('label');label.className='boat';const box=document.createElement('input');box.type='checkbox';box.checked=chosen.has(b.name);box.addEventListener('change',()=>setBoatSelected(b,box.checked));const dot=document.createElement('span');dot.className='dot';dot.style.background=colours[b.name];label.append(box,dot,document.createTextNode(b.name));$('choices').append(label)}
 for(const [name,lon,lat] of [['Helsingør',12.61,56.04],['København',12.57,55.67],['Stevns',12.45,55.28],['Møn',12.3,54.98],['Farø',11.99,54.95],['Agersø',11.2,55.21],['Storebæltsbroen',11.03,55.33],['Røsnæs',10.87,55.74],['Sj. Odde',11.3,55.97],['Gilleleje',12.31,56.13]]){const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('places'));el('circle',{cx:0,cy:0,r:2,fill:'#173d4c'},group);const n=el('text',{x:4,y:-4,fill:'#173d4c','font-size':11,stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);n.textContent=name}
 // Red mark in Snekkeløb: user-supplied 56° 2.391′ N, 11° 16.523′ E.
 {
@@ -234,7 +251,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  clearTrackHover();
  const markerLayer=$('boatMarkers');
  markerLayer.replaceChildren();
- const drawingOrder=boats.filter(b=>chosen.has(b.name)).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
+ const drawingOrder=boats.filter(boatIsDisplayed).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
  if(!webglTracks.render(t,drawingOrder))return;
  for(const b of drawingOrder){
   const markers=el('g',{class:'boat-markers'},markerLayer),color=colours[b.name];
@@ -243,8 +260,8 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
   const [x,y]=xy(position.point),group=screenGroup(x,y,markers);
   group.setAttribute('class','boat-marker');group.dataset.boatMarker=b.id;
   group.setAttribute('role','button');group.setAttribute('tabindex','0');
-  group.setAttribute('aria-label',`Vis/skjul navn: ${b.name}`);
-  group.setAttribute('aria-pressed',String(shownBoatNames.has(b.id)));
+  group.setAttribute('aria-label',`${isBoatSearchActive()?'Vælg/fravælg båd':'Vis/skjul navn'}: ${b.name}`);
+  group.setAttribute('aria-pressed',String(isBoatSearchActive()?chosen.has(b.name):shownBoatNames.has(b.id)));
   el('title',{},group).textContent=`${b.name} · ${position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
   el('circle',{cx:0,cy:0,r:10,fill:'transparent','pointer-events':'all'},group);
   renderBoatIcon(group,b,position,t,color);
@@ -352,7 +369,7 @@ function endPan(e){
   if(placingNote)placeAnnotation(e);
   else if(noteIndex!==undefined&&!document.body.classList.contains('presenting'))beginNoteEditing(notes[+noteIndex]);
   else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
-  else if(boatId)toggleBoatName(boatId);
+  else if(boatId)activateBoatMarker(boatId);
   else if(trackBoatId)chooseTrackSpeed(e,trackBoatId);
   else if(!document.body.classList.contains('presenting')){
    chooseTrackSpeed(e);
@@ -370,6 +387,6 @@ map.addEventListener('keydown',e=>{
  }
  const marker=e.target.closest('[data-boat-marker]');
  if(marker&&(e.key==='Enter'||e.key===' ')){
-  e.preventDefault();e.stopPropagation();toggleBoatName(marker.dataset.boatMarker,true);
+  e.preventDefault();e.stopPropagation();activateBoatMarker(marker.dataset.boatMarker,true);
  }
 });

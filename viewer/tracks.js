@@ -17,7 +17,7 @@ function speedBin(speed){
 // Prepare immutable nominal GPU buffers once for the whole voyage.
 function prepareBoatTrack(boat){webglTracks.prepare(boat);}
 function prepareSelectedTracks(){
- for(const boat of boats)if(chosen.has(boat.name))prepareBoatTrack(boat);
+ for(const boat of boats)if(boatIsDisplayed(boat))prepareBoatTrack(boat);
 }
 function trackSpeedLegendLayout(){
  const rect=$('map').getBoundingClientRect();

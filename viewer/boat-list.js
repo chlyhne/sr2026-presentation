@@ -1,4 +1,3 @@
-// Only current, visible boats belong in the list; keep them alphabetically ordered.
 let visibleBoatEntries=[],hoveredVisibleBoatId=null,hoveredMapBoatId=null;
 const visibleBoatRows=new Map();
 const boatListSpeedFormat=new Intl.NumberFormat('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1});
@@ -19,16 +18,18 @@ function refreshVisibleBoatHighlight(){
 function createVisibleBoatRow(boat){
  const node=document.createElement('li');node.className='visible-boat';node.dataset.boatId=boat.id;node.tabIndex=0;
  node.style.setProperty('--boat-colour',colours[boat.name]);
- const heading=document.createElement('div');heading.className='visible-boat-heading';
+ const heading=document.createElement('label');heading.className='visible-boat-heading';
+ const choice=document.createElement('input');choice.type='checkbox';choice.className='visible-boat-choice';choice.value=boat.name;
+ choice.setAttribute('aria-label','Vælg båd: '+boat.name);choice.onchange=()=>setBoatSelected(boat,choice.checked);
  const name=document.createElement('span');name.className='visible-boat-name';
  const speed=document.createElement('span');speed.className='visible-boat-speed';
  const skipper=document.createElement('span');skipper.className='visible-boat-skipper';
  const type=document.createElement('span');type.className='visible-boat-type';
- heading.append(name,speed);node.append(heading,skipper,type);
+ heading.append(choice,name,speed);node.append(heading,skipper,type);
  node.onpointerenter=()=>{hoveredVisibleBoatId=boat.id;refreshVisibleBoatHighlight();};
  node.onpointerleave=()=>{if(hoveredVisibleBoatId===boat.id)hoveredVisibleBoatId=null;refreshVisibleBoatHighlight();};
- node.onfocus=refreshVisibleBoatHighlight;node.onblur=refreshVisibleBoatHighlight;
- return {node,name,speed,skipper,type};
+ node.addEventListener('focusin',refreshVisibleBoatHighlight);node.addEventListener('focusout',refreshVisibleBoatHighlight);
+ return {node,choice,name,speed,skipper,type};
 }
 function setBoatListText(node,text){if(node.textContent!==text)node.textContent=text;}
 function updateVisibleBoats(time=currentTime()){
@@ -42,17 +43,22 @@ function updateVisibleBoats(time=currentTime()){
  $('visibleBoats').style.height=$('visibleBoatsPanel').hidden?'auto':availableHeight+'px';
  const entries=[];
  for(const boat of boats){
-  if(!chosen.has(boat.name))continue;
-  const position=trackPosition(boat.points,time);if(!position)continue;
-  const [x,y]=xy(position.point),point=new DOMPoint(x,y).matrixTransform(matrix);
-  if(point.x<rect.left||point.x>rect.right||point.y<rect.top||point.y>rect.bottom)continue;
-  const sample=trackSpeedSample(boat,position.interpolated?time:position.sourceTime);
+  if(!boatIsDisplayed(boat))continue;
+  const position=trackPosition(boat.points,time);
+  if(!isBoatSearchActive()){
+   if(!position)continue;
+   const [x,y]=xy(position.point),point=new DOMPoint(x,y).matrixTransform(matrix);
+   if(point.x<rect.left||point.x>rect.right||point.y<rect.top||point.y>rect.bottom)continue;
+  }
+  const sample=position?trackSpeedSample(boat,position.interpolated?time:position.sourceTime):null;
   entries.push({boat,speed:sample?.speed});
  }
  entries.sort((a,b)=>a.boat.name.localeCompare(b.boat.name,'da'));
  visibleBoatEntries=entries;
+ setBoatListText($('visibleBoatsTitle'),isBoatSearchActive()?'Søgeresultater':'Både i udsnittet');
  setBoatListText($('visibleBoatsCount'),'· '+entries.length);
  $('visibleBoatsEmpty').hidden=!!entries.length;
+ setBoatListText($('visibleBoatsEmpty'),isBoatSearchActive()?'Ingen både matcher søgningen.':'Ingen både i udsnittet ved dette tidspunkt.');
  const ids=new Set(entries.map(entry=>entry.boat.id));
  for(const [id,row] of visibleBoatRows)if(!ids.has(id)){row.node.remove();visibleBoatRows.delete(id);}
  if(hoveredVisibleBoatId&&!ids.has(hoveredVisibleBoatId))hoveredVisibleBoatId=null;
@@ -62,6 +68,7 @@ function updateVisibleBoats(time=currentTime()){
   for(const {boat,speed} of entries){
    let row=visibleBoatRows.get(boat.id);
    if(!row){row=createVisibleBoatRow(boat);visibleBoatRows.set(boat.id,row);}
+   row.choice.checked=chosen.has(boat.name);
    setBoatListText(row.name,boat.name);
    setBoatListText(row.speed,Number.isFinite(speed)?boatListSpeedFormat.format(speed)+' kn':'Fart mangler');
    row.speed.title='Fart over grunden (SOG)';
@@ -83,7 +90,7 @@ function hoverMapBoat(event){
  const row=visibleBoatRows.get(id)?.node;if(!row)return;
  // Scroll only the list, keeping the page, keyboard focus and map scene unchanged.
  const panel=$('visibleBoatsPanel'),bounds=panel.getBoundingClientRect(),item=row.getBoundingClientRect();
- const top=bounds.top+panel.clientTop,bottom=top+panel.clientHeight;
+ const top=bounds.top+panel.clientTop+$('boatSearch').offsetHeight,bottom=bounds.top+panel.clientTop+panel.clientHeight;
  if(item.top<top)panel.scrollTop+=item.top-top;
  else if(item.bottom>bottom)panel.scrollTop+=item.bottom-bottom;
 }
@@ -94,16 +101,32 @@ function setVisibleBoatsExpanded(expanded){
  $('visibleBoatsToggle').setAttribute('aria-expanded',String(expanded));
  $('visibleBoatsPanel').hidden=!expanded;
  if(!expanded){
+  $('boatSearchInput').value='';setBoatSearch('');
   hoveredVisibleBoatId=null;hoveredMapBoatId=null;highlightVisibleBoat(null);
   visibleBoatRows.clear();$('visibleBoatsList').replaceChildren();
  }
  updateVisibleBoats();
 }
+function setBoatSearch(value){
+ const query=value.trim().toLocaleLowerCase('da');
+ $('boatSearchClear').hidden=!query;
+ if(query===boatSearchQuery)return;
+ boatSearchQuery=query;
+ $('visibleBoatsPanel').scrollTop=0;
+ updateTimeline({preserveTime:true});requestRender();
+}
+$('boatSearchInput').oninput=event=>setBoatSearch(event.target.value);
+$('boatSearchClear').onclick=()=>{$('boatSearchInput').value='';setBoatSearch('');$('boatSearchInput').focus();};
 $('visibleBoatsToggle').onclick=()=>setVisibleBoatsExpanded($('visibleBoatsPanel').hidden);
 document.addEventListener('keydown',event=>{
  if(!event.target.closest('#visibleBoats'))return;
  if(event.key==='Escape'&&!$('visibleBoatsPanel').hidden){
+  if(isBoatSearchActive()){event.preventDefault();event.stopImmediatePropagation();$('boatSearchClear').click();return;}
   event.preventDefault();event.stopImmediatePropagation();setVisibleBoatsExpanded(false);$('visibleBoatsToggle').focus();return;
+ }
+ if(event.target===$('boatSearchInput')){event.stopPropagation();return;}
+ if((event.key===' '||event.key==='Enter')&&event.target.matches('.visible-boat')){
+  event.preventDefault();event.stopImmediatePropagation();event.target.querySelector('input').click();return;
  }
  if(!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
  event.stopImmediatePropagation();

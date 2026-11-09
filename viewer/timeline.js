@@ -164,12 +164,12 @@ function setCurrentTime(time,{fractional=false,crossedEvents=false,allowOutsideV
  syncTimelineEvent(previousTime,{crossedEvents});
 }
 
-function updateTimeline(){
+function updateTimeline({preserveTime=false}={}){
  if(editingNote)return false;
  const presenting=document.body.classList.contains('presenting');
  const bounds=visibleMapBounds();if(!bounds)return false;
  const ranges=[];
- for(const boat of boats)if(chosen.has(boat.name))ranges.push(...visibleBoatRanges(boat.points,bounds));
+ for(const boat of boats)if(boatIsDisplayed(boat))ranges.push(...visibleBoatRanges(boat.points,bounds));
  ranges.sort((a,b)=>a.start-b.start);
  boatTimeRanges=[];
  for(const range of ranges){
@@ -186,12 +186,12 @@ function updateTimeline(){
  $('play').disabled=hasRenderingFailure()||(timelineLength<2&&!eventPlaybackTarget);
  if(slider.disabled&&interval&&!eventPlaybackTarget)stopPlayback();
  const before=selectedTime;
- if(presenting){$('time').value=offsetAtTime(selectedTime);$('time').setAttribute('aria-valuetext',fmt(selectedTime));}
+ if(presenting||preserveTime){$('time').value=offsetAtTime(selectedTime);$('time').setAttribute('aria-valuetext',fmt(selectedTime));}
  else setCurrentTime(selectedTime);
  renderTimelineEvents();
  $('timeWindow').textContent=timelineLength
   ? `I udsnittet: ${fmt(visibleTimeRanges[0].start)} – ${fmt(visibleTimeRanges.at(-1).end)} · ${visibleTimeRanges.length} ${visibleTimeRanges.length===1?'periode':'perioder'} · trin: 1 sekund · pauser uden både springes over`
-  : chosen.size?'Ingen valgte både passerer dette udsnit. Zoom ud eller flyt kortet.':'Vælg mindst én båd for at bruge tidslinjen.';
+  : isBoatSearchActive()?'Ingen matchende både passerer dette udsnit. Prøv en anden søgning eller zoom ud.':chosen.size?'Ingen valgte både passerer dette udsnit. Zoom ud eller flyt kortet.':'Vælg mindst én båd for at bruge tidslinjen.';
  if(interval&&!eventPlaybackTarget){playbackOffset=offsetAtTime(selectedTime);playbackTickTime=performance.now();}
  return selectedTime!==before;
 }
