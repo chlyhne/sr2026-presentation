@@ -13,6 +13,20 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    const straight=Array.from({length:201},(_,i)=>point(580+i*.2,480,100+i));
    const curved=Array.from({length:201},(_,i)=>point(580+i*.2,480+3*Math.sin(i/40),100+i));
    const expected=TRACK_SPEED_COLOURS[speedBin(7.5)].match(/\d+/g).map(Number);
+   const antialiasedPixels=pixels=>{
+    const outline=[23,49,62];let count=0;
+    for(let offset=0;offset<pixels.length;offset+=4){
+     if(pixels[offset+3]!==255)continue;
+     const blend=(pixels[offset+1]-outline[1])/(expected[1]-outline[1]);
+     if(blend>.05&&blend<.95&&outline.every((value,index)=>Math.abs(pixels[offset+index]-(value+blend*(expected[index]-value)))<3))count++;
+    }
+    return count;
+   };
+   const edgeLevels=pixels=>{
+    const levels=new Set();
+    for(let offset=3;offset<pixels.length;offset+=4)if(pixels[offset]>0&&pixels[offset]<255)levels.add(pixels[offset]);
+    return levels.size;
+   };
    const boat={id:'joined-track',name:'joined-track',points:straight,speeds:straight.map(()=>7.5)};
    const renderer=webglTracks,gl=renderer.gl;
    check(renderer.active,'Nominal WebGL must be active: '+renderer.error);
@@ -22,6 +36,12 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     const time=D.start+301;renderer.render(time,[boat],true);
     const viewport=mapViewport(),pixels=new Uint8Array(renderer.canvas.width*renderer.canvas.height*4);
     gl.readPixels(0,0,renderer.canvas.width,renderer.canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+    check(antialiasedPixels(pixels)>20,'Missing antialiasing between the speed colour and outline at zoom '+width);
+    if(points===curved){
+     const display=document.createElement('canvas');display.width=viewport.pixelWidth;display.height=viewport.pixelHeight;
+     const context=display.getContext('2d');context.drawImage(renderer.canvas,0,0,display.width,display.height);
+     check(edgeLevels(context.getImageData(0,0,display.width,display.height).data)>3,'Outer track edge must have finer coverage than four-sample MSAA at zoom '+width);
+    }
     const pixel=(x,y)=>{
      const p=new DOMPoint(x,y).matrixTransform(viewport.matrix);
      const px=Math.floor((p.x-viewport.rect.left)*renderer.canvas.width/viewport.rect.width);
@@ -47,15 +67,18 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
      for(const delta of [-.6,.6]){
       const data=new Uint8Array(4);
       gl.readPixels(Math.floor((p.x-v.rect.left+delta)*scale),renderer.canvas.height-1-Math.floor((p.y-v.rect.top)*scale),1,1,gl.RGBA,gl.UNSIGNED_BYTE,data);
-      check(data[3]>240&&expected.every((n,j)=>Math.abs(data[j]-n)<20),'Missing cap at '+JSON.stringify({time,x,delta,data:[...data]}));caps++;
+      const blend=(data[1]-49)/(expected[1]-49);
+      check(data[3]>240&&blend>.7&&[23,49,62].every((value,index)=>Math.abs(data[index]-(value+blend*(expected[index]-value)))<3),'Missing cap at '+JSON.stringify({time,x,delta,data:[...data]}));caps++;
      }
     }
    }
    // The same geometry must stay seamless when rasterized at PNG resolution.
    boat.points=curved;boat.speeds=curved.map(()=>7.5);
    const png=renderer.snapshot(D.start+301,[boat],2),image=new Image();image.src=png;await image.decode();
-   const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
-   const context=canvas.getContext('2d');context.drawImage(image,0,0);
+   const canvas=document.createElement('canvas');canvas.width=Math.round(mapViewport().rect.width*2);canvas.height=Math.round(mapViewport().rect.height*2);
+   const context=canvas.getContext('2d');context.drawImage(image,0,0,canvas.width,canvas.height);
+   check(antialiasedPixels(context.getImageData(0,0,canvas.width,canvas.height).data)>20,'PNG must use the same antialiased colour/outline boundary');
+   check(edgeLevels(context.getImageData(0,0,canvas.width,canvas.height).data)>3,'PNG must preserve the supersampled outer edge');
    const v=mapViewport();
    for(let i=5;i<195;i++){
     const p=new DOMPoint(...xy(trackValue(curved,i,curved[i][2]+.5,getTrackModel(curved)).point)).matrixTransform(v.matrix);
@@ -64,6 +87,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    }
    return {samples,caps,png:true};
   });
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',checks:'dense straight and curved joins, zoom, round caps at gaps and clipped ends, same nominal PNG renderer',...result,errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',checks:'dense straight and curved joins, antialiased colour/outline boundary, supersampled outer edge, zoom, round caps at gaps and clipped ends, same nominal antialiased PNG renderer',...result,errors}));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1)});

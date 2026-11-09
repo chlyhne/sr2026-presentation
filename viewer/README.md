@@ -657,6 +657,11 @@ tidspunkt langs kurven; nyere passager dækker ældre, uanset båd og fartfarve.
 Tidens høje og lave del gemmes separat, så millisekunder også kan skelnes sent
 i sejladsen. Dybden sættes i vertex-shaderen, så GPU'en kan afvise skjulte
 fragmenter tidligt. Kant og sporfarve tegnes i én passage med samme tidsdybde.
+Overgangen mellem fartfarve og mørk kant udjævnes med `fwidth` og `smoothstep`
+over cirka én rasterpixel. Sporlaget tegnes med 2× rasteropløsning i begge retninger
+ud over WebGL-kontekstens multisample-antialiasing. Nedskaleringen udjævner også
+den mørke yderkant mod kortet uden at ændre sporbredde eller tidsbaseret dybde.
+Samme shader og supersampling bruges i PNG-eksporten.
 Sammenhængende kildeintervaller deler en kant uden runde afslutninger imellem;
 ellers ville et nyere stykkes mørke rand stribe det foregående stykke.
 Runde afslutninger bruges ved sporets ender, reelle huller og tidsvinduets klip.
@@ -675,7 +680,7 @@ Klik søger i de oprindelige kurver ved selve klikket; der vedligeholdes ingen
 usynlige SVG-klikstier under WebGL-afspilning. Ved overlap vælges den øverste
 bådpassage ud fra tidspunktet ved klikpunktet. Hover i pause viser bådnavn og SOG og
 ændrer markøren; Pin/Fjern pin, tastaturbetjening og lagring er uændret.
-PNG-eksport gentegner sporene ved eksportens fulde 2×-opløsning med samme
+PNG-eksport gentegner sporene med supersampling af eksportens fulde 2×-opløsning og samme
 tidsbaserede dybde og indsætter resultatet i kortets SVG. Øvrige kortlag og
 ikoner eksporteres fortsat som vektorer før dannelsen af den endelige PNG.
 
@@ -689,7 +694,7 @@ Det generelle princip om én nominel implementering er beskrevet i
 modsatrettede krydsninger, selvkrydsning, millisekunder, pauser, tidsvindue,
 tilbagespoling, klik, genbrug af GPU-buffere og PNG med den nominelle renderer.
 `node scripts/test_viewer_track_joins.cjs` kontrollerer tætte lige og buede spor
-ved flere zoomniveauer, samlinger uden striber, runde ender og PNG i lokal Firefox.
+ved flere zoomniveauer, samlinger uden striber, kantudjævning, runde ender og PNG i lokal Firefox.
 
 Baggrunden bruger én WebGL 2-flade i `background-renderer.js`, med fast
 lagrækkefølge: vindfarvefelt, land, radar og kyst. Landpolygoner, inklusive
