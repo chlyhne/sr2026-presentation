@@ -45,7 +45,7 @@
     <label for="noteImage">Billede til event (valgfrit)</label>
     <input id="noteImage" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
     <p class="help">Vælg et billede, og gem eventet. Tekst er valgfri. Billedet gemmes på serveren.</p>
-    <div class="button-row"><button id="removeNoteImage" hidden>Fjern billede</button></div>
+    <div class="button-row"><button id="cropNoteImage" type="button" hidden>Beskær billede</button><button id="removeNoteImage" hidden>Fjern billede</button></div>
     <p id="noteImageStatus" class="help" role="status"></p>
     <label for="noteVideo">YouTube-video til event (valgfri)</label>
     <input id="noteVideo" type="url" maxlength="2048" placeholder="https://youtu.be/…" aria-describedby="noteVideoStatus">
@@ -118,5 +118,22 @@
   <div class="video-toolbar"><a id="eventVideoLink" target="_blank" rel="noopener">Åbn på YouTube</a><button id="closeEventVideo" type="button">Luk video ×</button></div>
   <div id="eventVideoPlayer"></div>
 </section>
+<dialog id="imageCropDialog" aria-labelledby="imageCropTitle" aria-describedby="imageCropHelp">
+  <h2 id="imageCropTitle">Beskær billede</h2>
+  <p id="imageCropHelp" class="help">Træk et udsnit på billedet. Flyt rammen eller træk i hjørnerne for at tilpasse den. Du kan også angive udsnittet i pixels.</p>
+  <div class="image-crop-preview"><div id="imageCropStage" hidden>
+    <img id="imageCropSource" alt="Billede til beskæring" draggable="false">
+    <div id="imageCropSelection"><span data-crop-corner="nw"></span><span data-crop-corner="ne"></span><span data-crop-corner="sw"></span><span data-crop-corner="se"></span></div>
+  </div></div>
+  <fieldset id="imageCropFields" disabled><legend>Udsnit i pixels</legend><div class="image-crop-fields">
+    <label>Fra venstre<input id="imageCropX" type="number" min="0" step="1"></label>
+    <label>Fra toppen<input id="imageCropY" type="number" min="0" step="1"></label>
+    <label>Bredde<input id="imageCropWidth" type="number" min="1" step="1"></label>
+    <label>Højde<input id="imageCropHeight" type="number" min="1" step="1"></label>
+  </div></fieldset>
+  <p id="imageCropStatus" class="help" role="status" aria-live="polite"></p>
+  <p class="help">Beskæringen bruges kun til dette event. Gem eventet bagefter; online skal du også vælge Udgiv.</p>
+  <div class="button-row"><button id="applyImageCrop" type="button" disabled>Brug beskæring</button><button id="resetImageCrop" type="button" disabled>Hele billedet</button><button id="cancelImageCrop" type="button">Annullér</button></div>
+</dialog>
 <script src="config.js"></script><script src="boot.js"></script>
 </html>

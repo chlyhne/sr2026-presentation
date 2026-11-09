@@ -34,7 +34,7 @@
   }};
   window.SR_DRAFT_KEY=draftKey;
  }
- for(const file of ['data','boat-measurements','boat-icons','weather','viewer','vendor/earcut','background-renderer','traffic','military','tracks','track-renderer','speed-pins','timeline','drawings','event-images','event-videos','inline-text','presentation','online']){
+ for(const file of ['data','boat-measurements','boat-icons','weather','viewer','vendor/earcut','background-renderer','traffic','military','tracks','track-renderer','speed-pins','timeline','drawings','event-images','image-crop','event-videos','inline-text','presentation','online']){
   await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=file+'.js';s.onload=resolve;s.onerror=reject;document.body.append(s);});
   if(file==='boat-icons')await loadBoatHulls();
   if(file==='track-renderer')prepareSelectedTracks();

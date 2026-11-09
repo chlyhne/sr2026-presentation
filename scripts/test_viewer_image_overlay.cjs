@@ -9,7 +9,7 @@ async function check(type){
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
-  await page.goto(base);await page.waitForFunction(()=>typeof showMapEventImage==='function');
+  await page.goto(base);await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
   const png=Buffer.from(await page.evaluate(()=>{
    const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=800;
    const ctx=canvas.getContext('2d');ctx.fillStyle='#284d64';ctx.fillRect(0,0,1200,800);
@@ -38,13 +38,15 @@ async function check(type){
   async function imageOpen(expected=true){
    if(expected)await page.waitForFunction(()=>$('mapEventImageContent').naturalWidth>0&&!$('mapEventImage').hidden&&!$('mapEventImageContent').hidden);
    assert.equal(await page.locator('#mapEventImage').isVisible(),expected);
+   if(expected)assert.equal(await page.locator('#eventImageFigure').isVisible(),false,'A photo is never visible in both places');
+   else if(await page.locator('#eventImage').getAttribute('src'))assert.equal(await page.locator('#eventImageFigure').isVisible(),true,'Closing the map photo restores the panel photo');
   }
   async function sameMapBounds(){
    const map=await page.locator('#map').boundingBox(),overlay=await page.locator('#mapEventImage').boundingBox();
    for(const key of ['x','y','width','height'])assert.ok(Math.abs(map[key]-overlay[key])<1,'Image must cover only the map: '+key);
   }
   await page.locator('.note-jump').first().click();await imageOpen();await sameMapBounds();
-  assert.equal(await page.locator('#eventImageFigure').isVisible(),true);
+  assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
   const state=await page.evaluate(()=>({view:[...view],time:currentTime(),settings:sceneSettings()}));
   await page.locator('#mapEventImage').click();await imageOpen(false);
   assert.deepEqual(await page.evaluate(()=>({view:[...view],time:currentTime(),settings:sceneSettings()})),state,'Closing image preserves map scene');

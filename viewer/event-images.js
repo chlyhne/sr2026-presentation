@@ -3,12 +3,17 @@ let pendingEventImage=null,eventImageLoading=false,imageUploadToken=0;
 let shownEventImageId=null,eventImageRenderToken=0;
 let panelEventImage=null,panelEventImageNote=null,mapImageView=null,mapImageToken=0;
 const validEventImageURL=url=>/^\/?event-images\/[0-9a-f-]{36}\.(webp|png|jpg)$/.test(url||'');
+function syncEventImageVisibility(){
+ $('eventImageFigure').hidden=!!mapImageView||!$('eventImage').getAttribute('src');
+ $('eventImageStatus').hidden=!!mapImageView;
+}
 function hideMapEventImage(){
  const wasFocused=document.activeElement===$('mapEventImage');
  mapImageToken++;mapImageView=null;
  $('mapEventImage').hidden=true;$('mapEventImageContent').hidden=true;
  $('mapEventImageContent').removeAttribute('src');$('mapEventImageStatus').textContent='';
  $('eventImageButton').setAttribute('aria-expanded','false');
+ syncEventImageVisibility();
  if(wasFocused&&!$('eventImageFigure').hidden)$('eventImageButton').focus({preventScroll:true});
 }
 async function showMapEventImage(image=panelEventImage,note=panelEventImageNote){
@@ -18,6 +23,8 @@ async function showMapEventImage(image=panelEventImage,note=panelEventImageNote)
  $('mapEventImage').hidden=false;$('mapEventImageContent').hidden=true;
  $('mapEventImageContent').removeAttribute('src');$('mapEventImageStatus').textContent='Indlæser billede …';
  $('eventImageButton').setAttribute('aria-expanded','true');
+ syncEventImageVisibility();
+ if(document.activeElement===$('eventImageButton'))$('mapEventImage').focus({preventScroll:true});
  try{
   const img=new Image();
   await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('Billedet kunne ikke hentes. Klik for at vise kortet igen.'));img.src=image.url;});
@@ -41,6 +48,10 @@ async function prepareEventImage(file){
   const scale=Math.min(1,2048/Math.max(img.naturalWidth,img.naturalHeight));
   const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
   canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+  return await uploadEventImageCanvas(canvas,file.name);
+ }finally{URL.revokeObjectURL(url);}
+}
+async function uploadEventImageCanvas(canvas,name){
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.9));
   if(!blob)throw new Error('Billedet kunne ikke klargøres.');
   const response=await fetch((window.SR_CONFIG?.apiBase||'')+'/api/event-images',{method:'POST',headers:{'Content-Type':blob.type},body:blob});
@@ -50,13 +61,14 @@ async function prepareEventImage(file){
    throw new Error(message);
   }
   const saved=await response.json();
-  return {id:saved.id,url:saved.url,name:file.name,width:canvas.width,height:canvas.height,type:blob.type};
- }finally{URL.revokeObjectURL(url);}
+  return {id:saved.id,url:saved.url,name,width:canvas.width,height:canvas.height,type:blob.type};
 }
 function currentAttachedImage(){return editingNote?noteDraft.image:pendingEventImage;}
 function updateImageEditor(){
  const image=currentAttachedImage();
  $('removeNoteImage').hidden=!image;
+ $('cropNoteImage').hidden=!image;
+ $('cropNoteImage').disabled=$('removeNoteImage').disabled=$('noteImage').disabled=eventImageLoading;
  $('save').disabled=$('placeNote').disabled=eventImageLoading;
  $('save').textContent=editingNote?'Gem ændringer':image||hasPendingEventVideo()?'Gem event':'Gem tidspunkt uden markør';
  $('noteImageStatus').textContent=eventImageLoading?'Klargør billede …':image?`Vedhæftet: ${image.name}`:'';
@@ -87,7 +99,7 @@ $('removeNoteImage').onclick=()=>{
 async function renderEventImage(image,note){
  panelEventImage=image||null;panelEventImageNote=note||null;
  if(mapImageView&&(mapImageView.note!==panelEventImageNote||mapImageView.imageId!==image?.id))hideMapEventImage();
- const id=image?.id||null;if(id===shownEventImageId)return;
+ const id=image?.id||null;if(id===shownEventImageId){syncEventImageVisibility();return;}
  shownEventImageId=id;const token=++eventImageRenderToken;
  $('eventImageFigure').hidden=true;$('eventImage').removeAttribute('src');$('eventImageStatus').textContent='';
  if(!id)return;
@@ -99,7 +111,7 @@ async function renderEventImage(image,note){
   if(token!==eventImageRenderToken)return;
   $('eventImage').src=image.url;
   $('eventImage').alt=image.name||'Billede til event';$('eventImageCaption').textContent=image.name||'';
-  $('eventImageFigure').hidden=false;$('eventImageStatus').textContent='';
+  syncEventImageVisibility();$('eventImageStatus').textContent='';
  }catch(error){if(token===eventImageRenderToken)$('eventImageStatus').textContent=error.message;}
 }
 async function exportEventNotes(){
