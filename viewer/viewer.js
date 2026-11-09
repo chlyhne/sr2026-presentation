@@ -101,11 +101,11 @@ function setBoatSelected(boat,selected){
  changeBoatSelection(()=>{if(selected)chosen.add(boat.name);else chosen.delete(boat.name);});
 }
 function boatSelectionScope(){return isBoatSearchActive()?boats.filter(boatIsDisplayed):boats;}
-function toggleAllBoats(){
+function setAllBoatsSelected(selected){
  const scope=boatSelectionScope();if(!scope.length)return;
- const select=!scope.every(boat=>chosen.has(boat.name));
- changeBoatSelection(()=>{for(const boat of scope){if(select)chosen.add(boat.name);else chosen.delete(boat.name);}});
+ changeBoatSelection(()=>{for(const boat of scope){if(selected)chosen.add(boat.name);else chosen.delete(boat.name);}});
 }
+function toggleAllBoats(){setAllBoatsSelected(!boatSelectionScope().every(boat=>chosen.has(boat.name)));}
 function activateBoatMarker(id,focus=false){
  if(!isBoatSearchActive()){toggleBoatName(id,focus);return;}
  const boat=boats.find(boat=>boat.id===id);if(!boat)return;
