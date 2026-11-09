@@ -6,7 +6,6 @@ async function check(type){
  try{
   const page=await browser.newPage({viewport:{width:1920,height:1080},deviceScaleFactor:2}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.addInitScript(()=>window.SR_TRACK_RENDERER='webgl');
   await page.route('**/config.js',r=>r.fulfill({contentType:'application/javascript',body:'window.SR_CONFIG={local:false,admin:false};'}));
   await page.route('**/presentation.json',r=>r.fulfill({json:presentation}));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('#onlineStatus',{state:'attached'});

@@ -3,16 +3,15 @@
 class WebGLTrackRenderer {
  constructor(layer){
   this.layer=layer;this.buffers=new Map();this.uploads=0;this.active=false;
-  if(['svg','software'].includes(window.SR_TRACK_RENDERER))return;
   this.host=el('foreignObject',{'data-webgl-tracks':'','pointer-events':'none'},layer);
   this.canvas=document.createElementNS('http://www.w3.org/1999/xhtml','canvas');
   this.canvas.style.cssText='display:block;width:100%;height:100%;pointer-events:none';
   this.host.append(this.canvas);
   this.canvas.addEventListener('webglcontextlost',e=>{
-   e.preventDefault();this.active=false;this.host.setAttribute('display','none');renderTracks();
+   e.preventDefault();this.fail(Error('WebGL-konteksten er mistet.'));
   });
   this.canvas.addEventListener('webglcontextrestored',()=>{
-   this.buffers.clear();this.initialize();prepareSelectedTracks();renderTracks();
+   this.buffers.clear();this.initialize();if(this.active){prepareSelectedTracks();requestRender();}
   });
   this.initialize();
  }
@@ -23,8 +22,6 @@ class WebGLTrackRenderer {
    this.gl=gl;
    const debug=gl.getExtension('WEBGL_debug_renderer_info');
    this.renderer=debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):'';
-   if(/swiftshader|llvmpipe|softpipe|software rasterizer/i.test(this.renderer)&&window.SR_TRACK_RENDERER!=='webgl')
-    throw Error('Software graphics: use depth-buffered CPU renderer');
    const shader=(type,source)=>{
     const result=gl.createShader(type);gl.shaderSource(result,source);gl.compileShader(result);
     if(!gl.getShaderParameter(result,gl.COMPILE_STATUS)){const message=gl.getShaderInfoLog(result);gl.deleteShader(result);throw Error(message);}
@@ -109,9 +106,14 @@ void main(){
    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,colours.length,1,0,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
    this.active=true;this.host.removeAttribute('display');this.lastKey=null;this.viewportKey=null;
+   clearRenderingFailure('Spor');
   }catch(error){
-   this.active=false;this.error=error.message;this.host.setAttribute('display','none');
+   this.fail(error);
   }
+ }
+ fail(error){
+  this.active=false;this.error=error.message;this.host.setAttribute('display','none');
+  reportRenderingFailure('Spor',error);
  }
  prepare(boat){
   if(!this.active||this.buffers.has(boat.points))return;
@@ -142,6 +144,7 @@ void main(){
   this.time=time;this.order=order;
   if(!this.active)return false;
   try{
+   if(this.gl.isContextLost())throw Error('WebGL-konteksten er mistet.');
    const viewport=viewportOverride||mapViewport();if(!viewport)return true;
    const {rect,matrix,topLeft:top,pixelWidth:width,pixelHeight:height}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
@@ -183,10 +186,11 @@ void main(){
    }
    gl.bindVertexArray(null);gl.flush();
    return true;
-  }catch(error){this.error=error.message;this.active=false;this.host.setAttribute('display','none');return false;}
+  }catch(error){this.fail(error);return false;}
  }
  redraw(){if(this.order)this.render(this.time,this.order);}
  snapshot(time,order,scale=2){
+  if(!this.active)throw Error(this.error||'Sporenes WebGL-rendering er ikke tilgængelig.');
   const viewport=mapViewport();
   try{
    this.render(time,order,true,{...viewport,pixelWidth:Math.round(viewport.rect.width*scale),pixelHeight:Math.round(viewport.rect.height*scale)});

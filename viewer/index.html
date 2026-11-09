@@ -85,6 +85,12 @@
   <img id="mapEventImageContent" alt="" draggable="false" hidden>
   <span id="mapEventImageStatus" role="status"></span>
 </button>
+<section id="renderingError" role="alert" hidden>
+  <h2>Kortets rendering er stoppet</h2>
+  <p>WebGL 2 er påkrævet. Der skiftes ikke til en alternativ tegnemetode.</p>
+  <pre id="renderingErrorDetails"></pre>
+  <button id="reloadRendering" type="button">Genindlæs siden</button>
+</section>
 <section id="visibleBoats" aria-label="Både i kortudsnittet">
   <button id="visibleBoatsToggle" type="button" aria-expanded="false" aria-controls="visibleBoatsPanel"><span>Både i udsnittet <span id="visibleBoatsCount">· 0</span></span><span class="boat-list-chevron" aria-hidden="true">⌄</span></button>
   <div id="visibleBoatsPanel" hidden>
@@ -107,6 +113,7 @@
       <span class="video-play" aria-hidden="true">▶</span><span class="video-caption">Afspil i fuld skærm</span>
     </button>
   </figure>
+  <p id="eventVideoStatus" class="help" role="status"></p>
   <p id="speedPinStatus" class="help" role="status"></p>
   <p id="eventBoatStatus" class="help" role="status"></p>
 </section>

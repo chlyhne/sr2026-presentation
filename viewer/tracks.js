@@ -4,8 +4,6 @@
 const TRACK_MAX_GAP=300;
 const trackModelCache=new WeakMap();
 const TRACK_SPEED_MAX=15,TRACK_SPEED_BINS=128,TRACK_SPEED_MISSING='#8a949b';
-const trackSpeedCache=new WeakMap();
-const trackOutlineCache=new WeakMap();
 function trackSpeedColour(speed){
  if(!Number.isFinite(speed)||speed<0)return TRACK_SPEED_MISSING;
  const x=Math.max(0,Math.min(1,speed/TRACK_SPEED_MAX));
@@ -16,76 +14,10 @@ const TRACK_SPEED_COLOURS=Array.from({length:TRACK_SPEED_BINS},(_,bin)=>trackSpe
 function speedBin(speed){
  return !Number.isFinite(speed)||speed<0?-1:Math.round(Math.min(TRACK_SPEED_MAX,speed)/TRACK_SPEED_MAX*(TRACK_SPEED_BINS-1));
 }
-function trackCurvePiece(points,i,from,to,model){
- const a=points[i],b=points[i+1];
- const first=from===a[2]?{point:a,velocity:model.slopes.map(s=>s[i])}:trackValue(points,i,from,model);
- const last=to===b[2]?{point:b,velocity:model.slopes.map(s=>s[i+1])}:trackValue(points,i,to,model);
- const dt=(to-from)/3;
- const c1=xy([first.point[0]+first.velocity[0]*dt,first.point[1]+first.velocity[1]*dt]);
- const c2=xy([last.point[0]-last.velocity[0]*dt,last.point[1]-last.velocity[1]*dt]);
- return 'M'+xy(first.point).join(',')+' C'+[...c1,...c2,...xy(last.point)].join(',');
-}
-function colouredTrackInterval(points,speeds,i,from,to,model){
- const a=points[i],b=points[i+1],s0=speeds?.[i],s1=speeds?.[i+1];
- if(speedBin(s0)<0||speedBin(s1)<0)return [{bin:-1,from,to,d:trackCurvePiece(points,i,from,to,model)}];
- const cuts=[from,to],h=b[2]-a[2];
- // Interpolate the recorded speed, never the derivative of the position curve.
- // Split the exact cubic at colour boundaries; no spatial sampling is needed.
- if(s0!==s1)for(let bin=0;bin<TRACK_SPEED_BINS-1;bin++){
-  const threshold=(bin+.5)*TRACK_SPEED_MAX/(TRACK_SPEED_BINS-1);
-  const time=a[2]+(threshold-s0)/(s1-s0)*h;
-  if(time>from&&time<to)cuts.push(time);
- }
- cuts.sort((a,b)=>a-b);
- const segments=[];
- for(let j=1;j<cuts.length;j++){
-  const start=cuts[j-1],end=cuts[j];if(end<=start)continue;
-  const speed=s0+(s1-s0)*(((start+end)/2-a[2])/h);
-  segments.push({bin:speedBin(speed),from:start,to:end,d:trackCurvePiece(points,i,start,end,model)});
- }
- return segments;
-}
-function getTrackSpeedCache(points,speeds){
- let cache=trackSpeedCache.get(points);
- if(!cache||cache.speeds!==speeds){
-  cache={speeds,intervals:new Map(),pointBins:Int16Array.from(points,(_,i)=>speedBin(speeds?.[i]))};
-  trackSpeedCache.set(points,cache);
- }
- return cache;
-}
-// Prepare the whole voyage before playback, then retain it for reverse seeks.
-function prepareBoatTrack(boat){
- if(typeof webglTracks!=='undefined'&&webglTracks.active){webglTracks.prepare(boat);return;}
- softwareTracks.prepare(boat);
-}
+// Prepare immutable nominal GPU buffers once for the whole voyage.
+function prepareBoatTrack(boat){webglTracks.prepare(boat);}
 function prepareSelectedTracks(){
  for(const boat of boats)if(chosen.has(boat.name))prepareBoatTrack(boat);
-}
-function trackSpeedGeometry(points,speeds,start,end){
- if(!points.length||end<start)return [];
- const model=getTrackModel(points),buckets=new Map();
- const cache=getTrackSpeedCache(points,speeds);
- function add(bin,d){if(!buckets.has(bin))buckets.set(bin,[]);buckets.get(bin).push(d);}
- const first=Math.max(0,timeBoundary(points,start)-1),last=timeBoundary(points,end,true);
- for(let i=first;i<last;i++){
-  const a=points[i],b=points[i+1],h=b?b[2]-a[2]:0;
-  if(b&&h>0&&h<=TRACK_MAX_GAP){
-   const from=Math.max(start,a[2]),to=Math.min(end,b[2]);if(to<=from)continue;
-   let segments=cache.intervals.get(i);
-   if(!segments){
-    segments=colouredTrackInterval(points,speeds,i,a[2],b[2],model);
-    cache.intervals.set(i,segments);
-   }
-   // Clip the fixed colour pieces; never choose new colours for the moving ends.
-   for(const segment of segments){
-    const lo=Math.max(from,segment.from),hi=Math.min(to,segment.to);
-    if(hi<=lo)continue;
-    add(segment.bin,lo===segment.from&&hi===segment.to?segment.d:trackCurvePiece(points,i,lo,hi,model));
-   }
-  }else if(a[2]>=start){const p=xy(a).join(',');add(cache.pointBins[i],'M'+p+'L'+p);}
- }
- // Stable paint order also keeps colours stable where thick strokes overlap.
- return [...buckets].sort(([a],[b])=>a-b).map(([bin,paths])=>({bin,colour:bin<0?TRACK_SPEED_MISSING:TRACK_SPEED_COLOURS[bin],d:paths.join(' ')}));
 }
 function trackSpeedLegendLayout(){
  const rect=$('map').getBoundingClientRect();
@@ -157,31 +89,6 @@ function trackPosition(points,time){
  if(time-a[2]>TRACK_MAX_GAP)return null;
  if(time===a[2]||!b||b[2]-a[2]>TRACK_MAX_GAP||b[2]<=a[2])return {point:[a[0],a[1],time],interpolated:false,sourceTime:a[2]};
  return {...trackValue(points,index,time),interpolated:true,sourceTime:a[2]};
-}
-
-function trackGeometry(points,start,end){
- if(!points.length||end<start)return '';
- const model=getTrackModel(points),commands=[];
- const first=Math.max(0,timeBoundary(points,start)-1),last=timeBoundary(points,end,true);
- let cache=trackOutlineCache.get(points);
- if(!cache){cache=new Map();trackOutlineCache.set(points,cache);}
- let previousIndex=-2,previousEnd=null;
- for(let i=first;i<last;i++){
-  const a=points[i],b=points[i+1],h=b?b[2]-a[2]:0;
-  if(b&&h>0&&h<=TRACK_MAX_GAP){
-   const from=Math.max(start,a[2]),to=Math.min(end,b[2]);if(from>to)continue;
-   const complete=from===a[2]&&to===b[2];
-   let piece=complete?cache.get(i):null;
-   if(!piece){piece=trackCurvePiece(points,i,from,to,model);if(complete)cache.set(i,piece);}
-   // Complete Hermite segments are fixed; only the clipped end segments change.
-   commands.push(previousIndex===i-1&&previousEnd===from?piece.slice(piece.indexOf(' C')+1):piece);
-   previousIndex=i;previousEnd=to;
-  }else if(a[2]>=start){
-   if(previousEnd!==a[2]){const p=xy(a).join(',');commands.push('M'+p+'L'+p);}
-   previousIndex=i;previousEnd=a[2];
-  }
- }
- return commands.join(' ');
 }
 
 function trackIntervalInBounds(points,index,bounds){

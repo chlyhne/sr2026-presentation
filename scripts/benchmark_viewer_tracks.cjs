@@ -5,7 +5,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  const browser=await firefox.launch({headless:process.env.SR_HEADLESS==='1'});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}});
-  await page.addInitScript(()=>window.SR_TRACK_RENDERER='webgl');
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForFunction(()=>typeof captureMap==='function');
   const result=await page.evaluate(async()=>{
@@ -14,11 +13,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    prepareSelectedTracks();
    const initialMemoryMB=[...webglTracks.buffers.values()].reduce((sum,b)=>sum+b.bytes,0)/1e6;
    const output=[];
-   for(const renderer of ['webgl','software']){
-    webglTracks.active=renderer==='webgl';webglTracks.host.setAttribute('display',webglTracks.active?'inline':'none');
     for(const offset of [14400,43200]){
      selectedTime=D.start+offset;render();
-     // Warm the entire tested window before recording either implementation.
+     // Warm the entire tested window before recording the nominal renderer.
      selectedTime=D.start+offset+400;render();
      const times=[],frames=[];
      for(let i=0;i<20;i++){
@@ -29,9 +26,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
       frames.push(performance.now()-start);
      }
      const sorted=[...times].sort((a,b)=>a-b);
-     output.push({renderer,hour:offset/3600,meanRenderMs:times.reduce((a,b)=>a+b)/times.length,p95RenderMs:sorted[Math.floor(sorted.length*.95)],meanThroughPaintMs:frames.reduce((a,b)=>a+b)/frames.length,paths:$('routes').querySelectorAll('path').length});
+     output.push({hour:offset/3600,meanRenderMs:times.reduce((a,b)=>a+b)/times.length,p95RenderMs:sorted[Math.floor(sorted.length*.95)],meanThroughPaintMs:frames.reduce((a,b)=>a+b)/frames.length,paths:$('routes').querySelectorAll('path').length});
     }
-   }
    return {gpu:webglTracks.renderer,boats:chosen.size,staticBufferMB:initialMemoryMB,output};
   });
   console.log(JSON.stringify(result,null,2));

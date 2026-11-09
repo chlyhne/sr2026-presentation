@@ -81,6 +81,10 @@ function hideEventVideo(){
 }
 function showEventVideo(){
  if(!finishInlineTextEditing()||!panelEventVideo)return;
+ if(!document.fullscreenElement&&(!document.fullscreenEnabled||!$('eventVideoOverlay').requestFullscreen)){
+  $('eventVideoStatus').textContent='Videoen kræver fuld skærm, men browseren tillader ikke fuld skærm.';return;
+ }
+ $('eventVideoStatus').textContent='';
  stopPlayback();hideMapEventImage();
  const video=panelEventVideo,overlay=$('eventVideoOverlay'),token=++videoOpenToken;
  eventVideoView={video,note:panelEventVideoNote};overlay.hidden=false;
@@ -102,11 +106,15 @@ function showEventVideo(){
   videoOwnsFullscreen=true;
   overlay.requestFullscreen().then(()=>{
    if(token!==videoOpenToken&&!eventVideoView&&document.fullscreenElement===overlay)document.exitFullscreen().catch(()=>{});
-  }).catch(()=>{if(token===videoOpenToken)videoOwnsFullscreen=false;});
+  }).catch(error=>{if(token===videoOpenToken){
+   videoOwnsFullscreen=false;hideEventVideo();
+   $('eventVideoStatus').textContent='Videoen kunne ikke åbnes i fuld skærm: '+(error.message||'Browseren afviste anmodningen.');
+  }});
  }
 }
 function renderEventVideo(value,note){
  const video=validatedEventVideo(value);
+ if(panelEventVideoNote!==note||JSON.stringify(panelEventVideo)!==JSON.stringify(video))$('eventVideoStatus').textContent='';
  if(eventVideoView&&(eventVideoView.note!==note||JSON.stringify(eventVideoView.video)!==JSON.stringify(video)))hideEventVideo();
  const previous=panelEventVideo;panelEventVideo=video;panelEventVideoNote=note;
  $('eventVideoFigure').hidden=!video;

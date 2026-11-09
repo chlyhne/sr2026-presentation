@@ -5,15 +5,13 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  try{
   const page=await browser.newPage({viewport:{width:1300,height:850},acceptDownloads:true}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
-  await page.addInitScript(()=>{window.SR_TRACK_RENDERER='webgl';});
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
   await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
   const initial=await page.evaluate(()=>({gpu:webglTracks.active,error:webglTracks.error,renderer:webglTracks.renderer}));
-  assert.equal(initial.gpu,true,'Exercise real WebGL depth and the software fallback: '+initial.error);
-  for(const mode of ['webgl','software']){
+  assert.equal(initial.gpu,true,'Exercise nominal WebGL depth: '+initial.error);
+  for(const mode of ['webgl']){
    const result=await page.evaluate(mode=>{
     const check=(ok,message)=>{if(!ok)throw Error(mode+': '+message);};
-    window.layerTestMode=mode;webglTracks.active=mode==='webgl';webglTracks.host.setAttribute('display',mode==='webgl'?'inline':'none');
     const point=(x,y,t)=>[9.5+x*4.5/1000,57-y*3/1180,D.start+t];
     const metadata=boatMetadata('Mercutio');
     const a={id:'time-a',name:'Mercutio',metadata,points:[point(580,460,100),point(620,460,200),point(580,500,500),point(620,500,600)],speeds:[12,12,12,12]};
@@ -22,11 +20,10 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     $('wind').checked=$('rain').checked=$('traffic').checked=$('military').checked=$('annotationsVisible').checked=false;
     for(const id of ['places','seamarks','boatMarkers','speedMarkers','trackSpeedLegend'])$(id).setAttribute('visibility','hidden');
     view=[570,430,60,100];$('map').setAttribute('viewBox',view.join(' '));selectedTime=D.start+650;
-    const renderer=webglTracks.active?webglTracks:softwareTracks;
+    const renderer=webglTracks;
     const pixel=(x,y)=>{
      const viewport=mapViewport(),p=new DOMPoint(x,y).matrixTransform(viewport.matrix);
      const px=Math.floor((p.x-viewport.rect.left)*renderer.canvas.width/viewport.rect.width),py=Math.floor((p.y-viewport.rect.top)*renderer.canvas.height/viewport.rect.height);
-     if(mode==='software')return [...renderer.context.getImageData(px,py,1,1).data];
      const out=new Uint8Array(4);renderer.gl.readPixels(px,renderer.canvas.height-1-py,1,1,renderer.gl.RGBA,renderer.gl.UNSIGNED_BYTE,out);return [...out];
     };
     const expected=speed=>TRACK_SPEED_COLOURS[speedBin(speed)].match(/\d+/g).map(Number);
@@ -75,6 +72,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    for(const [i,colour] of [expected.first,expected.second].entries())assert.ok(exported[i].slice(0,3).every((value,j)=>Math.abs(value-colour[j])<=20),'PNG must preserve temporal ordering: '+JSON.stringify({mode,exported,expected}));
    console.log(JSON.stringify({...result,png:true}));
   }
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',checks:'local timestamps, two opposite crossings, boat-order independence, self-crossing, millisecond precision, gaps, time-window clipping, reverse seek, click selection, immutable GPU buffers, PNG, both rendering paths',errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',checks:'local timestamps, two opposite crossings, boat-order independence, self-crossing, millisecond precision, gaps, time-window clipping, reverse seek, click selection, immutable GPU buffers, PNG from nominal renderers',errors}));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1)});

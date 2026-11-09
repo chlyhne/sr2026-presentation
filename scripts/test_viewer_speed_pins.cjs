@@ -8,7 +8,6 @@ async function check(type){
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000},acceptDownloads:true}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  if(process.env.SR_TRACK_RENDERER)await page.addInitScript(renderer=>window.SR_TRACK_RENDERER=renderer,process.env.SR_TRACK_RENDERER);
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
   await page.waitForFunction(()=>typeof nearestTrackSpeed==='function'&&typeof stopPlayback==='function'&&typeof captureMap==='function');
   const target=await page.evaluate(()=>{

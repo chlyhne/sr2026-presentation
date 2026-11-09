@@ -3,6 +3,10 @@
 Selvstændig webapp med kort, bådspor, vind, radar og events fra Sjælland Rundt.
 Beretning, magasin og LaTeX/PDF-dokumenter ligger i det separate projekt `../SR 2026/`.
 
+Udviklingsprincip: Én nominel implementering pr. funktion, ingen skjulte
+fallbacks. Fejl skal vises tydeligt. Se [projektprincipperne](AGENTS.md).
+Løbende test begrænses til relevant lokal Firefox-test på PC.
+
 ## Lokalt preview og redigering
 
 Kør fra denne projektmappe:

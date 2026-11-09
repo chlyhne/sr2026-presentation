@@ -55,35 +55,13 @@ const landPolygons=(D.land?.features||[]).map(feature=>{
  const rings=feature.geometry.coordinates,points=rings.flat();
  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
  for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
- return {west,east,south,north,rings,d:rings.map(ring=>path(ring)+'Z').join(' ')};
+ return {west,east,south,north,rings};
 });
-let landKey=null;
-function renderLand(bounds){
- const visible=[];
- for(const [i,polygon] of landPolygons.entries())if(mapBoundsIntersect(polygon,bounds))visible.push(i);
- const key=visible.join(',');if(key===landKey)return;
- const fragment=document.createDocumentFragment();
- for(const i of visible)el('path',{d:landPolygons[i].d,fill:LAND_FILL,'fill-rule':'evenodd'},fragment);
- $('land').replaceChildren(fragment);landKey=key;
-}
 for(const line of D.coast)for(let start=0;start<line.length-1;start+=256){
  const points=line.slice(start,start+257);
  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
  for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
- coastChunks.push({west,east,south,north,points,before:line[start-1],after:line[start+257],d:path(points)});
-}
-let coastKey=null;
-function renderCoast(){
- if(window.SRBackground?.active)return;
- const bounds=visibleMapBounds();if(!bounds)return;
- renderLand(bounds);
- const visible=[];
- for(const [i,chunk] of coastChunks.entries())if(mapBoundsIntersect(chunk,bounds))visible.push(i);
- const key=visible.join(',');if(key===coastKey)return;
- const fragment=document.createDocumentFragment();
- for(const i of visible)el('path',{d:coastChunks[i].d,fill:'none',stroke:'#365766','stroke-width':1,
-  'stroke-linejoin':'round','stroke-linecap':'round','vector-effect':'non-scaling-stroke'},fragment);
- $('coast').replaceChildren(fragment);coastKey=key;
+ coastChunks.push({west,east,south,north,points,before:line[start-1],after:line[start+257]});
 }
 let mapCreditKey=null;
 function renderMapCredit(){
@@ -239,17 +217,17 @@ function consumeRenderRequest(){
 }
 function flushRender(){
  const kind=consumeRenderRequest();
- if(kind==='full')drawMap();else if(kind==='viewport')drawViewport();else if(kind==='background')window.SRBackground?.render();
+ if(kind==='full')drawMap();else if(kind==='viewport')drawViewport();else if(kind==='background')webglBackground.render();
 }
 // Retain an immediate path for exports, scene restoration and programmatic use.
 function render(){consumeRenderRequest();drawMap();}
-function drawMap(){const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderCoast();renderWindField(t);renderRadar(t);window.SRBackground?.render();status(t);renderWindArrows(t);renderTraffic();renderMilitary();
+function drawMap(){if(hasRenderingFailure())return;const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderWindField(t);renderRadar(t);webglBackground.render();status(t);renderWindArrows(t);renderTraffic();renderMilitary();
  renderTracks(t,{includeSpeedPins:false});
  renderAnnotations();
  renderMapCredit();
 }
 function drawViewport(){
- renderCoast();window.SRBackground?.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.active?webglTracks.redraw():softwareTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit();
+ if(hasRenderingFailure())return;webglBackground.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit();
  updateVisibleBoats();
 }
 function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
@@ -257,9 +235,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  const markerLayer=$('boatMarkers');
  markerLayer.replaceChildren();
  const drawingOrder=boats.filter(b=>chosen.has(b.name)).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
- if(webglTracks.render(t,drawingOrder)){
-  softwareTracks.hide();
- }else softwareTracks.render(t,drawingOrder);
+ if(!webglTracks.render(t,drawingOrder))return;
  for(const b of drawingOrder){
   const markers=el('g',{class:'boat-markers'},markerLayer),color=colours[b.name];
   const position=trackPosition(b.points,t);
@@ -286,6 +262,7 @@ for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>req
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
 let playbackTickTime=0,playbackRate=1,playbackOffset=0,eventPlaybackTarget=null;
 function advancePlayback(now){
+ if(hasRenderingFailure()){stopPlayback();return;}
  if(eventPlaybackTarget){
   const target=eventPlaybackTarget;
   if(!notes.includes(target)){stopPlayback();return;}
@@ -302,6 +279,7 @@ function advancePlayback(now){
  if(playbackOffset>=timelineLength-1)stopPlayback();
 }
 function startPlayback({target=null}={}){
+ if(hasRenderingFailure())return;
  if((!target&&$('time').disabled)||!finishInlineTextEditing())return;
  prepareSelectedTracks();
  playbackOffset=offsetAtTime(currentTime());

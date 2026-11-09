@@ -122,12 +122,12 @@ async function check(type){
   await openVideo();await page.locator('#closeEventVideo').click();
   assert.equal(await page.evaluate(()=>document.fullscreenElement===document.documentElement),true);
   await page.evaluate(()=>document.exitFullscreen());
-  // Full viewport fallback works when browser fullscreen is unavailable.
+  // Fullscreen rejection must be explicit, with no alternate player.
   await page.evaluate(()=>{$('eventVideoOverlay').requestFullscreen=()=>Promise.reject(new Error('test denied'));});
-  await page.setViewportSize({width:390,height:740});await openVideo();
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-  await page.locator('#closeEventVideo').click();
-  await page.setViewportSize({width:1500,height:1000});
+  await page.locator('#eventVideoButton').click();
+  await page.waitForFunction(()=>$('eventVideoStatus').textContent.includes('test denied'));
+  assert.equal(await page.locator('#eventVideoOverlay').isVisible(),false);
+  assert.equal(await page.locator('#eventVideoPlayer iframe').count(),0);
   const download=page.waitForEvent('download');await page.evaluate(()=>exportEventNotes());
   const exported=JSON.parse(fs.readFileSync(await(await download).path(),'utf8'));
   assert.deepEqual(exported.notes,stored,'Export keeps the video link and start offset');
@@ -136,7 +136,7 @@ async function check(type){
   assert.equal(await page.locator('#eventVideoFigure').isVisible(),false);
   assert.equal(await page.evaluate(()=>notes[1].video),null);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'YouTube link formats and validation, video-only event, draft preview, reload, inline text, edit/cancel/remove, full viewport player on click, browser fullscreen ownership, Escape, player teardown, no autoplay on navigation, mobile fallback, JSON export',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'YouTube link formats and validation, video-only event, draft preview, reload, inline text, edit/cancel/remove, fullscreen player on click, browser fullscreen ownership, Escape, player teardown, no autoplay on navigation, explicit fullscreen failure, JSON export',errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of [chromium,firefox])await check(type);})().catch(error=>{console.error(error);process.exit(1)});

@@ -16,15 +16,15 @@ async function check(type){
     renderRadar(D.start+600);renderWindField(D.start+3600);
     await Promise.resolve();
     check(oldRadar.getAttribute('visibility')==='visible'&&oldWind.getAttribute('visibility')==='visible','Old frame removed before paint');
-    check(radarImageBuffer.frontNode===oldRadar.parentNode.lastElementChild,'New radar is below fallback');
-    check(windImageBuffer.frontNode===oldWind.parentNode.lastElementChild,'New wind is below fallback');
+    check(radarImageBuffer.frontNode===oldRadar.parentNode.lastElementChild,'Radar source order was not updated');
+    check(windImageBuffer.frontNode===oldWind.parentNode.lastElementChild,'Wind source order was not updated');
     const first=frames.splice(0);for(const callback of first)callback(performance.now());
     await Promise.resolve();
-    check(oldRadar.getAttribute('visibility')==='visible'&&oldWind.getAttribute('visibility')==='visible','Fallback did not survive one paint');
-    check(oldRadar.getAttribute('href')===radarHref&&oldWind.getAttribute('href')===windHref,'Fallback slot overwritten before paint');
+    check(oldRadar.getAttribute('visibility')==='visible'&&oldWind.getAttribute('visibility')==='visible','Previous source retired before handoff');
+    check(oldRadar.getAttribute('href')===radarHref&&oldWind.getAttribute('href')===windHref,'Source slot overwritten before handoff');
     const second=frames.splice(0);for(const callback of second)callback(performance.now());
     await Promise.all([radarImageBuffer.paintReady,windImageBuffer.paintReady]);
-    check(oldRadar.getAttribute('visibility')==='hidden'&&oldWind.getAttribute('visibility')==='hidden','Fallback did not retire');
+    check(oldRadar.getAttribute('visibility')==='hidden'&&oldWind.getAttribute('visibility')==='hidden','Previous source did not retire');
     check(radarImageBuffer.frontNode.getAttribute('visibility')==='visible'&&windImageBuffer.frontNode.getAttribute('visibility')==='visible','No image after handoff');
     return {radarPaintCallbacks:first.length,retireCallbacks:second.length};
    }finally{window.requestAnimationFrame=original;}
@@ -36,7 +36,7 @@ async function check(type){
   await page.evaluate(()=>Promise.all([radarImageBuffer.paintReady,windImageBuffer.paintReady]));
   assert.equal(await page.locator('#precipitation image[visibility="visible"]').count(),1);
   assert.equal(await page.locator('#windField image[visibility="visible"]').count(),1);
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),checks:'fallback retained through paint, no early slot reuse, front on top, clean retirement, rapid reverse seek',...result,errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),checks:'source retained through handoff, no early slot reuse, source ordering, clean retirement, rapid reverse seek',...result,errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1);});

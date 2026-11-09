@@ -304,8 +304,8 @@ linjerne sammenlægges; der afrundes ikke.
   Højrepanelet viser et miniaturebillede med en afspilningsknap i begge tilstande.
   Et klik åbner afspilleren i fuld skærm og starter videoen. **Luk video** eller
   Escape lukker afspilleren og stopper lyden. Hvis præsentationen allerede er i
-  fuld skærm, forbliver den der bagefter. Når browserens fuldskærmsfunktion ikke
-  er tilgængelig, fylder afspilleren hele browservinduet.
+  fuld skærm, forbliver den der bagefter. Hvis browseren ikke tillader fuld skærm,
+  vises en fejl, og videoen starter ikke i en alternativ visning.
   Eventnavigation og snapping åbner ikke videoen automatisk. Kortets tid,
   udsnit og bådvalg bevares, når videoen åbnes eller lukkes.
 - Når du vælger et billed-event med **Forrige/Næste**, piletasterne, eventlisten
@@ -494,9 +494,9 @@ Farver over 15 knob mættes uden at ændre eller afskære selve fartdataene.
 Genskab fartdata med `node scripts/collect_track_speeds.mjs` og derefter
 `python3 scripts/prepare_viewer.py`. Det første trin bruger den cachede
 `worker_node.mjs` og de to løbsmetadatafiler til at hente replayet igen.
-`node scripts/test_viewer_speed.cjs` kontrollerer alle kildekonverteringer samt
-farveskala, mætning, kurvegeometri, trackhuller, bådfarver, præsentation og
-PNG-eksport i Chromium og Firefox (kræver Playwright).
+`node scripts/test_viewer_speed.cjs` kontrollerer alle kildekonverteringer.
+`node scripts/test_viewer_webgl_tracks.cjs` kontrollerer renderede fartfarver,
+kurvegeometri, trackhuller og PNG i lokal Firefox på PC (kræver Playwright).
 
 Trackhuller over fem minutter forbindes ikke med en linje; bådmarkører skjules,
 når sidste position er mere end fem minutter gammel. Trackstart/-slut er ikke
@@ -670,16 +670,15 @@ PNG-eksport gentegner sporene ved eksportens fulde 2×-opløsning med samme
 tidsbaserede dybde og indsætter resultatet i kortets SVG. Øvrige kortlag og
 ikoner eksporteres fortsat som vektorer før dannelsen af den endelige PNG.
 
-Uden WebGL 2, ved kendt softwaregrafik eller ved tab af GPU-konteksten bruges
-`software-tracks.js`. Reserven har en CPU-dybdebuffer med samme lokale
-tidsprioritet. Den afviser intervaller uden for kortet og evaluerer de
-oprindelige kubiske kurver efter skærmopløsning og parametrisk fejlgrænse.
-Alle kildedata bevares. En gendannet GPU-kontekst genopbygger bufferne og
-skifter tilbage. `window.SR_TRACK_RENDERER='software'` vælger reserven før boot;
-den ældre værdi `'svg'` er et alias. `'webgl'` tillader software-WebGL i tests.
+Der er kun én renderingsvej: WebGL 2 til både baggrund og spor samt deres
+PNG-eksport. Ingen CPU- eller SVG-reserve vælges på andre PC'er. Hvis WebGL
+mangler eller en kontekst mistes, skjules kortet, afspilning stoppes, og årsagen
+vises tydeligt. En gendannet kontekst genopbygger den samme WebGL-renderer.
+Det generelle princip om én nominel implementering er beskrevet i
+[projektprincipperne](../AGENTS.md).
 `node scripts/test_viewer_track_time_layers.cjs` tester lokalt i Firefox på PC:
 modsatrettede krydsninger, selvkrydsning, millisekunder, pauser, tidsvindue,
-tilbagespoling, klik, genbrug af GPU-buffere og PNG i begge tegnemetoder.
+tilbagespoling, klik, genbrug af GPU-buffere og PNG med den nominelle renderer.
 
 Baggrunden bruger én WebGL 2-flade i `background-renderer.js`, med fast
 lagrækkefølge: vindfarvefelt, land, radar og kyst. Landpolygoner, inklusive
@@ -692,15 +691,14 @@ bevarer deres eksisterende lag.
 
 Baggrunden og sporene deler `mapViewport()` og `positionMapCanvas()`, så både
 klipning og placering bygger på kortets faktiske skærmrektangel, også i fuld
-skærm og ved HiDPI. PNG-eksport genskaber native SVG-land og -kyst fra de samme
-kildefiler. SVG er også reserve ved manglende WebGL, softwaregrafik eller tab
-af konteksten. `window.SR_BACKGROUND_RENDERER='svg'` tvinger reserven;
-`'webgl'` tillader softwaregrafik i tests.
+skærm og ved HiDPI. PNG-eksport gentegner også baggrunden med samme WebGL-renderer
+i eksportens fulde 2×-opløsning, inklusive land, kyst og vejr.
 
-`node scripts/test_viewer_background.cjs` sammenligner browserens færdige
-WebGL- og SVG-billeder i Chromium og Firefox ved flere zoomniveauer. Den
-kontrollerer også landhuller, lagrækkefølge, genbrug af geometri og teksturer,
-vejrskift, PNG-eksport og tab/gendannelse af GPU-konteksten.
+`node scripts/test_viewer_background.cjs` kontrollerer landhuller, lagrækkefølge,
+genbrug af geometri og teksturer, vejrskift, PNG og tab/gendannelse af konteksten.
+`node scripts/test_viewer_nominal_rendering.cjs` kontrollerer i lokal Firefox
+på PC både normal visning/PNG og tydelige fejl ved manglende WebGL eller tab af
+en af de to kontekster. Den kontrollerer også, at video kræver fuld skærm.
 
 `node scripts/test_viewer_webgl_tracks.cjs` kontrollerer faktiske GPU-pixels,
 huller, fartdata, genbrug af buffere, eksport og tab/gendannelse af konteksten.
@@ -708,18 +706,15 @@ huller, fartdata, genbrug af buffere, eksport og tab/gendannelse af konteksten.
 præsentation før, under og efter fuld skærm og kontrollerer tekststørrelser og
 faktiske sporpixels ved de gemte zoomniveauer. Testen bruger grafikkort og en
 synlig browser som standard (`SR_HEADLESS=1` vælger headless).
-`node scripts/test_viewer_track_alignment.cjs` sammenligner faktiske
-skærmbilleder af WebGL og SVG ved event 7, både med zoom og fremspoling,
-fuld skærm og HiDPI. Den kontrollerer også, at sporet rammer bådens SVG-anker.
-Pixels i selve grafikbufferen kan ikke afsløre fejl i browserens komposition.
-`node scripts/benchmark_viewer_tracks.cjs` sammenligner WebGL og CPU-reserven med alle
+`node scripts/benchmark_viewer_tracks.cjs` måler den nominelle WebGL-renderer med alle
 106 både. Benchmarken bruger en synlig Firefox med grafikkort som standard;
 `SR_HEADLESS=1` kan bruges til automatisering, men måler ofte softwaregrafik.
 
 ## Dobbelt buffer til vejrkort
 
-Radar og vindfarvefelt har hver to billedbuffere, med SVG til reserve og eksport
-og to teksturer pr. lag i WebGL-baggrunden. Det næste radartidspunkt
+Radar og vindfarvefelt har hver to billedbuffere til indlæsning og
+to teksturer pr. lag i WebGL-baggrunden. De skjulte billednoder bruges kun til
+indlæsning og lagtilstand; de tegnes ikke selv på kortet eller i PNG. Det næste radartidspunkt
 og næste vindtime indlæses, afkodes og uploades på forhånd. Indlæsningen må
 aldrig overskrive teksturen til det viste billede. Den færdige buffer vises ved
 tidsskiftet. Den gamle buffer beholdes gennem den første tegnecyklus, før

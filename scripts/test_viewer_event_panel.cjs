@@ -9,8 +9,6 @@ async function check(type){
  const browser=await type.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000},acceptDownloads:true}),errors=[];
-  // This test inspects SVG land fills and their PNG export, independently of GPU support.
-  await page.addInitScript(()=>{window.SR_BACKGROUND_RENDERER='svg';});
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base);await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
   const source=await page.evaluate(()=>{
@@ -31,8 +29,7 @@ async function check(type){
   assert.equal(await page.locator('#eventText').textContent(),'Den gemte eventtekst');
   assert.equal(await page.locator('#annotations rect,#annotations tspan').count(),0,'No annotation text boxes remain on the map');
   assert.equal(await page.locator('#annotations circle').count(),1,'Geographic event marker remains');
-  assert.ok(await page.locator('#land path').count()>0);assert.equal(await page.locator('#land path').first().getAttribute('fill'),'#bdc7cb');
-  assert.equal(await page.locator('#coast path').first().getAttribute('stroke'),'#365766');
+  assert.equal(await page.evaluate(()=>webglBackground.active),true);
   await page.evaluate(()=>{
    const serialize=XMLSerializer.prototype.serializeToString;
    XMLSerializer.prototype.serializeToString=function(node){const xml=serialize.call(this,node);window.panelTestSVG=xml;return xml;};
@@ -41,8 +38,8 @@ async function check(type){
   await(await mapDownload).saveAs('/tmp/sr2026-land-'+type.name()+'-map.png');
   const mapExport=await page.evaluate(()=>{
    const doc=new DOMParser().parseFromString(panelTestSVG,'image/svg+xml');
-   return {land:doc.querySelector('#land path')?.getAttribute('fill'),panel:!!doc.querySelector('#eventPanel'),textBoxes:doc.querySelectorAll('#annotations rect,#annotations tspan').length};
-  });assert.deepEqual(mapExport,{land:'#bdc7cb',panel:false,textBoxes:0});
+   return {background:!!doc.querySelector('[data-render-layer="background"]'),panel:!!doc.querySelector('#eventPanel'),textBoxes:doc.querySelectorAll('#annotations rect,#annotations tspan').length};
+  });assert.deepEqual(mapExport,{background:true,panel:false,textBoxes:0});
   const original=await page.evaluate(()=>localStorage.getItem('sr2026-notes'));
   await page.evaluate(()=>{selectedTime=D.start+10800;render();});
   const file={name:'mercutio-test.png',mimeType:'image/png',buffer:Buffer.from(source,'base64')};

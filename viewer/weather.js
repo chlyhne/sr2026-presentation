@@ -1,4 +1,4 @@
-// Two decoded SVG image slots: keep the front visible until the back is ready.
+// Two decoded source image slots for WebGL textures; retain front until back is ready.
 class WeatherImageBuffer {
  constructor(id){
   this.id=id;this.frontNode=document.getElementById(id);this.backNode=this.frontNode.cloneNode(false);
@@ -51,7 +51,7 @@ class WeatherImageBuffer {
   const oldNode=this.frontNode,oldEntry=this.front;
   this.frontNode=this.backNode;this.front=this.back;this.backNode=oldNode;this.back=oldEntry;
   this.backNode.id=this.id+'Back';this.frontNode.id=this.id;
-  // Put the new frame above the fallback, retaining the old pixels through paint.
+  // Hand the decoded source frame to the nominal renderer before retiring its old slot.
   oldNode.after(this.frontNode);this.frontNode.setAttribute('visibility','visible');
   const newNode=this.frontNode;
   if(oldEntry?.ready&&oldNode.getAttribute('visibility')==='visible'){
