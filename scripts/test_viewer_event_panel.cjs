@@ -9,8 +9,10 @@ async function check(type){
  const browser=await type.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000},acceptDownloads:true}),errors=[];
+  // This test inspects SVG land fills and their PNG export, independently of GPU support.
+  await page.addInitScript(()=>{window.SR_BACKGROUND_RENDERER='svg';});
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(base);await page.waitForFunction(()=>typeof prepareEventImage==='function');
+  await page.goto(base);await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
   const source=await page.evaluate(()=>{
    const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=800;
    const ctx=canvas.getContext('2d');ctx.fillStyle='#264b62';ctx.fillRect(0,0,1200,800);
@@ -61,6 +63,9 @@ async function check(type){
   await another.close();
   await page.reload();await page.waitForFunction(()=>document.querySelectorAll('.note-jump').length===3);
   await page.locator('.note-jump').nth(2).click();
+  await page.waitForFunction(()=>$('mapEventImageContent').naturalWidth>0&&!$('mapEventImage').hidden);
+  assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
+  await page.locator('#mapEventImage').click();
   await page.waitForFunction(()=>$('eventImage').naturalWidth>0&&!$('eventImageFigure').hidden);
   assert.equal(await page.locator('#eventImageCaption').textContent(),file.name);
   await page.locator('.note-edit').nth(2).click();await page.locator('#note').fill('Foto fra Storebælt <b>almindelig tekst</b>');
@@ -74,9 +79,11 @@ async function check(type){
   assert.equal(stored[2].text,'Foto fra Storebælt');assert.deepEqual(stored[2].image,photo);
   await page.locator('#startPresentation').click();
   assert.equal(await page.locator('aside').isVisible(),false);assert.equal(await page.locator('#eventPanel').isVisible(),true);
-  await page.waitForFunction(()=>$('eventImage').naturalWidth>0&&!$('eventImageFigure').hidden);
+  await page.waitForFunction(()=>$('mapEventImageContent').naturalWidth>0&&!$('mapEventImage').hidden);
+  assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
   await page.locator('#previousEvent').click();assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
-  await page.locator('#nextEvent').click();await page.waitForFunction(()=>$('eventImage').naturalWidth>0&&!$('eventImageFigure').hidden);
+  await page.locator('#nextEvent').click();await page.waitForFunction(()=>$('mapEventImageContent').naturalWidth>0&&!$('mapEventImage').hidden);
+  assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
   await page.screenshot({path:'/tmp/sr2026-event-panel-'+type.name()+'-desktop.png'});
   await page.setViewportSize({width:390,height:740});await page.waitForTimeout(150);
   const mobile=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,

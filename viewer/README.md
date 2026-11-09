@@ -233,6 +233,18 @@ linjerne sammenlægges; der afrundes ikke.
   **Fjern billede** fjerner vedhæftningen; ændringer i en eksisterende note kan
   kasseres med **Annullér redigering**. Billedet vises i højrepanelet og følger
   det valgte event ved navigation.
+- **Beskær billede** åbner billedredigeringen for den vedhæftede fil. På et
+  eksisterende event skal du først vælge **Redigér** ved noten. Træk i rammens
+  hjørner for at ændre udsnittet, træk rammen for at flytte det, eller angiv
+  venstre kant, top, bredde og højde i pixels. Træk uden for rammen for at vælge
+  et nyt udsnit. **Hele billedet** nulstiller rammen, og **Annullér** eller Escape
+  lukker uden ændringer. **Brug beskæring** uploader udsnittet som en ny WebP-fil
+  og bruger den i eventets kladde. Klik derefter **Gem event** eller
+  **Gem ændringer**, og online også **Udgiv**. En uploadfejl bevarer billedet og
+  udsnittet, så du kan prøve igen. **Annullér redigering** genskaber det gemte
+  billede. Andre events med samme originalbillede ændres ikke. Beskæringen følger
+  med ved genindlæsning og i JSON-eksport/import; den oprindelige fil bevares på
+  serveren ligesom ved udskiftning af en vedhæftning.
 - **YouTube-video til event** vedhæfter en video via et YouTube-link. Almindelige
   videolinks, `youtu.be`, Shorts, live-links og embed-links accepteres. Et link
   med starttid, fx `?t=1m30s`, starter videoen ved det valgte tidspunkt.
@@ -249,6 +261,8 @@ linjerne sammenlægges; der afrundes ikke.
 - Når du vælger et billed-event med **Forrige/Næste**, piletasterne, eventlisten
   eller notelisten, vises billedet automatisk over kortet. Det gælder i begge
   tilstande. Et snap til eventet på tidslinjen åbner kun billedet i højrepanelet.
+  Billedet vises kun ét sted ad gangen: højrepanelets billede skjules, mens
+  billedet er åbent over kortet, og kommer tilbage, når kortet vises igen.
   Klik på billedet over kortet for at vise kortet igen; klik på billedet i panelet
   for at åbne det over kortet. Enter/mellemrum kan også bruges på billederne.
   Escape lukker et åbent billede før det eventuelt forlader præsentationen.
@@ -297,6 +311,11 @@ YouTube-funktionen testes med `node scripts/test_viewer_event_videos.cjs` i begg
 browsere. Testen erstatter YouTubes eksterne afspiller med en testside og kontrollerer
 linkvalidering, gemning, genindlæsning, redigering, fuld skærm, lukning, mobilvisning
 og eksport; selve YouTubes videoafspilning afhænger af tjenesten og netadgang.
+`node scripts/test_viewer_image_overlay.cjs` kontrollerer billedskift, kun én
+synlig billedvisning, navigation, tidslinje, langsomme svar og mobilvisning.
+`node scripts/test_viewer_image_crop.cjs` kontrollerer beskæringsramme, faktiske
+billedpixels, gemning/genindlæsning, eksport, annullering, uploadfejl, delte
+originalbilleder og mobilvisning. Begge tests kører i Chromium og Firefox.
 
 ## Datagrundlag
 
