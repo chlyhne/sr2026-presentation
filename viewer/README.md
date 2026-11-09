@@ -135,22 +135,25 @@ python3 scripts/serve_viewer.py
   Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,
   og skjules, når et eventbillede dækker kortet. Listen ændrer ikke gemte events
   og indgår ikke i kortets PNG-eksport.
-  Ved åbning sorteres bådene alfabetisk. Mens listen er åben, beholder hver båd
-  sin plads: nye både tilføjes nederst, og både, der forlader udsnittet, nedtones
-  med **Ude af udsnittet** i stedet for fart. De tæller ikke med i bjælkens antal
-  og fremhæver ikke et ikon. Vender en båd tilbage, genbruges dens plads.
+  Listen er altid alfabetisk og indeholder kun de aktuelt synlige både.
+  Både, der forlader udsnittet, fjernes med det samme. Når listen er foldet ud,
+  fylder den ned til kortets bund. Hold musen over et bådikon på kortet for at
+  rulle den åbne liste til bådens række og fremhæve den. Det ændrer ikke kortet
+  eller tastaturfokus og åbner ikke en sammenfoldet liste.
+  En fast farvestribe viser altid bådens farve. Fremhævning bruger baggrund og
+  ramme, så bådfarven også er synlig under mouseover.
   Rækkerne har fast højde, så ændringer i fart eller lange navne ikke skubber de
-  andre rækker. Hele navnet vises som tooltip. Luk og åbn listen for at rydde
-  udgåede både og sortere på ny. Et aktivt fravalg af en båd fjerner dens række.
+  andre rækker. Hele navnet vises som tooltip. Fravalg af en båd fjerner dens række.
   Skippernavnene kommer fra de gemte TracTrac-deltageres `description`.
   Bådtypen hentes fra Manage2Sail via `uniqueId`/`BowNumber`, med TracTracs
   bådtype som reserve. Genskab `boat-details.js` med
   `python scripts/prepare_boat_details.py`; det genbruger projektets kildedata.
-  `node scripts/test_viewer_boat_list.cjs` kontrollerer listen i Chromium og Firefox.
+  `node scripts/test_viewer_boat_list.cjs` kontrollerer listen lokalt i Firefox på PC.
   `node scripts/test_viewer_boat_list_presentation.cjs` kontrollerer desuden den
-  offentlige præsentationsmode uden redigering: faste pladser, mouseover,
+  offentlige præsentationsmode uden redigering: alfabetisk rækkefølge, mouseover,
   afspilning, eventskift, rulning og browserens faktiske fuldskærmsvisning i
-  begge browsere. Testens events er simulerede; den gemmer ikke på serveren.
+  Firefox. Testens events er simulerede; den gemmer ikke på serveren.
+  `SR_FULL_TEST=1` aktiverer den bredere browser- og mobiltest ved en endelig udgivelse.
 - Klik på en båds bådikon for at vise eller skjule navnet. Det gælder alle
   både. Tab og Enter/mellemrum kan også bruges. Navnevalget bevares ved zoom,
   tidsskift og til-/fravalg af både, gemmes med noter og kommer med i PNG-billedet.
