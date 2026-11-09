@@ -106,6 +106,13 @@ python3 scripts/serve_viewer.py
   I præsentationen bevares den valgte tid ved zoom, panorering og ændret
   skærmstørrelse. Navigation og snap ændrer ikke de gemte noter.
 - Mercutio, Vera, My, The Hulk og Rosa-Lux er valgt fra start; begge baners øvrige tracks kan vælges.
+- **Lag** øverst til højre på kortet åbner valgene **Vind** og **Byger**.
+  De kan slås til og fra hver for sig, også i præsentation og fuld skærm.
+  Klik udenfor eller tryk Escape for at lukke lagmenuen. I redigering gemmes
+  ændringer på det aktive event; i præsentation ændrer de kun den aktuelle visning.
+  PNG-billedet bruger de valgte lag. Vindmodel og radarens synlighed justeres
+  fortsat i sidepanelet.
+  `node scripts/test_viewer_layers.cjs` tester lagmenuen lokalt i Firefox på PC.
 - Hvert event gemmer sit eget udvalg af aktive både. Ved Forrige/Næste, valg i
   eventlisten eller klik på en note genskabes netop dette udvalg, også et tomt udvalg.
   Når du står ved et gemt events tidspunkt i redigering og ændrer bådvalget,

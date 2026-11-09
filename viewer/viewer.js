@@ -281,6 +281,19 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  updateVisibleBoats(t);
 }
 function step(n){if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
+function setMapLayersExpanded(expanded){
+ $('mapLayersPanel').hidden=!expanded;
+ $('mapLayersToggle').setAttribute('aria-expanded',String(expanded));
+}
+$('mapLayersToggle').onclick=()=>setMapLayersExpanded($('mapLayersPanel').hidden);
+document.addEventListener('pointerdown',event=>{
+ if(!$('mapLayers').contains(event.target))setMapLayersExpanded(false);
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&!$('mapLayersPanel').hidden){
+  event.preventDefault();event.stopImmediatePropagation();setMapLayersExpanded(false);$('mapLayersToggle').focus();
+ }
+},true);
 for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
 let playbackTickTime=0,playbackRate=1,playbackOffset=0,eventPlaybackTarget=null;
