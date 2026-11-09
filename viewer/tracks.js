@@ -1,6 +1,6 @@
 // Shape-preserving cubic Hermite interpolation (PCHIP) in source time.
-// Every observation is an interpolation knot. SVG renders the cubic curves at
-// the current zoom instead of baking a fixed number of intermediate pixels.
+// Every observation is an interpolation knot. The renderers evaluate the cubic
+// at the current zoom instead of baking a fixed-resolution track image.
 const TRACK_MAX_GAP=300;
 const trackModelCache=new WeakMap();
 const TRACK_SPEED_MAX=15,TRACK_SPEED_BINS=128,TRACK_SPEED_MISSING='#8a949b';
@@ -56,17 +56,7 @@ function getTrackSpeedCache(points,speeds){
 // Prepare the whole voyage before playback, then retain it for reverse seeks.
 function prepareBoatTrack(boat){
  if(typeof webglTracks!=='undefined'&&webglTracks.active){webglTracks.prepare(boat);return;}
- const {points,speeds}=boat,cache=getTrackSpeedCache(points,speeds);
- if(cache.prepared)return;
- const model=getTrackModel(points);
- const outline=trackOutlineCache.get(points)||new Map();
- for(let i=0;i<points.length-1;i++){
-  const a=points[i],b=points[i+1],h=b[2]-a[2];
-  if(h<=0||h>TRACK_MAX_GAP)continue;
-  if(!outline.has(i))outline.set(i,trackCurvePiece(points,i,a[2],b[2],model));
-  if(!cache.intervals.has(i))cache.intervals.set(i,colouredTrackInterval(points,speeds,i,a[2],b[2],model));
- }
- cache.prepared=true;trackOutlineCache.set(points,outline);trackSpeedCache.set(points,cache);
+ softwareTracks.prepare(boat);
 }
 function prepareSelectedTracks(){
  for(const boat of boats)if(chosen.has(boat.name))prepareBoatTrack(boat);

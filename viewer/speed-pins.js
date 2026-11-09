@@ -15,12 +15,21 @@ function trackSpeedSample(boat,time){
 function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
  const matrix=$('map').getScreenCTM();if(!matrix)return null;
  const now=currentTime(),start=now-7200,limit=topmost?8*8:12*12;
- let best=null,bestDistance=limit;
+ let best=null,bestDistance=limit,bestPainted=false;
+ const paintedRadius2=(TRACK_OUTLINE_WIDTH/2+.5)**2;
+ function consider(boat,time,d){
+  if(d>limit)return;
+  const painted=d<=paintedRadius2;
+  const wins=topmost
+   ?!best||(painted&&!bestPainted)||(painted===bestPainted&&(painted?time>=best.time:d<bestDistance||(d===bestDistance&&time>=best.time)))
+   :d<=bestDistance;
+  if(wins){bestDistance=d;bestPainted=painted;best={boatId:boat.id,time};}
+ }
  function distance(point){
   const [x,y]=xy(point),dx=matrix.a*x+matrix.c*y+matrix.e-clientX,dy=matrix.b*x+matrix.d*y+matrix.f-clientY;
   return dx*dx+dy*dy;
  }
- const order=topmost&&webglTracks.active?[...webglTracks.order].reverse():boats;
+ const order=topmost?[...boats].sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio')):boats;
  for(const boat of order){
   if(!chosen.has(boat.name)||(boatId&&boat.id!==boatId))continue;
   const points=boat.points,model=getTrackModel(points);
@@ -28,7 +37,7 @@ function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
    const a=points[i],b=points[i+1],gap=b?b[2]-a[2]:0;
    if(!b||gap<=0||gap>TRACK_MAX_GAP){
     if(a[2]<start)continue;
-    const d=distance(a);if(d<=bestDistance){bestDistance=d;best={boatId:boat.id,time:a[2]};}continue;
+    consider(boat,a[2],distance(a));continue;
    }
    const from=Math.max(start,a[2]),to=Math.min(now,b[2]);if(to<from)continue;
    // PCHIP stays inside the source endpoints' coordinate rectangle.
@@ -51,9 +60,8 @@ function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
    }
    const refined=(lo+hi)/2,d=evaluate(refined);
    if(d<minimum){minimum=d;nearest=refined;}
-   if(minimum<=bestDistance){bestDistance=minimum;best={boatId:boat.id,time:nearest};}
+   consider(boat,nearest,minimum);
   }
-  if(topmost&&best)return best;
  }
  return best;
 }
@@ -62,19 +70,18 @@ function matchingSpeedPin(sample){
 }
 function chooseTrackSpeed(e,boatId){
  if(document.body.classList.contains('presenting'))return;
- pickedTrackSpeed=nearestTrackSpeed(e.clientX,e.clientY,boatId,!boatId&&webglTracks.active);
+ pickedTrackSpeed=nearestTrackSpeed(e.clientX,e.clientY,boatId,!boatId);
  if(pickedTrackSpeed)stopPlayback();
  renderSpeedPins();
 }
-// SVG paths supplied hover titles/cursors. The GPU layer has no DOM hit paths;
-// resolve hover on demand while paused, independently of the playback loop.
+// Resolve the newest visible passage on demand while paused, for both renderers.
 let trackHoverTimer=null,trackHoverTip=null;
 function clearTrackHover(){
  if(trackHoverTimer!==null){clearTimeout(trackHoverTimer);trackHoverTimer=null;}
  if(trackHoverTip&&!trackHoverTip.hidden){trackHoverTip.hidden=true;$('map').classList.remove('track-hover');}
 }
 function updateTrackHover(e){
- if(!webglTracks.active||interval||placingNote||drawingTool!=='pan'||document.body.classList.contains('presenting')||
+ if(interval||placingNote||drawingTool!=='pan'||document.body.classList.contains('presenting')||
   e.target.closest('[data-boat-marker],[data-note-index],[data-speed-key]')){clearTrackHover();return;}
  if(trackHoverTimer!==null)clearTimeout(trackHoverTimer);
  const {clientX,clientY}=e;

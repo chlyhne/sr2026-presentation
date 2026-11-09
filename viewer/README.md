@@ -113,8 +113,10 @@ python3 scripts/serve_viewer.py
   events uden at ændre deres øvrige bådvalg. Andre eventfelter bevares.
   Senere ændringer af udvalg nulstilles ikke ved genindlæsning.
   Snap på tidslinjen ændrer hverken det aktive bådvalg eller gemte bådvalg.
-- Mercutio tegnes altid efter de øvrige både, så spor, prik og navn ligger øverst
-  ved overlap. Det gælder også Mercutios fartmærker, præsentation og PNG-eksport.
+- Sporenes lag følger tiden langs kurven: den nyeste passage ligger øverst,
+  også ved selvkrydsninger. To både kan derfor skifte mellem at være over og
+  under hinanden ved forskellige krydsninger. Mercutios bådikon, navn og
+  fartmærker har fortsat deres egen forreste placering over sporene.
 - Alle både har hver sin faste farve i listen, bådnavnet og positionsmarkøren.
   Farven ændres ikke, når andre både vælges til eller fra. De fire oprindelige
   standardbådes farver er bevaret.
@@ -237,7 +239,7 @@ linjerne sammenlægges; der afrundes ikke.
 
 - Kun valgte både tegnes, med alle datapunkter fra de seneste to timer frem til
   den valgte tid. Bådmarkørerne følger en glat interpolation ved skyderens præcise
-  tidspunkt. Sporene tegnes som SVG-kurver gennem målepunkterne og forbliver glatte
+  tidspunkt. Sporene tegnes som kurver gennem målepunkterne og forbliver glatte
   ved alle zoomniveauer. Punkterne findes med binær søgning, så resten af tracket
   ikke gennemløbes ved hver opdatering.
 - **Gem kort som PNG** downloader præcis det aktuelle kortudsnit i dobbelt
@@ -466,7 +468,7 @@ maksimal bådfart. `node scripts/test_viewer_timeline_index.cjs` sammenligner
 resultaterne med det tidligere flade indeks på både syntetiske spor og alle
 gemte kortudsnit og kontrollerer genbrug af de forberedte intervaller.
 
-SVG renderer kurverne i den aktuelle skærmopløsning ved alle zoomniveauer; der
+Kurverne tegnes i den aktuelle skærmopløsning ved alle zoomniveauer; der
 bruges ingen fast opløsning af ekstra punkter. Begge ender af to-timerssporet
 afskæres ved de præcise tidspunkter på kurven. Interpolationen ændrer ikke
 kildedata eller tilføjer observationer. Metode:
@@ -644,8 +646,11 @@ bruger ca. 46,7 MB til disse buffere. Afspilning ændrer tidsgrænser og de
 intervaller, der tegnes, uden at bygge SVG-strenge eller uploade nye buffere.
 
 GPU'en evaluerer kubiske kurver, klipper dem til de seneste to timer og slår
-fartfarver op i den faste 128-trins palet. Dybdebufferen bevarer den hidtidige
-prioritet ved overlap: fartbin inden for en båd og derefter bådenes lagorden.
+fartfarver op i den faste 128-trins palet. Dybden interpoleres fra det lokale
+tidspunkt langs kurven; nyere passager dækker ældre, uanset båd og fartfarve.
+Tidens høje og lave del gemmes separat, så millisekunder også kan skelnes sent
+i sejladsen. Dybden sættes i vertex-shaderen, så GPU'en kan afvise skjulte
+fragmenter tidligt. Kant og sporfarve tegnes i én passage med samme tidsdybde.
 Huller over fem minutter forbindes fortsat ikke. Der fjernes ingen kildepunkter
 efter zoomniveau eller geografisk udsnit. Ikoner og interaktive kortlag er fortsat SVG.
 
@@ -659,16 +664,22 @@ til både sporenes projektion og `visibleMapBounds()`. Fuldskærmsskift genopfri
 sporlaget efter layout, og WebGL bruger grafikbufferens faktiske pixelstørrelse.
 Klik søger i de oprindelige kurver ved selve klikket; der vedligeholdes ingen
 usynlige SVG-klikstier under WebGL-afspilning. Ved overlap vælges den øverste
-båd, som med de tidligere klikstier. Hover i pause viser bådnavn og SOG og
+bådpassage ud fra tidspunktet ved klikpunktet. Hover i pause viser bådnavn og SOG og
 ændrer markøren; Pin/Fjern pin, tastaturbetjening og lagring er uændret.
-PNG-eksport bygger et særskilt SVG
-med de nøjagtige kubiske kurver og fartfarver, så eksporten bevarer opløsningen.
+PNG-eksport gentegner sporene ved eksportens fulde 2×-opløsning med samme
+tidsbaserede dybde og indsætter resultatet i kortets SVG. Øvrige kortlag og
+ikoner eksporteres fortsat som vektorer før dannelsen af den endelige PNG.
 
 Uden WebGL 2, ved kendt softwaregrafik eller ved tab af GPU-konteksten bruges
-de eksisterende SVG-spor med cachede kurvestykker som reserve. En gendannet
-kontekst genopbygger bufferne og skifter tilbage. Til fejlsøgning kan
-`window.SR_TRACK_RENDERER='svg'` sættes før boot; `'webgl'` tillader også
-softwaregrafik i tests. Vindpile og farveskala beholder deres eksisterende cache.
+`software-tracks.js`. Reserven har en CPU-dybdebuffer med samme lokale
+tidsprioritet. Den afviser intervaller uden for kortet og evaluerer de
+oprindelige kubiske kurver efter skærmopløsning og parametrisk fejlgrænse.
+Alle kildedata bevares. En gendannet GPU-kontekst genopbygger bufferne og
+skifter tilbage. `window.SR_TRACK_RENDERER='software'` vælger reserven før boot;
+den ældre værdi `'svg'` er et alias. `'webgl'` tillader software-WebGL i tests.
+`node scripts/test_viewer_track_time_layers.cjs` tester lokalt i Firefox på PC:
+modsatrettede krydsninger, selvkrydsning, millisekunder, pauser, tidsvindue,
+tilbagespoling, klik, genbrug af GPU-buffere og PNG i begge tegnemetoder.
 
 Baggrunden bruger én WebGL 2-flade i `background-renderer.js`, med fast
 lagrækkefølge: vindfarvefelt, land, radar og kyst. Landpolygoner, inklusive
@@ -701,8 +712,8 @@ synlig browser som standard (`SR_HEADLESS=1` vælger headless).
 skærmbilleder af WebGL og SVG ved event 7, både med zoom og fremspoling,
 fuld skærm og HiDPI. Den kontrollerer også, at sporet rammer bådens SVG-anker.
 Pixels i selve grafikbufferen kan ikke afsløre fejl i browserens komposition.
-`node scripts/benchmark_viewer_tracks.cjs` sammenligner WebGL og SVG med alle
-106 både. Benchmarken bruger en synlig Chromium med grafikkort som standard;
+`node scripts/benchmark_viewer_tracks.cjs` sammenligner WebGL og CPU-reserven med alle
+106 både. Benchmarken bruger en synlig Firefox med grafikkort som standard;
 `SR_HEADLESS=1` kan bruges til automatisering, men måler ofte softwaregrafik.
 
 ## Dobbelt buffer til vejrkort
