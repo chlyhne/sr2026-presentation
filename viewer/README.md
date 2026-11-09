@@ -119,6 +119,13 @@ python3 scripts/serve_viewer.py
   Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,
   og skjules, når et eventbillede dækker kortet. Listen ændrer ikke gemte events
   og indgår ikke i kortets PNG-eksport.
+  Ved åbning sorteres bådene alfabetisk. Mens listen er åben, beholder hver båd
+  sin plads: nye både tilføjes nederst, og både, der forlader udsnittet, nedtones
+  med **Ude af udsnittet** i stedet for fart. De tæller ikke med i bjælkens antal
+  og fremhæver ikke et ikon. Vender en båd tilbage, genbruges dens plads.
+  Rækkerne har fast højde, så ændringer i fart eller lange navne ikke skubber de
+  andre rækker. Hele navnet vises som tooltip. Luk og åbn listen for at rydde
+  udgåede både og sortere på ny. Et aktivt fravalg af en båd fjerner dens række.
   Skippernavnene kommer fra de gemte TracTrac-deltageres `description`.
   Bådtypen hentes fra Manage2Sail via `uniqueId`/`BowNumber`, med TracTracs
   bådtype som reserve. Genskab `boat-details.js` med

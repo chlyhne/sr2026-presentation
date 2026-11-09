@@ -1,4 +1,4 @@
-// Keep rows alive during playback so scrolling, hover and keyboard focus survive redraws.
+// While expanded, retain each row's slot. Arrivals append; departures dim in place.
 let visibleBoatEntries=[],hoveredVisibleBoatId=null;
 const visibleBoatRows=new Map();
 const boatListSpeedFormat=new Intl.NumberFormat('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1});
@@ -52,29 +52,36 @@ function updateVisibleBoats(time=currentTime()){
  setBoatListText($('visibleBoatsCount'),'· '+entries.length);
  $('visibleBoatsEmpty').hidden=!!entries.length;
  const ids=new Set(entries.map(entry=>entry.boat.id));
- for(const [id,row] of visibleBoatRows)if(!ids.has(id)){row.node.remove();visibleBoatRows.delete(id);}
- if(hoveredVisibleBoatId&&!ids.has(hoveredVisibleBoatId))hoveredVisibleBoatId=null;
+ const selectedIds=new Set(boats.filter(boat=>chosen.has(boat.name)).map(boat=>boat.id));
+ for(const [id,row] of visibleBoatRows)if(!selectedIds.has(id)){row.node.remove();visibleBoatRows.delete(id);}
+ if(hoveredVisibleBoatId&&!selectedIds.has(hoveredVisibleBoatId))hoveredVisibleBoatId=null;
  if(!$('visibleBoatsPanel').hidden){
-  let previous=null;
   for(const {boat,speed} of entries){
    let row=visibleBoatRows.get(boat.id);
-   if(!row){row=createVisibleBoatRow(boat);visibleBoatRows.set(boat.id,row);}
+   if(!row){row=createVisibleBoatRow(boat);visibleBoatRows.set(boat.id,row);$('visibleBoatsList').append(row.node);}
    setBoatListText(row.name,boat.name);
    setBoatListText(row.speed,Number.isFinite(speed)?boatListSpeedFormat.format(speed)+' kn':'Fart mangler');
    row.speed.title='Fart over grunden (SOG)';
    setBoatListText(row.skipper,'Skipper: '+(boat.skipper||'Ikke oplyst'));
    setBoatListText(row.type,'Bådtype: '+(boat.boatType||boat.metadata.boatType||'Ikke oplyst'));
-   const next=previous?previous.nextElementSibling:$('visibleBoatsList').firstElementChild;
-   if(next!==row.node)$('visibleBoatsList').insertBefore(row.node,next);
-   previous=row.node;
+   row.name.title=boat.name;row.skipper.title=row.skipper.textContent;row.type.title=row.type.textContent;
+  }
+  for(const [id,row] of visibleBoatRows){
+   const outside=!ids.has(id);
+   row.node.classList.toggle('is-outside',outside);row.node.tabIndex=outside?-1:0;
+   if(outside){setBoatListText(row.speed,'Ude af udsnittet');row.speed.title='Båden er ikke synlig i kortudsnittet ved dette tidspunkt';}
   }
  }
+ $('visibleBoatsHint').hidden=visibleBoatRows.size<=entries.length;
  refreshVisibleBoatHighlight();
 }
 function setVisibleBoatsExpanded(expanded){
  $('visibleBoatsToggle').setAttribute('aria-expanded',String(expanded));
  $('visibleBoatsPanel').hidden=!expanded;
- if(!expanded){hoveredVisibleBoatId=null;highlightVisibleBoat(null);}
+ if(!expanded){
+  hoveredVisibleBoatId=null;highlightVisibleBoat(null);
+  visibleBoatRows.clear();$('visibleBoatsList').replaceChildren();
+ }
  updateVisibleBoats();
 }
 $('visibleBoatsToggle').onclick=()=>setVisibleBoatsExpanded($('visibleBoatsPanel').hidden);
@@ -86,7 +93,7 @@ document.addEventListener('keydown',event=>{
  if(!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
  event.stopImmediatePropagation();
  if(event.target===$('visibleBoatsToggle'))return;
- const rows=[...$('visibleBoatsList').children],index=rows.indexOf(event.target.closest('.visible-boat'));
+ const rows=[...$('visibleBoatsList').querySelectorAll('.visible-boat:not(.is-outside)')],index=rows.indexOf(event.target.closest('.visible-boat'));
  let next=index;
  if(event.key==='ArrowDown')next=Math.min(rows.length-1,index+1);
  if(event.key==='ArrowUp')next=Math.max(0,index-1);
