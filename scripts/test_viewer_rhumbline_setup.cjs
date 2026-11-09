@@ -19,7 +19,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   await page.goto(new URL('rhumbline.html',base).href);await page.waitForSelector('body.rhumbline-setup');
   assert.equal(await page.locator('#eventPanel').isVisible(),false);
-  assert.equal(await page.locator('#mapTools #trackComparison').isVisible(),false);
+  assert.equal(await page.locator('#mapTracks').isVisible(),false);
   assert.equal(await page.locator('#mapLayers').isVisible(),false);
   assert.deepEqual(await page.locator('#map').boundingBox(),{x:0,y:0,width:1500,height:1000});
   assert.equal(await page.evaluate(()=>navigationMode),'route');

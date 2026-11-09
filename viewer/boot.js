@@ -52,7 +52,9 @@
    window.SR_RHUMBLINE=Object.freeze({version:1,points:Object.freeze(route.points.map(p=>Object.freeze(p)))});
   }
   if(file==='boat-icons')await loadBoatHulls();
-  if(file==='track-renderer')prepareSelectedTracks();
+  if(file==='track-renderer'){
+   if(routeSetup)prepareSelectedTracks();else await prepareFleetTracks();
+  }
  }
- document.querySelector('main').inert=false;
-})().catch(error=>{document.body.append(Object.assign(document.createElement('p'),{role:'alert',textContent:error.message||'Siden kunne ikke indlæses. Genindlæs for at prøve igen.'}));});
+ $('viewerLoading').hidden=true;document.querySelector('main').inert=false;
+})().catch(error=>{document.getElementById('viewerLoading').hidden=true;document.body.append(Object.assign(document.createElement('p'),{role:'alert',textContent:error.message||'Siden kunne ikke indlæses. Genindlæs for at prøve igen.'}));});

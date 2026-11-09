@@ -9,6 +9,7 @@
   <button id="presentationFullscreen" aria-pressed="false" hidden>Fuld skærm</button>
   <button id="endPresentation" hidden>Redigér</button>
 </div></header>
+<p id="viewerLoading" role="status">Indlæser kort …</p>
 <main inert><aside>
   <div class="presentation-tools">
     <button id="capture" class="primary">Gem kort som PNG</button>
@@ -28,7 +29,7 @@
   <p id="trafficInfo" class="help"><span class="tss-swatch" aria-hidden="true"></span> Lilla skravering: skillezoner. Stiplede linjer: grænser. Store lilla pile: trafikretning. Kilde: <a href="https://wiki.openstreetmap.org/wiki/Tag:seamark:type=separation_lane">OpenSeaMap / OpenStreetMap</a>, kortlagt pr. juni 2026.</p>
   <label><input id="military" type="checkbox" checked> Skydeområde · Hatter Barn</label>
   <p id="militaryInfo" class="help"><span class="tss-swatch military-swatch" aria-hidden="true"></span> Sort skravering: Hatter Barn skydeområde, indtegnet efter dine syv hjørnekoordinater.</p>
-  <p>Spor: seneste 2 timer</p>
+  <p id="trackLengthSummary">Spor: seneste 2 timer</p>
   <p class="help">Sporfarven viser bådfart over grunden (SOG) fra TracTrac på jet-skalaen i kortet, 0–15 knob. Fart over 15 knob har samme farve som 15. Gråt spor betyder manglende fartdata. Prikker og navne har bådens egen farve.</p>
   <p class="help">Spor og positioner interpoleres glidende mellem målepunkterne og følger kortets zoom. Huller over 5 minutter forbindes ikke.</p>
   <div id="choices"></div>
@@ -80,9 +81,14 @@
   <g id="winds"></g><g id="mapNavigation" pointer-events="none"></g><g id="routes"></g><g id="boatMarkers"></g><g id="places"></g><g id="seamarks" pointer-events="none"></g><g id="speedMarkers"></g><g id="noteDrawings" pointer-events="none"></g><g id="drawingPreview" pointer-events="none"></g><g id="annotations"></g><g id="mapCredit" pointer-events="none"></g><g id="trackSpeedLegend" pointer-events="none" aria-label="Bådfart over grunden, jet-farveskala fra 0 til 15 knob"></g>
 </svg>
 <div id="mapTools">
-<section id="trackComparison" aria-label="Sammenlign spor med Mercutio">
-  <button id="trackComparisonToggle" type="button" aria-pressed="false" title="Farv spor efter fartforskellen fra Mercutio ved samme sted på rhumblinen">Mod Mercutio</button>
-  <select id="comparisonBasis" aria-label="Grundlag for sammenligning"><option value="absolute">Absolut</option><option value="handicap">Handicap · ToD</option></select>
+<section id="mapTracks" aria-label="Sporindstillinger">
+  <button id="mapTracksToggle" type="button" aria-expanded="false" aria-controls="mapTracksPanel">Spor <span aria-hidden="true">⌄</span></button>
+  <div id="mapTracksPanel" hidden>
+    <label for="trackLength">Sporlængde</label>
+    <select id="trackLength"><option value="900">15 minutter</option><option value="1800">30 minutter</option><option value="3600">1 time</option><option value="7200" selected>2 timer</option><option value="14400">4 timer</option><option value="28800">8 timer</option><option value="0">Hele forløbet</option></select>
+    <label for="trackStyle">Sportype</label>
+    <select id="trackStyle"><option value="speed">Fart over grunden · SOG</option><option value="absolute">Mod Mercutio · absolut</option><option value="handicap">Mod Mercutio · handicap</option></select>
+  </div>
 </section>
 <section id="mapMeasure" aria-label="Måleværktøj">
   <button id="mapMeasureToggle" type="button" aria-expanded="false" aria-controls="mapMeasurePanel">Mål <span aria-hidden="true">⌄</span></button>

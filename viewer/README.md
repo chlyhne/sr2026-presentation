@@ -127,11 +127,16 @@ python3 scripts/serve_viewer.py
   Definitionen findes ikke i præsentationen, dens noter, kladde eller eksport,
   og der er ingen rutetegning i præsentationens Mål-menu. Alle visninger henter
   den samme projektfil. Genindlæs visningen efter den første definition.
-- **Mod Mercutio** skifter mellem de almindelige SOG-farver og en blå–rød skala
+- **Spor** ved siden af **Mål** og **Lag** samler sporlængde og sportype.
+  Vælg 15 eller 30 minutter, 1, 2, 4 eller 8 timer, eller hele forløbet.
+  Længden gælder både kortet, valg af spor med musen, fartmærker og PNG.
+  Valgene huskes lokalt og ændrer ikke præsentationens events. Klik udenfor
+  eller tryk Escape for at lukke menuen, også i præsentation og fuld skærm.
+  **Sportype** vælger mellem de almindelige SOG-farver og en blå–rød skala
   for forskellen i fremdrift langs rhumblinen. Rød betyder hurtigere end Mercutio
   ved **samme sted på ruten**; blå betyder langsommere. Bådenes passagetidspunkter
   kan være forskellige. Mercutio beholder altid sine almindelige SOG-farver.
-  Vælg **Absolut** eller **Handicap · ToD** ved siden af knappen. Skalaen mættes
+  Vælg **Mod Mercutio · absolut** eller **Mod Mercutio · handicap**. Skalaen mættes
   ved ±2 knob og er lys ved nul. Hold musen over et spor i redigering for at se
   forskellen og tidspunktet for Mercutios passage. Der kræves en defineret permanent rhumbline.
   Grå betyder manglende fælles passage, fart, retning eller nødvendigt måltal;
@@ -298,7 +303,7 @@ og `python3 scripts/prepare_viewer.py` i den rækkefølge. Indsamlingen genbruge
 TracTracs egen cachede MTB-worker. Begge baners koordinater sammenlignes før
 linjerne sammenlægges; der afrundes ikke.
 
-- Kun valgte både tegnes, med alle datapunkter fra de seneste to timer frem til
+- Kun valgte både tegnes, med alle datapunkter inden for den valgte sporlængde frem til
   den valgte tid. Bådmarkørerne følger en glat interpolation ved skyderens præcise
   tidspunkt. Sporene tegnes som kurver gennem målepunkterne og forbliver glatte
   ved alle zoomniveauer. Punkterne findes med binær søgning, så resten af tracket
@@ -702,11 +707,16 @@ genbrug ved panorering og eksport af den seneste scene.
 Sporlaget bruger WebGL 2 i `track-renderer.js`. Hvert kildeinterval gemmes én
 gang i en fast GPU-buffer med den oprindelige PCHIP-kurves koefficienter,
 tidsstempler og registrerede fartværdier. Bufferne forberedes for hele sejladsen
-for de valgte både og beholdes ved fravalg og frem-/tilbagespoling. Hele feltet
-bruger ca. 46,7 MB til disse buffere. Afspilning ændrer tidsgrænser og de
+og hele feltet, før kortets betjening åbnes, og beholdes ved fravalg og
+frem-/tilbagespoling. Begge sammenligningsgrundlag forberedes samtidig, også
+når sammenligningen er slået fra ved indlæsning. Bådvalg og skift mellem absolut
+og handicap bruger de eksisterende buffere. Afspilning ændrer tidsgrænser og de
 intervaller, der tegnes, uden at bygge SVG-strenge eller uploade nye buffere.
+`node scripts/test_viewer_fleet_preparation.cjs` kontrollerer i lokal Firefox,
+at hele feltet er forberedt før betjening, og at bådvalg, grundlag og tidsskift
+ikke genberegner eller uploader faste spordata.
 
-GPU'en evaluerer kubiske kurver, klipper dem til de seneste to timer og slår
+GPU'en evaluerer kubiske kurver, klipper dem til den valgte sporlængde og slår
 fartfarver op i den faste 128-trins palet. Dybden interpoleres fra det lokale
 tidspunkt langs kurven; nyere passager dækker ældre, uanset båd og fartfarve.
 Tidens høje og lave del gemmes separat, så millisekunder også kan skelnes sent
@@ -823,7 +833,9 @@ Mercutios gyldige trackintervaller samples med højst fem sekunders afstand.
 Fremdriften interpoleres derefter ved den anden båds **samme langs-rute-position**,
 uanset klokkeslæt og tværgående afstand fra ruten. Hvis Mercutio passerer samme
 rute-position flere gange, bruges den første fremadgående passage. Sammenligningen
-kan bruge Mercutios senere passage, også når den ligger efter kortets aktuelle tid.
+bruger en forberedt opdeling af overlappende passager, så opslag ved et bestemt
+sted kun kræver en binær søgning. Den samme opdeling bruges af begge grundlag.
+Sammenligningen kan bruge Mercutios senere passage, også når den ligger efter kortets aktuelle tid.
 Trackinghuller over fem minutter forbindes ikke, og der ekstrapoleres ikke til
 rute-positioner, som Mercutio ikke har passeret med gyldige data.
 
@@ -840,7 +852,11 @@ Baggrund: [Dansk Sejlunions forklaring af DH og tid på distance](https://dansks
 
 Forskellen beregnes ved bådens oprindelige trackpunkter og interpoleres langs
 sporet i den fælles WebGL 2-renderer, som også bruges til PNG. Geometribufferne
-bevares ved afspilning; nye farvebuffere dannes ved nyt sammenligningsgrundlag.
+og begge farvegrundlag forberedes før betjening og bevares ved afspilning.
+Projektion og opslag af Mercutios passage udføres én gang pr. kildepunkt og
+deles af absolut- og handicapberegningen. Et grundlagsskift ændrer kun shaderens
+valg af de allerede forberedte værdier. CPU-data bevares også ved tab af
+WebGL-konteksten, så gendannelse kun genopretter GPU-bufferne.
 Mercutio bruger altid den eksisterende SOG-palette. Farver uden sammenligningsdata
 er grå og bruger aldrig SOG som erstatning. Den permanente definition ligger kun
 i `viewer/rhumbline.json` som `{version:1,points:[[lon,lat],...]}`. Boot henter og
@@ -851,6 +867,6 @@ Lokalt tegnes ruten på `/rhumbline.html`, som genbruger de samme WebGL-renderer
 med isoleret eventlager. `POST /api/rhumbline` på den lokale server gemmer filen
 atomisk og afviser overskrivning af en allerede defineret rute. Det separate
 tegneværktøj udgives ikke med Pages. Projektfilen følger med Pages-bygget.
-Aktivering og absolut/handicap-valg er lokale visningspræferencer under
-`sr2026-track-comparison`; de gemmes ikke i præsentationsdokumenter. Målelinjen
+Sportype og sporlængde er lokale visningspræferencer under
+`sr2026-track-comparison` og `sr2026-track-length`; de gemmes ikke i præsentationsdokumenter. Målelinjen
 er midlertidig og gemmes kun i et eventuelt PNG-billede.
