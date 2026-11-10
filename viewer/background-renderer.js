@@ -1,5 +1,14 @@
 // The sole background renderer:
 // wind texture -> land triangles -> radar texture -> coastline triangles.
+const MAP_GRID_LEVELS=[{meters:15*1852,label:'15 sømil'},{meters:5*1852,label:'5 sømil'},
+ {meters:1852,label:'1 sømil'},{meters:400,label:'400 m'},{meters:100,label:'100 m'}];
+const MAP_GRID_METERS_PER_DEGREE=6371000*Math.PI/180;
+const MAP_GRID_UNITS_PER_METER=[1000/(4.5*MAP_GRID_METERS_PER_DEGREE*Math.cos(55*Math.PI/180)),1180/(3*MAP_GRID_METERS_PER_DEGREE)];
+function mapGridLevel(viewport){
+ const {matrix}=viewport;
+ const pixelsPerMeter=Math.min(Math.hypot(matrix.a,matrix.b)*MAP_GRID_UNITS_PER_METER[0],Math.hypot(matrix.c,matrix.d)*MAP_GRID_UNITS_PER_METER[1]);
+ return [...MAP_GRID_LEVELS].reverse().find(level=>level.meters*pixelsPerMeter>=80)||MAP_GRID_LEVELS[0];
+}
 function prepareBackgroundGeometry(polygons,chunks){
  const landCount=polygons.reduce((n,p)=>n+p.rings.reduce((s,r)=>s+r.length,0),0);
  const holeCount=polygons.reduce((n,p)=>n+p.rings.length-1,0);
@@ -71,7 +80,7 @@ class WebGLBackgroundRenderer {
    }
    program=gl.createProgram();for(const shader of shaders)gl.attachShader(program,shader);gl.linkProgram(program);
    if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
-   return {program,uniforms:Object.fromEntries(['origin','screen','size','image','opacity'].map(name=>[name,gl.getUniformLocation(program,name)]))};
+   return {program,uniforms:Object.fromEntries(['origin','screen','size','image','opacity','gridStep','gridAnchor'].map(name=>[name,gl.getUniformLocation(program,name)]))};
   }finally{for(const shader of shaders)gl.deleteShader(shader);}
  }
  initialize(){
@@ -107,6 +116,21 @@ precision highp float;layout(location=0) in vec2 uv;out vec2 texCoord;${projecti
 void main(){texCoord=uv;gl_Position=clip(screen*((uv*vec2(1000.0,1180.0)-origin.xy)-origin.zw));}`,`#version 300 es
 precision highp float;in vec2 texCoord;uniform sampler2D image;uniform float opacity;out vec4 colour;
 void main(){colour=texture(image,texCoord)*opacity;}`);
+   this.gridProgram=this.program(`#version 300 es
+precision highp float;layout(location=0) in vec2 uv;out vec2 gridPosition;
+uniform vec2 gridStep;uniform vec2 gridAnchor;${projection}
+void main(){
+ vec2 point=uv*size;
+ gridPosition=((origin.xy-gridAnchor)+origin.zw+inverse(screen)*point)/gridStep;
+ gl_Position=clip(point);
+}`,`#version 300 es
+precision highp float;in vec2 gridPosition;out vec4 colour;
+void main(){
+ vec2 distanceToLine=abs(fract(gridPosition-0.5)-0.5)/fwidth(gridPosition);
+ float coverage=1.0-smoothstep(0.0,1.0,min(distanceToLine.x,distanceToLine.y));
+ float alpha=coverage*0.32;
+ colour=vec4(vec3(0.10,0.22,0.28)*alpha,alpha);
+}`);
    this.geometry||=prepareBackgroundGeometry(landPolygons,coastChunks);
    this.landMesh=this.mesh(this.geometry.land,4);this.coastMesh=this.mesh(this.geometry.coast,8);
    this.quad=gl.createVertexArray();gl.bindVertexArray(this.quad);
@@ -174,7 +198,9 @@ void main(){colour=texture(image,texCoord)*opacity;}`);
     return {layer,visible:this.visible(layer.node)&&(!layer.buffer||(front?.ready&&layer.buffer.frontNode.getAttribute('visibility')==='visible')),
      texture:layer.buffer&&this.weatherSlots.get(layer.buffer.id).find(slot=>slot.entry===front),opacity:layer.id==='radar'?+$('rainOpacity').value:1};
    });
-   const key=viewportKey+states.map(s=>`${s.layer.id}:${!!s.visible}:${s.layer.buffer?.front?.key}:${s.opacity}`).join('|');
+   const gridEnabled=$('grid').checked,gridLevel=mapGridLevel(viewport);
+   $('gridSpacing').textContent=gridLevel.label;
+   const key=viewportKey+gridEnabled+states.map(s=>`${s.layer.id}:${!!s.visible}:${s.layer.buffer?.front?.key}:${s.opacity}`).join('|');
    if(!force&&key===this.lastKey)return true;this.lastKey=key;
    if(viewportKey!==this.viewportKey){positionMapCanvas(this.host,this.canvas,viewport);this.viewportKey=viewportKey;}
    const gl=this.gl;gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
@@ -187,6 +213,12 @@ void main(){colour=texture(image,texCoord)*opacity;}`);
      this.camera(this.textureProgram,viewport);gl.bindVertexArray(this.quad);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,state.texture.texture);
      gl.uniform1i(this.textureProgram.uniforms.image,0);gl.uniform1f(this.textureProgram.uniforms.opacity,state.opacity);gl.drawArrays(gl.TRIANGLES,0,6);
     }
+   }
+   if(gridEnabled){
+    this.camera(this.gridProgram,viewport);gl.bindVertexArray(this.quad);
+    gl.uniform2f(this.gridProgram.uniforms.gridStep,...MAP_GRID_UNITS_PER_METER.map(value=>value*gridLevel.meters));
+    gl.uniform2f(this.gridProgram.uniforms.gridAnchor,...xy([12,55]));
+    gl.drawArrays(gl.TRIANGLES,0,6);
    }
    gl.bindVertexArray(null);this.draws++;return true;
   }catch(error){this.fail(error);return false;}

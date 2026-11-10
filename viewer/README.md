@@ -14,6 +14,17 @@ python3 scripts/serve_viewer.py
   Den offentlige side åbner direkte i præsentationsvisning uden at vise redigeringen først.
   Bjælken vises ikke igen ved bådvalg, afspilning eller navigation på siden.
   Hvis indlæsningen fejler, vises fejlen og en knap til at genindlæse.
+- Bådnavne vises som standard; klik på båden for at skjule eller vise navnet.
+  Når en båd vælges til, vises dens navn også, inklusive ved Vælg alle.
+  Et events gemte valg af bådnavne bruges fortsat ved navigation til eventet.
+- **Lag → Grid** viser et antialiaseret afstandsgrid oven på kortbaggrunden,
+  under sporene. Afstanden skifter automatisk mellem **15 sømil, 5 sømil,
+  1 sømil, 400 m og 100 m**, så cellerne normalt er mindst 80 skærmpixel brede.
+  Den aktuelle afstand vises i lagmenuen, og lagets tilstand gemmes med eventet.
+  Grid er forankret ved 55° N, 12° Ø; afstandene er kalibreret ved 55° N
+  i kortets eksisterende længde-/breddegradsprojektion.
+- Nederst til højre vises en målestok i sømil eller meter, også når grid er slået
+  fra. Den følger zoom og beregnes ved målestokkens aktuelle breddegrad.
 - **Start præsentation** skjuler indstillinger. Kortet står til venstre, og det
   valgte events tekst og eventuelle billede vises i panelet til højre.
   På smalle skærme ligger eventpanelet under kortet og kan rulles.

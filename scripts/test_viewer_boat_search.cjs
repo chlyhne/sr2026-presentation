@@ -59,6 +59,7 @@ async function check(readonly){
   assert.equal(await search.evaluate(node=>document.activeElement===node),true);
   assert.equal(await page.evaluate(()=>currentTime()),scene.time);
   await checkbox('name').check();
+  assert.equal(await page.locator('[data-boat-marker="name"] .boat-name').textContent(),'MATCH Sejler','Newly selected boats show their name immediately');
   assert.deepEqual(await chosenNames(),['Borealis','MATCH Sejler','Mercutio']);
   await checkbox('skipper').uncheck();
   assert.equal(await checkbox('skipper').isChecked(),false);
@@ -66,7 +67,7 @@ async function check(readonly){
   const shownNames=await page.evaluate(()=>[...shownBoatNames]);
   await page.locator('[data-boat-marker="type"] .boat-hull').click();
   assert.equal(await checkbox('type').isChecked(),true,'Map click includes a matching boat');
-  assert.deepEqual(await page.evaluate(()=>[...shownBoatNames]),shownNames,'Search marker clicks do not toggle names');
+  assert.deepEqual(await page.evaluate(()=>[...shownBoatNames]),[...new Set([...shownNames,'type'])],'Search selection shows the newly selected boat name without hiding other names');
   await page.locator('[data-boat-marker="type"]').focus();await page.keyboard.press('Space');
   assert.equal(await checkbox('type').isChecked(),false,'Map keyboard activation also toggles inclusion');
   assert.equal(await page.locator('[data-boat-marker="type"]').getAttribute('aria-pressed'),'false');
@@ -88,7 +89,7 @@ async function check(readonly){
   const selection=await chosenNames();
   await page.locator('[data-boat-marker="name"]').focus();await page.keyboard.press('Enter');
   assert.deepEqual(await chosenNames(),selection,'Normal map activation still toggles names, not selection');
-  assert.equal(await page.evaluate(()=>shownBoatNames.has('name')),true);
+  assert.equal(await page.evaluate(()=>shownBoatNames.has('name')),false);
   await checkbox('name').click();
   await page.waitForFunction(()=>webglTracks.order.length===1);
   assert.deepEqual(await rows(),['kept'],'Boats can also be deselected without a search');
