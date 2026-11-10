@@ -5,7 +5,9 @@ import path from 'node:path';
 import {Worker} from 'node:worker_threads';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const dir=path.join(root,'data/tractrac');
+const args=process.argv.slice(2);
+if(args.length&&(args.length!==2||args[0]!=='--data-dir'))throw Error('Usage: node scripts/collect_track_speeds.mjs [--data-dir DIRECTORY]');
+const dir=args.length?path.resolve(args[1]):path.join(root,'data/tractrac');
 async function collect(course){
  const race=JSON.parse(fs.readFileSync(path.join(dir,`race_${course}.json`),'utf8'));
  const uri=race.parameters['stored-uri'].all;

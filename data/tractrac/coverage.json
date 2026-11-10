@@ -1,0 +1,1722 @@
+{
+  "validated_utc": "2026-11-10T18:44:40.031403+00:00",
+  "timestamp_unit": "seconds since Unix epoch (UTC)",
+  "tracks": 106,
+  "positions": 730370,
+  "all_official_starts_covered": true,
+  "registered_finishes": 81,
+  "all_registered_finishes_covered": true,
+  "common_start_utc": "2026-06-11T09:00:00+00:00",
+  "viewer_start_utc": "2026-06-11T07:07:59+00:00",
+  "viewer_end_utc": "2026-06-13T23:40:26+00:00",
+  "sources": {
+    "groensund": "//liveserver1.tractrac.com/events/event_20260610_SjllandRun/datafiles/d1a9e190-4616-013f-25ac-04421a259aad.mtb",
+    "boegestroemmen": "//liveserver1.tractrac.com/events/event_20260610_SjllandRun/datafiles/c5dfe7f0-4616-013f-25a9-04421a259aad.mtb"
+  },
+  "boats": [
+    {
+      "id": "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+      "name": "Frida II",
+      "points": 4039,
+      "start": 1781165700.0,
+      "finish": 1781357573.0,
+      "first": 1781161680.0,
+      "last": 1781362300.0,
+      "start_bracket": [
+        1781165643.0,
+        1781165702.0
+      ],
+      "finish_bracket": [
+        1781357573.0,
+        1781357573.0
+      ]
+    },
+    {
+      "id": "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+      "name": "Xilje",
+      "points": 6927,
+      "start": 1781166600.0,
+      "finish": 1781319940.0,
+      "first": 1781161680.0,
+      "last": 1781334149.0,
+      "start_bracket": [
+        1781166553.0,
+        1781166614.0
+      ],
+      "finish_bracket": [
+        1781319938.0,
+        1781319941.0
+      ]
+    },
+    {
+      "id": "groensund:cf40a610-4624-013f-2929-04421a259aad",
+      "name": "Nordstjernen",
+      "points": 9710,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161682.0,
+      "last": 1781276741.0,
+      "start_bracket": [
+        1781165653.0,
+        1781165714.0
+      ]
+    },
+    {
+      "id": "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+      "name": "Julianehåb",
+      "points": 2371,
+      "start": 1781165700.0,
+      "finish": 1781388485.0,
+      "first": 1781161682.0,
+      "last": 1781393624.0,
+      "start_bracket": [
+        1781165653.0,
+        1781165714.0
+      ],
+      "finish_bracket": [
+        1781388423.0,
+        1781388622.0
+      ]
+    },
+    {
+      "id": "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+      "name": "Pixie",
+      "points": 10020,
+      "start": 1781168400.0,
+      "finish": 1781310179.0,
+      "first": 1781161687.0,
+      "last": 1781334138.0,
+      "start_bracket": [
+        1781168389.0,
+        1781168448.0
+      ],
+      "finish_bracket": [
+        1781310179.0,
+        1781310179.0
+      ]
+    },
+    {
+      "id": "groensund:ceff8000-4624-013f-2903-04421a259aad",
+      "name": "Frigg",
+      "points": 2800,
+      "start": 1781165700.0,
+      "finish": 1781332610.0,
+      "first": 1781161683.0,
+      "last": 1781334136.0,
+      "start_bracket": [
+        1781165645.0,
+        1781165704.0
+      ],
+      "finish_bracket": [
+        1781332608.0,
+        1781332611.0
+      ]
+    },
+    {
+      "id": "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+      "name": "Lacee Bee",
+      "points": 8877,
+      "start": 1781165700.0,
+      "finish": 1781314985.0,
+      "first": 1781161688.0,
+      "last": 1781334167.0,
+      "start_bracket": [
+        1781165646.0,
+        1781165705.0
+      ],
+      "finish_bracket": [
+        1781314984.0,
+        1781314987.0
+      ]
+    },
+    {
+      "id": "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+      "name": "Neptun",
+      "points": 10434,
+      "start": 1781165700.0,
+      "finish": 1781309681.0,
+      "first": 1781161691.0,
+      "last": 1781334143.0,
+      "start_bracket": [
+        1781165652.0,
+        1781165710.0
+      ],
+      "finish_bracket": [
+        1781309680.0,
+        1781309683.0
+      ]
+    },
+    {
+      "id": "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+      "name": "Mette",
+      "points": 5354,
+      "start": 1781165700.0,
+      "finish": 1781324583.0,
+      "first": 1781161693.0,
+      "last": 1781334174.0,
+      "start_bracket": [
+        1781165652.0,
+        1781165711.0
+      ],
+      "finish_bracket": [
+        1781324583.0,
+        1781324583.0
+      ]
+    },
+    {
+      "id": "groensund:cf186800-4624-013f-2916-04421a259aad",
+      "name": "Mary",
+      "points": 4958,
+      "start": 1781165700.0,
+      "finish": 1781345715.0,
+      "first": 1781161693.0,
+      "last": 1781352864.0,
+      "start_bracket": [
+        1781165695.0,
+        1781165754.0
+      ],
+      "finish_bracket": [
+        1781345715.0,
+        1781345715.0
+      ]
+    },
+    {
+      "id": "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+      "name": "munje",
+      "points": 10848,
+      "start": 1781165700.0,
+      "finish": 1781308468.0,
+      "first": 1781161692.0,
+      "last": 1781334158.0,
+      "start_bracket": [
+        1781165653.0,
+        1781165712.0
+      ],
+      "finish_bracket": [
+        1781308468.0,
+        1781308468.0
+      ]
+    },
+    {
+      "id": "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+      "name": "Pandora",
+      "points": 11870,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161694.0,
+      "last": 1781292278.0,
+      "start_bracket": [
+        1781165676.0,
+        1781165737.0
+      ]
+    },
+    {
+      "id": "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+      "name": "Petrix",
+      "points": 834,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161696.0,
+      "last": 1781276133.0,
+      "start_bracket": [
+        1781165658.0,
+        1781165717.0
+      ]
+    },
+    {
+      "id": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+      "name": "Mercutio",
+      "points": 12456,
+      "start": 1781166600.0,
+      "finish": 1781303164.0,
+      "first": 1781161697.0,
+      "last": 1781334153.0,
+      "start_bracket": [
+        1781166598.0,
+        1781166659.0
+      ],
+      "finish_bracket": [
+        1781303164.0,
+        1781303164.0
+      ]
+    },
+    {
+      "id": "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+      "name": "Little Wing",
+      "points": 4762,
+      "start": 1781165700.0,
+      "finish": 1781326408.0,
+      "first": 1781161697.0,
+      "last": 1781334168.0,
+      "start_bracket": [
+        1781165695.0,
+        1781165756.0
+      ],
+      "finish_bracket": [
+        1781326406.0,
+        1781326409.0
+      ]
+    },
+    {
+      "id": "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+      "name": "Festina",
+      "points": 11776,
+      "start": 1781168400.0,
+      "finish": 1781305082.0,
+      "first": 1781161706.0,
+      "last": 1781334138.0,
+      "start_bracket": [
+        1781168377.0,
+        1781168438.0
+      ],
+      "finish_bracket": [
+        1781305082.0,
+        1781305082.0
+      ]
+    },
+    {
+      "id": "groensund:cf512990-4624-013f-2937-04421a259aad",
+      "name": "Ran",
+      "points": 2347,
+      "start": 1781165700.0,
+      "finish": 1781393085.0,
+      "first": 1781161706.0,
+      "last": 1781393726.0,
+      "start_bracket": [
+        1781165665.0,
+        1781165726.0
+      ],
+      "finish_bracket": [
+        1781393066.0,
+        1781393131.0
+      ]
+    },
+    {
+      "id": "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+      "name": "Popeye",
+      "points": 1623,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161708.0,
+      "last": 1781276568.0,
+      "start_bracket": [
+        1781165660.0,
+        1781165725.0
+      ]
+    },
+    {
+      "id": "groensund:cf67f030-4624-013f-294c-04421a259aad",
+      "name": "Vaiana - DEN",
+      "points": 4257,
+      "start": 1781165700.0,
+      "finish": 1781339101.0,
+      "first": 1781161713.0,
+      "last": 1781344349.0,
+      "start_bracket": [
+        1781165672.0,
+        1781165733.0
+      ],
+      "finish_bracket": [
+        1781339099.0,
+        1781339102.0
+      ]
+    },
+    {
+      "id": "groensund:cf608a70-4624-013f-2946-04421a259aad",
+      "name": "Tjørn",
+      "points": 3067,
+      "start": 1781165700.0,
+      "finish": 1781327851.0,
+      "first": 1781161712.0,
+      "last": 1781330167.0,
+      "start_bracket": [
+        1781165671.0,
+        1781165733.0
+      ],
+      "finish_bracket": [
+        1781327851.0,
+        1781327851.0
+      ]
+    },
+    {
+      "id": "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+      "name": "Sneppen",
+      "points": 1619,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161713.0,
+      "last": 1781276858.0,
+      "start_bracket": [
+        1781165667.0,
+        1781165726.0
+      ]
+    },
+    {
+      "id": "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+      "name": "Sanne",
+      "points": 2132,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161709.0,
+      "last": 1781354488.0,
+      "start_bracket": [
+        1781165673.0,
+        1781165728.0
+      ]
+    },
+    {
+      "id": "groensund:cf774910-4624-013f-295b-04421a259aad",
+      "name": "Vaiana - NO",
+      "points": 2186,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161716.0,
+      "last": 1781368904.0,
+      "start_bracket": [
+        1781165672.0,
+        1781165733.0
+      ]
+    },
+    {
+      "id": "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+      "name": "Vi Ses",
+      "points": 2465,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161721.0,
+      "last": 1781393612.0,
+      "start_bracket": [
+        1781165677.0,
+        1781165736.0
+      ]
+    },
+    {
+      "id": "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
+      "name": "Rosa-Lux",
+      "points": 11796,
+      "start": 1781167500.0,
+      "finish": 1781305114.0,
+      "first": 1781161733.0,
+      "last": 1781334157.0,
+      "start_bracket": [
+        1781167450.0,
+        1781167511.0
+      ],
+      "finish_bracket": [
+        1781305113.0,
+        1781305116.0
+      ]
+    },
+    {
+      "id": "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+      "name": "XUSIDUS",
+      "points": 10020,
+      "start": 1781166600.0,
+      "finish": 1781310859.0,
+      "first": 1781161742.0,
+      "last": 1781334137.0,
+      "start_bracket": [
+        1781166577.0,
+        1781166638.0
+      ],
+      "finish_bracket": [
+        1781310858.0,
+        1781310861.0
+      ]
+    },
+    {
+      "id": "groensund:d0448170-4624-013f-2a18-04421a259aad",
+      "name": "HANSEN 3.5",
+      "points": 17806,
+      "start": 1781168400.0,
+      "finish": 1781286201.0,
+      "first": 1781161680.0,
+      "last": 1781334136.0,
+      "start_bracket": [
+        1781168353.0,
+        1781168414.0
+      ],
+      "finish_bracket": [
+        1781286201.0,
+        1781286201.0
+      ]
+    },
+    {
+      "id": "groensund:cf9aff90-4624-013f-297e-04421a259aad",
+      "name": "THE HULK",
+      "points": 11013,
+      "start": 1781166600.0,
+      "finish": 1781307506.0,
+      "first": 1781161685.0,
+      "last": 1781334150.0,
+      "start_bracket": [
+        1781166559.0,
+        1781166621.0
+      ],
+      "finish_bracket": [
+        1781307506.0,
+        1781307506.0
+      ]
+    },
+    {
+      "id": "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+      "name": "Sagitta",
+      "points": 4377,
+      "start": 1781167500.0,
+      "finish": null,
+      "first": 1781161684.0,
+      "last": 1781334135.0,
+      "start_bracket": [
+        1781167455.0,
+        1781167516.0
+      ]
+    },
+    {
+      "id": "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+      "name": "SPIDER PIG",
+      "points": 6718,
+      "start": 1781167500.0,
+      "finish": 1781320688.0,
+      "first": 1781161692.0,
+      "last": 1781334179.0,
+      "start_bracket": [
+        1781167465.0,
+        1781167526.0
+      ],
+      "finish_bracket": [
+        1781320688.0,
+        1781320688.0
+      ]
+    },
+    {
+      "id": "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+      "name": "Miss-X",
+      "points": 3999,
+      "start": 1781167500.0,
+      "finish": 1781328904.0,
+      "first": 1781161703.0,
+      "last": 1781334177.0,
+      "start_bracket": [
+        1781167478.0,
+        1781167537.0
+      ],
+      "finish_bracket": [
+        1781328902.0,
+        1781328905.0
+      ]
+    },
+    {
+      "id": "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+      "name": "Scarlet",
+      "points": 1658,
+      "start": 1781167500.0,
+      "finish": null,
+      "first": 1781161711.0,
+      "last": 1781292423.0,
+      "start_bracket": [
+        1781167482.0,
+        1781167541.0
+      ]
+    },
+    {
+      "id": "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+      "name": "saltamalin",
+      "points": 2221,
+      "start": 1781167500.0,
+      "finish": null,
+      "first": 1781161709.0,
+      "last": 1781368911.0,
+      "start_bracket": [
+        1781167483.0,
+        1781167544.0
+      ]
+    },
+    {
+      "id": "groensund:cff53330-4624-013f-29d0-04421a259aad",
+      "name": "XAVIA",
+      "points": 10806,
+      "start": 1781167500.0,
+      "finish": 1781307844.0,
+      "first": 1781161710.0,
+      "last": 1781334152.0,
+      "start_bracket": [
+        1781167484.0,
+        1781167543.0
+      ],
+      "finish_bracket": [
+        1781307844.0,
+        1781307844.0
+      ]
+    },
+    {
+      "id": "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+      "name": "Voador",
+      "points": 6709,
+      "start": 1781167500.0,
+      "finish": 1781320882.0,
+      "first": 1781161712.0,
+      "last": 1781334153.0,
+      "start_bracket": [
+        1781167480.0,
+        1781167544.0
+      ],
+      "finish_bracket": [
+        1781320882.0,
+        1781320882.0
+      ]
+    },
+    {
+      "id": "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+      "name": "Guldfisken",
+      "points": 11388,
+      "start": 1781167500.0,
+      "finish": 1781306264.0,
+      "first": 1781161714.0,
+      "last": 1781334153.0,
+      "start_bracket": [
+        1781167455.0,
+        1781167516.0
+      ],
+      "finish_bracket": [
+        1781306262.0,
+        1781306265.0
+      ]
+    },
+    {
+      "id": "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+      "name": "Irmgard II",
+      "points": 9067,
+      "start": 1781168400.0,
+      "finish": 1781313517.0,
+      "first": 1781161720.0,
+      "last": 1781334158.0,
+      "start_bracket": [
+        1781168393.0,
+        1781168451.0
+      ],
+      "finish_bracket": [
+        1781313517.0,
+        1781313517.0
+      ]
+    },
+    {
+      "id": "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+      "name": "Fifty",
+      "points": 6898,
+      "start": 1781168400.0,
+      "finish": 1781320249.0,
+      "first": 1781161719.0,
+      "last": 1781334144.0,
+      "start_bracket": [
+        1781168395.0,
+        1781168453.0
+      ],
+      "finish_bracket": [
+        1781320247.0,
+        1781320250.0
+      ]
+    },
+    {
+      "id": "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+      "name": "VELOCE",
+      "points": 11589,
+      "start": 1781168400.0,
+      "finish": 1781305618.0,
+      "first": 1781161720.0,
+      "last": 1781334146.0,
+      "start_bracket": [
+        1781168392.0,
+        1781168448.0
+      ],
+      "finish_bracket": [
+        1781305618.0,
+        1781305618.0
+      ]
+    },
+    {
+      "id": "groensund:d023a320-4624-013f-29fa-04421a259aad",
+      "name": "Valkyria",
+      "points": 11394,
+      "start": 1781168400.0,
+      "finish": 1781305877.0,
+      "first": 1781161723.0,
+      "last": 1781334160.0,
+      "start_bracket": [
+        1781168398.0,
+        1781168457.0
+      ],
+      "finish_bracket": [
+        1781305876.0,
+        1781305879.0
+      ]
+    },
+    {
+      "id": "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+      "name": "Quinta Light",
+      "points": 19538,
+      "start": 1781168400.0,
+      "finish": 1781281524.0,
+      "first": 1781161723.0,
+      "last": 1781334135.0,
+      "start_bracket": [
+        1781168397.0,
+        1781168455.0
+      ],
+      "finish_bracket": [
+        1781281522.0,
+        1781281525.0
+      ]
+    },
+    {
+      "id": "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+      "name": "Laolao",
+      "points": 3977,
+      "start": 1781168400.0,
+      "finish": 1781329275.0,
+      "first": 1781161726.0,
+      "last": 1781334154.0,
+      "start_bracket": [
+        1781168400.0,
+        1781168400.0
+      ],
+      "finish_bracket": [
+        1781329273.0,
+        1781329276.0
+      ]
+    },
+    {
+      "id": "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+      "name": "Solhverv",
+      "points": 7101,
+      "start": 1781168400.0,
+      "finish": 1781319398.0,
+      "first": 1781161725.0,
+      "last": 1781334139.0,
+      "start_bracket": [
+        1781168399.0,
+        1781168457.0
+      ],
+      "finish_bracket": [
+        1781319397.0,
+        1781319400.0
+      ]
+    },
+    {
+      "id": "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+      "name": "Quokka",
+      "points": 12564,
+      "start": 1781168400.0,
+      "finish": 1781302839.0,
+      "first": 1781161686.0,
+      "last": 1781334173.0,
+      "start_bracket": [
+        1781168374.0,
+        1781168435.0
+      ],
+      "finish_bracket": [
+        1781302839.0,
+        1781302839.0
+      ]
+    },
+    {
+      "id": "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+      "name": "Amalie",
+      "points": 2097,
+      "start": 1781165700.0,
+      "finish": 1781374325.0,
+      "first": 1781161734.0,
+      "last": 1781374630.0,
+      "start_bracket": [
+        1781165645.0,
+        1781165706.0
+      ],
+      "finish_bracket": [
+        1781374242.0,
+        1781374361.0
+      ]
+    },
+    {
+      "id": "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+      "name": "Annibeth",
+      "points": 2161,
+      "start": 1781168400.0,
+      "finish": null,
+      "first": 1781161733.0,
+      "last": 1781354853.0,
+      "start_bracket": [
+        1781168346.0,
+        1781168407.0
+      ]
+    },
+    {
+      "id": "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+      "name": "PING",
+      "points": 10589,
+      "start": 1781168400.0,
+      "finish": 1781308559.0,
+      "first": 1781161737.0,
+      "last": 1781334138.0,
+      "start_bracket": [
+        1781168352.0,
+        1781168413.0
+      ],
+      "finish_bracket": [
+        1781308558.0,
+        1781308561.0
+      ]
+    },
+    {
+      "id": "groensund:d0410370-4624-013f-2a15-04421a259aad",
+      "name": "Casa Bent",
+      "points": 13719,
+      "start": 1781168400.0,
+      "finish": 1781298650.0,
+      "first": 1781161681.0,
+      "last": 1781334137.0,
+      "start_bracket": [
+        1781168360.0,
+        1781168419.0
+      ],
+      "finish_bracket": [
+        1781298648.0,
+        1781298651.0
+      ]
+    },
+    {
+      "id": "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+      "name": "Eldkvarn",
+      "points": 7154,
+      "start": 1781167500.0,
+      "finish": null,
+      "first": 1781161681.0,
+      "last": 1781276611.0,
+      "start_bracket": [
+        1781167453.0,
+        1781167514.0
+      ]
+    },
+    {
+      "id": "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+      "name": "Buksesnedkeren",
+      "points": 17208,
+      "start": 1781168400.0,
+      "finish": 1781288124.0,
+      "first": 1781161684.0,
+      "last": 1781334138.0,
+      "start_bracket": [
+        1781168381.0,
+        1781168442.0
+      ],
+      "finish_bracket": [
+        1781288122.0,
+        1781288125.0
+      ]
+    },
+    {
+      "id": "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+      "name": "Enjoy Life",
+      "points": 11971,
+      "start": 1781168400.0,
+      "finish": 1781305183.0,
+      "first": 1781161682.0,
+      "last": 1781334135.0,
+      "start_bracket": [
+        1781168354.0,
+        1781168415.0
+      ],
+      "finish_bracket": [
+        1781305181.0,
+        1781305184.0
+      ]
+    },
+    {
+      "id": "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+      "name": "Easy L♥️ver",
+      "points": 17411,
+      "start": 1781168400.0,
+      "finish": 1781287853.0,
+      "first": 1781161686.0,
+      "last": 1781334161.0,
+      "start_bracket": [
+        1781168357.0,
+        1781168416.0
+      ],
+      "finish_bracket": [
+        1781287852.0,
+        1781287855.0
+      ]
+    },
+    {
+      "id": "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+      "name": "Stormy",
+      "points": 2956,
+      "start": 1781168400.0,
+      "finish": 1781300363.0,
+      "first": 1781161683.0,
+      "last": 1781334463.0,
+      "start_bracket": [
+        1781168354.0,
+        1781168415.0
+      ],
+      "finish_bracket": [
+        1781300363.0,
+        1781300363.0
+      ]
+    },
+    {
+      "id": "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+      "name": "Thermidor",
+      "points": 9821,
+      "start": 1781167500.0,
+      "finish": 1781310956.0,
+      "first": 1781161688.0,
+      "last": 1781334143.0,
+      "start_bracket": [
+        1781167464.0,
+        1781167525.0
+      ],
+      "finish_bracket": [
+        1781310955.0,
+        1781310958.0
+      ]
+    },
+    {
+      "id": "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+      "name": "Siroque",
+      "points": 3295,
+      "start": 1781167500.0,
+      "finish": 1781352764.0,
+      "first": 1781161688.0,
+      "last": 1781354866.0,
+      "start_bracket": [
+        1781167454.0,
+        1781167515.0
+      ],
+      "finish_bracket": [
+        1781352763.0,
+        1781352766.0
+      ]
+    },
+    {
+      "id": "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+      "name": "Alex",
+      "points": 2094,
+      "start": 1781165700.0,
+      "finish": 1781378416.0,
+      "first": 1781161694.0,
+      "last": 1781380117.0,
+      "start_bracket": [
+        1781165654.0,
+        1781165715.0
+      ],
+      "finish_bracket": [
+        1781378316.0,
+        1781378516.0
+      ]
+    },
+    {
+      "id": "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+      "name": "XBOX",
+      "points": 14874,
+      "start": 1781168400.0,
+      "finish": 1781295240.0,
+      "first": 1781161696.0,
+      "last": 1781334176.0,
+      "start_bracket": [
+        1781168396.0,
+        1781168454.0
+      ],
+      "finish_bracket": [
+        1781295238.0,
+        1781295241.0
+      ]
+    },
+    {
+      "id": "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+      "name": "Grand Delice",
+      "points": 11450,
+      "start": 1781167500.0,
+      "finish": 1781306385.0,
+      "first": 1781161697.0,
+      "last": 1781334155.0,
+      "start_bracket": [
+        1781167482.0,
+        1781167543.0
+      ],
+      "finish_bracket": [
+        1781306385.0,
+        1781306385.0
+      ]
+    },
+    {
+      "id": "groensund:cf8e6940-4624-013f-2973-04421a259aad",
+      "name": "Vera",
+      "points": 12162,
+      "start": 1781166600.0,
+      "finish": 1781303562.0,
+      "first": 1781161697.0,
+      "last": 1781334141.0,
+      "start_bracket": [
+        1781166543.0,
+        1781166602.0
+      ],
+      "finish_bracket": [
+        1781303561.0,
+        1781303564.0
+      ]
+    },
+    {
+      "id": "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+      "name": "DS37",
+      "points": 9694,
+      "start": 1781168400.0,
+      "finish": 1781311688.0,
+      "first": 1781161699.0,
+      "last": 1781334151.0,
+      "start_bracket": [
+        1781168352.0,
+        1781168411.0
+      ],
+      "finish_bracket": [
+        1781311687.0,
+        1781311690.0
+      ]
+    },
+    {
+      "id": "groensund:cf643a90-4624-013f-2949-04421a259aad",
+      "name": "Triumph",
+      "points": 5145,
+      "start": 1781165700.0,
+      "finish": 1781344877.0,
+      "first": 1781161697.0,
+      "last": 1781352864.0,
+      "start_bracket": [
+        1781165677.0,
+        1781165735.0
+      ],
+      "finish_bracket": [
+        1781344875.0,
+        1781344878.0
+      ]
+    },
+    {
+      "id": "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+      "name": "FARR-WELL II",
+      "points": 2871,
+      "start": 1781166600.0,
+      "finish": 1781342657.0,
+      "first": 1781161701.0,
+      "last": 1781344345.0,
+      "start_bracket": [
+        1781166566.0,
+        1781166627.0
+      ],
+      "finish_bracket": [
+        1781342656.0,
+        1781342659.0
+      ]
+    },
+    {
+      "id": "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+      "name": "Viento",
+      "points": 4159,
+      "start": 1781165700.0,
+      "finish": 1781328236.0,
+      "first": 1781161702.0,
+      "last": 1781334163.0,
+      "start_bracket": [
+        1781165672.0,
+        1781165731.0
+      ],
+      "finish_bracket": [
+        1781328235.0,
+        1781328238.0
+      ]
+    },
+    {
+      "id": "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+      "name": "Andrea",
+      "points": 11766,
+      "start": 1781167500.0,
+      "finish": 1781305230.0,
+      "first": 1781161704.0,
+      "last": 1781334166.0,
+      "start_bracket": [
+        1781167478.0,
+        1781167535.0
+      ],
+      "finish_bracket": [
+        1781305228.0,
+        1781305231.0
+      ]
+    },
+    {
+      "id": "groensund:cf552280-4624-013f-293b-04421a259aad",
+      "name": "SABRINA",
+      "points": 1596,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161708.0,
+      "last": 1781292421.0,
+      "start_bracket": [
+        1781165649.0,
+        1781165708.0
+      ]
+    },
+    {
+      "id": "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+      "name": "XAR",
+      "points": 6924,
+      "start": 1781164800.0,
+      "finish": 1781318984.0,
+      "first": 1781161709.0,
+      "last": 1781334177.0,
+      "start_bracket": [
+        1781164749.0,
+        1781164810.0
+      ],
+      "finish_bracket": [
+        1781318982.0,
+        1781318985.0
+      ]
+    },
+    {
+      "id": "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+      "name": "Freja",
+      "points": 1616,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161710.0,
+      "last": 1781292409.0,
+      "start_bracket": [
+        1781165681.0,
+        1781165742.0
+      ]
+    },
+    {
+      "id": "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+      "name": "Bibs",
+      "points": 823,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161711.0,
+      "last": 1781276107.0,
+      "start_bracket": [
+        1781165677.0,
+        1781165743.0
+      ]
+    },
+    {
+      "id": "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+      "name": "Allegra",
+      "points": 4347,
+      "start": 1781165700.0,
+      "finish": 1781357198.0,
+      "first": 1781161715.0,
+      "last": 1781362292.0,
+      "start_bracket": [
+        1781165674.0,
+        1781165735.0
+      ],
+      "finish_bracket": [
+        1781357151.0,
+        1781357215.0
+      ]
+    },
+    {
+      "id": "groensund:cf123d90-4624-013f-2913-04421a259aad",
+      "name": "Margrethe",
+      "points": 2636,
+      "start": 1781165700.0,
+      "finish": 1781332928.0,
+      "first": 1781161716.0,
+      "last": 1781334154.0,
+      "start_bracket": [
+        1781165675.0,
+        1781165736.0
+      ],
+      "finish_bracket": [
+        1781332927.0,
+        1781332930.0
+      ]
+    },
+    {
+      "id": "groensund:d0275120-4624-013f-29fd-04421a259aad",
+      "name": "Joy",
+      "points": 12752,
+      "start": 1781168400.0,
+      "finish": 1781302201.0,
+      "first": 1781161716.0,
+      "last": 1781334157.0,
+      "start_bracket": [
+        1781168388.0,
+        1781168449.0
+      ],
+      "finish_bracket": [
+        1781302199.0,
+        1781302202.0
+      ]
+    },
+    {
+      "id": "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+      "name": "Andraste",
+      "points": 8287,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161717.0,
+      "last": 1781276489.0,
+      "start_bracket": [
+        1781165675.0,
+        1781165734.0
+      ]
+    },
+    {
+      "id": "groensund:cee02030-4624-013f-28e5-04421a259aad",
+      "name": "Banner Viking",
+      "points": 11279,
+      "start": 1781165700.0,
+      "finish": 1781307142.0,
+      "first": 1781161720.0,
+      "last": 1781334150.0,
+      "start_bracket": [
+        1781165661.0,
+        1781165722.0
+      ],
+      "finish_bracket": [
+        1781307141.0,
+        1781307144.0
+      ]
+    },
+    {
+      "id": "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+      "name": "MorGrethe",
+      "points": 11577,
+      "start": 1781167500.0,
+      "finish": 1781305881.0,
+      "first": 1781161722.0,
+      "last": 1781334140.0,
+      "start_bracket": [
+        1781167460.0,
+        1781167519.0
+      ],
+      "finish_bracket": [
+        1781305879.0,
+        1781305882.0
+      ]
+    },
+    {
+      "id": "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+      "name": "Dina 2",
+      "points": 828,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161726.0,
+      "last": 1781276101.0,
+      "start_bracket": [
+        1781165686.0,
+        1781165747.0
+      ]
+    },
+    {
+      "id": "groensund:cef01130-4624-013f-28f5-04421a259aad",
+      "name": "Dorthea",
+      "points": 6918,
+      "start": 1781165700.0,
+      "finish": 1781320323.0,
+      "first": 1781161725.0,
+      "last": 1781334162.0,
+      "start_bracket": [
+        1781165687.0,
+        1781165746.0
+      ],
+      "finish_bracket": [
+        1781320323.0,
+        1781320323.0
+      ]
+    },
+    {
+      "id": "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+      "name": "DenAnden",
+      "points": 4493,
+      "start": 1781165700.0,
+      "finish": 1781337967.0,
+      "first": 1781161725.0,
+      "last": 1781344376.0,
+      "start_bracket": [
+        1781165686.0,
+        1781165747.0
+      ],
+      "finish_bracket": [
+        1781337965.0,
+        1781337968.0
+      ]
+    },
+    {
+      "id": "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+      "name": "Xanadu",
+      "points": 4386,
+      "start": 1781165700.0,
+      "finish": 1781327623.0,
+      "first": 1781161726.0,
+      "last": 1781334139.0,
+      "start_bracket": [
+        1781165699.0,
+        1781165758.0
+      ],
+      "finish_bracket": [
+        1781327623.0,
+        1781327623.0
+      ]
+    },
+    {
+      "id": "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+      "name": "NJOY",
+      "points": 3617,
+      "start": 1781165700.0,
+      "finish": null,
+      "first": 1781161731.0,
+      "last": 1781352834.0,
+      "start_bracket": [
+        1781165644.0,
+        1781165703.0
+      ]
+    },
+    {
+      "id": "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+      "name": "Dream on",
+      "points": 14942,
+      "start": 1781165700.0,
+      "finish": 1781295225.0,
+      "first": 1781161732.0,
+      "last": 1781334179.0,
+      "start_bracket": [
+        1781165671.0,
+        1781165733.0
+      ],
+      "finish_bracket": [
+        1781295224.0,
+        1781295227.0
+      ]
+    },
+    {
+      "id": "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+      "name": "My",
+      "points": 10596,
+      "start": 1781166600.0,
+      "finish": 1781308481.0,
+      "first": 1781161735.0,
+      "last": 1781334172.0,
+      "start_bracket": [
+        1781166551.0,
+        1781166610.0
+      ],
+      "finish_bracket": [
+        1781308479.0,
+        1781308482.0
+      ]
+    },
+    {
+      "id": "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+      "name": "Blåregn",
+      "points": 2994,
+      "start": 1781167500.0,
+      "finish": null,
+      "first": 1781161735.0,
+      "last": 1781334151.0,
+      "start_bracket": [
+        1781167471.0,
+        1781167532.0
+      ]
+    },
+    {
+      "id": "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+      "name": "Blacq Magic",
+      "points": 11572,
+      "start": 1781168400.0,
+      "finish": 1781305700.0,
+      "first": 1781161736.0,
+      "last": 1781334160.0,
+      "start_bracket": [
+        1781168351.0,
+        1781168410.0
+      ],
+      "finish_bracket": [
+        1781305699.0,
+        1781305702.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+      "name": "Delizia",
+      "points": 2393,
+      "start": 1781166600.0,
+      "finish": 1781361603.0,
+      "first": 1781161680.0,
+      "last": 1781361855.0,
+      "start_bracket": [
+        1781166554.0,
+        1781166613.0
+      ],
+      "finish_bracket": [
+        1781361603.0,
+        1781361603.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+      "name": "Blue Bird",
+      "points": 2016,
+      "start": 1781164800.0,
+      "finish": 1781359624.0,
+      "first": 1781161679.0,
+      "last": 1781361855.0,
+      "start_bracket": [
+        1781164754.0,
+        1781164813.0
+      ],
+      "finish_bracket": [
+        1781359575.0,
+        1781359774.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+      "name": "Alvilda",
+      "points": 7085,
+      "start": 1781166600.0,
+      "finish": 1781319756.0,
+      "first": 1781161695.0,
+      "last": 1781334178.0,
+      "start_bracket": [
+        1781166566.0,
+        1781166627.0
+      ],
+      "finish_bracket": [
+        1781319756.0,
+        1781319756.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+      "name": "NINI",
+      "points": 10476,
+      "start": 1781166600.0,
+      "finish": 1781309395.0,
+      "first": 1781161708.0,
+      "last": 1781334167.0,
+      "start_bracket": [
+        1781166576.0,
+        1781166633.0
+      ],
+      "finish_bracket": [
+        1781309395.0,
+        1781309395.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+      "name": "Irma",
+      "points": 4324,
+      "start": 1781164800.0,
+      "finish": 1781338823.0,
+      "first": 1781161703.0,
+      "last": 1781344365.0,
+      "start_bracket": [
+        1781164743.0,
+        1781164802.0
+      ],
+      "finish_bracket": [
+        1781338821.0,
+        1781338824.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad",
+      "name": "Zenobia",
+      "points": 4891,
+      "start": 1781166600.0,
+      "finish": 1781336817.0,
+      "first": 1781161716.0,
+      "last": 1781344353.0,
+      "start_bracket": [
+        1781166575.0,
+        1781166636.0
+      ],
+      "finish_bracket": [
+        1781336817.0,
+        1781336817.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+      "name": "Friendship 2",
+      "points": 10684,
+      "start": 1781166600.0,
+      "finish": 1781308821.0,
+      "first": 1781161716.0,
+      "last": 1781334139.0,
+      "start_bracket": [
+        1781166593.0,
+        1781166652.0
+      ],
+      "finish_bracket": [
+        1781308821.0,
+        1781308821.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+      "name": "Tignanello",
+      "points": 6547,
+      "start": 1781166600.0,
+      "finish": 1781321293.0,
+      "first": 1781161720.0,
+      "last": 1781334161.0,
+      "start_bracket": [
+        1781166579.0,
+        1781166640.0
+      ],
+      "finish_bracket": [
+        1781321290.0,
+        1781321294.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+      "name": "Moster",
+      "points": 9713,
+      "start": 1781166600.0,
+      "finish": 1781311598.0,
+      "first": 1781161737.0,
+      "last": 1781334163.0,
+      "start_bracket": [
+        1781166597.0,
+        1781166656.0
+      ],
+      "finish_bracket": [
+        1781311597.0,
+        1781311600.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+      "name": "Sonja fra Sydhavnen",
+      "points": 2365,
+      "start": 1781166600.0,
+      "finish": null,
+      "first": 1781161681.0,
+      "last": 1781368327.0,
+      "start_bracket": [
+        1781166598.0,
+        1781166659.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+      "name": "Charlotte",
+      "points": 3286,
+      "start": 1781166600.0,
+      "finish": 1781344022.0,
+      "first": 1781161684.0,
+      "last": 1781346686.0,
+      "start_bracket": [
+        1781166562.0,
+        1781166620.0
+      ],
+      "finish_bracket": [
+        1781344022.0,
+        1781344022.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+      "name": "Slipstik",
+      "points": 11462,
+      "start": 1781166600.0,
+      "finish": 1781306244.0,
+      "first": 1781161687.0,
+      "last": 1781334169.0,
+      "start_bracket": [
+        1781166564.0,
+        1781166622.0
+      ],
+      "finish_bracket": [
+        1781306243.0,
+        1781306246.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+      "name": "Ambra",
+      "points": 11671,
+      "start": 1781166600.0,
+      "finish": 1781305741.0,
+      "first": 1781161703.0,
+      "last": 1781334157.0,
+      "start_bracket": [
+        1781166573.0,
+        1781166634.0
+      ],
+      "finish_bracket": [
+        1781305740.0,
+        1781305743.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+      "name": "Esmeralda",
+      "points": 2410,
+      "start": 1781166600.0,
+      "finish": 1781361034.0,
+      "first": 1781161683.0,
+      "last": 1781361849.0,
+      "start_bracket": [
+        1781166552.0,
+        1781166611.0
+      ],
+      "finish_bracket": [
+        1781361001.0,
+        1781361060.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+      "name": "Abelone 3",
+      "points": 4856,
+      "start": 1781164800.0,
+      "finish": 1781346882.0,
+      "first": 1781161695.0,
+      "last": 1781352823.0,
+      "start_bracket": [
+        1781164755.0,
+        1781164816.0
+      ],
+      "finish_bracket": [
+        1781346882.0,
+        1781346882.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+      "name": "Laguna",
+      "points": 829,
+      "start": 1781164800.0,
+      "finish": null,
+      "first": 1781161703.0,
+      "last": 1781276086.0,
+      "start_bracket": [
+        1781164765.0,
+        1781164823.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+      "name": "GAIA",
+      "points": 3461,
+      "start": 1781164800.0,
+      "finish": 1781349921.0,
+      "first": 1781161705.0,
+      "last": 1781352844.0,
+      "start_bracket": [
+        1781164765.0,
+        1781164826.0
+      ],
+      "finish_bracket": [
+        1781349919.0,
+        1781349922.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+      "name": "Luna",
+      "points": 2231,
+      "start": 1781164800.0,
+      "finish": 1781367171.0,
+      "first": 1781161710.0,
+      "last": 1781368402.0,
+      "start_bracket": [
+        1781164771.0,
+        1781164832.0
+      ],
+      "finish_bracket": [
+        1781367141.0,
+        1781367202.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+      "name": "Norma",
+      "points": 1660,
+      "start": 1781164800.0,
+      "finish": null,
+      "first": 1781161713.0,
+      "last": 1781292282.0,
+      "start_bracket": [
+        1781164771.0,
+        1781164832.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+      "name": "Joujou 2",
+      "points": 1951,
+      "start": 1781164800.0,
+      "finish": null,
+      "first": 1781161709.0,
+      "last": 1781276785.0,
+      "start_bracket": [
+        1781164750.0,
+        1781164811.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+      "name": "Alice",
+      "points": 7770,
+      "start": 1781166600.0,
+      "finish": 1781318111.0,
+      "first": 1781161709.0,
+      "last": 1781334176.0,
+      "start_bracket": [
+        1781166546.0,
+        1781166607.0
+      ],
+      "finish_bracket": [
+        1781318110.0,
+        1781318113.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+      "name": "Rafi",
+      "points": 1476,
+      "start": 1781164800.0,
+      "finish": null,
+      "first": 1781161712.0,
+      "last": 1781276752.0,
+      "start_bracket": [
+        1781164763.0,
+        1781164822.0
+      ]
+    },
+    {
+      "id": "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+      "name": "Salka Valka",
+      "points": 3662,
+      "start": 1781164800.0,
+      "finish": 1781349652.0,
+      "first": 1781161715.0,
+      "last": 1781352842.0,
+      "start_bracket": [
+        1781164775.0,
+        1781164836.0
+      ],
+      "finish_bracket": [
+        1781349650.0,
+        1781349653.0
+      ]
+    }
+  ],
+  "refetched_utc": "2026-11-10T18:37:50.508687+00:00",
+  "same_positions_as_previous_download": true
+}

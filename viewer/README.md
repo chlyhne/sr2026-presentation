@@ -179,8 +179,10 @@ python3 scripts/serve_viewer.py
   Bådlisten, valg af fartpunkter og pins følger samme viste position og sporperiode.
   Fluebenet huskes lokalt, ligesom sportype og referencebåd.
   Korrektionen bruger bådens **eget ToD-måltal og klassestart**, uafhængigt af
-  referencebåden. Inden for hver rute bruges seneste klassestart som fælles start
-  og feltets højeste ToD-måltal som fast grundlag. Alle både forsinkes derfor;
+  referencebåden. Alle både på begge ruter bruger ét fælles starttidspunkt:
+  den seneste officielle klassestart i feltet. Inden for hver rute bruges feltets
+  højeste ToD-måltal som fast grundlag. Sejltiden regnes fra bådens officielle
+  startskud, også hvis den først krydser startlinjen senere. Alle både forsinkes derfor;
   til- og fravalg af både ændrer ikke deres tidsforløb.
   Ved mål er visningstiden `fælles start + sejltid + (TA_maks − TA_båd) × banelængde`.
   Første båd i mål på **samme rute** har dermed den bedste korrigerede tid,
@@ -560,7 +562,13 @@ Genskab radarlaget først med `.venv/bin/python scripts/prepare_radar.py`, deref
 `python3 scripts/prepare_viewer.py`. Pakker til radarværktøjet står
 i `../scripts/requirements-radar.txt`.
 
-Tracks: TracTrac event 3539, SR Grønsund og SR Bøgestrømmen. Den fulde udgave er
+Tracks: TracTrac event 3539, SR Grønsund og SR Bøgestrømmen. Begge replayfiler er
+genhentet og valideret mod de officielle klassestarter og registrerede måltider;
+`../data/tractrac/coverage.json` dokumenterer dækningen for alle 106 både og de
+81 registrerede målpassager. Alle 730.370 positioner er identiske med det tidligere
+download. Den tidligere faste visningsgrænse 13. juni kl. 04 dansk tid er fjernet:
+visningsperioden udledes nu af hele datasættet og omfatter alle startskud og
+slutpositioner med fem minutters margen. Den fulde udgave er
 bevaret i `../data/tractrac/combined_tracks.json`. Visningen indeholder alle 730.370
 trackpunkter fra dette datasæt med uændrede koordinater og tidspræcision. Der er
 ingen decimering eller forenkling af sporene. Tidsstempler omregnes fra millisekunder

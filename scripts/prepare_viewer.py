@@ -1,13 +1,11 @@
 """Prepare an offline, time-synchronised radar/wind/track explorer."""
-from datetime import datetime, timezone
 import json, time
 from pathlib import Path
 import requests
 import math
+from race_times import viewer_time_window, validate_track_boundaries
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'viewer'; OUT.mkdir(exist_ok=True)
-START=int(datetime(2026,6,11,8,tzinfo=timezone.utc).timestamp())
-END=int(datetime(2026,6,13,2,tzinfo=timezone.utc).timestamp())
 
 def get(url, params):
     for attempt in range(4):
@@ -56,6 +54,8 @@ def main():
     radar=json.loads((OUT/'radar/manifest.json').read_text(encoding='utf-8'))
     print('Wind ready:',len(wind_models['era5']),'grid points, 3 models with gusts',flush=True)
     source=json.loads((ROOT/'data/tractrac/combined_tracks.json').read_text(encoding='utf-8'))
+    validate_track_boundaries(source)
+    start,end=viewer_time_window(source)
     boats=[]
     speed_sources={course:json.loads((ROOT/f'data/tractrac/speeds_{course}.json').read_text(encoding='utf-8'))
                    for course in ('groensund','boegestroemmen')}
@@ -77,7 +77,7 @@ def main():
     for f in coast_source['features']:
         g=f['geometry'];lines=[g['coordinates']] if g['type']=='LineString' else g['coordinates']
         coast.extend(lines)
-    data={'start':START,'end':END,'boats':boats,'wind_models':wind_models,'radar':radar,'coast':coast,
+    data={'start':start,'end':end,'boats':boats,'wind_models':wind_models,'radar':radar,'coast':coast,
           'coast_metadata':coast_metadata,
           'track_speed_metadata':{'source':'TracTrac MTB position.speed','source_unit':'km/h','unit':'knots',
             'conversion':'speed_raw / 1.852','finite_difference':False,'matched_positions':sum(len(b['points']) for b in boats),

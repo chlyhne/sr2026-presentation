@@ -11,6 +11,18 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const fixture=await page.evaluate(()=>{
    stopPlayback();$('wind').checked=$('rain').checked=false;
+   const starters=boats.filter(boat=>!ghostClocks.get(boat.id).error);
+   if(new Set(starters.map(boat=>ghostClocks.get(boat.id).start)).size!==1)throw Error('Courses do not share one start signal');
+   chosen.clear();for(const boat of starters)chosen.add(boat.name);
+   setHandicapTracks(true);selectedTime=HANDICAP_COMMON_START;render();
+   if($('boatMarkers').querySelectorAll('.boat-marker').length!==starters.length)throw Error('Not all compensated boats appear at the common signal');
+   for(const marker of $('boatMarkers').querySelectorAll('.boat-marker')){
+    const boat=boats.find(boat=>boat.id===marker.dataset.boatMarker);
+    if(+marker.dataset.sourceTime!==boat.raceStartTime)throw Error('Start was moved to a GPS point or line crossing');
+   }
+   selectedTime=HANDICAP_COMMON_START-.01;render();
+   if($('boatMarkers').querySelector('.boat-marker'))throw Error('A compensated boat started before the common signal');
+   setHandicapTracks(false);
    const boat=boats.find(boat=>boat.name==='My'),clock=ghostClocks.get(boat.id),sourceTime=boat.raceStartTime+10800;
    const time=ghostClockAtSource(clock,sourceTime),position=trackPosition(boat.points,sourceTime),actual=trackPosition(boat.points,time);
    chosen.clear();for(const name of ['Mercutio','Vera','My','THE HULK'])chosen.add(name);
@@ -82,6 +94,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await marker.evaluate(group=>getComputedStyle(group).opacity),'1');
   await page.locator('#endPresentation').click();
   const finish=await page.evaluate(()=>{
+   const beyond=boats.find(boat=>!ghostClocks.get(boat.id).error&&ghostClocks.get(boat.id).end>D.end);
+   if(!beyond)throw Error('Expected a compensated finish after the complete source-data window');
+   chosen.add(beyond.name);
    view=[230,250,620,760];setview();updateTimeline({preserveTime:true});
    const selected=boats.filter(boatIsDisplayed).map(boat=>({boat,clock:ghostClocks.get(boat.id)})).sort((a,b)=>a.clock.end-b.clock.end);
    const winner=selected[0],last=selected.at(-1);setCurrentTime(last.clock.end+1,{fractional:true});render();
