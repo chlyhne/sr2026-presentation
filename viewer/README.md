@@ -720,8 +720,8 @@ og hele feltet, før kortets betjening åbnes, og beholdes ved fravalg og
 frem-/tilbagespoling. Alle bådes projicerede kildeprøver og passageprofiler
 bygges offline før opstart med den samme fælles nominelle matematik som visningen.
 Ved opstart og derefter én gang pr. referencevalg beregner GPU'ens transform feedback
-både absolut- og handicapforskel i en genbrugt sammenligningsbuffer med to floats
-pr. kildeprøve. Begge grundlag er dermed klar før betjening, også når sammenligningen
+absolut- og handicapforskel samt tidsforskel pr. 100 meter i en genbrugt
+sammenligningsbuffer med tre floats pr. kildeprøve. Alle tre grundlag er dermed klar før betjening, også når sammenligningen
 er slået fra ved indlæsning. Referencevalg kræver ingen CPU-genberegning eller upload
 af sporgeometri; bådvalg og grundlagsskift genbruger de eksisterende buffere.
 Afspilning ændrer tidsgrænser og de intervaller, der tegnes, uden at bygge SVG-strenge,
@@ -850,7 +850,7 @@ slås direkte op ved den nærmeste station,
 uanset klokkeslæt og tværgående afstand fra ruten. Hvis referencebåden passerer samme
 rute-position flere gange, bruges den første fremadgående passage. Sammenligningen
 bruger ét forberedt bytearray pr. båd, så opslag kun kræver et array-indeks.
-Den samme profil bruges af begge grundlag. Passagegrænser afrundes til nærmeste
+Den samme profil bruges af alle tre grundlag. Passagegrænser afrundes til nærmeste
 station (højst fem meters usikkerhed); en kort passage kan dække én station.
 Den sidste station repræsenterer rutens præcise slutpunkt.
 Sammenligningen kan bruge referencebådens senere passage, også når den ligger efter kortets aktuelle tid.
@@ -869,6 +869,17 @@ nævner giver manglende sammenligning. Beregningen er en lokal sammenligning af
 fremdrift, ikke en resultatliste med starttidskorrektion.
 Baggrund: [Dansk Sejlunions forklaring af DH og tid på distance](https://dansksejlunion.dk/kapsejlads/regler-og-vejledning/dh-reglen).
 
+Visningen **sekunder pr. 100 m** bruger de samme projicerede farter ved samme
+sted, uden handicapkorrektion. Den viser
+`(3600 × 100 / 1852) × (1 / v_reference − 1 / v_båd)` i sekunder pr. 100 meter.
+Positiv værdi betyder indhentet tid (rød), negativ tabt tid (blå).
+3 mod 4 knob giver cirka −16,2 s/100 m, mens 13 mod 14 knob giver cirka
+−1,1 s/100 m. Farveskalaen mættes ved ±20 s/100 m; hover viser den umættede
+værdi. Hvis en af de projicerede farter er nul eller negativ, kan en endelig
+sejltid fremad over 100 meter ikke beregnes, og sporet vises gråt.
+Det er en lokal tidsforskel pr. distance, ikke det samlede tidsmæssige forspring.
+Valget gemmes ligesom de øvrige sporvalg og bruges også i PNG-eksport.
+
 De projicerede kildeprøver og passageprofiler for alle både bygges offline af
 [`prepare_track_profiles.cjs`](../scripts/prepare_track_profiles.cjs) før opstart.
 Generator og visning bruger den samme nominelle matematik i
@@ -883,9 +894,15 @@ Fart ved hvert oprindeligt tidsindekseret kildepunkt gemmes også med ét byte.
 På serveren fylder en kildeprøve ni bytes: Float32-indeks og -progression samt
 én fartkode. Negativ egen VMG bevares i indeksfeltets fortegn uden ekstra bytes;
 positioner og tidsstempler kvantiseres ikke til otte bit.
-De binære filer fylder samlet cirka 10,49 MiB: 6,27 MiB kildeprøver og
+Alle både pakkes i én fingerprint-navngivet `fleet.bin`, som hentes med ét request.
+Manifest v3 angiver hver båds byte-offsets og den samlede filstørrelse; indlæsningen
+afviser ugyldige områder, overlap og afkortede filer uden at offentliggøre delvise data.
+Pages publicerer kun det aktuelle manifest og den tilhørende samlede fil.
+Filen fylder samlet cirka 10,49 MiB: 6,27 MiB kildeprøver og
 4,22 MiB referenceprofiler. Browseren afkoder kildeprøverne én gang til GPU'ens
 Float32-format (8,36 MiB), mens alle referenceprofiler beholdes som bytes.
+Profilerne kopieres ud af downloadbufferen, så denne kan frigives efter indlæsning;
+ellers ville byte-views fastholde alle de allerede afkodede kildeprøver i hukommelsen.
 Det samlede CPU-lager er derfor cirka 12,58 MiB. Lageret vokser lineært med
 kildeprøver og antal både; der opbygges ingen cache for alle bådpar.
 Profilerne gemmer hverken stationspositioner eller tider. Hoverens omtrentlige
@@ -894,8 +911,10 @@ kildepositioner og deres oprindelige tidsstempler.
 
 Kun den valgte referenceprofil afkodes til en genbrugt R32F GPU-tekstur, cirka
 0,160 MiB i den aktuelle opsætning. Transform feedback slår dens stationer op én gang pr.
-referencevalg og skriver både absolut- og handicapforskel ved de oprindelige
-kildepunkter til en genbrugt GPU-buffer med to floats pr. kildeprøve. Kildebufferen
+referencevalg og skriver absolut-, handicap- og tidsforskel ved de oprindelige
+kildepunkter til en genbrugt GPU-buffer med tre floats pr. kildeprøve. Den ekstra
+kanal bruger cirka 2,79 MiB GPU-lager for det aktuelle felt, men øger hverken
+serverfilerne eller CPU-profilerne og opretter ingen cache for bådpar. Kildebufferen
 indeholder det heltallige stationsindeks, progression i sømil og egen VMG; indekset
 beregnes før Float32-konvertering, så GPU'en ikke afrunder til en anden station.
 Forskellene interpoleres langs sporet i den fælles WebGL 2-renderer, som også

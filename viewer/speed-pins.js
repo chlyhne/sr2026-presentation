@@ -96,7 +96,8 @@ function updateTrackHover(e){
   let difference='';
   if(comparison.enabled&&referenceBoat()?.id!==boat.id){
    const relative=trackGainSample(boat,hit.time),basis=comparison.basis==='handicap'?'ToD':'absolut';
-   difference=relative?` · ${relative.gain>=0?'Henter +':'Taber '}${relative.gain.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kn (${basis})${relative.referenceTime===null?'':` · ${referenceBoat().name} samme sted ca. kl. ${fmt(relative.referenceTime)}`}`:' · Sammenligning mangler ved dette sted';
+   const unit=comparison.basis==='time'?'s/100 m':`kn (${basis})`;
+   difference=relative?` · ${relative.gain>=0?'Henter +':'Taber '}${relative.gain.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} ${unit}${relative.referenceTime===null?'':` · ${referenceBoat().name} samme sted ca. kl. ${fmt(relative.referenceTime)}`}`:' · Sammenligning mangler ved dette sted';
   }
   trackHoverTip.textContent=`${boat.name} · ${speed}${difference} · TracTrac`;
   trackHoverTip.hidden=false;trackHoverTip.style.left=Math.max(4,Math.min(clientX+12,innerWidth-trackHoverTip.offsetWidth-4))+'px';

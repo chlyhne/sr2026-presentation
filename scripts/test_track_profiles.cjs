@@ -197,7 +197,7 @@ test('source station indices survive Float32 rounding at a nearest-node boundary
  assert.equal(progress[0],progress[1]);
 });
 
-test('generator VM exposes only the new nominal profile API and strict v2 format validation',()=>{
+test('generator VM exposes only the nominal profile API and strict bundled v3 format validation',()=>{
  const generator=require('./prepare_track_profiles.cjs');
  const math=generator.loadNominalMath();
  assert.ok(math.D&&Array.isArray(math.boats));
@@ -206,24 +206,82 @@ test('generator VM exposes only the new nominal profile API and strict v2 format
  assert.equal(math.packReferenceStations,undefined);
  assert.equal(Object.prototype.toString.call(math.prepareReferenceProfile({points:[],speeds:[]})),'[object Uint8Array]');
  const state={sourceFingerprint:'test'},prefix='track-profiles/test/';
- const manifest={version:2,sourceFingerprint:'test',stationCount:22,stationSpacingMeters:10,profileEncoding:'uint8',speedMaximum:25,speedCodes:254,missingValue:255,sampleMissingValue:-1e20,sampleWords:3,sampleBytes:9,sampleEncoding:'uint8-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,byteOrder:'little-endian',boats:[{id:'one',pointCount:2,stationCount:22,sampleFile:prefix+'000.samples.bin',profileFile:prefix+'000.profile.bin'}]};
+ const manifest={version:3,sourceFingerprint:'test',stationCount:22,stationSpacingMeters:10,profileEncoding:'uint8',speedMaximum:25,speedCodes:254,missingValue:255,sampleMissingValue:-1e20,sampleWords:3,sampleBytes:9,sampleEncoding:'uint8-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,byteOrder:'little-endian',bundleFile:prefix+'fleet.bin',bundleBytes:49,boats:[{id:'one',pointCount:2,stationCount:22,sampleOffset:0,profileOffset:27}]};
  const saved={existsSync:fs.existsSync,readFileSync:fs.readFileSync,statSync:fs.statSync};
- let current=manifest,profileSize=22,sampleSize=27;
+ let current=manifest,bundleSize=49;
  try{
   fs.existsSync=()=>true;
   fs.readFileSync=()=>JSON.stringify(current);
-  fs.statSync=filename=>({size:filename.endsWith('.samples.bin')?sampleSize:profileSize});
+  fs.statSync=()=>({size:bundleSize});
   assert.deepEqual(generator.currentManifest(state),manifest);
   for(const [key,value] of Object.entries({version:1,stationSpacingMeters:5,profileEncoding:'float16',speedMaximum:15,speedCodes:255,missingValue:-1e20,sampleMissingValue:255,sampleWords:2,sampleBytes:12,sampleEncoding:'float32',speedSignEncoding:'none',stationWords:8,byteOrder:'big-endian',stationCount:0})){
    current={...manifest,[key]:value};assert.equal(generator.currentManifest(state),null,key);
   }
-  current=manifest;sampleSize=36;
+  for(const [key,value] of Object.entries({sampleOffset:1,profileOffset:26,pointCount:Number.MAX_SAFE_INTEGER})){
+   current={...manifest,boats:[{...manifest.boats[0],[key]:value}]};assert.equal(generator.currentManifest(state),null,key);
+  }
+  for(const [key,value] of Object.entries({bundleFile:prefix+'../fleet.bin',bundleBytes:50})){
+   current={...manifest,[key]:value};assert.equal(generator.currentManifest(state),null,key);
+  }
+  current=manifest;bundleSize=48;
   assert.equal(generator.currentManifest(state),null);
-  sampleSize=27;profileSize=22*32;
+  bundleSize=50;
   assert.equal(generator.currentManifest(state),null);
  }finally{Object.assign(fs,saved);}
 });
 
+
+test('bundled loader fetches once, decodes unaligned ranges and rejects corrupt data atomically',async()=>{
+ const crypto=require('node:crypto'),{packProjectedTrack}=require('./prepare_track_profiles.cjs');
+ async function run(mutate=()=>{}){
+  const {context,boat}=setup();
+  const fleet=[boat([24,66,180],[4,7,6]),{...boat([180,80,20],[8,7,6]),id:'second'}];
+  const definition={version:1,points:context.routePoints},fingerprint='a'.repeat(64),chunks=[],entries=[];
+  let offset=0;
+  for(const source of fleet){
+   const samples=packProjectedTrack(context.prepareProjectedTrack(source)),profile=context.prepareReferenceProfile(source);
+   entries.push({id:source.id,pointCount:source.points.length,stationCount:profile.length,sampleOffset:offset,profileOffset:offset+samples.byteLength});
+   chunks.push(Buffer.from(samples),Buffer.from(profile));offset+=samples.byteLength+profile.byteLength;
+  }
+  const manifest={version:3,sourceFingerprint:fingerprint,dataDigest:'b'.repeat(64),rhumblineDigest:crypto.createHash('sha256').update(JSON.stringify(definition)).digest('hex'),start,byteOrder:'little-endian',stationCount:context.referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint8',speedMaximum:25,speedCodes:254,missingValue:255,sampleMissingValue:-1e20,sampleWords:3,sampleBytes:9,sampleEncoding:'uint8-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,bundleFile:`track-profiles/${fingerprint}/fleet.bin`,bundleBytes:offset,boats:entries};
+  const state={manifest,body:Buffer.concat(chunks)},requests=[];
+  mutate(state);
+  Object.assign(context,{boats:fleet,window:{SR_RHUMBLINE:definition},crypto:crypto.webcrypto,TextEncoder,fetch:async name=>{
+   requests.push(name);
+   return {ok:true,json:async()=>state.manifest,arrayBuffer:async()=>Uint8Array.from(state.body).buffer};
+  }});
+  context.D.toJSON=()=>{throw Error('Full DATA must not be serialized');};
+  vm.runInContext(fs.readFileSync(path.join(root,'viewer','track-profiles.js'),'utf8'),context);
+  let error;
+  try{await context.loadTrackProfiles();}catch(caught){error=caught;}
+  context.fixtureFleet=fleet;
+  const profiles=vm.runInContext('fixtureFleet.map(boat=>trackProfileCache.get(boat.points))',context);
+  return {context,fleet,profiles,requests,error};
+ }
+ const valid=await run();
+ assert.equal(valid.error,undefined);assert.equal(valid.requests.length,2);
+ for(const [index,source] of valid.fleet.entries()){
+  const profile=valid.profiles[index];
+  assert.deepEqual(Array.from(profile.samples),Array.from(valid.context.prepareProjectedTrack(source)));
+  assert.deepEqual(Array.from(profile.stations),Array.from(valid.context.prepareReferenceProfile(source)));
+  assert.equal(profile.stations.buffer.byteLength,profile.stations.byteLength);
+ }
+ for(const mutate of [
+  state=>{state.manifest.version=2;},
+  state=>{state.manifest.bundleFile='../fleet.bin';},
+  state=>{state.manifest.bundleBytes++;},
+  state=>{state.manifest.boats[1].sampleOffset--;},
+  state=>{state.manifest.boats[1].profileOffset++;},
+  state=>{state.body=state.body.subarray(1);},
+  state=>{state.body=Buffer.concat([state.body,Buffer.alloc(1)]);},
+  state=>{state.body.writeFloatLE(NaN,state.manifest.boats[1].sampleOffset);},
+  state=>{state.body.writeFloatLE(999,state.manifest.boats[1].sampleOffset);},
+  state=>{state.body.writeFloatLE(0,state.manifest.boats[1].sampleOffset+24);}
+ ]){
+  const invalid=await run(mutate);
+  assert.ok(invalid.error);assert.ok(invalid.profiles.every(profile=>profile===undefined));
+ }
+});
 
 test('shared source speed quantization preserves sign, clips magnitudes and stays within .05 kn',()=>{
  const {context:c,boat}=setup();
