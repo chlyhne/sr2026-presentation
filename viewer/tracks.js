@@ -34,18 +34,18 @@ async function prepareFleetTracks(onProgress=()=>{}){
 }
 function trackSpeedLegendLayout(){
  const rect=$('map').getBoundingClientRect();
- return {left:12,top:12,width:Math.max(110,Math.min(230,rect.width-24)),height:comparison.enabled?77:63};
+ return {left:12,top:12,width:Math.max(110,Math.min(230,rect.width-24)),height:trackUsesComparison()?77:63};
 }
 function renderTrackSpeedLegend(){
  const layer=$('trackSpeedLegend');layer.replaceChildren();
- if(comparison.boatColour){layer.removeAttribute('aria-label');return;}
+ if(trackUsesBoatColour()){layer.removeAttribute('aria-label');return;}
  const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();if(!matrix)return;
  const layout=trackSpeedLegendLayout(),{width}=layout;
  const point=new DOMPoint(rect.left+layout.left,rect.top+layout.top).matrixTransform(matrix.inverse());
  const group=screenGroup(point.x,point.y,layer);
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
  el('rect',{width,height:layout.height,rx:5,fill:'#ffffff',opacity:.94},group);
- const relative=comparison.enabled,timeMode=comparison.basis==='time',limit=trackGainLimit(),referenceName=referenceBoat()?.name??'referencebåd';
+ const relative=trackUsesComparison(),timeMode=comparison.basis==='time',limit=trackGainLimit(),referenceName=referenceBoat()?.name??'referencebåd';
  function legendLabel(label,attrs){
   const text=el('text',{x:10,fill:'#173d4c',...attrs,'aria-label':label},group);
   text.textContent=label;

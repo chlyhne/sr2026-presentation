@@ -44,13 +44,13 @@ function updateVisibleBoats(time=currentTime()){
  const entries=[];
  for(const boat of boats){
   if(!boatIsDisplayed(boat))continue;
-  const position=trackPosition(boat.points,time);
+  const position=displayBoatPosition(boat,time);
   if(!isBoatSearchActive()){
    if(!position)continue;
    const [x,y]=xy(position.point),point=new DOMPoint(x,y).matrixTransform(matrix);
    if(point.x<rect.left||point.x>rect.right||point.y<rect.top||point.y>rect.bottom)continue;
   }
-  const sample=position?trackSpeedSample(boat,position.interpolated?time:position.sourceTime):null;
+  const sample=position?trackSpeedSample(boat,position.interpolated?position.replayTime:position.sourceTime):null;
   entries.push({boat,speed:sample?.speed});
  }
  entries.sort((a,b)=>a.boat.name.localeCompare(b.boat.name,'da'));
@@ -76,7 +76,7 @@ function updateVisibleBoats(time=currentTime()){
    row.choice.checked=chosen.has(boat.name);
    setBoatListText(row.name,boat.name);
    setBoatListText(row.speed,Number.isFinite(speed)?boatListSpeedFormat.format(speed)+' kn':'Fart mangler');
-   row.speed.title='Fart over grunden (SOG)';
+   row.speed.title=handicapTracksEnabled?'Registreret SOG ved den viste position på sporet':'Fart over grunden (SOG)';
    setBoatListText(row.skipper,'Skipper: '+(boat.skipper||'Ikke oplyst'));
    setBoatListText(row.type,'Bådtype: '+(boat.boatType||boat.metadata.boatType||'Ikke oplyst'));
    row.name.title=boat.name;row.skipper.title=row.skipper.textContent;row.type.title=row.type.textContent;
