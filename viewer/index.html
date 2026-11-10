@@ -93,14 +93,12 @@
   </div>
 </section>
 <section id="mapMeasure" aria-label="Måleværktøj">
-  <button id="mapMeasureToggle" type="button" aria-expanded="false" aria-controls="mapMeasurePanel">Mål <span aria-hidden="true">⌄</span></button>
-  <div id="mapMeasurePanel" hidden>
-    <div class="map-tool-actions"><button id="measureDistance" type="button">Mål afstand</button></div>
-    <p id="measurementHelp">Klik Mål afstand, og klik punkterne på kortet.</p>
-    <output id="measurementResult" aria-live="polite"></output>
-    <div class="map-tool-actions"><button id="finishMapLine" type="button" disabled>Færdig</button><button id="undoMapPoint" type="button" disabled>Fortryd punkt</button><button id="cancelMapLine" type="button" hidden>Annullér</button></div>
-    <div class="map-tool-actions"><button id="clearMeasurement" type="button" disabled>Ryd måling</button></div>
-  </div>
+  <button id="mapMeasureToggle" type="button" aria-label="Mål afstand" aria-pressed="false" title="Mål afstand: klik to steder på kortet. Tryk igen for at fjerne målingen."><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m3 16 13-13 5 5L8 21Z M6 13l3 3 M9 10l2 2 M12 7l3 3 M15 4l2 2"/></svg></button>
+</section>
+<section id="rhumblineTools" aria-label="Tegn permanent rhumbline" hidden>
+  <p id="measurementHelp"></p>
+  <output id="measurementResult" aria-live="polite"></output>
+  <div class="map-tool-actions"><button id="finishMapLine" type="button" disabled>Gem permanent rhumbline</button><button id="undoMapPoint" type="button" disabled>Fortryd punkt</button></div>
 </section>
 <section id="mapLayers" aria-label="Kortlag">
   <button id="mapLayersToggle" type="button" aria-expanded="false" aria-controls="mapLayersPanel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 5-10 5L2 8Z M2 12l10 5 10-5 M2 16l10 5 10-5"/></svg> Lag <span aria-hidden="true">⌄</span></button>

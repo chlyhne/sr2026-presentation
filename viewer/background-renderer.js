@@ -1,7 +1,7 @@
 // The sole background renderer:
 // wind texture -> land triangles -> radar texture -> coastline triangles.
 const MAP_GRID_LEVELS=[{meters:15*1852,label:'15 sømil'},{meters:5*1852,label:'5 sømil'},
- {meters:1852,label:'1 sømil'},{meters:400,label:'400 m'},{meters:100,label:'100 m'}];
+ {meters:2*1852,label:'2 sømil'},{meters:1852,label:'1 sømil'},{meters:400,label:'400 m'},{meters:100,label:'100 m'}];
 const MAP_GRID_METERS_PER_DEGREE=6371000*Math.PI/180;
 const MAP_GRID_UNITS_PER_METER=[1000/(4.5*MAP_GRID_METERS_PER_DEGREE*Math.cos(55*Math.PI/180)),1180/(3*MAP_GRID_METERS_PER_DEGREE)];
 function mapGridLevel(viewport){

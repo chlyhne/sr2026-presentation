@@ -91,21 +91,15 @@ function syncNavigationControls(){
  syncReferenceBoatControls();
  $('trackStyle').value=comparison.enabled?comparison.basis:comparison.boatColour?'boat':'speed';$('trackLength').value=String(trackLengthSeconds);
  $('trackLengthSummary').textContent=trackLengthSeconds?`Spor: seneste ${$('trackLength').selectedOptions[0].textContent}`:'Spor: hele forløbet';
- $('clearMeasurement').disabled=!measurement.length||!!navigationMode;
  $('finishMapLine').disabled=!navigationMode||navigationDraft.length<2;
- $('undoMapPoint').disabled=!navigationMode||!navigationDraft.length;$('cancelMapLine').hidden=!navigationMode;
- $('measureDistance').setAttribute('aria-pressed',String(navigationMode==='measure'));
+ $('undoMapPoint').disabled=!navigationMode||!navigationDraft.length;
+ $('mapMeasureToggle').setAttribute('aria-pressed',String(!window.SR_RHUMBLINE_SETUP&&(navigationMode==='measure'||measurement.length>0)));
  $('map').classList.toggle('measuring',!!navigationMode);
-}
-function setMeasurementExpanded(expanded){
- $('mapMeasurePanel').hidden=!expanded;$('mapMeasureToggle').setAttribute('aria-expanded',String(expanded));
- if(expanded){setMapLayersExpanded(false);$('comparisonStatus').hidden=true;}
- if(expanded)setMapTracksExpanded(false);
 }
 function startMapLine(mode){
  stopPlayback();cancelPlacement();cancelDrawingGesture();setDrawingTool('pan');clearTrackHover();
- navigationMode=mode;navigationDraft=[];setMeasurementExpanded(true);
- $('measurementHelp').textContent='Klik punkterne på kortet i rækkefølge. Træk for at flytte kortet. Afslut med Færdig eller Enter; Escape annullerer.';
+ navigationMode=mode;navigationDraft=[];
+ setMapLayersExpanded(false);setMapTracksExpanded(false);$('comparisonStatus').hidden=true;
  syncNavigationControls();renderNavigation();
 }
 function cancelMapLine(){navigationMode=null;navigationDraft=[];syncNavigationControls();renderNavigation();}
@@ -113,7 +107,7 @@ function finishMapLine(){
  if(navigationDraft.length<2)return;
  if(navigationMode==='route'){savePermanentRhumbline();return;}
  if(navigationMode==='measure')measurement=navigationDraft.map(p=>[...p]);
- cancelMapLine();$('measurementHelp').textContent='Klik Mål afstand for at tegne en ny måling.';
+ cancelMapLine();
 }
 function addNavigationPoint(event){
  const point=new DOMPoint(event.clientX,event.clientY).matrixTransform($('map').getScreenCTM().inverse());
@@ -121,7 +115,9 @@ function addNavigationPoint(event){
  if(Math.abs(geographic[0])>180||Math.abs(geographic[1])>=85){comparisonMessage('Punktet ligger uden for kortets måleområde.');return;}
  if(navigationDraft.length&&rhumbLeg(navigationDraft.at(-1),geographic).distance<1e-6)return;
  if(navigationDraft.length>=200){comparisonMessage('En rhumbline kan højst have 200 punkter.');return;}
- navigationDraft.push(geographic);syncNavigationControls();renderNavigation();
+ navigationDraft.push(geographic);
+ if(navigationMode==='measure'&&navigationDraft.length===2){finishMapLine();return;}
+ syncNavigationControls();renderNavigation();
 }
 function renderNavigation(){
  const key=JSON.stringify([navigationMode,navigationDraft,measurement]);
@@ -150,11 +146,12 @@ function renderNavigation(){
  $('measurementResult').textContent=active.length?`${buildRhumbRoute(active).total.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} sømil` :'';
  resizeSymbols();
 }
-$('mapMeasureToggle').onclick=()=>{setMeasurementExpanded($('mapMeasurePanel').hidden);if(!$('mapMeasurePanel').hidden)syncNavigationControls();};
-$('measureDistance').onclick=()=>startMapLine('measure');
-$('finishMapLine').onclick=finishMapLine;$('cancelMapLine').onclick=cancelMapLine;
+$('mapMeasureToggle').onclick=()=>{
+ if(navigationMode==='measure'||measurement.length){measurement=[];cancelMapLine();}
+ else startMapLine('measure');
+};
+$('finishMapLine').onclick=finishMapLine;
 $('undoMapPoint').onclick=()=>{navigationDraft.pop();syncNavigationControls();renderNavigation();};
-$('clearMeasurement').onclick=()=>{measurement=[];syncNavigationControls();renderNavigation();};
 $('trackStyle').onchange=()=>{
  const style=$('trackStyle').value;
  const plain=style==='speed'||style==='boat';
@@ -166,17 +163,16 @@ $('trackLength').onchange=()=>{
  catch{comparisonMessage('Sporlængden kunne ikke gemmes.');syncNavigationControls();return;}
  trackLengthSeconds=length;comparisonMessage('');syncNavigationControls();requestRender();
 };
-$('mapTracksToggle').addEventListener('click',()=>{if(!$('mapTracksPanel').hidden){setMeasurementExpanded(false);setMapLayersExpanded(false);}});
-$('mapLayersToggle').addEventListener('click',()=>setMeasurementExpanded(false));
-document.addEventListener('pointerdown',event=>{if(!$('mapTools').contains(event.target)&&!navigationMode)setMeasurementExpanded(false);});
+$('mapTracksToggle').addEventListener('click',()=>{if(!$('mapTracksPanel').hidden)setMapLayersExpanded(false);});
 document.addEventListener('keydown',event=>{
  if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+ if(event.key!=='Escape'&&event.target.closest('button'))return;
  if(navigationMode&&['Escape','Enter','Backspace'].includes(event.key)){
   event.preventDefault();event.stopImmediatePropagation();
   if(window.SR_RHUMBLINE_SAVING)return;
-  if(event.key==='Escape')cancelMapLine();else if(event.key==='Enter')finishMapLine();else{navigationDraft.pop();syncNavigationControls();renderNavigation();}
- }else if(event.key==='Escape'&&!$('mapMeasurePanel').hidden){
-  event.preventDefault();event.stopImmediatePropagation();setMeasurementExpanded(false);$('mapMeasureToggle').focus();
+  if(event.key==='Escape')cancelMapLine();else if(event.key==='Enter'&&navigationMode==='route')finishMapLine();else if(event.key==='Backspace'){navigationDraft.pop();syncNavigationControls();renderNavigation();}
+ }else if(event.key==='Escape'&&measurement.length&&!window.SR_RHUMBLINE_SETUP){
+  event.preventDefault();event.stopImmediatePropagation();measurement=[];cancelMapLine();$('mapMeasureToggle').focus();
  }
 },true);
 if(referencePreferenceError)comparisonMessage(referencePreferenceError);

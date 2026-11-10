@@ -36,12 +36,14 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
    },coordinate);
    await page.mouse.click(p.x,p.y);
   };
-  await page.locator('#mapMeasureToggle').click();await page.locator('#measureDistance').click();
+  await page.locator('#mapMeasureToggle').click();
   await geographicClick([12,55.5]);await geographicClick([12,55.5+1/60]);
   // A mouse click is quantized to screen pixels at this overview zoom.
-  near(await page.evaluate(()=>buildRhumbRoute(navigationDraft).total),1.00067567,.15);
-  await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>navigationMode),null);
-  assert.match(await page.locator('#measurementResult').textContent(),/^\d+,\d{2} sømil$/);
+  near(await page.evaluate(()=>buildRhumbRoute(measurement).total),1.00067567,.15);
+  assert.equal(await page.evaluate(()=>navigationMode),null);
+  assert.match(await page.locator('#mapNavigation').textContent(),/Måling/);
+  await page.locator('#mapMeasureToggle').click();
+  assert.equal(await page.locator('#mapNavigation').textContent(),'');
   assert.deepEqual(await page.evaluate(()=>SR_RHUMBLINE.points),[[11.99,55.6],[12.09,55.6]]);
   // All boats pass the same positions at different times; cross-track offsets
   // must not change the comparison, and Mercutio need not be selected.
@@ -218,10 +220,10 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.deepEqual(await page.evaluate(()=>comparison),saved);
   assert.equal(await page.locator('#trackStyle').inputValue(),'boat');
   await page.evaluate(()=>setPresentationMode(true));
-  await page.locator('#mapMeasureToggle').click();await page.locator('#measureDistance').click();
+  await page.locator('#mapMeasureToggle').click();
   await page.keyboard.press('Escape');
   assert.equal(await page.evaluate(()=>document.body.classList.contains('presenting')),true);
-  await page.keyboard.press('Escape');assert.equal(await page.locator('#mapMeasurePanel').isVisible(),false);
+  assert.equal(await page.locator('#mapMeasureToggle').getAttribute('aria-pressed'),'false');
   await page.locator('#presentationFullscreen').click();await page.waitForFunction(()=>!!document.fullscreenElement);
   assert.equal(await page.locator('#mapMeasureToggle').isVisible(),true);
   await page.locator('#presentationFullscreen').click();

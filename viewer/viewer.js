@@ -64,14 +64,9 @@ function renderMapCredit(){
  const point=new DOMPoint(rect.right-8,rect.bottom-8).matrixTransform(matrix.inverse());
  const group=screenGroup(point.x,point.y,layer);
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
- el('rect',{x:-185,y:-64,width:185,height:70,rx:3,fill:'#ffffff',opacity:.88},group);
- const latitude=57-point.y*3/1180;
- const pixelsPerMeter=Math.hypot(matrix.a,matrix.b)*1000/(4.5*MAP_GRID_METERS_PER_DEGREE*Math.cos(latitude*Math.PI/180));
- const maxMeters=140/pixelsPerMeter,unitMeters=maxMeters>=1852?1852:1;
- const maxUnits=maxMeters/unitMeters,magnitude=10**Math.floor(Math.log10(maxUnits));
- const units=[5,2,1].map(value=>value*magnitude).find(value=>value<=maxUnits);
- const meters=units*unitMeters,width=meters*pixelsPerMeter;
- const label=`${new Intl.NumberFormat('da-DK',{maximumSignificantDigits:3}).format(units)} ${unitMeters===1852?'sømil':'m'}`;
+ const {meters,label}=mapGridLevel({matrix});
+ const width=meters*MAP_GRID_UNITS_PER_METER[0]*Math.hypot(matrix.a,matrix.b),panelWidth=Math.max(185,width+16);
+ el('rect',{x:-panelWidth,y:-64,width:panelWidth,height:70,rx:3,fill:'#ffffff',opacity:.88},group);
  const scale=el('g',{'data-map-scale':'','data-meters':meters,'data-pixel-width':width,role:'img','aria-label':`Målestok: ${label}`},group);
  el('path',{d:`M${-8-width},-45v7H-8v-7`,fill:'none',stroke:'#173d4c','stroke-width':1.5},scale);
  el('text',{x:-8-width/2,y:-49,'text-anchor':'middle','font-size':11,fill:'#173d4c'},scale).textContent=label;

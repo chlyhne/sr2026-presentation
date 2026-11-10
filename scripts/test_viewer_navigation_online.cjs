@@ -29,7 +29,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    if(!admin){
     assert.equal(await page.evaluate(()=>comparison.enabled),true);
     assert.equal(await page.evaluate(()=>SRStorage.getItem('sr2026-comparison')),null,'Route definitions are not presentation storage');
-    await page.locator('#mapMeasureToggle').click();await page.locator('#measureDistance').click();
+    await page.locator('#mapMeasureToggle').click();
     await page.keyboard.press('Escape');
     assert.equal(await page.evaluate(()=>document.body.classList.contains('presenting')),true);
     await page.reload();await page.waitForSelector('#onlineStatus',{state:'attached'});
