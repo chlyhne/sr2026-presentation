@@ -25,9 +25,11 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   });
   const ghost=page.locator('[data-ghost-boat="'+fixture.id+'"]');
   await page.locator('#mapTracksToggle').click();
-  const choice=page.getByRole('checkbox',{name:'Spøgelse: My',exact:true});
+  const choice=page.getByRole('checkbox',{name:'Handicapkompenseret spor',exact:true});
+  assert.equal(await page.locator('#mapTracksPanel input[type="checkbox"]').count(),1);
   await choice.check();await page.locator('#mapTracksToggle').click();
   await ghost.waitFor();
+  assert.equal(await page.locator('[data-ghost-boat]').count(),4,'One checkbox enables a ghost for every selected boat');
   const marker=await ghost.evaluate(group=>({
    x:+group.dataset.screenX,y:+group.dataset.screenY,time:+group.dataset.sourceTime,opacity:+group.getAttribute('opacity'),
    pointerEvents:getComputedStyle(group).pointerEvents,colour:group.querySelector('.boat-hull').getAttribute('fill'),
@@ -37,7 +39,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.ok(Math.abs(marker.time-fixture.sourceTime)<1e-6);assert.equal(marker.opacity,.38);assert.equal(marker.pointerEvents,'none');
   const original=page.locator('[data-boat-marker="'+fixture.id+'"]');
   assert.equal(marker.colour,await original.locator('.boat-hull').getAttribute('fill'));
-  assert.equal(marker.hull,await original.locator('.boat-hull').getAttribute('d'));assert.match(marker.name,/My · spøgelse/);
+  assert.equal(marker.hull,await original.locator('.boat-hull').getAttribute('d'));assert.match(marker.name,/My · handicap/);
   assert.equal(await page.locator('#ghostBoatMarkers path:not(.boat-hull)').count(),0,'The ghost must never get its own track line');
   await page.evaluate(()=>{
    if(ghostTestClock!==ghostClocks.get(boats.find(boat=>boat.name==='My').id)||ghostTestIndex!==ghostTestClock.timelineIndex)throw Error('Prepared clock/index was replaced');
@@ -52,17 +54,23 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await ghost.count(),0);
   await page.evaluate(id=>{const boat=boats.find(boat=>boat.id===id);setBoatSelected(boat,true);selectedTime=ghostClockAtSource(ghostClocks.get(id),boat.raceStartTime+10800);render();},fixture.id);
   await ghost.waitFor();
+  assert.equal(await page.locator('[data-ghost-boat]').count(),4);
+  await page.evaluate(()=>{setBoatSearch('XBOX');flushRender();});
+  assert.equal(await page.locator('[data-ghost-boat]').count(),0,'Unselected search results must not receive ghosts');
+  await page.evaluate(()=>{setBoatSearch('');flushRender();});
+  await page.locator('#mapTracksToggle').click();await choice.uncheck();await page.locator('#mapTracksToggle').click();
+  await page.waitForFunction(()=>$('ghostBoatMarkers').children.length===0);
+  await page.locator('#mapTracksToggle').click();await choice.check();
+  await page.screenshot({path:'/tmp/sr2026-handicap-checkbox.png'});
+  await page.locator('#mapTracksToggle').click();await ghost.waitFor();
   await page.locator('#startPresentation').click();await ghost.waitFor();
   assert.equal(await ghost.getAttribute('opacity'),'.38');
   await page.screenshot({path:'/tmp/sr2026-ghost-boats.png'});
   await page.locator('#endPresentation').click();
   // Extend the slider beyond the weather interval through the last ghost finish.
   const finish=await page.evaluate(()=>{
-   for(const name of ['Mercutio','Vera','My','THE HULK']){
-    const boat=boats.find(boat=>boat.name===name);setGhostBoat(boat.id,true);
-   }
    view=[230,250,620,760];setview();updateTimeline({preserveTime:true});
-   const selected=boats.filter(boat=>ghostBoatIds.has(boat.id)).map(boat=>({boat,clock:ghostClocks.get(boat.id)})).sort((a,b)=>a.clock.end-b.clock.end);
+   const selected=boats.filter(showHandicapGhost).map(boat=>({boat,clock:ghostClocks.get(boat.id)})).sort((a,b)=>a.clock.end-b.clock.end);
    const winner=selected[0],last=selected.at(-1);setCurrentTime(last.clock.end+1,{fractional:true});render();
    return {winner:winner.boat.id,winnerTime:winner.clock.end,last:last.boat.id,lastTime:last.clock.end,time:currentTime(),dataEnd:D.end,rangesEnd:visibleTimeRanges.at(-1).end};
   });
@@ -78,14 +86,26 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   const prepared=await page.evaluate(()=>({same:ghostTestClock===ghostClocks.get(boats.find(boat=>boat.name==='My').id),index:ghostTestIndex===ghostTestClock.timelineIndex}));
   assert.deepEqual(prepared,{same:true,index:true});
   await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});
-  assert.equal(await page.evaluate(()=>ghostBoatIds.size),4);
+  assert.equal(await page.evaluate(()=>handicapTracksEnabled),true);
   const unavailable=await page.evaluate(()=>{
    const boat=boats.find(boat=>ghostClocks.get(boat.id).error);chosen.add(boat.name);render();return boat.name;
   });
   await page.locator('#mapTracksToggle').click();
-  assert.equal(await page.getByRole('checkbox',{name:'Spøgelse: '+unavailable,exact:true}).isDisabled(),true);
-  assert.match(await page.locator('#ghostBoatChoices').textContent(),/Registreret måltid mangler/);
+  assert.equal(await choice.isChecked(),true);
+  assert.equal(await page.locator('#mapTracksPanel input[type="checkbox"]').count(),1);
+  assert.match(await page.locator('#ghostStatus').textContent(),/Registreret måltid mangler/);
+  assert.ok((await page.locator('#ghostStatus').textContent()).includes(unavailable));
+  await page.evaluate(()=>{
+   window.originalHandicapStorage=Storage.prototype.setItem;
+   Storage.prototype.setItem=function(key,value){if(key===HANDICAP_TRACKS_KEY)throw Error('quota');return originalHandicapStorage.call(this,key,value);};
+  });
+  await choice.click();assert.equal(await choice.isChecked(),true);
+  assert.match(await page.locator('#ghostStatus').textContent(),/kunne ikke gemmes/);
+  await page.evaluate(()=>Storage.prototype.setItem=originalHandicapStorage);
+  await choice.uncheck();assert.equal(await choice.isChecked(),false);
+  await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});
+  assert.equal(await page.evaluate(()=>handicapTracksEnabled),false);
   assert.deepEqual(errors,[]);
-  console.log('Firefox PC: ghost choice, own track position/course/hull/colour, transparency, no extra track buffers, fixed clocks, reference/style/boat changes, staggered starts, finish playback past D.end, persistence, unavailable results and presentation.');
+  console.log('Firefox PC: one handicap checkbox, automatic ghosts for selected boats, no ghosts for unselected search results, on/off and persistence, unchanged track clocks/buffers, reference/style changes, finish playback, presentation and explicit data/storage errors.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1)});
