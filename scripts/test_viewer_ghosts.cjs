@@ -11,6 +11,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const fixture=await page.evaluate(()=>{
    stopPlayback();$('wind').checked=$('rain').checked=false;
+   const officialLengths={groensund:232,boegestroemmen:216};
+   if(boats.some(boat=>boat.courseLengthNm!==officialLengths[boat.course]))throw Error('Official handicap distance must match each boat’s course');
    const starters=boats.filter(boat=>!ghostClocks.get(boat.id).error);
    if(new Set(starters.map(boat=>ghostClocks.get(boat.id).start)).size!==1)throw Error('Courses do not share one start signal');
    chosen.clear();for(const boat of starters)chosen.add(boat.name);
