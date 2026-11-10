@@ -19,12 +19,14 @@ function prepareBoatTrack(boat){webglTracks.prepare(boat);}
 function prepareSelectedTracks(){
  for(const boat of boats)if(boatIsDisplayed(boat))prepareBoatTrack(boat);
 }
-async function prepareFleetTracks(){
+async function prepareFleetTracks(onProgress=()=>{}){
+ let prepared=0;
  for(const boat of boats){
   // The renderer has already displayed its error. Finish loading its controls
   // so the user can reload; no alternative rendering or calculation is used.
   if(!webglTracks.active)return false;
   prepareBoatTrack(boat);
+  onProgress(++prepared,boats.length);
   // Let the loading message paint between boats while interaction is locked.
   await new Promise(resolve=>setTimeout(resolve,0));
  }

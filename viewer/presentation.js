@@ -421,18 +421,7 @@ async function captureMap() {
  stopPlayback();const button=$('capture');button.disabled=true;$('captureStatus').textContent='Gør kortbilledet klar …';
  let svgURL;
  try {
-  assertRenderingReady();
-  await document.fonts.ready;
-  // Await the currently requested radar frame, even after a rapid time change.
-  let radarPending,windPending;
-  do {
-   flushRender();
-   radarPending=radarReady;windPending=windReady;await Promise.all([radarPending,windPending]);
-   await Promise.all([radarImageBuffer.paintReady,windImageBuffer.paintReady]);
-  }
-  while(renderRequestKind!==null||radarPending!==radarReady||windPending!==windReady);
-  if($('wind').checked&&windFieldError)throw new Error('Vindkortet kunne ikke indlæses. Prøv igen.');
-  if($('rain').checked && radarStatus==='kunne ikke indlæses')throw new Error('Radaren kunne ikke indlæses. Prøv igen, eller slå radarlaget fra.');
+  await waitForMapReady();
   const map=$('map'),rect=map.getBoundingClientRect(),inverse=map.getScreenCTM().inverse();
   const topLeft=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
   const bottomRight=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);

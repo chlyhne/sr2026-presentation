@@ -9,6 +9,11 @@ python3 scripts/serve_viewer.py
 
 Åbn derefter http://127.0.0.1:8097/ .
 
+- Ved første indlæsning vises kun en fremdriftsbjælke. Siden bliver tilgængelig,
+  når data, hele feltets spor og sammenligninger samt det første vejrkort er klar.
+  Den offentlige side åbner direkte i præsentationsvisning uden at vise redigeringen først.
+  Bjælken vises ikke igen ved bådvalg, afspilning eller navigation på siden.
+  Hvis indlæsningen fejler, vises fejlen og en knap til at genindlæse.
 - **Start præsentation** skjuler indstillinger. Kortet står til venstre, og det
   valgte events tekst og eventuelle billede vises i panelet til højre.
   På smalle skærme ligger eventpanelet under kortet og kan rulles.
