@@ -131,7 +131,20 @@ document.addEventListener('keydown',event=>{
   if(isBoatSearchActive()){event.preventDefault();event.stopImmediatePropagation();$('boatSearchClear').click();return;}
   event.preventDefault();event.stopImmediatePropagation();setVisibleBoatsExpanded(false);$('visibleBoatsToggle').focus();return;
  }
- if(event.target===$('boatSearchInput')){event.stopPropagation();return;}
+ if(event.target===$('boatSearchInput')){
+  event.stopPropagation();
+  if(event.key==='Enter'&&!event.isComposing){
+   event.preventDefault();
+   if(!event.repeat){
+    updateVisibleBoats();
+    const listed=visibleBoatEntries.map(entry=>entry.boat);
+    if(listed.length)changeBoatSelection(()=>{
+     for(const boat of listed)chosen.has(boat.name)?chosen.delete(boat.name):chosen.add(boat.name);
+    });
+   }
+  }
+  return;
+ }
  if((event.key===' '||event.key==='Enter')&&event.target.matches('.visible-boat')){
   event.preventDefault();event.stopImmediatePropagation();event.target.querySelector('input').click();return;
  }

@@ -22,6 +22,9 @@ aside{grid-column:1;grid-row:1/3;padding:20px;overflow:auto;background:#142937}
 body.presenting #renderingError{grid-column:1}
 .rendering-failed #map,.rendering-failed #mapEventImage,.rendering-failed #visibleBoats,.rendering-failed #mapTools{visibility:hidden}
 #mapTools{grid-column:2;grid-row:1;align-self:start;justify-self:end;position:relative;z-index:3;margin:12px;display:flex;align-items:start;gap:6px;color:#173d4c;font-size:13px}
+#eventPanelToggle{grid-column:2;grid-row:1;align-self:center;justify-self:end;position:relative;z-index:4;display:grid;place-items:center;width:36px;height:72px;padding:5px;border:1px solid #607e90;border-right:0;border-radius:10px 0 0 10px;background:#142937;color:#edf4f7;box-shadow:-3px 0 10px #10212d30}
+#eventPanelToggle:hover{background:#254254}
+#eventPanelToggle:focus-visible{outline:3px solid #ffce5c;outline-offset:-3px}
 #mapLayers,#mapMeasure,#mapTracks{position:relative}
 #mapMeasureToggle,#mapTracksToggle,#mapTracksPanel,#rhumblineTools,#comparisonStatus{background:#fffffff0;color:#173d4c;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26}
 #mapMeasureToggle,#mapTracksToggle{display:flex;align-items:center;gap:7px;padding:8px 10px;font-size:13px;font-weight:650;min-height:36px}
@@ -152,6 +155,9 @@ body.presenting #annotations [data-note-index]{cursor:inherit}
 body.presenting main{--event-width:clamp(280px,28vw,440px);grid-template-columns:minmax(0,1fr) var(--event-width)}
 body.presenting #map,body.presenting #mapEventImage,body.presenting #editingTimeline{grid-column:1}
 body.presenting #visibleBoats,body.presenting #mapTools{grid-column:1}
+body.presenting #eventPanelToggle{grid-column:1}
+body.event-panel-collapsed main{--event-width:0px}
+body.event-panel-collapsed #eventPanel,body.event-panel-collapsed #presentationFooter,body.rhumbline-setup #eventPanelToggle{display:none}
 body.presenting #eventPanel,body.presenting #presentationFooter{grid-column:2}
 body.presenting aside,body.presenting #onlineStatus{display:none}
 body.presenting header{padding:10px 22px}
@@ -211,4 +217,5 @@ body.presenting header{padding:10px 22px}
 #presentationMessage:empty{display:none}
 @media(max-width:1050px){main{--editor-width:240px;--event-width:260px}#eventPanel{padding:16px}#clock{font-size:16px}.controls{gap:6px}}
 @media(max-width:750px){main{grid-template-columns:220px minmax(0,1fr);grid-template-rows:minmax(180px,1fr) auto minmax(0,140px) auto}aside{grid-row:1;padding:10px}#map{grid-column:2;grid-row:1}#editingTimeline{grid-column:1/-1;grid-row:2}#eventPanel{grid-column:1/-1;grid-row:3;border-left:0;border-top:1px solid #38505f}#presentationFooter{grid-column:1/-1;grid-row:4;border-left:0}body.presenting main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(200px,1fr) auto minmax(0,180px) auto}body.presenting #map,body.presenting #editingTimeline,body.presenting #eventPanel,body.presenting #presentationFooter{grid-column:1}header span{display:none}.colour-legend{font-size:8px}#eventImage{max-height:230px;width:auto;max-width:100%}}
+@media(max-width:750px){body.event-panel-collapsed main{grid-template-rows:minmax(180px,1fr) auto}body.presenting.event-panel-collapsed main{grid-template-rows:minmax(200px,1fr) auto}}
 @media(max-width:600px){header,body.presenting header{padding:10px;gap:8px}h1{font-size:16px}.header-actions{gap:5px}.header-actions button{font-size:12px;padding:7px}#eventText{font-size:16px}.event-navigation button,.event-navigation select{font-size:12px;padding:7px}.event-meta{gap:10px}#eventPanel{padding:12px}.controls{display:grid;grid-template-columns:auto auto auto auto minmax(0,1fr)}#clock{justify-self:end}#timelineTrack{grid-column:1/-1}}
