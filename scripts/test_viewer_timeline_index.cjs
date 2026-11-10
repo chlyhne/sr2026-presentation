@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..'),context=vm.createContext({window:{},$:()=>({addEventListener(){}})});
 vm.runInContext(fs.readFileSync(root+'/viewer/data.js','utf8'),context);
-vm.runInContext(`const D=window.DATA,boats=D.boats;
+vm.runInContext(`const D=window.DATA,boats=D.boats,ghostClocks=new Map();
 function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>=b.south&&a.south<=b.north;}`,context);
 vm.runInContext(fs.readFileSync(root+'/viewer/tracks.js','utf8'),context);
 vm.runInContext(fs.readFileSync(root+'/viewer/timeline.js','utf8'),context);

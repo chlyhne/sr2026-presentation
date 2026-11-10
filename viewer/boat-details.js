@@ -3,531 +3,849 @@ const boatDetails={
  "groensund:cefbcb60-4624-013f-2900-04421a259aad": {
   "skipper": "Hans Jacobsson",
   "boatType": "Hanse 320",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781357573.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf9e9de0-4624-013f-2981-04421a259aad": {
   "skipper": "Morten Kirkelund",
   "boatType": "IMX 40",
-  "handicapSecondsPerNm": 519.4
+  "handicapSecondsPerNm": 519.4,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781319940.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf40a610-4624-013f-2929-04421a259aad": {
   "skipper": "Niklas Joensen",
   "boatType": "FAURBY 36",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cf0732e0-4624-013f-290a-04421a259aad": {
   "skipper": "Lars Møller Larsen",
   "boatType": "Bianca 107",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781388485.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d01fd840-4624-013f-29f6-04421a259aad": {
   "skipper": "Jan Madsen",
   "boatType": "XP 38",
-  "handicapSecondsPerNm": 534.4
+  "handicapSecondsPerNm": 534.4,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781310179.0,
+  "courseLengthNm": 232.0
  },
  "groensund:ceff8000-4624-013f-2903-04421a259aad": {
   "skipper": "Peter Bisgaard-Frantzen",
   "boatType": "SunFast 32",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781332610.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf0ae510-4624-013f-290d-04421a259aad": {
   "skipper": "Anders Ellers",
   "boatType": "Hanse 430",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781314985.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf2ecd90-4624-013f-2921-04421a259aad": {
   "skipper": "Peter Lillelund",
   "boatType": "J105",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781309681.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf1f8dd0-4624-013f-291a-04421a259aad": {
   "skipper": "Nils Rømer",
   "boatType": "Hanse 400e",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781324583.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf186800-4624-013f-2916-04421a259aad": {
   "skipper": "Ole Ertmann Nielsen",
   "boatType": "Hallberg-Rassy 37",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781345715.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf267bd0-4624-013f-291d-04421a259aad": {
   "skipper": "Peter Skov",
   "boatType": "Dufour 44",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781308468.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf44cf30-4624-013f-292d-04421a259aad": {
   "skipper": "Bent Knudsen",
   "boatType": "Bavaria 42C",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cf48fde0-4624-013f-2930-04421a259aad": {
   "skipper": "Henrik Kim Christensen",
   "boatType": "Hanse 385",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cf8a8000-4624-013f-296f-04421a259aad": {
   "skipper": "Kåre Gibsholm-Madsen",
   "boatType": "Seascape 27",
-  "handicapSecondsPerNm": 580.6
+  "handicapSecondsPerNm": 580.6,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781303164.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf0e8b80-4624-013f-2910-04421a259aad": {
   "skipper": "Sune Johansson",
   "boatType": "Dufour 40",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781326408.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d0156a30-4624-013f-29ed-04421a259aad": {
   "skipper": "Frederik Zacho",
   "boatType": "ARCONA 380/385",
-  "handicapSecondsPerNm": 538.6
+  "handicapSecondsPerNm": 538.6,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781305082.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf512990-4624-013f-2937-04421a259aad": {
   "skipper": "Nichlas Jordt-Rasmussen",
   "boatType": "40 fods Ketch",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781393085.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf4cfb40-4624-013f-2933-04421a259aad": {
   "skipper": "Tim DuBois",
   "boatType": "Hallberg Rassy 37",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cf67f030-4624-013f-294c-04421a259aad": {
   "skipper": "Henrik Thystrup",
   "boatType": "Bavaria C42",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781339101.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf608a70-4624-013f-2946-04421a259aad": {
   "skipper": "Thomas Lindum",
   "boatType": "Luffe 40 one off",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781327851.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf5cb670-4624-013f-2942-04421a259aad": {
   "skipper": "Andreas Heyn Fallesen",
   "boatType": "Faurby 424",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cf590bf0-4624-013f-293f-04421a259aad": {
   "skipper": "Lasse Hinke",
   "boatType": "SAGITTA 35",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cf774910-4624-013f-295b-04421a259aad": {
   "skipper": "Christian Tolstrup",
   "boatType": "Malö 50",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cf6bd310-4624-013f-2950-04421a259aad": {
   "skipper": "Peter Bjerring",
   "boatType": "Dehler 34",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cfde6e50-4624-013f-29bb-04421a259aad": {
   "skipper": "Kristian Mikkelsen",
   "boatType": "X-99",
-  "handicapSecondsPerNm": 571.2
+  "handicapSecondsPerNm": 571.2,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781305114.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf9742f0-4624-013f-297b-04421a259aad": {
   "skipper": "Göran Artman",
   "boatType": "X-382",
-  "handicapSecondsPerNm": 551.2
+  "handicapSecondsPerNm": 551.2,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781310859.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d0448170-4624-013f-2a18-04421a259aad": {
   "skipper": "Michael Mollmann",
   "boatType": "ELLIOT 35 SS",
-  "handicapSecondsPerNm": 476.2
+  "handicapSecondsPerNm": 476.2,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781286201.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf9aff90-4624-013f-297e-04421a259aad": {
   "skipper": "Kasper Wedersøe",
   "boatType": "DEHLER 30 OD",
-  "handicapSecondsPerNm": 545.6
+  "handicapSecondsPerNm": 545.6,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781307506.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cfcfc630-4624-013f-29af-04421a259aad": {
   "skipper": "Tillmann Frank",
   "boatType": "ALBIN STRATUS",
-  "handicapSecondsPerNm": 592.6
+  "handicapSecondsPerNm": 592.6,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad": {
   "skipper": "Jonas Nilsson",
   "boatType": "CORBY 25",
-  "handicapSecondsPerNm": 619.8
+  "handicapSecondsPerNm": 619.8,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781320688.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cfdad3d0-4624-013f-29b8-04421a259aad": {
   "skipper": "Lars Henrik Nielsen",
   "boatType": "X-332",
-  "handicapSecondsPerNm": 580.2
+  "handicapSecondsPerNm": 580.2,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781328904.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cfe5ee70-4624-013f-29c3-04421a259aad": {
   "skipper": "Martin Ottesen",
   "boatType": "JEANNEAU SUN FAST 36",
-  "handicapSecondsPerNm": 565.0
+  "handicapSecondsPerNm": 565.0,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cfe1fae0-4624-013f-29be-04421a259aad": {
   "skipper": "Filip Stål",
   "boatType": "Seascape 27",
-  "handicapSecondsPerNm": 571.0
+  "handicapSecondsPerNm": 571.0,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cff53330-4624-013f-29d0-04421a259aad": {
   "skipper": "Christian Sørensen",
   "boatType": "X-362 SPORT",
-  "handicapSecondsPerNm": 554.4
+  "handicapSecondsPerNm": 554.4,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781307844.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cff8d1b0-4624-013f-29d3-04421a259aad": {
   "skipper": "Bo Laybourn",
   "boatType": "J105",
-  "handicapSecondsPerNm": 551.8
+  "handicapSecondsPerNm": 551.8,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781320882.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cfed4030-4624-013f-29ca-04421a259aad": {
   "skipper": "Per Oskarsson",
   "boatType": "FIRST 36.7",
-  "handicapSecondsPerNm": 557.2
+  "handicapSecondsPerNm": 557.2,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781306264.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d00726f0-4624-013f-29e0-04421a259aad": {
   "skipper": "Flemming Eske Hansen",
   "boatType": "DEHLER 38",
-  "handicapSecondsPerNm": 546.0
+  "handicapSecondsPerNm": 546.0,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781313517.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d0039c60-4624-013f-29dd-04421a259aad": {
   "skipper": "Gorm Arildsen",
   "boatType": "BANNER 41",
-  "handicapSecondsPerNm": 546.0
+  "handicapSecondsPerNm": 546.0,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781320249.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d00aa040-4624-013f-29e3-04421a259aad": {
   "skipper": "Anders Steenfeldt-Jensen",
   "boatType": "EXPLORER 38",
-  "handicapSecondsPerNm": 543.8
+  "handicapSecondsPerNm": 543.8,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781305618.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d023a320-4624-013f-29fa-04421a259aad": {
   "skipper": "Gustav Johansson",
   "boatType": "ARCONA 380/385",
-  "handicapSecondsPerNm": 528.2
+  "handicapSecondsPerNm": 528.2,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781305877.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad": {
   "skipper": "Anders Bogason",
   "boatType": "HH 42",
-  "handicapSecondsPerNm": 466.6
+  "handicapSecondsPerNm": 466.6,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781281524.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d011b3e0-4624-013f-29e9-04421a259aad": {
   "skipper": "Claus Poulsen",
   "boatType": "JEANNEAU SUN FAST 3600",
-  "handicapSecondsPerNm": 540.2
+  "handicapSecondsPerNm": 540.2,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781329275.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d01c6220-4624-013f-29f3-04421a259aad": {
   "skipper": "Karsten Normand",
   "boatType": "ARCONA 400",
-  "handicapSecondsPerNm": 537.4
+  "handicapSecondsPerNm": 537.4,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781319398.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d02f3110-4624-013f-2a05-04421a259aad": {
   "skipper": "Søren Pedersen",
   "boatType": "GRAND SOLEIL 43",
-  "handicapSecondsPerNm": 517.6
+  "handicapSecondsPerNm": 517.6,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781302839.0,
+  "courseLengthNm": 232.0
  },
  "groensund:ced83f10-4624-013f-28dd-04421a259aad": {
   "skipper": "Erik Andersen",
   "boatType": "Møn 431",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781374325.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d032b8e0-4624-013f-2a08-04421a259aad": {
   "skipper": "Richard Tøpholm",
   "boatType": "DUFOUR 45",
-  "handicapSecondsPerNm": 510.4
+  "handicapSecondsPerNm": 510.4,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:d018e3c0-4624-013f-29f0-04421a259aad": {
   "skipper": "Christian Rømer",
   "boatType": "ARCONA 400",
-  "handicapSecondsPerNm": 538.2
+  "handicapSecondsPerNm": 538.2,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781308559.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d0410370-4624-013f-2a15-04421a259aad": {
   "skipper": "Jean Mørck",
   "boatType": "DEHLER 46",
-  "handicapSecondsPerNm": 490.4
+  "handicapSecondsPerNm": 490.4,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781298650.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cfd38280-4624-013f-29b2-04421a259aad": {
   "skipper": "Maria Westeman",
   "boatType": "RIDAS 31 racer",
-  "handicapSecondsPerNm": 590.4
+  "handicapSecondsPerNm": 590.4,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:d04eccd0-4624-013f-2a21-04421a259aad": {
   "skipper": "Søren Due Olsen",
   "boatType": "",
-  "handicapSecondsPerNm": 415.8
+  "handicapSecondsPerNm": 415.8,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781288124.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d039c5a0-4624-013f-2a0e-04421a259aad": {
   "skipper": "Peter Michael Wøldike",
   "boatType": "KER 11.3",
-  "handicapSecondsPerNm": 504.0
+  "handicapSecondsPerNm": 504.0,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781305183.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d047e6d0-4624-013f-2a1b-04421a259aad": {
   "skipper": "Tomas Toft",
   "boatType": "Soto 40",
-  "handicapSecondsPerNm": 467.4
+  "handicapSecondsPerNm": 467.4,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781287853.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d03d5f50-4624-013f-2a11-04421a259aad": {
   "skipper": "Jacob Guhle",
   "boatType": "STIMSON IRC 42",
-  "handicapSecondsPerNm": 500.6
+  "handicapSecondsPerNm": 500.6,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781300363.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cfffdb60-4624-013f-29d9-04421a259aad": {
   "skipper": "Lars Lindqvist",
   "boatType": "FIRST 36.7",
-  "handicapSecondsPerNm": 543.4
+  "handicapSecondsPerNm": 543.4,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781310956.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cfd73960-4624-013f-29b5-04421a259aad": {
   "skipper": "Andreas Elkjær",
   "boatType": "First 31.7",
-  "handicapSecondsPerNm": 583.8
+  "handicapSecondsPerNm": 583.8,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781352764.0,
+  "courseLengthNm": 232.0
  },
  "groensund:ceb43140-4624-013f-28bd-04421a259aad": {
   "skipper": "Kai Schneider",
   "boatType": "Dehler 343",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781378416.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d0363810-4624-013f-2a0b-04421a259aad": {
   "skipper": "Henrik Jørgensen",
   "boatType": "XR 41",
-  "handicapSecondsPerNm": 504.4
+  "handicapSecondsPerNm": 504.4,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781295240.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cff0fff0-4624-013f-29cd-04421a259aad": {
   "skipper": "Anders Hansen",
   "boatType": "FIRST 36.7",
-  "handicapSecondsPerNm": 557.0
+  "handicapSecondsPerNm": 557.0,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781306385.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf8e6940-4624-013f-2973-04421a259aad": {
   "skipper": "Janne Magnusson",
   "boatType": "Seascape 27",
-  "handicapSecondsPerNm": 572.6
+  "handicapSecondsPerNm": 572.6,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781303562.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d00e2f90-4624-013f-29e6-04421a259aad": {
   "skipper": "Morten Munch",
   "boatType": "SCANDINAVIAN MATCH RACER",
-  "handicapSecondsPerNm": 543.0
+  "handicapSecondsPerNm": 543.0,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781311688.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf643a90-4624-013f-2949-04421a259aad": {
   "skipper": "Søren Johannesen",
   "boatType": "Delphia 37",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781344877.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf86cb90-4624-013f-296c-04421a259aad": {
   "skipper": "Henrik Alstrøm",
   "boatType": "FIRST 27.7",
-  "handicapSecondsPerNm": 615.8
+  "handicapSecondsPerNm": 615.8,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781342657.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf6fb6c0-4624-013f-2954-04421a259aad": {
   "skipper": "Kenneth Bjergsted",
   "boatType": "Møn 341",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781328236.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cffc5650-4624-013f-29d6-04421a259aad": {
   "skipper": "Christian de Lichtenberg",
   "boatType": "X-362 SPORT",
-  "handicapSecondsPerNm": 551.6
+  "handicapSecondsPerNm": 551.6,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781305230.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf552280-4624-013f-293b-04421a259aad": {
   "skipper": "Rasmus Højring",
   "boatType": "",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:ce9ba240-4624-013f-28b0-04421a259aad": {
   "skipper": "Rikard Roth",
   "boatType": "XP-44",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": 1781318984.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cef7b8f0-4624-013f-28fc-04421a259aad": {
   "skipper": "Ludvig Schrøder",
   "boatType": "SunFast 32",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cee42c80-4624-013f-28e9-04421a259aad": {
   "skipper": "Kim Kristensen",
   "boatType": "Omega 42",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:ced44e40-4624-013f-28d9-04421a259aad": {
   "skipper": "Troels Engell",
   "boatType": "Bianca 107",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781357198.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf123d90-4624-013f-2913-04421a259aad": {
   "skipper": "Rebekka Rudolph",
   "boatType": "Jeanneau sun magic",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781332928.0,
+  "courseLengthNm": 232.0
  },
  "groensund:d0275120-4624-013f-29fd-04421a259aad": {
   "skipper": "Remi Provost",
   "boatType": "J 112",
-  "handicapSecondsPerNm": 528.0
+  "handicapSecondsPerNm": 528.0,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781302201.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cedc3de0-4624-013f-28e1-04421a259aad": {
   "skipper": "Karl Friedrich Bachmann",
   "boatType": "Sloop, \"One off\"",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cee02030-4624-013f-28e5-04421a259aad": {
   "skipper": "Jan Bisp",
   "boatType": "Banner 41 R",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781307142.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cfe976c0-4624-013f-29c6-04421a259aad": {
   "skipper": "Flemming Andersen",
   "boatType": "OMEGA 42",
-  "handicapSecondsPerNm": 561.0
+  "handicapSecondsPerNm": 561.0,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": 1781305881.0,
+  "courseLengthNm": 232.0
  },
  "groensund:ceec1b50-4624-013f-28f1-04421a259aad": {
   "skipper": "Michael Jørgensen",
   "boatType": "Banholm 35",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cef01130-4624-013f-28f5-04421a259aad": {
   "skipper": "Thomas Krarup",
   "boatType": "Luffe 40",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781320323.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cee826e0-4624-013f-28ed-04421a259aad": {
   "skipper": "Niels Stillhoff Nielsen",
   "boatType": "Bavaria 42",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781337967.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf73a4d0-4624-013f-2958-04421a259aad": {
   "skipper": "Flemming Wiberg",
   "boatType": "Hanse 371",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781327623.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf3c32b0-4624-013f-2925-04421a259aad": {
   "skipper": "Oliver Sellmann",
   "boatType": "Bavaria 34",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:cef3cca0-4624-013f-28f8-04421a259aad": {
   "skipper": "Jan Møller",
   "boatType": "Frers 49'",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781165700.0,
+  "raceFinishTime": 1781295225.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cf92fb10-4624-013f-2977-04421a259aad": {
   "skipper": "Peder Edman",
   "boatType": "Seascape 27",
-  "handicapSecondsPerNm": 568.6
+  "handicapSecondsPerNm": 568.6,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781308481.0,
+  "courseLengthNm": 232.0
  },
  "groensund:cfc7fa20-4624-013f-29a7-04421a259aad": {
   "skipper": "Mads Bonde",
   "boatType": "X-99",
-  "handicapSecondsPerNm": 620.2
+  "handicapSecondsPerNm": 620.2,
+  "raceStartTime": 1781167500.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 232.0
  },
  "groensund:d02b1920-4624-013f-2a00-04421a259aad": {
   "skipper": "Lars Schmidt Larsen",
   "boatType": "MAX FUN 35",
-  "handicapSecondsPerNm": 518.8
+  "handicapSecondsPerNm": 518.8,
+  "raceStartTime": 1781168400.0,
+  "raceFinishTime": 1781305700.0,
+  "courseLengthNm": 232.0
  },
  "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad": {
   "skipper": "Sten Brogaard",
   "boatType": "BALLAD",
-  "handicapSecondsPerNm": 636.6
+  "handicapSecondsPerNm": 636.6,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781361603.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad": {
   "skipper": "Erik Svennevig",
   "boatType": "Sunwind 31",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": 1781359624.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad": {
   "skipper": "Jan Lauridsen",
   "boatType": "Scan-Kap 99",
-  "handicapSecondsPerNm": 608.4
+  "handicapSecondsPerNm": 608.4,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781319756.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad": {
   "skipper": "Jakob Iversen",
   "boatType": "DRABANT 38",
-  "handicapSecondsPerNm": 572.6
+  "handicapSecondsPerNm": 572.6,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781309395.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad": {
   "skipper": "Troels Wohlfeldt",
   "boatType": "Trio 92",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": 1781338823.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad": {
   "skipper": "Simon Svenstrup",
   "boatType": "ALBIN NOVA",
-  "handicapSecondsPerNm": 615.8
+  "handicapSecondsPerNm": 615.8,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781336817.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad": {
   "skipper": "Birk Münster-Swendsen",
   "boatType": "Aphrodite 101",
-  "handicapSecondsPerNm": 610.8
+  "handicapSecondsPerNm": 610.8,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781308821.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad": {
   "skipper": "Kasper Worsøe",
   "boatType": "X-372",
-  "handicapSecondsPerNm": 560.0
+  "handicapSecondsPerNm": 560.0,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781321293.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad": {
   "skipper": "Ulf Brandt",
   "boatType": "EXPRESS",
-  "handicapSecondsPerNm": 650.6
+  "handicapSecondsPerNm": 650.6,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781311598.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad": {
   "skipper": "Emil Midé Erichsen",
   "boatType": "LYNÆS SENIOR",
-  "handicapSecondsPerNm": 788.2
+  "handicapSecondsPerNm": 788.2,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad": {
   "skipper": "Per Rosenkilde",
   "boatType": "MAMBA 31/311",
-  "handicapSecondsPerNm": 634.2
+  "handicapSecondsPerNm": 634.2,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781344022.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad": {
   "skipper": "Michael Frank Hansen",
   "boatType": "BB 10 METER",
-  "handicapSecondsPerNm": 598.0
+  "handicapSecondsPerNm": 598.0,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781306244.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad": {
   "skipper": "Lars Schaldemose",
   "boatType": "BB 10 METER",
-  "handicapSecondsPerNm": 597.4
+  "handicapSecondsPerNm": 597.4,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781305741.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad": {
   "skipper": "Erik Hechmann",
   "boatType": "HR 31/310",
-  "handicapSecondsPerNm": 647.4
+  "handicapSecondsPerNm": 647.4,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781361034.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad": {
   "skipper": "Folmer Teilmann",
   "boatType": "Kosterbåd/spidsgatter",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": 1781346882.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad": {
   "skipper": "Frank Maar",
   "boatType": "Mamba 29",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad": {
   "skipper": "Olivier Plas",
   "boatType": "Najad 340",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": 1781349921.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad": {
   "skipper": "Mikkel Walmod Hyttel",
   "boatType": "Solus 29",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": 1781367171.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad": {
   "skipper": "Claus Rørbech",
   "boatType": "Hunter 33",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad": {
   "skipper": "David Ipsen",
   "boatType": "Luffe 37",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad": {
   "skipper": "Jonas Mathiasen",
   "boatType": "J 80",
-  "handicapSecondsPerNm": 595.4
+  "handicapSecondsPerNm": 595.4,
+  "raceStartTime": 1781166600.0,
+  "raceFinishTime": 1781318111.0,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad": {
   "skipper": "Kent Nielsen",
   "boatType": "Bianca 27",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": null,
+  "courseLengthNm": 216.0
  },
  "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad": {
   "skipper": "August Taankvist",
   "boatType": "",
-  "handicapSecondsPerNm": 100.0
+  "handicapSecondsPerNm": 100.0,
+  "raceStartTime": 1781164800.0,
+  "raceFinishTime": 1781349652.0,
+  "courseLengthNm": 216.0
  }
 };

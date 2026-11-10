@@ -168,6 +168,32 @@ python3 scripts/serve_viewer.py
   `node scripts/test_viewer_rhumbline_setup.cjs` tester det separate tegnekort
   med simuleret gemning. `python3 scripts/test_rhumbline_server.py` tester den
   permanente engangsgemning på en isoleret lokal server.
+- **Spor → Spøgelsesbåde** tilføjer et gennemsigtigt spøgelse for hver af de
+  viste både, du afkrydser. Det bruger samme skrog, størrelse, farve og oprindelige
+  PCHIP-kurve som båden, med 38 % opacitet og uden en ekstra sporlinje.
+  Spøgelset skjules sammen med originalen og følger dens navnevisning.
+  Valgene huskes lokalt, ligesom sportype og referencebåd.
+  Korrektionen bruger bådens **eget ToD-måltal og klassestart**, uafhængigt af
+  referencebåden. Inden for hver rute bruges seneste klassestart som fælles start
+  og feltets højeste ToD-måltal som fast grundlag. Alle spøgelser forsinkes derfor;
+  til- og fravalg af både ændrer ikke deres tidsforløb.
+  Ved mål er spøgelsestiden `fælles start + sejltid + (TA_maks − TA_båd) × banelængde`.
+  Første spøgelse i mål på **samme rute** har dermed den bedste korrigerede tid,
+  også når originalerne startede på forskellige tidspunkter.
+  Banelængden kommer fra TracTrac: 232 sømil via Grønsund og 216 via Bøgestrømmen.
+  Det samlede tillæg fordeles efter bådens fremdrift langs dens eget sejlede spor
+  fra start til registreret mål, normaliseret til løbets banelængde. Ekstra sejlede
+  sømil ændrer dermed ikke handicapkorrektionen ved mål.
+  Kun tidsnøgler og et tidslinjeindeks forberedes før betjening; den oprindelige
+  sporgeometri genbruges uændret. Trackinghuller følger den normale femminuttersregel.
+  Tidslinjen medtager spøgelsernes passager og kan forlænges ud over vejrperioden;
+  ved mål holdes spøgelset stille i fem minutter. Events kan også gemmes og redigeres
+  ved de forlængede tider. Både uden et registreret måltid
+  eller tracking ved start/mål kan ikke vælges og får en synlig forklaring.
+  `node scripts/test_ghost_math.cjs` kontrollerer ToD, forskudte starter, mål-rækkefølge
+  og hele feltets faste tidsforløb. `node scripts/test_viewer_ghosts.cjs` tester
+  valg, gennemsigtighed, genbrug af spor, tidslinje, målpassager, genindlæsning og
+  præsentation lokalt i Firefox på PC.
 - Hvert event gemmer sit eget udvalg af aktive både. Ved Forrige/Næste, valg i
   eventlisten eller klik på en note genskabes netop dette udvalg, også et tomt udvalg.
   Når du står ved et gemt events tidspunkt i redigering og ændrer bådvalget,

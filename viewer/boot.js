@@ -69,7 +69,7 @@ function validatePresentationDocument(document){
   window.SR_DRAFT_KEY=draftKey;
  }
  updateViewerLoading(5);
- const files=['data','boat-measurements','boat-details','boat-icons','weather','track-time','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','rhumbline-geometry','navigation-math','navigation','track-profiles','track-renderer','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
+ const files=['data','boat-measurements','boat-details','boat-icons','weather','track-time','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','rhumbline-geometry','navigation-math','navigation','track-profiles','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
  const preparationWeight=60,totalSteps=files.length+preparationWeight;
  let completed=0;
  for(const file of files){
