@@ -171,7 +171,8 @@ python3 scripts/serve_viewer.py
   **Sportype** vælger mellem de almindelige SOG-farver og en blå–rød skala
   for forskellen i fremdrift langs rhumblinen. Rød betyder hurtigere end referencebåden
   ved **samme sted på ruten**; blå betyder langsommere. Bådenes passagetidspunkter
-  kan være forskellige. Referencebåden beholder altid sine almindelige SOG-farver.
+  kan være forskellige. I alle tre sammenligningsvisninger tegnes referencebådens
+  spor i bådens egen farve med 18 % opacitet, under de andre bådes spor.
   Vælg **Mod [referencebådens navn] · absolut** eller **Mod [referencebådens navn] · handicap**. Skalaen mættes
   ved ±2 knob og er lys ved nul. Hold musen over et spor i redigering for at se
   forskellen og tidspunktet for referencebådens passage. Der kræves en defineret permanent rhumbline.
@@ -983,7 +984,9 @@ ingen sporgeometri; afspilning laver ingen referenceopslag pr. frame.
 Geometribufferne og sammenligningsbufferen bevares ved afspilning. CPU-data
 bevares også ved tab af WebGL-konteksten, så GPU-ressourcer og sammenligningsværdier
 kan genskabes fra de forberedte data.
-Referencebåden bruger altid den eksisterende SOG-palette. Farver uden sammenligningsdata
+Referencebådens spor bruger bådens egen farve med 18 % opacitet i sammenligningsvisningerne
+og tegnes under de øvrige spor. Almindelig SOG-visning beholder SOG-paletten.
+Farver uden sammenligningsdata
 er grå og bruger aldrig SOG som erstatning. Den permanente definition ligger kun
 i `viewer/rhumbline.json` som `{version:1,points:[[lon,lat],...]}`. Boot henter og
 validerer denne fil og låser punkterne for resten af visningen; en manglende eller
