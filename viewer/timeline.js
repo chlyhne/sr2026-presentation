@@ -9,7 +9,7 @@ function eventSnapWindowSeconds(){
  return Math.max(0,timelineLength-1)*EVENT_SNAP_FRACTION;
 }
 function timelineNotes(){
- return notes.filter(n=>n.time>=D.start&&n.time<=D.end);
+ return notes.filter(n=>n.time>=D.start&&n.time<=VIEWER_DATA_END);
 }
 function snappableTimelineNotes(){
  return timelineNotes().filter(n=>boatTimeRanges.some(range=>n.time>=range.start&&n.time<=range.end));
@@ -66,8 +66,10 @@ function appendTimelineRange(ranges,start,end){
   if(end>previous.end)ranges[ranges.length-1]={start:previous.start,end};
  }else ranges.push({start,end});
 }
-function prepareTimelineTrack(points){
- if(timelineTrackCache.has(points))return timelineTrackCache.get(points);
+function prepareTimelineTrack(points,clock=null){
+ const cached=clock?clock.timelineIndex:timelineTrackCache.get(points);if(cached)return cached;
+ const sourceStart=clock?clock.sourceStart:D.start,sourceEnd=clock?clock.sourceEnd:D.end;
+ const clockAt=time=>clock?ghostClockAtSource(clock,time):time;
  const build=(first,end)=>{
   const node={first,end,west:Infinity,east:-Infinity,south:Infinity,north:-Infinity,ranges:[],left:null,right:null};
   if(end-first>TIMELINE_LEAF_SIZE){
@@ -80,8 +82,9 @@ function prepareTimelineTrack(points){
   }else{
    for(let i=first;i<end;i++){
     const a=points[i],b=points[i+1],connected=b&&b[2]>a[2]&&b[2]-a[2]<=TRACK_MAX_GAP;
-    const start=Math.max(D.start,Math.ceil(a[2]-1e-6));
-    const stop=Math.min(D.end,Math.floor((connected?b[2]:Math.min(a[2]+TRACK_MAX_GAP,b?b[2]-1e-6:D.end))+1e-6));
+    const from=Math.max(sourceStart,a[2]),to=Math.min(sourceEnd,connected?b[2]:Math.min(a[2]+TRACK_MAX_GAP,b?b[2]-1e-6:sourceEnd));
+    if(from>to)continue;
+    const start=Math.ceil(clockAt(from)-1e-6),stop=Math.floor(clockAt(to)+1e-6);
     if(start>stop)continue;
     appendTimelineRange(node.ranges,start,stop);
     node.west=Math.min(node.west,a[0]);node.east=Math.max(node.east,a[0]);
@@ -96,11 +99,13 @@ function prepareTimelineTrack(points){
   }
   return node;
  };
- const root=build(0,points.length);timelineTrackCache.set(points,root);return root;
+ const root=build(0,points.length);if(clock)clock.timelineIndex=root;else timelineTrackCache.set(points,root);return root;
 }
 const EMPTY_TIMELINE_RANGES=[];
-function visibleBoatRanges(points,bounds){
- const root=prepareTimelineTrack(points);
+function visibleBoatRanges(points,bounds,clock=null){
+ const root=prepareTimelineTrack(points,clock);
+ const sourceStart=clock?clock.sourceStart:D.start,sourceEnd=clock?clock.sourceEnd:D.end;
+ const clockAt=time=>clock?ghostClockAtSource(clock,time):time;
  const outside=node=>!node.ranges.length||!mapBoundsIntersect(node,bounds);
  const inside=node=>node.west>=bounds.west&&node.east<=bounds.east&&node.south>=bounds.south&&node.north<=bounds.north;
  if(outside(root))return EMPTY_TIMELINE_RANGES;
@@ -118,16 +123,20 @@ function visibleBoatRanges(points,bounds){
     from=interval.start;to=interval.end;
    }else{
     if(lon<bounds.west||lon>bounds.east||lat<bounds.south||lat>bounds.north)continue;
-    to=Math.min(time+TRACK_MAX_GAP,next?next[2]-1e-6:D.end);
+    to=Math.min(time+TRACK_MAX_GAP,next?next[2]-1e-6:sourceEnd);
    }
-   appendTimelineRange(ranges,Math.max(D.start,Math.ceil(from-1e-6)),Math.min(D.end,Math.floor(to+1e-6)));
+   from=Math.max(sourceStart,from);to=Math.min(sourceEnd,to);if(from>to)continue;
+   appendTimelineRange(ranges,Math.ceil(clockAt(from)-1e-6),Math.floor(clockAt(to)+1e-6));
   }
  };
  visit(root);
  return ranges;
 }
 // Prepare the complete fleet before interaction, including currently hidden boats.
-for(const boat of boats)prepareTimelineTrack(boat.points);
+for(const boat of boats){
+ prepareTimelineTrack(boat.points);
+ const clock=ghostClocks.get(boat.id);if(clock&&!clock.error)prepareTimelineTrack(boat.points,clock);
+}
 
 function timeAtOffset(offset,{fractional=false}={}){
  if(!timelineLength)return selectedTime;
@@ -151,7 +160,7 @@ function offsetAtTime(time){
 
 function setCurrentTime(time,{fractional=false,crossedEvents=false,allowOutsideVisibleRanges=false}={}){
  const previousTime=selectedTime;
- time=Math.max(D.start,Math.min(D.end,fractional?time:Math.round(time)));
+ time=Math.max(D.start,Math.min(allowOutsideVisibleRanges?VIEWER_DATA_END:viewerEndTime(),fractional?time:Math.round(time)));
  let nearest=time,distance=Infinity;
  for(const range of allowOutsideVisibleRanges?[]:visibleTimeRanges){
   const candidate=Math.max(range.start,Math.min(range.end,time));
@@ -169,7 +178,18 @@ function updateTimeline({preserveTime=false}={}){
  const presenting=document.body.classList.contains('presenting');
  const bounds=visibleMapBounds();if(!bounds)return false;
  const ranges=[];
- for(const boat of boats)if(boatIsDisplayed(boat))ranges.push(...visibleBoatRanges(boat.points,bounds));
+ for(const boat of boats)if(boatIsDisplayed(boat)){
+  ranges.push(...visibleBoatRanges(boat.points,bounds));
+  if(ghostBoatIds.has(boat.id)){
+   const clock=ghostClocks.get(boat.id);
+   if(!clock.error){
+    ranges.push(...visibleBoatRanges(boat.points,bounds,clock));
+    const finish=trackPosition(boat.points,clock.sourceEnd)?.point;
+    if(finish&&finish[0]>=bounds.west&&finish[0]<=bounds.east&&finish[1]>=bounds.south&&finish[1]<=bounds.north)
+     ranges.push({start:Math.ceil(clock.end),end:Math.floor(clock.end+GHOST_FINISH_HOLD)});
+   }
+  }
+ }
  ranges.sort((a,b)=>a.start-b.start);
  boatTimeRanges=[];
  for(const range of ranges){
@@ -179,7 +199,7 @@ function updateTimeline({preserveTime=false}={}){
  }
  // Events in excluded gaps remain available through event navigation only.
  // Keep a manually selected event's exact time without inserting it into the slider.
- visibleTimeRanges=boatTimeRanges.length?boatTimeRanges:presenting?[{start:D.start,end:D.end}]:[];
+ visibleTimeRanges=boatTimeRanges.length?boatTimeRanges:presenting?[{start:D.start,end:viewerEndTime()}]:[];
  timelineLength=visibleTimeRanges.reduce((sum,r)=>sum+r.end-r.start+1,0);
  const slider=$('time');slider.min=0;slider.max=Math.max(0,timelineLength-1);slider.step=1;slider.disabled=timelineLength<2;
  $('back').disabled=$('next').disabled=timelineLength<2;

@@ -208,7 +208,10 @@ function renderRadar(time){
  });
 }
 
-function status(t){$('status').textContent=`Vind: ${windLabels[$('windModel').value]} ${fmt(Math.floor(t/3600)*3600)} ${$('rain').checked?' · Radar DMI: '+radarStatus:''} · Tracks: interpoleret ved ${fmt(t)} · Noter gemmes i denne browser`}
+function status(t){
+ const model=$('windModel').value,hour=Math.floor(t/3600)*3600,windAvailable=D.wind_models[model][0].hourly.time.includes(hour);
+ $('status').textContent=`Vind: ${windLabels[model]} ${windAvailable?fmt(hour):'data mangler ved '+fmt(hour)} ${$('rain').checked?' · Radar DMI: '+radarStatus:''} · Tracks: interpoleret ved ${fmt(t)} · Noter gemmes i denne browser`;
+}
 const WIND_ARROW_SPACING=90;
 let windArrowKey=null;
 function renderWindArrows(t=currentTime()) {
@@ -280,6 +283,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  markerLayer.replaceChildren();
  const drawingOrder=boats.filter(boatIsDisplayed).sort((a,b)=>(referenceBoat()?.id===a.id)-(referenceBoat()?.id===b.id));
  if(!webglTracks.render(t,drawingOrder))return;
+ renderGhostBoats(t,drawingOrder);
  for(const b of drawingOrder){
   const markers=el('g',{class:'boat-markers'},markerLayer),color=colours[b.name];
   const position=trackPosition(b.points,t);

@@ -65,7 +65,7 @@ class WeatherImageBuffer {
 }
 function nextWeatherTime(time,period){
  const boundary=Math.floor(time/period)*period+period;
- if(boundary>D.end)return null;
+ if(boundary>viewerEndTime())return null;
  if(!visibleTimeRanges.length)return boundary;
  for(const range of visibleTimeRanges)if(range.end>=boundary)return Math.max(boundary,range.start);
  return null;

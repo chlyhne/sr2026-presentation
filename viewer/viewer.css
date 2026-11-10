@@ -32,6 +32,15 @@ body.presenting #renderingError{grid-column:1}
 #mapTracksPanel label{margin:0 0 5px;font-size:12px}
 #mapTracksPanel select{background:white;color:#173d4c;border-color:#b8cbd5;font-size:12px}
 #mapTracksPanel select+label{margin-top:12px}
+#mapTracksPanel{max-height:calc(100dvh - 180px);overflow-y:auto}
+#ghostBoats{margin:14px 0 0;padding:10px 0 0;border:0;border-top:1px solid #b8cbd5;min-width:0}
+#ghostBoats legend{padding:0;font-size:12px;font-weight:650}
+#ghostBoats p{margin:0 0 8px;font-size:11px;line-height:1.4}
+#ghostBoatChoices{max-height:180px;overflow-y:auto}
+#ghostBoatChoices label{display:grid;grid-template-columns:16px 1fr;gap:3px 6px;padding:5px 0;margin:0;align-items:center}
+#ghostBoatChoices input{margin:0;accent-color:var(--boat-colour)}
+#ghostBoatChoices small{grid-column:2;font-size:10px;color:#526975}
+#ghostStatus{color:#9b241b}
 #rhumblineTools{width:330px;padding:12px;background:#fff}
 #rhumblineTools p,#comparisonStatus{color:#365766;font-size:12px;line-height:1.5}
 #rhumblineTools p{margin:10px 0}

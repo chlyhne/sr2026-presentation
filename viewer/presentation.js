@@ -105,7 +105,7 @@ function saveAnnotation(point) {
  if(editingNote){
   if(point){noteDraft.point=point;noteDraft.lon=9.5+point[0]*4.5/1000;noteDraft.lat=57-point[1]*3/1180;cancelPlacement();renderAnnotations();return;}
   const time=parseEventTimeInput($('noteTime').value);
-  if(!$('noteTime').validity.valid||time===null||time<D.start||time>D.end){
+  if(!$('noteTime').validity.valid||time===null||time<D.start||time>VIEWER_DATA_END){
    $('annotationStatus').textContent='Vælg et gyldigt tidspunkt inden for sejladsens tidsrum (dansk tid).';$('noteTime').focus();return;
   }
   cancelDrawingGesture();
@@ -151,7 +151,7 @@ function beginNoteEditing(n){
  if(editingNote){if(editingNote!==n)noteNavigationAllowed();return;}
  if(!noteNavigationAllowed())return;
  restoreNote(n);editingNote=n;noteDraft=JSON.parse(JSON.stringify(n));
- $('noteTimeField').hidden=false;$('noteTime').min=eventTimeInputValue(D.start);$('noteTime').max=eventTimeInputValue(D.end);$('noteTime').value=eventTimeInputValue(n.time);
+ $('noteTimeField').hidden=false;$('noteTime').min=eventTimeInputValue(D.start);$('noteTime').max=eventTimeInputValue(VIEWER_DATA_END);$('noteTime').value=eventTimeInputValue(n.time);
  $('noteVideo').value=validatedEventVideo(n.video)?.url||'';updateVideoEditor();
  $('note').value=n.text;$('drawingTools').hidden=false;$('cancelEdit').hidden=false;
  $('noteEditorTitle').textContent=`Redigerer note ${notes.indexOf(n)+1} · ${fmt(n.time)}`;
