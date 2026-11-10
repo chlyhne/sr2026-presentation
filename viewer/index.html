@@ -82,7 +82,7 @@
 </svg>
 <div id="mapTools">
 <section id="mapTracks" aria-label="Sporindstillinger">
-  <button id="mapTracksToggle" type="button" aria-expanded="false" aria-controls="mapTracksPanel">Spor <span aria-hidden="true">⌄</span></button>
+  <button id="mapTracksToggle" type="button" aria-label="Spor" title="Spor" aria-expanded="false" aria-controls="mapTracksPanel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 20 16-8c3-1.5 2-4-1-4H7c-3 0-4-2.5-1-4l3-1"/></svg></button>
   <div id="mapTracksPanel" hidden>
     <label for="trackLength">Sporlængde</label>
     <select id="trackLength"><option value="900">15 minutter</option><option value="1800">30 minutter</option><option value="3600">1 time</option><option value="7200" selected>2 timer</option><option value="14400">4 timer</option><option value="28800">8 timer</option><option value="0">Hele forløbet</option></select>
@@ -101,7 +101,7 @@
   <div class="map-tool-actions"><button id="finishMapLine" type="button" disabled>Gem permanent rhumbline</button><button id="undoMapPoint" type="button" disabled>Fortryd punkt</button></div>
 </section>
 <section id="mapLayers" aria-label="Kortlag">
-  <button id="mapLayersToggle" type="button" aria-expanded="false" aria-controls="mapLayersPanel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 5-10 5L2 8Z M2 12l10 5 10-5 M2 16l10 5 10-5"/></svg> Lag <span aria-hidden="true">⌄</span></button>
+  <button id="mapLayersToggle" type="button" aria-label="Lag" title="Lag" aria-expanded="false" aria-controls="mapLayersPanel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 5-10 5L2 8Z M2 12l10 5 10-5 M2 16l10 5 10-5"/></svg></button>
   <div id="mapLayersPanel" hidden>
     <label title="Vind i 10 meters højde"><input id="wind" type="checkbox" checked> Vind</label>
     <label title="Nedbørsradar fra DMI"><input id="rain" type="checkbox" checked> Byger</label>
