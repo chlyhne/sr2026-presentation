@@ -103,18 +103,25 @@ python3 scripts/serve_viewer.py
   `node scripts/test_viewer_next_event_playback.cjs` kontrollerer forskellen på
   de to afspilningsformer, hastighed, ekstra klik, ankomst og gemte indstillinger
   i lokal Firefox på PC, inklusive den offentlige præsentationsmode.
-- Tidskyderen dækker 11. juni kl. 10.00 til 13. juni kl. 04.00 dansk sommertid.
+- Playbaren har den klassiske rækkefølge `|<` · `<<` · `>`/`||` · `>>` · `>|`:
+  Forrige event, lavere hastighed, afspil/pause, højere hastighed og næste event.
+  `<<` og `>>` vælger ét niveau ad gangen blandt 1×, 2×, 5×, 10×, 20×, 100×,
+  200× og 400×. De ændrer ikke tidspunktet, mens der er pause, og afspiller altid
+  fremad. Knapperne deaktiveres ved laveste/højeste niveau. Hastighedsvælgeren
+  viser det aktuelle niveau. Eventlisten ligger fortsat under eventpanelet.
+- Den samlede tidsperiode udledes af hele spordatasættet med margen før start
+  og efter sidste position.
 - Tidslinjen følger kortudsnittet og de valgte både. Den indeholder perioder,
   hvor mindst én valgt båds aktuelle markør er i udsnittet; pauser uden både er
   fjernet fra skyderen. Events tilføjer ikke tidspunkter i disse huller.
   I præsentationen bruges hele tidsrummet, hvis ingen valgte både passerer
   udsnittet; der er ingen snapmål i denne situation. Uden synlige passager er
   skyderen deaktiveret i redigering, mens noterne stadig kan åbnes direkte.
-- Tiden kan flyttes i **1-sekunds trin** med skyderen, knapperne eller piletasterne.
+- Tiden kan flyttes i **1-sekunds trin** med skyderen eller piletasterne.
   Shift+piletast flytter 1 minut. Afspilning opdaterer 20 gange pr. sekund og kan køre med 1×, 2×, 5×, 10×,
   20×, 100×, 200× eller 400×. Ved 1× svarer ét sekund til ét sekund i sejladsen.
   Bådpositionerne interpoleres også mellem hele sekunder under afspilning.
-  Piletaster på selve skyderen og sekundknapperne snapper ikke, så du kan flytte
+  Piletaster på selve skyderen snapper ikke, så du kan flytte
   tiden væk fra et event i små trin. Piletaster uden for skyderen skifter events
   i præsentationen. Et træk i skyderen pauser afspilningen.
   Musehjulet over skyderen flytter ét sekund; Shift+musehjul flytter ét minut.

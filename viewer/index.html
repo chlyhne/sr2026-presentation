@@ -152,13 +152,20 @@
   <p id="speedPinStatus" class="help" role="status"></p>
   <p id="eventBoatStatus" class="help" role="status"></p>
 </section>
-<footer id="editingTimeline"><div class="controls"><button id="back" aria-label="1 sekund tilbage">◀</button><button id="play">Afspil</button><label for="playbackSpeed" class="sr-only">Afspilningshastighed</label><select id="playbackSpeed" title="Afspilningshastighed"><option value="1">1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="20">20×</option><option value="100">100×</option><option value="200">200×</option><option value="400">400×</option></select><button id="next" aria-label="1 sekund frem">▶</button><time id="clock" aria-label="Kortets tid"></time><div id="timelineTrack"><input id="time" aria-label="Tidspunkt, perioder med valgte både i kortudsnittet" type="range" step="1"><div id="timelineEvents" aria-hidden="true"></div></div></div><div id="timeWindow" hidden></div><div id="status" hidden></div></footer>
+<footer id="editingTimeline"><div class="controls">
+  <div class="transport-controls" role="group" aria-label="Afspilning og events">
+    <button id="previousEvent" class="transport-button" type="button" aria-label="Forrige event" title="Forrige event"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 5h2v14H5zM19 5v14L9 12z"/></svg></button>
+    <button id="back" class="transport-button" type="button" aria-label="Lavere hastighed" title="Lavere hastighed" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11 5v14L2 12zM22 5v14l-9-7z"/></svg></button>
+    <button id="play" class="transport-button" type="button" aria-label="Afspil" title="Afspil"><svg id="playIcon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4v16l13-8z"/></svg><svg id="pauseIcon" viewBox="0 0 24 24" aria-hidden="true" hidden><path fill="currentColor" d="M5 4h5v16H5zM14 4h5v16h-5z"/></svg></button>
+    <button id="next" class="transport-button" type="button" aria-label="Højere hastighed" title="Højere hastighed"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 5v14l9-7zM13 5v14l9-7z"/></svg></button>
+    <button id="nextEvent" class="transport-button" type="button" aria-label="Næste event" title="Næste event"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 5h2v14h-2zM5 5v14l10-7z"/></svg></button>
+  </div>
+  <label for="playbackSpeed" class="sr-only">Afspilningshastighed</label><select id="playbackSpeed" title="Afspilningshastighed"><option value="1">1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="20">20×</option><option value="100">100×</option><option value="200">200×</option><option value="400">400×</option></select><time id="clock" aria-label="Kortets tid"></time><div id="timelineTrack"><input id="time" aria-label="Tidspunkt, perioder med valgte både i kortudsnittet" type="range" step="1"><div id="timelineEvents" aria-hidden="true"></div></div>
+</div><div id="timeWindow" hidden></div><div id="status" hidden></div></footer>
 <footer id="presentationFooter">
   <div class="event-navigation">
     <nav aria-label="Præsentationens events">
-      <button id="previousEvent" aria-label="Forrige event" title="Forrige event">←</button>
       <label for="eventSelect" class="sr-only">Vælg event</label><select id="eventSelect"></select>
-      <button id="nextEvent" aria-label="Næste event" title="Næste event">→</button>
     </nav>
     <p id="presentationMessage" class="help" role="status"></p>
   </div>
