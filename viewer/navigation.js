@@ -7,7 +7,8 @@ let trackLengthSeconds=7200;
 function trackWindowSeconds(){return trackLengthSeconds===0?TRACK_FULL_WINDOW:trackLengthSeconds;}
 function validComparison(value){
  return value&&typeof value.enabled==='boolean'&&['absolute','handicap','time'].includes(value.basis)
-  &&Object.keys(value).every(key=>['enabled','basis'].includes(key));
+  &&(value.boatColour===undefined||typeof value.boatColour==='boolean')&&!(value.enabled&&value.boatColour)
+  &&Object.keys(value).every(key=>['enabled','basis','boatColour'].includes(key));
 }
 let comparison={enabled:false,basis:'absolute'},comparisonRevision=0;
 let navigationMode=null,navigationDraft=[],measurement=[],lastNavigationKey=null;
@@ -88,7 +89,7 @@ function saveComparison(next){
 }
 function syncNavigationControls(){
  syncReferenceBoatControls();
- $('trackStyle').value=comparison.enabled?comparison.basis:'speed';$('trackLength').value=String(trackLengthSeconds);
+ $('trackStyle').value=comparison.enabled?comparison.basis:comparison.boatColour?'boat':'speed';$('trackLength').value=String(trackLengthSeconds);
  $('trackLengthSummary').textContent=trackLengthSeconds?`Spor: seneste ${$('trackLength').selectedOptions[0].textContent}`:'Spor: hele forløbet';
  $('clearMeasurement').disabled=!measurement.length||!!navigationMode;
  $('finishMapLine').disabled=!navigationMode||navigationDraft.length<2;
@@ -156,7 +157,8 @@ $('undoMapPoint').onclick=()=>{navigationDraft.pop();syncNavigationControls();re
 $('clearMeasurement').onclick=()=>{measurement=[];syncNavigationControls();renderNavigation();};
 $('trackStyle').onchange=()=>{
  const style=$('trackStyle').value;
- if(!saveComparison({enabled:style!=='speed',basis:style==='speed'?comparison.basis:style}))syncNavigationControls();
+ const plain=style==='speed'||style==='boat';
+ if(!saveComparison({enabled:!plain,basis:plain?comparison.basis:style,boatColour:style==='boat'}))syncNavigationControls();
 };
 $('trackLength').onchange=()=>{
  const length=+$('trackLength').value;
