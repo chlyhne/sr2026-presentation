@@ -34,7 +34,7 @@ async function prepareFleetTracks(onProgress=()=>{}){
 }
 function trackSpeedLegendLayout(){
  const rect=$('map').getBoundingClientRect();
- return {left:12,top:12,width:Math.max(110,Math.min(230,rect.width-24)),height:trackUsesComparison()?77:63};
+ return {left:12,top:50,width:Math.max(110,Math.min(230,rect.width-24)),height:trackUsesComparison()?77:63};
 }
 function renderTrackSpeedLegend(){
  const layer=$('trackSpeedLegend');layer.replaceChildren();

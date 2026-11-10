@@ -252,8 +252,10 @@ function updatePresentationControls(){
  if(editable){$('eventText').setAttribute('tabindex','0');$('eventText').setAttribute('role','button');$('eventText').title='Klik for at redigere teksten';}
  else{$('eventText').removeAttribute('tabindex');$('eventText').removeAttribute('role');$('eventText').removeAttribute('title');}
 }
-function showPresentationEvent(index){
+function showPresentationEvent(index,{expandPanel=true}={}){
  if(!notes.length)return;
+ if(!noteNavigationAllowed())return;
+ if(expandPanel)setEventPanelExpanded(true);
  restoreNote(notes[Math.max(0,Math.min(notes.length-1,index))],{showImage:true});
 }
 function movePresentationEvent(delta){
@@ -270,6 +272,7 @@ function playToNextPresentationEvent(){
  if(hasRenderingFailure())return;
  if(!noteNavigationAllowed())return;
  const target=nextPresentationNote();if(!target)return;
+ setEventPanelExpanded(true);
  const onEvent=notes.some(note=>Math.abs(note.time-currentTime())<1e-6);
  if(eventPlaybackTarget||target.time<=currentTime()||(interval&&!onEvent)){
   restoreNote(target,{showImage:true});return;
@@ -289,10 +292,9 @@ function setPresentationMode(enabled){
  document.body.classList.toggle('presenting',enabled);
  $('editingTimeline').hidden=false;$('presentationFooter').hidden=false;
  $('startPresentation').hidden=enabled;$('endPresentation').hidden=!enabled;
- $('presentationFullscreen').hidden=!enabled||!document.fullscreenEnabled;
  $('presentationMessage').textContent='';refreshPresentationEvents();
  if(enabled){
-  if(notes.length)showPresentationEvent(Math.max(0,notes.indexOf(activePresentationNote)));
+  if(notes.length)showPresentationEvent(Math.max(0,notes.indexOf(activePresentationNote)),{expandPanel:false});
   else {updateTimeline();render();}
   ($('nextEvent').disabled?$('endPresentation'):$('nextEvent')).focus();
  }else{
@@ -319,9 +321,13 @@ function handlePresentationKey(event){
 }
 function updateFullscreenButton(){
  const active=!!document.fullscreenElement;
- $('presentationFullscreen').textContent=active?'Forlad fuld skærm':'Fuld skærm';
+ const label=active?'Forlad fuld skærm':'Fuld skærm';
+ $('presentationFullscreen').hidden=!document.fullscreenEnabled;
+ $('presentationFullscreen').setAttribute('aria-label',label);$('presentationFullscreen').title=label;
  $('presentationFullscreen').setAttribute('aria-pressed',String(active));
+ $('fullscreenEnterIcon').toggleAttribute('hidden',active);$('fullscreenExitIcon').toggleAttribute('hidden',!active);
 }
+updateFullscreenButton();
 $('startPresentation').onclick=()=>setPresentationMode(true);
 $('endPresentation').onclick=()=>setPresentationMode(false);
 $('previousEvent').onclick=()=>movePresentationEvent(-1);
@@ -336,7 +342,7 @@ $('presentationFullscreen').onclick=async()=>{
  try{
   if(document.fullscreenElement){await document.exitFullscreen();presentationOwnsFullscreen=false;}
   else{await document.documentElement.requestFullscreen();presentationOwnsFullscreen=true;}
- }catch{$('presentationMessage').textContent='Browseren kunne ikke åbne fuld skærm. Du kan fortsætte præsentationen her.';}
+ }catch{setEventPanelExpanded(true);$('presentationMessage').textContent='Browseren kunne ikke åbne fuld skærm. Du kan fortsætte præsentationen her.';}
  updateFullscreenButton();
 };
 function renderAnnotations() {

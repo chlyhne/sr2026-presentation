@@ -115,5 +115,5 @@ function validatePresentationDocument(document){
  updateViewerLoading(100);
  await new Promise(resolve=>requestAnimationFrame(resolve));
  $('viewerLoading').hidden=true;document.documentElement.classList.remove('viewer-loading');
- document.body.setAttribute('aria-busy','false');document.querySelector('header').inert=false;document.querySelector('main').inert=false;
+ document.body.setAttribute('aria-busy','false');document.querySelector('main').inert=false;
 })().catch(showViewerLoadingError);

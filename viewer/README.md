@@ -48,10 +48,14 @@ python3 scripts/serve_viewer.py
   Tidspunktet fastholdes, også når ingen valgte både er synlige i udsnittet og
   ved zoom, panorering, ændret vinduesstørrelse eller fuld skærm. Ved flere
   noter med samme tidspunkt vises kun det valgte events annotation på kortet.
-- Tabben med den **åbne bog** på højrepanelets kant skjuler og viser panelet,
+- Overskriften står i en hvid boks over farveskalaen med samme bredde.
+  Fuld skærm og log ind er ikoner ved lagvælgeren. Log ind vises på den offentlige
+  side, når loginserveren er konfigureret. Redigeringshandlinger ligger i venstrepanelet.
+- Knappen med den **åbne bog** ved lagvælgeren skjuler og viser højrepanelet,
   både i redigering og præsentation. Kort, tidslinje og kortværktøjer tilpasser
   sig pladsen, mens kortets centrum, zoom og tidspunkt bevares.
-  Panelet forbliver skjult ved eventskift; eventknapperne i playbaren virker fortsat.
+  Frem og tilbage mellem events åbner højrepanelet igen, også når Næste starter
+  afspilning frem til eventet.
 - **Enter i bådsøgningen** vender fluebenet for hver båd på den aktuelle liste.
   Søgeteksten og bådvalget uden for listen bevares.
 - I redigering kan du **klikke direkte på eventteksten i højrepanelet** og rette

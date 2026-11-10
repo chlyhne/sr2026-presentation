@@ -35,6 +35,7 @@ function setBoatListText(node,text){if(node.textContent!==text)node.textContent=
 function updateVisibleBoats(time=currentTime()){
  const viewport=mapViewport();if(!viewport)return;
  const {rect,matrix}=viewport,layout=trackSpeedLegendLayout();
+ $('mapHeading').style.width=layout.width+'px';
  $('visibleBoats').style.width=layout.width+'px';
  $('visibleBoats').style.marginLeft=layout.left+'px';
  $('visibleBoats').style.marginTop=layout.top+layout.height+8+'px';

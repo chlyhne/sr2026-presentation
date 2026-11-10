@@ -92,6 +92,7 @@ function syncReferenceBoatControls(){
  const boat=referenceBoat();
  $('referenceBoat').value=boat.id;
  $('referenceBoatHeading').textContent=` / ${boat.name}`;
+ $('mapHeading').title='Sjælland Rundt 2026 / '+boat.name;
  for(const basis of ['absolute','handicap'])$('trackStyle').querySelector(`option[value="${basis}"]`).textContent=`Mod ${boat.name} · ${basis==='absolute'?'absolut':'handicap'}`;
 }
 for(const boat of boats){
@@ -185,7 +186,7 @@ function prepareNextRadar(time){
  if(frame)radarImageBuffer.prepare(String(frame.time),()=>frame.file);
 }
 function renderRadar(time){
- const t=D.start+Math.floor((time-D.start)/600)*600;
+ const t=Math.floor(time/600)*600;
  $('precipitation').setAttribute('opacity',$('rainOpacity').value);
  const enabled=$('rain').checked,key=`${t}:${enabled}`;
  if(key===radarKey){if(enabled&&radarImageBuffer.front?.key===String(t))prepareNextRadar(time);return;}

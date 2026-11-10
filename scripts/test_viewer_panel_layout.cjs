@@ -31,9 +31,14 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   }
   async function aligned(){
    const s=await snapshot();
-   assert.ok(Math.abs(s.tab.right-s.map.right)<1,'Book tab follows map edge');
+   assert.ok(s.tab.x>=s.tools.x&&s.tab.right<=s.tools.right,'Book button stays in the map toolbar');
    assert.ok(Math.abs(s.tools.right-(s.map.right-12))<1,'Track/route/layer buttons follow map edge');
    assert.ok(Math.abs(s.timeline.width-s.map.width)<1,'Timeline follows map width');
+   assert.equal(await page.evaluate(()=>{
+    const heading=$('mapHeading'),title=heading.getBoundingClientRect(),legend=$('trackSpeedLegend').querySelector('rect').getBoundingClientRect();
+    return Math.abs(title.x-legend.x)<1&&Math.abs(title.width-legend.width)<1&&Math.abs(legend.y-title.bottom-8)<1
+     &&heading.scrollWidth===heading.clientWidth&&$('map').getBoundingClientRect().top===0&&!document.querySelector('header');
+   }),true,'Single-line title matches legend width above the map');
    assert.equal(await page.evaluate(()=>{
     const vp=mapViewport();
     return webglBackground.canvas.width===vp.pixelWidth&&webglBackground.canvas.height===vp.pixelHeight
@@ -78,7 +83,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await page.locator('#eventTextEditor').isVisible(),true);
   assert.match(await page.locator('#inlineTextStatus').textContent(),/kunne ikke gemmes/);
   await page.evaluate(()=>{Storage.prototype.setItem=originalPanelStorage;});await page.locator('#eventTextEditor').press('Escape');
-  // An event image occupies the same resized map cell; the tab stays above it.
+  // An event image occupies the same resized map cell; the toolbar stays above it.
   await page.evaluate(()=>{
    const canvas=document.createElement('canvas');canvas.width=canvas.height=16;
    const ctx=canvas.getContext('2d');ctx.fillStyle='#6599c2';ctx.fillRect(0,0,16,16);
@@ -108,13 +113,19 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#boatSearchInput').fill('zz-no-matches');await settle();
   await page.locator('#boatSearchInput').press('Enter');assert.deepEqual(await page.evaluate(()=>[...chosen].sort()),[matches[0],outside].sort());
   await page.locator('#boatSearchClear').click();await page.locator('#visibleBoatsToggle').click();
-  // Collapse persists through presentation mode and event navigation; playback keeps running.
+  // Presentation keeps the manual setting; navigating to an event opens its panel.
   await page.locator('#eventPanelToggle').click();await settle();await page.locator('#startPresentation').click();await settle();
   assert.equal(await page.locator('#eventPanel').isVisible(),false);await aligned();
   await page.locator('#nextEvent').click();
+  assert.equal(await page.locator('#eventPanel').isVisible(),true);
   if(await page.evaluate(()=>!!eventPlaybackTarget))await page.locator('#nextEvent').click();
   assert.equal(await page.evaluate(()=>activePresentationNote===notes[1]),true);
-  assert.equal(await page.locator('#eventPanel').isVisible(),false);
+  assert.equal(await page.locator('#eventPanel').isVisible(),true);
+  await page.locator('#eventPanelToggle').click();await settle();
+  await page.locator('#previousEvent').click();await settle();
+  assert.equal(await page.locator('#eventPanel').isVisible(),true);
+  assert.equal(await page.evaluate(()=>activePresentationNote===notes[0]),true);
+  await page.locator('#eventPanelToggle').click();await settle();
   await page.locator('#play').click();
   const playing=await page.evaluate(()=>({time:currentTime(),rate:playbackRate}));
   await page.locator('#eventPanelToggle').click();await settle();
@@ -123,7 +134,38 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#play').click();await aligned();
   await page.setViewportSize({width:1250,height:900});await settle();await aligned();
   const resized=await snapshot();await page.locator('#eventPanelToggle').click();await settle();sameCamera(resized,await snapshot());await aligned();
+  await page.evaluate(()=>{window.originalFullscreen=Element.prototype.requestFullscreen;Element.prototype.requestFullscreen=()=>Promise.reject(Error('denied'));});
+  await page.locator('#presentationFullscreen').click();await settle();
+  assert.equal(await page.locator('#presentationMessage').isVisible(),true);
+  assert.match(await page.locator('#presentationMessage').textContent(),/kunne ikke åbne fuld skærm/);
+  await page.evaluate(()=>{Element.prototype.requestFullscreen=originalFullscreen;});
+  await page.locator('#presentationFullscreen').click();await page.waitForFunction(()=>!!document.fullscreenElement);await settle();await aligned();
+  assert.equal(await page.locator('#presentationFullscreen').getAttribute('aria-pressed'),'true');
+  assert.equal(await page.locator('#fullscreenExitIcon').isVisible(),true);
+  assert.equal(await page.locator('#fullscreenEnterIcon').isVisible(),false);
+  await page.locator('#presentationFullscreen').click();await page.waitForFunction(()=>!document.fullscreenElement);await settle();await aligned();
+  assert.equal(await page.locator('#fullscreenEnterIcon').isVisible(),true);
+  // Hosted read-only mode has the same controls and a real login link, without editor actions.
+  await page.route('**/config.js',route=>route.fulfill({contentType:'application/javascript',body:'window.SR_CONFIG={admin:false,apiBase:"https://sr-test.example"};'}));
+  await page.route('**/presentation.json',route=>route.fulfill({json:{version:1,speedPins:[],notes:[
+   {time:Date.UTC(2026,5,11,9)/1000,text:'Offentlig event',view:[230,250,620,760]},
+   {time:Date.UTC(2026,5,11,10)/1000,text:'Næste offentlig event',view:[230,250,620,760]}
+  ]}}));
+  await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});await settle();
+  assert.equal(await page.locator('#loginLink').isVisible(),true);
+  assert.equal(await page.locator('#loginLink').getAttribute('href'),'https://sr-test.example/auth/login');
+  assert.equal(await page.locator('#loginLink').innerText(),'');
+  assert.equal(await page.locator('aside').isVisible(),false);
+  assert.equal(await page.locator('#endPresentation').isVisible(),false);
+  assert.equal(await page.locator('#presentationFullscreen svg').count(),2);
+  await page.locator('#eventPanelToggle').click();await settle();
+  assert.equal(await page.locator('#eventPanel').isVisible(),false);
+  await page.locator('#nextEvent').click();await settle();
+  assert.equal(await page.locator('#eventPanel').isVisible(),true);
+  await page.screenshot({path:'/tmp/sr2026-map-toolbar-public-firefox.png'});
+  await page.route('https://sr-test.example/auth/login',route=>route.fulfill({contentType:'text/html',body:'Login test'}));
+  await page.locator('#loginLink').click();await page.waitForURL('https://sr-test.example/auth/login');
   assert.deepEqual(errors,[]);
-  console.log('Firefox desktop: panel/tab, camera, timeline, WebGL caches, toolbar menus, inline edits, search Enter, events, playback and desktop resizing passed.');
+  console.log('Firefox desktop: map heading, icon toolbar, panel, camera, WebGL caches, inline edits, search Enter, events, playback, resizing, fullscreen and public login passed.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});
