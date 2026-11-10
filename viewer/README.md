@@ -249,6 +249,13 @@ python3 scripts/serve_viewer.py
   lineært mellem de to tilhørende kildetider; den beregnes ikke fra positionsændringer
   eller den afrundede jet-farve. Tal over 15 knob vises med deres faktiske værdi.
   Manglende fartdata vises som **Fart mangler** og kan ikke pinnes.
+- Mærkets værdi følger den synlige sportype: SOG i **kn**, absolut eller
+  handicapkorrigeret fartforskel i **kn**, eller tidsgevinst i **s/100 m**.
+  Positive forskelle betyder hurtigere fremdrift end referencebåden ved samme
+  sted på ruten. Sammenligningsværdierne læses fra sporets forberedte WebGL-data;
+  skift af sportype genberegner dem ikke. Referencebådens mærker viser fortsat SOG.
+  Manglende sammenligning vises som **Sammenligning mangler**, uden skift til SOG.
+  En eksisterende pin kan stadig fjernes, når data mangler.
 - **Pin** ved fartmærket gemmer punktet. Et pinnet mærke vises i både redigering
   og præsentation, når båden er valgt, punktets tid ligger i det viste to-timersspor,
   og selve punktet er i kortudsnittet. Det behøver ikke være bådens aktuelle position.
@@ -266,6 +273,9 @@ Pins er lokale for browseren; den eksisterende note-JSON eksporterer noter og bi
 `node scripts/test_viewer_speed_pins.cjs` kontrollerer valg af kurvepunkt, fart,
 pin/unpin, genindlæsning, perioder og udsnit, panorering og præsentation i
 Chromium og Firefox.
+`node scripts/test_viewer_pin_units.cjs` tester lokalt i Firefox på PC, at pins
+følger sportypens tal og enhed, genbruger forberedte sammenligninger og bevarer
+deres betydning ved referencevalg, genindlæsning, manglende data og præsentation.
 
 - Zoom og træk kortet. Alle både har samme faste sporbredde på skærmen:
   2,7 pixels farve med 4,7 pixels mørk kant. Det gælder ved alle zoomniveauer,

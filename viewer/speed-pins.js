@@ -1,4 +1,4 @@
-// Pins identify a boat and source time. Values always come from recorded SOG.
+// Pins identify a boat and source time. Their values follow the visible track style.
 let speedPins=JSON.parse(SRStorage.getItem('sr2026-speed-pins')??'[]'),pickedTrackSpeed=null;
 if(!Array.isArray(speedPins)||speedPins.some(pin=>!pin||typeof pin.id!=='string'||typeof pin.boatId!=='string'||!Number.isFinite(pin.time)||!boats.some(boat=>boat.id===pin.boatId)))throw Error('Ugyldige gemte fartmærker.');
 function trackSpeedSample(boat,time){
@@ -65,6 +65,16 @@ function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
 function matchingSpeedPin(sample){
  return speedPins.find(p=>p.boatId===sample.boatId&&Math.abs(p.time-sample.time)<.05);
 }
+function trackPinValue(boat,sample){
+ if(comparison.enabled&&referenceBoat()?.id!==boat.id){
+  const gains=webglTracks.comparisonSample(boat,sample.time),timeMode=comparison.basis==='time';
+  const value=gains?.[timeMode?'timeGain':comparison.basis==='handicap'?'handicapGain':'absoluteGain']??null;
+  const unit=timeMode?'s/100 m':'kn';
+  const description=`${timeMode?'Tidsgevinst':'Fartforskel'+(comparison.basis==='handicap'?' (ToD)':' (absolut)')} mod ${referenceBoat().name} ved samme sted på ruten`;
+  return {value,label:value===null?'Sammenligning mangler':`${value>0?'+':''}${value.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} ${unit}`,description};
+ }
+ return {value:sample.speed,label:sample.speed===null?'Fart mangler':sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})+' kn',description:'SOG fra TracTrac'};
+}
 function chooseTrackSpeed(e,boatId){
  if(document.body.classList.contains('presenting'))return;
  pickedTrackSpeed=nearestTrackSpeed(e.clientX,e.clientY,boatId,!boatId);
@@ -106,8 +116,9 @@ function closeTrackSpeedSelection(){pickedTrackSpeed=null;renderSpeedPins();}
 function toggleSpeedPin(){
  if(!pickedTrackSpeed||document.body.classList.contains('presenting'))return;
  const boat=boats.find(b=>b.id===pickedTrackSpeed.boatId),sample=boat&&trackSpeedSample(boat,pickedTrackSpeed.time);
- if(!sample||sample.speed===null)return;
+ if(!sample)return;
  const existing=matchingSpeedPin(sample);
+ if(!existing&&trackPinValue(boat,sample).value===null)return;
  const next=existing?speedPins.filter(p=>p!==existing):[...speedPins,{id:crypto.randomUUID(),boatId:sample.boatId,time:sample.time}];
  try{SRStorage.setItem('sr2026-speed-pins',JSON.stringify(next));speedPins=next;$('speedPinStatus').textContent='';}
  catch{$('speedPinStatus').textContent='Fartmærket kunne ikke gemmes i browseren.';}
@@ -139,9 +150,8 @@ function renderSpeedPins(){
   group.dataset.speedKey=entry.id;group.dataset.boatId=boat.id;group.dataset.trackTime=entry.time;
   group.dataset.pinned=String(entry.pinned);group.setAttribute('class','speed-marker');
   group.setAttribute('transform',`translate(${x} ${y}) scale(${scale})`);
-  const value=sample.speed===null?'Fart mangler':sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})+' kn';
-  const label=value,accessibleLabel=boat.name+' · '+value;
-  el('title',{},group).textContent=`${label} · ${fmt(entry.time)} · SOG fra TracTrac`;
+  const {value,label,description}=trackPinValue(boat,sample),accessibleLabel=boat.name+' · '+label+' · '+description;
+  el('title',{},group).textContent=`${label} · ${fmt(entry.time)} · ${description}`;
   el('circle',{r:10,fill:'transparent','pointer-events':'all'},group);
   if(entry.pinned)el('circle',{r:7,fill:'none',stroke:colour,'stroke-width':1.5},group);
   el('circle',{r:4,fill:colour,stroke:'#14212a','stroke-width':1.5},group);
@@ -152,7 +162,7 @@ function renderSpeedPins(){
   if(!presenting){
    group.setAttribute('role','button');group.setAttribute('tabindex','0');group.setAttribute('aria-label',accessibleLabel);
    const selected=pickedTrackSpeed&&entry.boatId===pickedTrackSpeed.boatId&&Math.abs(entry.time-pickedTrackSpeed.time)<.05;
-   if(selected&&sample.speed!==null){
+   if(selected&&(entry.pinned||value!==null)){
     const button=el('g',{'data-speed-action':entry.pinned?'unpin':'pin',role:'button',tabindex:0,
      'aria-label':entry.pinned?'Fjern pin for '+accessibleLabel:'Pin '+accessibleLabel},group);
     const buttonWidth=entry.pinned?76:44;
