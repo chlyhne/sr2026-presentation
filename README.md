@@ -25,6 +25,12 @@ Manglende Node.js eller fejl i forberedelsen stopper opstarten med en fejl.
 Genererede filer i `viewer/track-profiles/` ignoreres af Git. De kan forberedes
 direkte med `node scripts/prepare_track_profiles.cjs --if-stale`.
 Pages-buildet udfører samme kontrol og medtager kun de aktuelle binære aktiver.
+GitHub Actions genbruger de forberedte profiler fra en cache med generatorens
+præcise kildefingeraftryk som nøgle. Ændringer af events kræver dermed ikke en ny
+sporberegning; ændrede grunddata, rhumbline eller beregningskilder giver en ny nøgle.
+Ved nyberegning kører den fælles matematik i Node 24 uden contextified globale
+proxyopslag. Den ordnede gennemgang genbruger intervalindeks og PCHIP-evalueringer,
+og præcis ruteprogression beregnes kun for det nærmeste ruteben ved hvert punkt.
 Genstart den lokale server efter ændringer af beregningskilder eller rhumbline.
 
 Manifestet `track-profiles/manifest.json` skal hentes med `cache: 'no-store'`.
@@ -33,15 +39,17 @@ Det indeholder formatversion, kildefingeraftryk, SHA-256 af `JSON.stringify(DATA
 Browseren validerer rhumblinens digest, bådenes ID og punktantal samt binærformatet.
 Det fulde datafingeraftryk beregnes kun offline; browseren serialiserer ikke DATA.
 Filnavnene indeholder kildefingeraftrykket og er relative til viewerens rod.
-Manifestversion 2 bruger et fælles gitter med 10 meters afstand langs rhumblinen.
-`sampleFile` indeholder `pointCount + 1` prøver à ni bytes: først alle
+Manifestversion 3 bruger et fælles gitter med 10 meters afstand langs rhumblinen.
+Alle både ligger i én `bundleFile`, hvor manifestets `sampleOffset` og
+`profileOffset` angiver hvert dataområde, og `bundleBytes` angiver filstørrelsen.
+Kildeområdet indeholder `pointCount + 1` prøver à ni bytes: først alle
 little-endian Float32-par `[signedStationIndex, progressNm]`, derefter ét byte
 med fartkoden pr. prøve. Den sidste prøve gentager sidste kildeprøve.
 Indekset er forberedt før Float32-konvertering, så CPU og GPU vælger samme station.
 Negativ VMG gemmes med indeks `-stationIndex-2`; `-1` og fartkode 255 betyder
 manglende kildeprøve. Browseren afkoder dette til Float32-tripler
 `[stationIndex, progressNm, vmg]` én gang før betjening. Tidsstempler ændres ikke.
-`profileFile` indeholder præcis én byte pr. station: koderne 0–254 repræsenterer
+Profilområdet indeholder præcis én byte pr. station: koderne 0–254 repræsenterer
 0–25 knob (`knob = kode * 25 / 254`), og 255 betyder manglende passage.
 Hastigheder klippes til intervallet før afrunding til nærmeste kode. Kildeprøvernes
 fartstørrelse bruger samme byteformat, men bevarer negativ fremdrift via indekset.

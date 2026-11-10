@@ -23,6 +23,14 @@ jobs:
           node-version: '24'
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Identify track profile sources
+        id: profile-source
+        run: node -e "console.log('fingerprint='+require('./scripts/prepare_track_profiles.cjs').sourceState().sourceFingerprint)" >> "$GITHUB_OUTPUT"
+      - name: Reuse prepared track profiles
+        uses: actions/cache@v4
+        with:
+          path: viewer/track-profiles
+          key: track-profiles-${{ steps.profile-source.outputs.fingerprint }}
       - name: Build public website
         env:
           SR_API_URL: ${{ vars.SR_API_URL }}
