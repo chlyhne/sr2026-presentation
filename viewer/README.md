@@ -48,6 +48,12 @@ python3 scripts/serve_viewer.py
   Tidspunktet fastholdes, også når ingen valgte både er synlige i udsnittet og
   ved zoom, panorering, ændret vinduesstørrelse eller fuld skærm. Ved flere
   noter med samme tidspunkt vises kun det valgte events annotation på kortet.
+- Tabben med den **åbne bog** på højrepanelets kant skjuler og viser panelet,
+  både i redigering og præsentation. Kort, tidslinje og kortværktøjer tilpasser
+  sig pladsen, mens kortets centrum, zoom og tidspunkt bevares.
+  Panelet forbliver skjult ved eventskift; eventknapperne i playbaren virker fortsat.
+- **Enter i bådsøgningen** vender fluebenet for hver båd på den aktuelle liste.
+  Søgeteksten og bådvalget uden for listen bevares.
 - I redigering kan du **klikke direkte på eventteksten i højrepanelet** og rette
   den dér. Klik udenfor eller tryk **Ctrl+Enter** (Cmd+Enter på Mac) for at gemme;
   **Escape** annullerer. Enter indsætter et linjeskift. Kun teksten opdateres:

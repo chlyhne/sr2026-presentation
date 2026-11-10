@@ -368,4 +368,4 @@ $('export').onclick=exportEventNotes;
 
 $('note').addEventListener('input',()=>{if(editingNote)renderAnnotations();else if(pendingEventImage||hasPendingEventVideo())updatePresentationControls();});
 updateTimeline();showNotes();render();
-new ResizeObserver(()=>requestRender({viewportOnly:!updateTimeline()})).observe($('map'));
+new ResizeObserver(resizeMapViewport).observe($('map'));
