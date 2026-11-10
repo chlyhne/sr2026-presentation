@@ -25,17 +25,17 @@ function buildRhumbRoute(points){
  return {legs,total};
 }
 function projectOnRhumbRoute(point,route=rhumbRoute){
- const x=point[0]*NAV_RAD,y=mercatorLatitude(point[1]);
- let best=null;
+ const x=point[0]*NAV_RAD,y=mercatorLatitude(point[1]),scale=Math.cos(point[1]*NAV_RAD);
+ let best=null,bestDistance=Infinity,bestRaw=0,bestX=0,bestY=0;
  for(const leg of route.legs){
   const raw=((x-leg.x)*leg.dx+(y-leg.y)*leg.dy)/leg.length2;
   const u=Math.max(0,Math.min(1,raw)),px=leg.x+u*leg.dx,py=leg.y+u*leg.dy;
-  // Compare actual local distances rather than screen distances or Mercator scale.
-  const distance=Math.hypot(x-px,y-py)*Math.cos(point[1]*NAV_RAD);
-  if(best&&distance>=best.distance)continue;
-  const foot=[px/NAV_RAD,inverseMercatorLatitude(py)];
-  best={distance,progress:leg.start+rhumbLeg(leg.a,foot).distance,leg:leg.index,bearing:leg.bearing,
-   outside:(leg.index===0&&raw< -1e-10)||(leg.index===route.legs.length-1&&raw>1+1e-10)};
+  const distance=Math.hypot(x-px,y-py)*scale;
+  if(best&&distance>=bestDistance)continue;
+  best=leg;bestDistance=distance;bestRaw=raw;bestX=px;bestY=py;
  }
- return best;
+ if(!best)return null;
+ const foot=[bestX/NAV_RAD,inverseMercatorLatitude(bestY)];
+ return {distance:bestDistance,progress:best.start+rhumbLeg(best.a,foot).distance,leg:best.index,bearing:best.bearing,
+  outside:(best.index===0&&bestRaw< -1e-10)||(best.index===route.legs.length-1&&bestRaw>1+1e-10)};
 }

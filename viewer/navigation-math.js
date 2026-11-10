@@ -4,8 +4,8 @@ function referenceStationIndex(progress){
  if(!Number.isFinite(progress)||progress<0||progress>rhumbRoute.total)return -1;
  return Math.floor(progress*(1852/REFERENCE_STATION_METERS)+0.5);
 }
-function projectedTrackSample(boat,time){
- const points=boat.points,index=timeBoundary(points,time,true)-1;if(index<0)return null;
+function projectedTrackSample(boat,time,index=timeBoundary(boat.points,time,true)-1,evaluation=null){
+ const points=boat.points;if(index<0)return null;
  const a=points[index],b=points[index+1],model=getTrackModel(points);
  let point,velocity,speed;
  if(time===a[2]){
@@ -16,7 +16,7 @@ function projectedTrackSample(boat,time){
   if(!b||b[2]<=a[2]||b[2]-a[2]>TRACK_MAX_GAP)return null;
   const s0=boat.speeds?.[index],s1=boat.speeds?.[index+1];
   if(!Number.isFinite(s0)||s0<0||!Number.isFinite(s1)||s1<0)return null;
-  ({point,velocity}=trackValue(points,index,time,model));speed=s0+(s1-s0)*(time-a[2])/(b[2]-a[2]);
+  ({point,velocity}=evaluation??trackValue(points,index,time,model));speed=s0+(s1-s0)*(time-a[2])/(b[2]-a[2]);
  }
  if(!Number.isFinite(speed)||speed<0)return null;
  const projected=projectOnRhumbRoute(point);if(!projected||projected.outside)return null;
@@ -57,18 +57,20 @@ function prepareReferenceProfile(boat){
   const a=boat.points[i],b=boat.points[i+1],duration=b[2]-a[2];
   if(duration<=0||duration>TRACK_MAX_GAP){finish();continue;}
   if(!Number.isFinite(boat.speeds?.[i])||boat.speeds[i]<0||!Number.isFinite(boat.speeds?.[i+1])||boat.speeds[i+1]<0){finish();continue;}
-  let previous=projectedTrackSample(boat,a[2]);
-  function sampleSpan(left,right){
+  let endpointIndex=i+1;
+  while(endpointIndex+1<boat.points.length&&boat.points[endpointIndex+1][2]===b[2])endpointIndex++;
+  let previous=projectedTrackSample(boat,a[2],i);
+  function sampleSpan(left,right,evaluation=null){
    const latitude=left[1]*right[1]<=0?0:Math.min(Math.abs(left[1]),Math.abs(right[1]));
    const meters=NAV_RADIUS_NM*1852*NAV_RAD*(Math.abs(right[1]-left[1])+Math.cos(latitude*NAV_RAD)*Math.abs(right[0]-left[0]));
    if(!Number.isFinite(meters))throw Error('Non-finite reference sampling distance.');
    if(meters>REFERENCE_STATION_METERS){
     const time=(left[2]+right[2])/2;
     if(time===left[2]||time===right[2])throw Error('Reference spatial sampling cannot resolve source time.');
-    const middle=trackValue(boat.points,i,time,model).point;
-    sampleSpan(left,middle);sampleSpan(middle,right);
+    const middle=trackValue(boat.points,i,time,model);
+    sampleSpan(left,middle.point,middle);sampleSpan(middle.point,right,evaluation);
    }else{
-    const next=projectedTrackSample(boat,right[2]);fill(previous,next);previous=next;
+    const next=projectedTrackSample(boat,right[2],right[2]===b[2]?endpointIndex:i,evaluation);fill(previous,next);previous=next;
    }
   }
   sampleSpan(a,b);
@@ -101,8 +103,10 @@ function unpackProjectedTrack(bytes){
 }
 function prepareProjectedTrack(boat){
  const values=new Float32Array((boat.points.length+1)*3);
+ let sampleIndex=0;
  for(let i=0;i<boat.points.length;i++){
-  const sample=projectedTrackSample(boat,boat.points[i][2]),offset=i*3;
+  while(sampleIndex+1<boat.points.length&&boat.points[sampleIndex+1][2]<=boat.points[i][2])sampleIndex++;
+  const sample=projectedTrackSample(boat,boat.points[i][2],sampleIndex),offset=i*3;
   values[offset]=sample?referenceStationIndex(sample.progress):-1;values[offset+1]=sample?.progress??0;values[offset+2]=sample?quantizeProjectedSpeed(sample.vmg):-1e20;
  }
  if(boat.points.length)values.set(values.subarray((boat.points.length-1)*3,boat.points.length*3),boat.points.length*3);

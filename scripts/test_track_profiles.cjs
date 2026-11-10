@@ -40,8 +40,8 @@ test('uint8 fixed point clips to 0..25 kn and reserves only 255 for missing',()=
   assert.equal(profile[0],255);
  }
  const original=c.projectedTrackSample;
- c.projectedTrackSample=(reference,time)=>{
-  const sample=original(reference,time);return sample?{...sample,vmg:-3}:null;
+ c.projectedTrackSample=(reference,time,...prepared)=>{
+  const sample=original(reference,time,...prepared);return sample?{...sample,vmg:-3}:null;
  };
  assert.equal(c.prepareReferenceProfile(boat([20,180],[6,6]))[10],0);
  c.projectedTrackSample=original;
@@ -136,7 +136,7 @@ test('gaps above 300 s, missing SOG, undefined direction and outside samples rem
 test('source PCHIP sampling is bounded by physical distance without a five second subdivision',()=>{
  const {context:c,boat}=setup(1500);
  const original=c.projectedTrackSample,sampled=[];
- c.projectedTrackSample=(reference,time)=>{sampled.push(time);return original(reference,time);};
+ c.projectedTrackSample=(reference,time,...prepared)=>{sampled.push(time);return original(reference,time,...prepared);};
  c.prepareReferenceProfile(boat([20,28],[6,6],[0,300]));
  assert.deepEqual(sampled,[start,start+300]);
  sampled.length=0;
@@ -181,6 +181,48 @@ test('source buffers contain integer station index, progress and own VMG plus en
  for(let offset=0;offset<missing.length;offset+=3){assert.equal(missing[offset],-1);assert.ok(missing[offset+2]<-1e19);}
  const reverse=c.prepareProjectedTrack(boat([180,20],[8,8]));
  near(reverse[2],-8,.05);
+});
+
+test('ordered profile preparation reuses interval indices and PCHIP evaluations including duplicate times',()=>{
+ const {context,boat}=setup(1500);
+ const source=boat([0,200,300,900,1200,1400],[4,5,6,7,8,9],[0,30,30,120,120,180]);
+ source.points[3][1]+=.002;
+ const originalValue=context.trackValue,originalSample=context.projectedTrackSample;
+ const expectedSamples=source.points.map(point=>originalSample(source,point[2]));
+ context.projectedTrackSample=(reference,time)=>originalSample(reference,time);
+ const expectedProfile=context.prepareReferenceProfile(source);
+ let interpolations=0,interiorSamples=0;
+ context.trackValue=(...args)=>{interpolations++;return originalValue(...args);};
+ context.timeBoundary=()=>{throw Error('Ordered preparation must not binary-search timestamps');};
+ context.projectedTrackSample=(reference,time,index,evaluation)=>{
+  if(time!==reference.points[index][2]){
+   interiorSamples++;assert.ok(evaluation);assert.equal(evaluation.point[2],time);
+  }
+  return originalSample(reference,time,index,evaluation);
+ };
+ const packed=context.prepareProjectedTrack(source);
+ for(const [index,sample] of expectedSamples.entries()){
+  assert.equal(packed[index*3],sample?context.referenceStationIndex(sample.progress):-1);
+  assert.equal(packed[index*3+1],Math.fround(sample?.progress??0));
+  assert.equal(packed[index*3+2],Math.fround(sample?context.quantizeProjectedSpeed(sample.vmg):-1e20));
+ }
+ assert.deepEqual(Array.from(context.prepareReferenceProfile(source)),Array.from(expectedProfile));
+ assert.ok(interiorSamples>100);assert.equal(interpolations,interiorSamples);
+});
+
+test('route projection computes geographic progress only for the winning leg and preserves ties',()=>{
+ const {context}=setup();
+ const route=context.buildRhumbRoute([[12,55],[12.1,55],[12.2,55],[12.3,55]]);
+ const original=context.rhumbLeg;let calculations=0;
+ context.rhumbLeg=(...args)=>{calculations++;return original(...args);};
+ const projected=context.projectOnRhumbRoute([12.25,55],route);
+ assert.equal(calculations,1);assert.equal(projected.leg,2);
+ near(projected.progress,route.legs[2].start+original([12.2,55],[12.25,55]).distance);
+ const joined=context.projectOnRhumbRoute([12.1,55],route);
+ assert.equal(joined.leg,0);assert.equal(joined.outside,false);
+ assert.equal(context.projectOnRhumbRoute([11.9,55],route).outside,true);
+ assert.equal(context.projectOnRhumbRoute([12.4,55],route).outside,true);
+ assert.equal(context.projectOnRhumbRoute([12,55],{legs:[],total:0}),null);
 });
 
 test('source station indices survive Float32 rounding at a nearest-node boundary',()=>{

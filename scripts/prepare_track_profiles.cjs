@@ -49,7 +49,8 @@ function currentManifest(state){
 }
 
 function loadNominalMath(){
- const context=vm.createContext({window:{}});
+ const context=vm.createContext(vm.constants.DONT_CONTEXTIFY);
+ context.window={};
  for(const name of ['data','track-time','tracks','rhumbline-geometry','navigation-math']){
   vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer',name+'.js'),'utf8'),context,{filename:name+'.js'});
   if(name==='data')vm.runInContext('const D=window.DATA;const boats=D.boats;',context);
