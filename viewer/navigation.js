@@ -25,6 +25,18 @@ function referenceAtProgress(progress,stations=trackProfileCache.get(referenceBo
  if(!stations)throw Error('Referencebådens sporprofil er ikke forberedt.');
  return packedReferenceAtProgress(progress,stations);
 }
+function referenceTimeAtProgress(progress){
+ const boat=referenceBoat(),profile=trackProfileCache.get(boat.points);
+ if(!profile)throw Error('Referencebådens sporprofil er ikke forberedt.');
+ const {samples}=profile;
+ for(let index=0;index<boat.points.length-1;index++){
+  const offset=index*3,start=samples[offset+1],end=samples[offset+4];
+  const from=boat.points[index][2],to=boat.points[index+1][2];
+  if(samples[offset+2]<-1e19||samples[offset+5]<-1e19||to<=from||to-from>TRACK_MAX_GAP||end<=start||progress<start||progress>end)continue;
+  return from+(to-from)*(progress-start)/(end-start);
+ }
+ return null;
+}
 function correctedProjectedSpeed(speed,handicap,referenceHandicap){
  if(!Number.isFinite(handicap)||handicap<=0||!Number.isFinite(referenceHandicap)||referenceHandicap<=0)return null;
  const factor=1+(referenceHandicap-handicap)*speed/3600;
@@ -33,9 +45,10 @@ function correctedProjectedSpeed(speed,handicap,referenceHandicap){
 function trackComparisonSample(boat,time){
  const sample=projectedTrackSample(boat,time);if(!sample)return null;
  const reference=referenceAtProgress(sample.progress);if(!reference)return null;
- const corrected=correctedProjectedSpeed(sample.vmg,boat.handicapSecondsPerNm,referenceBoat()?.handicapSecondsPerNm);
- return {absoluteGain:sample.vmg-reference.vmg,handicapGain:corrected===null?null:corrected-reference.vmg,
-  vmg:sample.vmg,referenceVmg:reference.vmg,referenceTime:reference.time,progress:sample.progress};
+ const vmg=quantizeProjectedSpeed(sample.vmg);
+ const corrected=correctedProjectedSpeed(vmg,boat.handicapSecondsPerNm,referenceBoat()?.handicapSecondsPerNm);
+ return {absoluteGain:vmg-reference.vmg,handicapGain:corrected===null?null:corrected-reference.vmg,
+  vmg,referenceVmg:reference.vmg,referenceTime:referenceTimeAtProgress(sample.progress),progress:sample.progress};
 }
 function trackGainSample(boat,time){
  const sample=trackComparisonSample(boat,time);if(!sample)return null;

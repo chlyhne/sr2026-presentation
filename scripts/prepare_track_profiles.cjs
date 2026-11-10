@@ -26,9 +26,17 @@ function currentManifest(state){
   if(error instanceof SyntaxError)return null;
   throw error;
  }
- if(manifest.version!==1||manifest.sourceFingerprint!==state.sourceFingerprint||!Array.isArray(manifest.boats))return null;
+ if(manifest.version!==2||manifest.sourceFingerprint!==state.sourceFingerprint||!Array.isArray(manifest.boats)
+  ||manifest.stationSpacingMeters!==10||manifest.profileEncoding!=='uint8'||manifest.speedMaximum!==25
+  ||manifest.speedCodes!==254||manifest.missingValue!==255||manifest.sampleMissingValue!==-1e20
+  ||manifest.sampleWords!==3||manifest.sampleBytes!==9||manifest.sampleEncoding!=='uint8-speed-planar'
+  ||manifest.speedSignEncoding!=='signed-station-index'||manifest.stationWords!==1||manifest.byteOrder!=='little-endian')return null;
+ if(!Number.isSafeInteger(manifest.stationCount)||manifest.stationCount<1)return null;
+ const ids=new Set();
  for(const boat of manifest.boats){
-  for(const [name,size] of [[boat.sampleFile,(boat.pointCount+1)*12],[boat.profileFile,boat.stationCount*32]]){
+  if(typeof boat.id!=='string'||ids.has(boat.id)||!Number.isSafeInteger(boat.pointCount)||boat.pointCount<0||boat.stationCount!==manifest.stationCount)return null;
+  ids.add(boat.id);
+  for(const [name,size] of [[boat.sampleFile,(boat.pointCount+1)*9],[boat.profileFile,boat.stationCount]]){
    if(typeof name!=='string'||!name.startsWith('track-profiles/'+state.sourceFingerprint+'/')||name.includes('..'))return null;
    const file=path.join(ROOT,'viewer',name);
    if(!fs.existsSync(file)||fs.statSync(file).size!==size)return null;
@@ -46,7 +54,7 @@ function loadNominalMath(){
  const definition=JSON.parse(fs.readFileSync(path.join(ROOT,'viewer','rhumbline.json'),'utf8'));
  context.routeDefinition=definition;
  vm.runInContext("if(!validRhumbline(routeDefinition))throw Error('Invalid permanent rhumbline.');const rhumbRoute=buildRhumbRoute(routeDefinition.points);",context);
- return {definition,...vm.runInContext('({D,boats,prepareReferencePassages,packReferenceStations,prepareProjectedTrack})',context)};
+ return {definition,...vm.runInContext('({D,boats,prepareReferenceProfile,prepareProjectedTrack,referenceStationCount})',context)};
 }
 
 function writeAtomic(filename,value){
@@ -54,29 +62,43 @@ function writeAtomic(filename,value){
  try{fs.writeFileSync(temporary,value);fs.renameSync(temporary,filename);}finally{if(fs.existsSync(temporary))fs.unlinkSync(temporary);}
 }
 
+function packProjectedTrack(samples){
+ if(samples.length%3)throw Error('Projected track must contain triplets.');
+ const count=samples.length/3,bytes=new Uint8Array(count*9),view=new DataView(bytes.buffer);
+ for(let i=0;i<count;i++){
+  const index=samples[i*3],progress=samples[i*3+1],speed=samples[i*3+2];
+  if(!Number.isInteger(index)||index< -1||!Number.isFinite(progress)||progress<0||!Number.isFinite(speed))throw Error('Invalid projected track sample.');
+  const signedIndex=index===-1?-1:(speed<0||Object.is(speed,-0)?-index-2:index);
+  if(Math.fround(signedIndex)!==signedIndex)throw Error('Projected station index cannot be represented distinctly.');
+  view.setFloat32(i*8,signedIndex,true);view.setFloat32(i*8+4,progress,true);
+  bytes[count*8+i]=index===-1?255:Math.round(Math.min(Math.abs(speed),25)*254/25);
+ }
+ return bytes;
+}
+
 function generate({ifStale=false}={}){
  if(os.endianness()!=='LE')throw Error('Track profile generation requires a little-endian Node.js host.');
  const started=performance.now(),state=sourceState();
  if(ifStale&&currentManifest(state)){console.log('Track profiles are current: '+state.sourceFingerprint);return;}
- const {definition,D,boats,prepareReferencePassages,packReferenceStations,prepareProjectedTrack}=loadNominalMath();
+ const {definition,D,boats,prepareReferenceProfile,prepareProjectedTrack,referenceStationCount}=loadNominalMath();
  const directory=path.join(OUTPUT,state.sourceFingerprint);
  fs.mkdirSync(directory,{recursive:true});
  const entries=[],ids=new Set();let byteLength=0,stationCount=0,pointCount=0;
  for(const [index,boat] of boats.entries()){
   if(typeof boat.id!=='string'||ids.has(boat.id))throw Error('Track profile boats must have unique string IDs.');
   ids.add(boat.id);
-  const samples=prepareProjectedTrack(boat),profile=packReferenceStations(prepareReferencePassages(boat).stations);
+  const samples=packProjectedTrack(prepareProjectedTrack(boat)),profile=prepareReferenceProfile(boat);
   const stem=String(index).padStart(3,'0'),sampleFile=`track-profiles/${state.sourceFingerprint}/${stem}.samples.bin`,profileFile=`track-profiles/${state.sourceFingerprint}/${stem}.profile.bin`;
   for(const [name,values] of [[sampleFile,samples],[profileFile,profile]]){
    writeAtomic(path.join(ROOT,'viewer',name),Buffer.from(values.buffer,values.byteOffset,values.byteLength));
    byteLength+=values.byteLength;
   }
-  entries.push({id:boat.id,pointCount:boat.points.length,stationCount:profile.length/8,sampleFile,profileFile});
-  stationCount+=profile.length/8;pointCount+=boat.points.length;
+  entries.push({id:boat.id,pointCount:boat.points.length,stationCount:profile.length,sampleFile,profileFile});
+  stationCount+=profile.length;pointCount+=boat.points.length;
   if((index+1)%10===0||index+1===boats.length)console.log(`Prepared ${index+1}/${boats.length} boats`);
  }
  if(sourceState().sourceFingerprint!==state.sourceFingerprint)throw Error('Track profile sources changed during generation; run the generator again.');
- const manifest={version:1,sourceFingerprint:state.sourceFingerprint,sources:state.sources,dataDigest:digest(JSON.stringify(D)),rhumblineDigest:digest(JSON.stringify(definition)),start:D.start,byteOrder:'little-endian',sampleWords:3,stationWords:8,missingValue:-1e20,boats:entries};
+ const manifest={version:2,sourceFingerprint:state.sourceFingerprint,sources:state.sources,dataDigest:digest(JSON.stringify(D)),rhumblineDigest:digest(JSON.stringify(definition)),start:D.start,byteOrder:'little-endian',stationCount:referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint8',speedMaximum:25,speedCodes:254,missingValue:255,sampleMissingValue:-1e20,sampleWords:3,sampleBytes:9,sampleEncoding:'uint8-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,boats:entries};
  writeAtomic(MANIFEST,JSON.stringify(manifest,null,2)+'\n');
  console.log(`Track profiles: ${boats.length} boats, ${pointCount} points, ${stationCount} stations, ${byteLength} bytes (${(byteLength/1048576).toFixed(2)} MiB), ${((performance.now()-started)/1000).toFixed(2)} s`);
  return manifest;
@@ -90,4 +112,4 @@ if(require.main===module){
  }catch(error){console.error('Track profile preparation failed: '+error.message);process.exitCode=1;}
 }
 
-module.exports={generate,sourceState,currentManifest,loadNominalMath};
+module.exports={generate,sourceState,currentManifest,loadNominalMath,packProjectedTrack};

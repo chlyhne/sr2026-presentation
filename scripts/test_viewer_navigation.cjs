@@ -57,7 +57,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     boat('later','Senere passage',1800,55.606,Array(9).fill(6)));
    referenceBoatId='reference';
    for(const boat of boats){
-    trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:packReferenceStations(prepareReferencePassages(boat).stations)});
+    trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat)});
     webglTracks.prepare(boat);
    }
    webglTracks.prepareComparison();
@@ -76,8 +76,8 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     north:rhumbLeg([12,55],[12,55+1/60]),east:rhumbLeg([12,55],[12.1,55]),
     projection:projectOnRhumbRoute([12.04,55.7]),missingRating:correctedProjectedSpeed(6,null,580.6)};
   });
-  near(numeric.early.gain,2);near(numeric.middle.gain,0);near(numeric.late.gain,-2);
-  near(numeric.middle.referenceTime,await page.evaluate(()=>boats[0].points[4][2]),.001);
+  near(numeric.early.gain,2,.06);near(numeric.middle.gain,0,.06);near(numeric.late.gain,-2,.06);
+  near(numeric.middle.referenceTime,await page.evaluate(()=>boats[0].points[4][2]),.1);
   near(numeric.shifted.gain,numeric.middle.gain);near(numeric.sameRating,6);
   near(numeric.handicap,6/(1+80.6*6/3600));assert.equal(numeric.missingRating,null);
   near(numeric.north.bearing,0);near(numeric.east.bearing,90);
@@ -89,16 +89,16 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     nextLeg:projectOnRhumbRoute([12.11,55.05],buildRhumbRoute([[12,55],[12.1,55],[12.1,55.1]]))};
    chosen.delete('Mercutio');result.hiddenReference=trackGainSample(boats[1],time);chosen.add('Mercutio');return result;
   });
-  near(projectionChecks.crosswind.vmg,0);near(projectionChecks.crosswind.gain,-6);
+  near(projectionChecks.crosswind.vmg,0);near(projectionChecks.crosswind.gain,-6,.06);
   assert.equal(projectionChecks.noPassage,null);assert.equal(projectionChecks.nextLeg.leg,1);
-  near(projectionChecks.nextLeg.bearing,0);near(projectionChecks.hiddenReference.gain,0);
-  const overlap=await page.evaluate(()=>{
-   const interval=(low,high,time,vmg)=>({low,high,a:{time,vmg},b:{time:time+60,vmg}});
-   const stations=prepareReferenceStations([interval(0,100,100,4),interval(10,20,10,8),interval(20,30,20,6)]);
-   const packed=packReferenceStations(stations);
-   return [0,10,20,20.1,30,30.1,100,101].map(progress=>referenceAtProgress(progress,packed)?.vmg??null);
+  near(projectionChecks.nextLeg.bearing,0);near(projectionChecks.hiddenReference.gain,0,.06);
+  const grid=await page.evaluate(()=>{
+   const stations=new Uint8Array(referenceStationCount()).fill(REFERENCE_MISSING);
+   stations[0]=0;stations[1]=254;
+   return {bytes:stations.byteLength,count:stations.length,
+    values:[0,10/1852,20/1852].map(progress=>referenceAtProgress(progress,stations)?.vmg??null)};
   });
-  assert.deepEqual(overlap,[4,8,8,6,6,4,4,null],'Overlaps and exact endpoints keep the first forward passage');
+  assert.equal(grid.bytes,grid.count);assert.deepEqual(grid.values,[0,25,null],'One byte per 10-metre station, including zero and missing');
   // Read actual WebGL pixels, so the sign and Mercutio exception are tested
   // through the nominal renderer rather than only through a colour helper.
   async function pixels(){return page.evaluate(()=>{
@@ -127,7 +127,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   await page.locator('#trackStyle').selectOption('absolute');
   await page.locator('#trackStyle').selectOption('handicap');
   const rated=await page.evaluate(()=>trackGainSample(boats[2],boats[2].points[4][2]));
-  near(rated.gain,numeric.handicap-6);
+  near(rated.gain,numeric.handicap-6,.06);
   assert.match(await page.locator('#trackSpeedLegend').textContent(),/ToD/);
   await page.locator('#trackLength').selectOption('900');
   const short=await pixels();assert.equal(short.reference[3],0);assert.equal(short.red[3],0);assert.equal(short.blue[3],255);

@@ -31,7 +31,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     const matches=(actual,speed)=>actual[3]>240&&actual.slice(0,3).every((value,i)=>Math.abs(value-expected(speed)[i])<=14);
     const draw=(time,order=[a,b])=>{
      for(const boat of order)if(!trackProfileCache.has(boat.points))trackProfileCache.set(boat.points,{
-      samples:prepareProjectedTrack(boat),stations:packReferenceStations(prepareReferencePassages(boat).stations)
+      samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat)
      });
      selectedTime=D.start+time;renderer.render(selectedTime,order,true);
     };
