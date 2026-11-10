@@ -42,9 +42,9 @@ function persistNotes(next){
 }
 function sceneSettings() {
  return {wind:$('wind').checked,windModel:$('windModel').value,windNumbers:$('windNumbers').checked,
-  rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,traffic:$('traffic').checked,military:$('military').checked,annotationsVisible:$('annotationsVisible').checked,boats:[...chosen],boatNames:[...shownBoatNames]};
+  rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,grid:$('grid').checked,traffic:$('traffic').checked,military:$('military').checked,annotationsVisible:$('annotationsVisible').checked,boats:[...chosen],boatNames:[...shownBoatNames]};
 }
-const EVENT_LAYER_KEYS=['wind','windNumbers','rain','traffic','military','annotationsVisible','windModel','rainOpacity'];
+const EVENT_LAYER_KEYS=['wind','windNumbers','rain','grid','traffic','military','annotationsVisible','windModel','rainOpacity'];
 function layerSettings(){
  const settings=sceneSettings();
  return Object.fromEntries(EVENT_LAYER_KEYS.map(key=>[key,settings[key]]));
@@ -78,17 +78,19 @@ for(const id of EVENT_LAYER_KEYS)$(id).onchange=changeEventLayers;
 function changeBoatSelection(change){
  if(!finishInlineTextEditing()){syncBoatChoices();return;}
  stopPlayback();
- const before=[...chosen],time=currentTime();
+ const before=[...chosen],beforeNames=[...shownBoatNames],time=currentTime();
  const target=editableSettingsEvent();
  change();
+ for(const boat of boats)if(chosen.has(boat.name)&&!before.includes(boat.name))shownBoatNames.add(boat.id);
  if(target){
-  const updated={...target,settings:{...target.settings,boats:[...chosen]}};
+  const updated={...target,settings:{...target.settings,boats:[...chosen],boatNames:[...shownBoatNames]}};
   if(!persistNotes(notes.map(n=>n===target?updated:n))){
+   shownBoatNames.clear();beforeNames.forEach(id=>shownBoatNames.add(id));
    chosen.clear();before.forEach(name=>chosen.add(name));syncBoatChoices();
    $('eventBoatStatus').textContent='Bådvalget kunne ikke gemmes til eventet.';return;
   }
   target.settings=updated.settings;
- }else if(editingNote)noteDraft.settings={...noteDraft.settings,boats:[...chosen]};
+ }else if(editingNote)noteDraft.settings={...noteDraft.settings,boats:[...chosen],boatNames:[...shownBoatNames]};
  prepareSelectedTracks();
  $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline({preserveTime:isBoatSearchActive()});
  if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
