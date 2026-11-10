@@ -8,7 +8,7 @@ function validComparison(value){
  return value&&typeof value.enabled==='boolean'&&['absolute','handicap'].includes(value.basis)
   &&Object.keys(value).every(key=>['enabled','basis'].includes(key));
 }
-let comparison={enabled:false,basis:'absolute'},comparisonRevision=0,referencePassages=null;
+let comparison={enabled:false,basis:'absolute'},comparisonRevision=0;
 let navigationMode=null,navigationDraft=[],measurement=[],lastNavigationKey=null;
 function comparisonMessage(message){$('comparisonStatus').textContent=message;$('comparisonStatus').hidden=!message;}
 try{
@@ -21,102 +21,19 @@ try{
 }catch(error){comparisonMessage('Sporlængde kunne ikke indlæses: '+error.message);}
 const rhumbRoute=buildRhumbRoute(window.SR_RHUMBLINE.points);
 if(comparison.enabled&&!rhumbRoute.legs.length){comparison.enabled=false;comparisonMessage('Den permanente rhumbline er endnu ikke defineret.');}
-// A sample uses recorded SOG and the direction of the nominal PCHIP track.
-// Tracking holes, missing SOG and an unknown direction remain missing data.
-function projectedTrackSample(boat,time){
- const points=boat.points,index=timeBoundary(points,time,true)-1;if(index<0)return null;
- const a=points[index],b=points[index+1],model=getTrackModel(points);
- let point,velocity,speed;
- if(time===a[2]){
-  const previous=points[index-1];
-  if((!b||b[2]-a[2]>TRACK_MAX_GAP)&&(!previous||a[2]-previous[2]>TRACK_MAX_GAP))return null;
-  point=a;velocity=[model.slopes[0][index],model.slopes[1][index]];speed=boat.speeds?.[index];
- }else{
-  if(!b||b[2]<=a[2]||b[2]-a[2]>TRACK_MAX_GAP)return null;
-  const s0=boat.speeds?.[index],s1=boat.speeds?.[index+1];
-  if(!Number.isFinite(s0)||s0<0||!Number.isFinite(s1)||s1<0)return null;
-  ({point,velocity}=trackValue(points,index,time,model));speed=s0+(s1-s0)*(time-a[2])/(b[2]-a[2]);
- }
- if(!Number.isFinite(speed)||speed<0)return null;
- const projected=projectOnRhumbRoute(point);if(!projected||projected.outside)return null;
- const east=velocity[0]*Math.cos(point[1]*NAV_RAD),north=velocity[1],length=Math.hypot(east,north);
- if(length<1e-15&&speed>0)return null;
- const course=projected.bearing*NAV_RAD;
- const vmg=length>0?speed*(east*Math.sin(course)+north*Math.cos(course))/length:0;
- return {...projected,vmg,time};
-}
-function mercutioPassages(){
- const boat=boats.find(b=>b.name==='Mercutio');
- if(referencePassages?.points===boat?.points&&referencePassages.revision===comparisonRevision)return referencePassages;
- const intervals=[];
- if(boat)for(let i=0;i<boat.points.length-1;i++){
-  const start=boat.points[i][2],end=boat.points[i+1][2],duration=end-start;
-  if(duration<=0||duration>TRACK_MAX_GAP)continue;
-  // Subdivide in source time, independently of map zoom. This resolves bends
-  // and SOG changes before interpolation at the other boat's along-route place.
-  const steps=Math.ceil(duration/5);let a=projectedTrackSample(boat,start);
-  for(let j=1;j<=steps;j++){
-   const b=projectedTrackSample(boat,start+duration*j/steps);
-   if(a&&b&&b.progress>a.progress+1e-9)intervals.push({a,b,low:a.progress,high:b.progress});
-   a=b;
-  }
- }
- const stations=prepareReferenceStations(intervals);
- referencePassages={points:boat?.points,boat,revision:comparisonRevision,stations};return referencePassages;
-}
-// Resolve overlapping passages once. Every query then needs only a binary
-// search, including routes where the start and finish are close together.
-function prepareReferenceStations(intervals){
- const events=[];
- for(const interval of intervals){events.push({at:interval.low,start:interval},{at:interval.high,end:interval});}
- events.sort((a,b)=>a.at-b.at);
- const heap=[],active=new Set(),stations=[];
- function push(interval){
-  active.add(interval);heap.push(interval);let i=heap.length-1;
-  while(i){const parent=(i-1)>>>1;if(heap[parent].a.time<=interval.a.time)break;heap[i]=heap[parent];i=parent;}
-  heap[i]=interval;
- }
- function firstActive(){
-  while(heap.length&&!active.has(heap[0])){
-   const last=heap.pop();if(!heap.length)break;
-   let i=0;
-   while(i*2+1<heap.length){
-    let child=i*2+1;if(child+1<heap.length&&heap[child+1].a.time<heap[child].a.time)child++;
-    if(last.a.time<=heap[child].a.time)break;heap[i]=heap[child];i=child;
-   }
-   heap[i]=last;
-  }
-  return heap[0]||null;
- }
- for(let i=0;i<events.length;){
-  const at=events[i].at;let end=i;while(end<events.length&&events[end].at===at)end++;
-  for(let j=i;j<end;j++)if(events[j].start)push(events[j].start);
-  const point=firstActive();
-  for(let j=i;j<end;j++)if(events[j].end)active.delete(events[j].end);
-  stations.push({at,point,after:firstActive()});i=end;
- }
- return stations;
-}
-function referenceAtProgress(progress,stations=mercutioPassages().stations){
- let lo=0,hi=stations.length;
- while(lo<hi){const mid=(lo+hi)>>>1;if(stations[mid].at<=progress)lo=mid+1;else hi=mid;}
- if(!lo)return null;
- const station=stations[lo-1],first=progress===station.at?station.point:station.after;
- if(!first)return null;
- const fraction=(progress-first.low)/(first.high-first.low);
- return {vmg:first.a.vmg+(first.b.vmg-first.a.vmg)*fraction,time:first.a.time+(first.b.time-first.a.time)*fraction};
+function referenceAtProgress(progress,stations=trackProfileCache.get(referenceBoat()?.points)?.stations){
+ if(!stations)throw Error('Referencebådens sporprofil er ikke forberedt.');
+ return packedReferenceAtProgress(progress,stations);
 }
 function correctedProjectedSpeed(speed,handicap,referenceHandicap){
  if(!Number.isFinite(handicap)||handicap<=0||!Number.isFinite(referenceHandicap)||referenceHandicap<=0)return null;
- // ToD corrected passage time per NM: 3600/v + TA_Mercutio - TA_boat.
- // Express its reciprocal as an equivalent speed on Mercutio's handicap.
  const factor=1+(referenceHandicap-handicap)*speed/3600;
  return factor>0?speed/factor:null;
 }
 function trackComparisonSample(boat,time){
  const sample=projectedTrackSample(boat,time);if(!sample)return null;
  const reference=referenceAtProgress(sample.progress);if(!reference)return null;
- const corrected=correctedProjectedSpeed(sample.vmg,boat.handicapSecondsPerNm,mercutioPassages().boat?.handicapSecondsPerNm);
+ const corrected=correctedProjectedSpeed(sample.vmg,boat.handicapSecondsPerNm,referenceBoat()?.handicapSecondsPerNm);
  return {absoluteGain:sample.vmg-reference.vmg,handicapGain:corrected===null?null:corrected-reference.vmg,
   vmg:sample.vmg,referenceVmg:reference.vmg,referenceTime:reference.time,progress:sample.progress};
 }
@@ -125,20 +42,16 @@ function trackGainSample(boat,time){
  const gain=comparison.basis==='handicap'?sample.handicapGain:sample.absoluteGain;
  return gain===null?null:{...sample,gain};
 }
-// Both modes share the projection and Mercutio lookup. Keep this CPU data
-// independently of the GPU, so context restoration only uploads it again.
-const trackComparisonCache=new WeakMap();
-function prepareTrackComparison(boat){
- if(trackComparisonCache.has(boat.points))return trackComparisonCache.get(boat.points);
- const values=new Float32Array(boat.points.length*4);
- let a=boat.points.length?trackComparisonSample(boat,boat.points[0][2]):null;
- for(let i=0;i<boat.points.length;i++){
-  const b=i+1<boat.points.length?trackComparisonSample(boat,boat.points[i+1][2]):a;
-  values.set([a?.absoluteGain??TRACK_GAIN_MISSING,b?.absoluteGain??TRACK_GAIN_MISSING,
-   a?.handicapGain??TRACK_GAIN_MISSING,b?.handicapGain??TRACK_GAIN_MISSING],i*4);
-  a=b;
- }
- trackComparisonCache.set(boat.points,values);return values;
+function saveReferenceBoat(id){
+ if(!boats.some(boat=>boat.id===id)){comparisonMessage('Ugyldig referencebåd.');return false;}
+ if(id===referenceBoatId)return true;
+ try{localStorage.setItem(REFERENCE_BOAT_KEY,id);}
+ catch{comparisonMessage('Referencebåden kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
+ referenceBoatId=id;comparisonRevision++;
+ clearTrackHover();
+ try{webglTracks.prepareComparison();}
+ catch(error){webglTracks.fail(error);comparisonMessage(error.message);return false;}
+ comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
 }
 function trackGainColour(value){
  if(!Number.isFinite(value))return TRACK_SPEED_MISSING;
@@ -155,6 +68,7 @@ function saveComparison(next){
  comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
 }
 function syncNavigationControls(){
+ syncReferenceBoatControls();
  $('trackStyle').value=comparison.enabled?comparison.basis:'speed';$('trackLength').value=String(trackLengthSeconds);
  $('trackLengthSummary').textContent=trackLengthSeconds?`Spor: seneste ${$('trackLength').selectedOptions[0].textContent}`:'Spor: hele forløbet';
  $('clearMeasurement').disabled=!measurement.length||!!navigationMode;
@@ -244,4 +158,5 @@ document.addEventListener('keydown',event=>{
   event.preventDefault();event.stopImmediatePropagation();setMeasurementExpanded(false);$('mapMeasureToggle').focus();
  }
 },true);
+if(referencePreferenceError)comparisonMessage(referencePreferenceError);
 syncNavigationControls();

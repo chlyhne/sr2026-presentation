@@ -11,7 +11,7 @@ class WebGLTrackRenderer {
    e.preventDefault();this.fail(Error('WebGL-konteksten er mistet.'));
   });
   this.canvas.addEventListener('webglcontextrestored',()=>{
-   this.buffers.clear();this.initialize();if(this.active){for(const boat of boats)this.prepare(boat);requestRender();}
+   this.buffers.clear();this.initialize();if(this.active){try{for(const boat of boats)this.prepare(boat);this.prepareComparison();requestRender();}catch(error){this.fail(error);}}
   });
   this.initialize();
  }
@@ -34,7 +34,8 @@ layout(location=1) in vec4 position;
 layout(location=2) in vec4 curve;
 layout(location=3) in vec4 ending;
 layout(location=4) in vec4 timing;
-layout(location=5) in vec4 comparisonValues;
+layout(location=5) in vec2 comparisonStart;
+layout(location=6) in vec2 comparisonEnd;
 uniform vec4 origin;
 uniform mat2 screen;
 uniform vec2 size;
@@ -70,7 +71,7 @@ void main(){
  // Keeping depth in gl_Position allows early depth rejection on the GPU.
  float depth=0.1-0.8*(age+duration*u)/tail;
  gl_Position=vec4(pixel.x*2.0/size.x-1.0,1.0-pixel.y*2.0/size.y,depth*2.0-1.0,1.0);
- sourceU=u;speeds=ending.zw;gains=comparisonValues;strokeOffset=shape.yz;
+ sourceU=u;speeds=ending.zw;gains=vec4(comparisonStart.x,comparisonEnd.x,comparisonStart.y,comparisonEnd.y);strokeOffset=shape.yz;
 }`);
    const fragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
 precision highp float;
@@ -98,6 +99,57 @@ void main(){
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
    this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','handicapMode'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
+   if(!window.SR_RHUMBLINE_SETUP&&rhumbRoute.legs.length){
+    const evaluationVertex=shader(gl.VERTEX_SHADER,`#version 300 es
+precision highp float;
+precision highp int;
+layout(location=0) in vec3 projected;
+uniform highp sampler2D referenceProfile;
+uniform int stationCount;
+uniform vec2 handicaps;
+out vec2 evaluatedGains;
+vec4 station(int index,int halfIndex){
+ int texel=index*2+halfIndex;
+ return texelFetch(referenceProfile,ivec2(texel%1024,texel/1024),0);
+}
+void main(){
+ evaluatedGains=vec2(-1e20);
+ gl_Position=vec4(0.0,0.0,0.0,1.0);
+ if(projected.z<-1e19)return;
+ int low=0,high=stationCount;
+ while(low<high){
+  int middle=(low+high)/2;
+  vec4 value=station(middle,0);
+  if(value.x<projected.x||(value.x==projected.x&&value.w<=projected.y))low=middle+1;
+  else high=middle;
+ }
+ if(low==0)return;
+ vec4 point=station(low-1,0),after=station(low-1,1);
+ bool exact=projected.x==point.x&&projected.y==point.w;
+ float referenceSpeed=exact?point.y:after.x;
+ if(referenceSpeed<-1e19)return;
+ if(!exact)referenceSpeed+=((projected.x-point.x)+(projected.y-point.w))*after.y;
+ evaluatedGains.x=projected.z-referenceSpeed;
+ float factor=1.0+(handicaps.y-handicaps.x)*projected.z/3600.0;
+ if(handicaps.x>0.0&&handicaps.y>0.0&&factor>0.0)evaluatedGains.y=projected.z/factor-referenceSpeed;
+}`);
+    const evaluationFragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
+precision highp float;
+out vec4 colour;
+void main(){colour=vec4(0.0);}`);
+    this.comparisonProgram=gl.createProgram();
+    gl.attachShader(this.comparisonProgram,evaluationVertex);gl.attachShader(this.comparisonProgram,evaluationFragment);
+    gl.transformFeedbackVaryings(this.comparisonProgram,['evaluatedGains'],gl.INTERLEAVED_ATTRIBS);gl.linkProgram(this.comparisonProgram);
+    gl.deleteShader(evaluationVertex);gl.deleteShader(evaluationFragment);
+    if(!gl.getProgramParameter(this.comparisonProgram,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.comparisonProgram));
+    this.comparisonUniforms=Object.fromEntries(['referenceProfile','stationCount','handicaps'].map(name=>[name,gl.getUniformLocation(this.comparisonProgram,name)]));
+    this.referenceTexture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this.referenceTexture);
+    this.referenceHeight=Math.max(1,Math.ceil(maxReferenceStations*2/1024));
+    this.referenceUpload=new Float32Array(1024*this.referenceHeight*4);
+    gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA32F,1024,this.referenceHeight);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+    this.feedback=gl.createTransformFeedback();this.comparisonReference=null;
+   }
    // Fixed mesh used for every interval. shape.w marks optional outer caps.
    // Subdivision evaluates the cubic without discarding source points.
    const mesh=[];
@@ -163,19 +215,54 @@ void main(){
   gl.bindBuffer(gl.ARRAY_BUFFER,this.mesh);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,4,gl.FLOAT,false,16,0);
   for(let i=1;i<=4;i++){gl.enableVertexAttribArray(i);gl.vertexAttribDivisor(i,1);}
   const record={buffer,vao,bytes:data.byteLength,first:null};
-  if(boat.name!=='Mercutio'&&rhumbRoute.legs.length){
-   const values=prepareTrackComparison(boat);record.comparisonBuffer=gl.createBuffer();record.comparisonFirst=null;
-   gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.bufferData(gl.ARRAY_BUFFER,values,gl.STATIC_DRAW);
-   record.bytes+=values.byteLength;
+  if(this.comparisonProgram){
+   const profile=trackProfileCache.get(points);if(!profile)throw Error('Bådens sporprofil er ikke forberedt: '+boat.name);
+   record.projectedBuffer=gl.createBuffer();record.comparisonBuffer=gl.createBuffer();record.comparisonFirst=null;
+   record.comparisonVao=gl.createVertexArray();gl.bindVertexArray(record.comparisonVao);
+   gl.bindBuffer(gl.ARRAY_BUFFER,record.projectedBuffer);gl.bufferData(gl.ARRAY_BUFFER,profile.samples,gl.STATIC_DRAW);
+   gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,12,0);
+   gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.bufferData(gl.ARRAY_BUFFER,(points.length+1)*8,gl.DYNAMIC_COPY);
+   record.bytes+=profile.samples.byteLength+(points.length+1)*8;
   }
+  gl.bindVertexArray(null);
   this.buffers.set(points,record);this.uploads++;
+ }
+ prepareComparison(){
+  if(!this.active||!this.comparisonProgram)return;
+  const reference=referenceBoat();if(!reference)throw Error('Referencebåden findes ikke.');
+  if(this.comparisonReference===reference.points)return;
+  const profile=trackProfileCache.get(reference.points);if(!profile)throw Error('Referencebådens sporprofil er ikke forberedt.');
+  const gl=this.gl,u=this.comparisonUniforms;
+  this.referenceUpload.set(profile.stations);
+  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.referenceTexture);
+  gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,1024,this.referenceHeight,gl.RGBA,gl.FLOAT,this.referenceUpload);
+  gl.useProgram(this.comparisonProgram);gl.uniform1i(u.referenceProfile,1);gl.uniform1i(u.stationCount,profile.stations.length/8);
+  gl.bindBuffer(gl.ARRAY_BUFFER,null);
+  gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK,this.feedback);gl.enable(gl.RASTERIZER_DISCARD);
+  try{
+   for(const boat of boats){
+    const record=this.buffers.get(boat.points);if(!record?.comparisonBuffer)throw Error('Sporenes farvebuffer er ikke forberedt.');
+    gl.bindVertexArray(record.comparisonVao);gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER,0,record.comparisonBuffer);
+    gl.uniform2f(u.handicaps,boat.handicapSecondsPerNm||0,reference.handicapSecondsPerNm||0);
+    gl.beginTransformFeedback(gl.POINTS);gl.drawArrays(gl.POINTS,0,boat.points.length+1);gl.endTransformFeedback();
+   }
+  }finally{
+   gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER,0,null);gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK,null);
+   gl.disable(gl.RASTERIZER_DISCARD);gl.bindVertexArray(null);gl.activeTexture(gl.TEXTURE0);
+  }
+  const error=gl.getError();if(error!==gl.NO_ERROR)throw Error('Referencebådens sporfarver kunne ikke klargøres i WebGL ('+error+').');
+  this.comparisonReference=reference.points;
  }
  bindComparison(record,first){
   if(!record.comparisonBuffer)throw Error('Sammenligningsdata er ikke forberedt.');
   if(record.comparisonFirst!==first){
    const gl=this.gl;
-   gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.enableVertexAttribArray(5);gl.vertexAttribDivisor(5,1);
-   gl.vertexAttribPointer(5,4,gl.FLOAT,false,16,first*16);record.comparisonFirst=first;
+   gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);
+   for(const attribute of [5,6]){
+    gl.enableVertexAttribArray(attribute);gl.vertexAttribDivisor(attribute,1);
+    gl.vertexAttribPointer(attribute,2,gl.FLOAT,false,8,(first+attribute-5)*8);
+   }
+   record.comparisonFirst=first;
   }
  }
  render(time,order,force=false,viewportOverride=null){
@@ -215,7 +302,7 @@ void main(){
     if(last<=first)continue;
     this.prepare(boat);const record=this.buffers.get(points);
     gl.bindVertexArray(record.vao);
-    const relative=comparison.enabled&&boat.name!=='Mercutio';
+    const relative=comparison.enabled&&boat.id!==referenceBoat()?.id;
     gl.uniform1i(u.relativeMode,relative?1:0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
     if(relative)this.bindComparison(record,first);
     // WebGL has no base-instance draw: adjust the view into the same immutable

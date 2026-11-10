@@ -5,7 +5,7 @@
 <title>Sjælland Rundt · kort til præsentation</title>
 <link rel="stylesheet" href="viewer.css">
 <body aria-busy="true">
-<header inert><h1>Sjælland Rundt 2026 <span> / Mercutio</span></h1><div class="header-actions">
+<header inert><h1>Sjælland Rundt 2026 <span id="referenceBoatHeading"> / Mercutio</span></h1><div class="header-actions">
   <button id="startPresentation" class="mode-switch">Start præsentation</button>
   <button id="presentationFullscreen" aria-pressed="false" hidden>Fuld skærm</button>
   <button id="endPresentation" hidden>Redigér</button>
@@ -91,8 +91,10 @@
   <div id="mapTracksPanel" hidden>
     <label for="trackLength">Sporlængde</label>
     <select id="trackLength"><option value="900">15 minutter</option><option value="1800">30 minutter</option><option value="3600">1 time</option><option value="7200" selected>2 timer</option><option value="14400">4 timer</option><option value="28800">8 timer</option><option value="0">Hele forløbet</option></select>
+    <label for="referenceBoat">Referencebåd</label>
+    <select id="referenceBoat"></select>
     <label for="trackStyle">Sportype</label>
-    <select id="trackStyle"><option value="speed">Fart over grunden · SOG</option><option value="absolute">Mod Mercutio · absolut</option><option value="handicap">Mod Mercutio · handicap</option></select>
+    <select id="trackStyle"><option value="speed">Fart over grunden · SOG</option><option value="absolute">Mod referencebåd · absolut</option><option value="handicap">Mod referencebåd · handicap</option></select>
   </div>
 </section>
 <section id="mapMeasure" aria-label="Måleværktøj">

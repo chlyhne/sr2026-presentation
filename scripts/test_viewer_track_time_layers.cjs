@@ -6,7 +6,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   const page=await browser.newPage({viewport:{width:1300,height:850},acceptDownloads:true}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
   const initial=await page.evaluate(()=>({gpu:webglTracks.active,error:webglTracks.error,renderer:webglTracks.renderer}));
   assert.equal(initial.gpu,true,'Exercise nominal WebGL depth: '+initial.error);
   for(const mode of ['webgl']){
@@ -17,6 +17,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     const a={id:'time-a',name:'Mercutio',metadata,points:[point(580,460,100),point(620,460,200),point(580,500,500),point(620,500,600)],speeds:[12,12,12,12]};
     const b={id:'time-b',name:'Other',metadata,points:[point(600,440,250),point(600,520,450)],speeds:[2,2]};
     boats.splice(0,boats.length,a,b);chosen.clear();chosen.add(a.name);chosen.add(b.name);colours.Other='#ffffff';
+    referenceBoatId=a.id;
     $('wind').checked=$('rain').checked=$('traffic').checked=$('military').checked=$('annotationsVisible').checked=false;
     for(const id of ['places','seamarks','boatMarkers','speedMarkers','trackSpeedLegend'])$(id).setAttribute('visibility','hidden');
     view=[570,430,60,100];$('map').setAttribute('viewBox',view.join(' '));selectedTime=D.start+650;
@@ -28,7 +29,12 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     };
     const expected=speed=>TRACK_SPEED_COLOURS[speedBin(speed)].match(/\d+/g).map(Number);
     const matches=(actual,speed)=>actual[3]>240&&actual.slice(0,3).every((value,i)=>Math.abs(value-expected(speed)[i])<=14);
-    const draw=(time,order=[a,b])=>{selectedTime=D.start+time;renderer.render(selectedTime,order,true);};
+    const draw=(time,order=[a,b])=>{
+     for(const boat of order)if(!trackProfileCache.has(boat.points))trackProfileCache.set(boat.points,{
+      samples:prepareProjectedTrack(boat),stations:packReferenceStations(prepareReferencePassages(boat).stations)
+     });
+     selectedTime=D.start+time;renderer.render(selectedTime,order,true);
+    };
     draw(650);check(matches(pixel(600,460),2),'newer B must cover Mercutio at first crossing: '+pixel(600,460));
     check(matches(pixel(600,500),12),'newer Mercutio must cover B at second crossing: '+pixel(600,500));
     draw(650,[b,a]);check(matches(pixel(600,460),2)&&matches(pixel(600,500),12),'boat submission order changed crossing colours');

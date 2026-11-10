@@ -3,14 +3,23 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import tempfile
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLIC_SUFFIXES = {'.html', '.js', '.css', '.json', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.ico', '.woff', '.woff2'}
+PUBLIC_SUFFIXES = {'.html', '.js', '.css', '.json', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.ico', '.woff', '.woff2', '.bin'}
+
+
+def prepare_track_profiles():
+    node = shutil.which('node')
+    if node is None:
+        raise RuntimeError('Node.js is required to prepare track profiles. Install Node.js 24 and run this command again.')
+    subprocess.run([node, str(ROOT / 'scripts' / 'prepare_track_profiles.cjs'), '--if-stale'], cwd=ROOT, check=True)
 
 
 def build():
+    prepare_track_profiles()
     api_base = os.environ.get('SR_API_URL', '').strip().rstrip('/')
     if api_base:
         parsed = urlsplit(api_base)
@@ -23,8 +32,14 @@ def build():
     with tempfile.TemporaryDirectory(prefix='sr2026-pages-') as temporary:
         stage = Path(temporary) / 'public'
         stage.mkdir()
+        profile_manifest = json.loads((ROOT / 'viewer' / 'track-profiles' / 'manifest.json').read_text(encoding='utf-8'))
+        profile_files = {'track-profiles/manifest.json'}
+        for boat in profile_manifest['boats']:
+            profile_files.update((boat['sampleFile'], boat['profileFile']))
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
+            if relative.parts[0] == 'track-profiles' and relative.as_posix() not in profile_files:
+                continue
             if any(part.startswith('.') for part in relative.parts) or path.name in {'validation.json', 'rhumbline-editor.js'}:
                 continue
             if path.is_symlink():

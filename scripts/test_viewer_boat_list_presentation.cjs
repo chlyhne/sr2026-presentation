@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),path=require('node:path'),os=require('node:os');
+const installTrackFixtures=require('./viewer-track-fixtures.cjs');
 const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
@@ -6,6 +7,7 @@ async function check(type){
  const browser=await type.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
+  await installTrackFixtures(page);
   page.on('pageerror',error=>errors.push(error.message));
   // Exercise public, read-only presentation mode from startup, without entering the editor.
   await page.route('**/config.js',route=>route.fulfill({contentType:'application/javascript',body:'window.SR_CONFIG={admin:false,apiBase:""};'}));
@@ -15,7 +17,7 @@ async function check(type){
    {time:t+60,text:'Andet event',view:[230,250,620,760]}
   ]}}));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
   assert.equal(await page.evaluate(()=>window.SR_READONLY&&document.body.classList.contains('presenting')),true);
   assert.equal(await page.locator('aside').isVisible(),false);
   assert.equal(await page.locator('#endPresentation').isVisible(),false);
@@ -23,7 +25,8 @@ async function check(type){
    const metadata=boatMetadata('Mercutio'),points=[[11.8,55.6,t-120],[11.8,55.6,t+120]];
    boats.splice(0,boats.length,...Array.from({length:12},(_,i)=>({id:'present-'+i,name:'Båd '+String(i+1).padStart(2,'0'),
     skipper:'Skipper '+i,boatType:'Seascape 27',metadata,points,speeds:[4,10]})));
-   chosen.clear();for(const boat of boats){chosen.add(boat.name);colours[boat.name]='#ffdc42';}
+   referenceBoatId=boats[0].id;
+   chosen.clear();for(const boat of boats){prepareTrackFixture(boat);chosen.add(boat.name);colours[boat.name]='#ffdc42';}
    const [x,y]=xy([11.8,55.6]);view=[x-200,y-200,400,400];
    for(const note of notes)note.view=[...view];
    $('map').setAttribute('viewBox',view.join(' '));$('wind').checked=$('rain').checked=false;
@@ -43,8 +46,9 @@ async function check(type){
   await page.evaluate(()=>{
    window.savedPresentationPoints=boats[0].points;const t=currentTime();
    boats[0].points=[[25,50,t-120],[25,50,t+120]];
+   prepareTrackFixture(boats[0]);
    const arrival={...boats[2],id:'newcomer',name:'Albatros'};
-   boats.push(arrival);chosen.add(arrival.name);colours[arrival.name]='#ffdc42';render();
+   prepareTrackFixture(arrival);boats.push(arrival);chosen.add(arrival.name);colours[arrival.name]='#ffdc42';render();
   });
   assert.equal(await page.locator('.visible-boat').first().getAttribute('data-boat-id'),'newcomer');
   assert.equal(await page.locator('.visible-boat[data-boat-id="present-0"]').count(),0);
@@ -67,7 +71,7 @@ async function check(type){
   await aligned();
   await anchor.hover();
   assert.equal(await page.locator('.boat-list-highlighted').getAttribute('data-boat-marker'),'present-2');
-  await page.evaluate(()=>{boats[0].points=savedPresentationPoints;render();});
+  await page.evaluate(()=>{boats[0].points=savedPresentationPoints;prepareTrackFixture(boats[0]);render();});
   const names=await page.locator('.visible-boat-name').allTextContents();
   assert.deepEqual(names,[...names].sort((a,b)=>a.localeCompare(b,'da')),'Returning boats join alphabetically in fullscreen');
   const scene=await page.evaluate(()=>({time:currentTime(),view:[...view]}));

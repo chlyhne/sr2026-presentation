@@ -13,8 +13,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    geometry:boats.every(boat=>webglTracks.buffers.has(boat.points)),
    models:boats.every(boat=>trackModelCache.has(boat.points)),
    timeline:boats.every(boat=>timelineTrackCache.has(boat.points)),
-   comparison:boats.filter(boat=>boat.name!=='Mercutio').every(boat=>
-    trackComparisonCache.has(boat.points)&&!!webglTracks.buffers.get(boat.points).comparisonBuffer)
+   comparison:boats.every(boat=>
+    trackProfileCache.has(boat.points)&&!!webglTracks.buffers.get(boat.points).comparisonBuffer)
   }));
   assert.deepEqual(prepared,{geometry:true,models:true,timeline:true,comparison:true});
   await page.evaluate(()=>{

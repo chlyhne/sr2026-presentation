@@ -10,6 +10,7 @@ import uuid
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
+from build_pages import prepare_track_profiles
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE_DIR = ROOT / 'data' / 'event-images'
@@ -51,7 +52,7 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         return super().translate_path(path)
 
     def end_headers(self):
-        if urlsplit(self.path).path == '/rhumbline.json':
+        if urlsplit(self.path).path in {'/rhumbline.json', '/track-profiles/manifest.json'}:
             self.send_header('Cache-Control', 'no-store')
         super().end_headers()
 
@@ -163,6 +164,7 @@ if __name__ == '__main__':
     parser.add_argument('--port', type=int, default=8097)
     parser.add_argument('--bind', default='127.0.0.1')
     args = parser.parse_args()
+    prepare_track_profiles()
     server = ThreadingHTTPServer((args.bind, args.port), ViewerHandler)
     server.daemon_threads = True
     print(f'Viewer: http://{args.bind}:{args.port}/ · billeder: {IMAGE_DIR}', flush=True)

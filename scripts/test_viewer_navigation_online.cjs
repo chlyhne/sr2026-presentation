@@ -1,4 +1,4 @@
-const assert=require('node:assert/strict'),path=require('node:path');
+const assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
@@ -9,7 +9,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
    page.on('pageerror',error=>errors.push(error.message));
    const initial={version:1,notes:[],speedPins:[]};
-   const permanent={version:1,points:[[12,55.6],[12.1,55.6]]};
+   const permanent=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../viewer/rhumbline.json'),'utf8'));
    let published=null;
    const origin=new URL(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/').origin;
    await page.route('**/config.js',route=>route.fulfill({contentType:'application/javascript',body:`window.SR_CONFIG=${JSON.stringify({admin,apiBase:admin?origin:''})};`}));
@@ -22,7 +22,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     }else await route.fulfill({json:{document:initial,sha:'a'.repeat(40)}});
    });
    await page.route('**/rhumbline.json',route=>route.fulfill({json:permanent}));
-   await page.goto(origin+'/');await page.waitForSelector('#onlineStatus',{state:'attached'});
+   await page.goto(origin+'/');await page.waitForSelector('main:not([inert])',{timeout:120000});
    assert.deepEqual(await page.evaluate(()=>SR_RHUMBLINE),permanent);
    await page.locator('#mapTracksToggle').click();
    await page.locator('#trackStyle').selectOption('handicap');
