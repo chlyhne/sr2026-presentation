@@ -34,8 +34,8 @@ layout(location=1) in vec4 position;
 layout(location=2) in vec4 curve;
 layout(location=3) in vec4 ending;
 layout(location=4) in vec4 timing;
-layout(location=5) in vec2 comparisonStart;
-layout(location=6) in vec2 comparisonEnd;
+layout(location=5) in vec3 comparisonStart;
+layout(location=6) in vec3 comparisonEnd;
 uniform vec4 origin;
 uniform mat2 screen;
 uniform vec2 size;
@@ -44,7 +44,8 @@ uniform float radius;
 out float sourceU;
 out vec2 strokeOffset;
 flat out vec2 speeds;
-flat out vec4 gains;
+flat out vec3 gainsStart;
+flat out vec3 gainsEnd;
 void main(){
  float duration=timing.y;
  float age=(timing.x-windowTime.y)+(timing.z-windowTime.w);
@@ -71,24 +72,26 @@ void main(){
  // Keeping depth in gl_Position allows early depth rejection on the GPU.
  float depth=0.1-0.8*(age+duration*u)/tail;
  gl_Position=vec4(pixel.x*2.0/size.x-1.0,1.0-pixel.y*2.0/size.y,depth*2.0-1.0,1.0);
- sourceU=u;speeds=ending.zw;gains=vec4(comparisonStart.x,comparisonEnd.x,comparisonStart.y,comparisonEnd.y);strokeOffset=shape.yz;
+ sourceU=u;speeds=ending.zw;gainsStart=comparisonStart;gainsEnd=comparisonEnd;strokeOffset=shape.yz;
 }`);
    const fragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
 precision highp float;
 in float sourceU;
 in vec2 strokeOffset;
 flat in vec2 speeds;
-flat in vec4 gains;
+flat in vec3 gainsStart;
+flat in vec3 gainsEnd;
 uniform sampler2D palette;
 uniform float innerRatio;
 uniform bool relativeMode;
-uniform bool handicapMode;
+uniform int gainComponent;
+uniform float gainLimit;
 out vec4 colour;
 void main(){
- vec2 values=relativeMode?(handicapMode?gains.zw:gains.xy):speeds;
+ vec2 values=relativeMode?vec2(gainsStart[gainComponent],gainsEnd[gainComponent]):speeds;
  bool missing=relativeMode?(values.x<-1e19||values.y<-1e19):(values.x<0.0||values.y<0.0);
  float value=mix(values.x,values.y,sourceU);
- float fraction=relativeMode?(clamp(value,-2.0,2.0)+2.0)/4.0:clamp(value,0.0,15.0)/15.0;
+ float fraction=relativeMode?(clamp(value,-gainLimit,gainLimit)+gainLimit)/(2.0*gainLimit):clamp(value,0.0,15.0)/15.0;
  int bin=missing?0:1+int(floor(fraction*127.0+0.5));
  float distance=length(strokeOffset);
  float feather=max(fwidth(distance)*0.5,0.000001);
@@ -98,7 +101,7 @@ void main(){
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
-   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','handicapMode'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
+   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','gainComponent','gainLimit'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
    if(!window.SR_RHUMBLINE_SETUP&&rhumbRoute.legs.length){
     const evaluationVertex=shader(gl.VERTEX_SHADER,`#version 300 es
 precision highp float;
@@ -107,9 +110,9 @@ layout(location=0) in vec3 projected;
 uniform highp sampler2D referenceProfile;
 uniform int stationCount;
 uniform vec2 handicaps;
-out vec2 evaluatedGains;
+out vec3 evaluatedGains;
 void main(){
- evaluatedGains=vec2(-1e20);
+ evaluatedGains=vec3(-1e20);
  gl_Position=vec4(0.0,0.0,0.0,1.0);
  if(projected.z<-1e19||projected.x<0.0)return;
  int index=int(projected.x);
@@ -119,6 +122,7 @@ void main(){
  evaluatedGains.x=projected.z-referenceSpeed;
  float factor=1.0+(handicaps.y-handicaps.x)*projected.z/3600.0;
  if(handicaps.x>0.0&&handicaps.y>0.0&&factor>0.0)evaluatedGains.y=projected.z/factor-referenceSpeed;
+ if(projected.z>0.0&&referenceSpeed>0.0)evaluatedGains.z=${TRACK_SECONDS_PER_100_METERS}*(1.0/referenceSpeed-1.0/projected.z);
 }`);
     const evaluationFragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
 precision highp float;
@@ -208,8 +212,8 @@ void main(){colour=vec4(0.0);}`);
    record.comparisonVao=gl.createVertexArray();gl.bindVertexArray(record.comparisonVao);
    gl.bindBuffer(gl.ARRAY_BUFFER,record.projectedBuffer);gl.bufferData(gl.ARRAY_BUFFER,profile.samples,gl.STATIC_DRAW);
    gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,12,0);
-   gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.bufferData(gl.ARRAY_BUFFER,(points.length+1)*8,gl.DYNAMIC_COPY);
-   record.bytes+=profile.samples.byteLength+(points.length+1)*8;
+   gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.bufferData(gl.ARRAY_BUFFER,(points.length+1)*12,gl.DYNAMIC_COPY);
+   record.bytes+=profile.samples.byteLength+(points.length+1)*12;
   }
   gl.bindVertexArray(null);
   this.buffers.set(points,record);this.uploads++;
@@ -252,7 +256,7 @@ void main(){colour=vec4(0.0);}`);
    gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);
    for(const attribute of [5,6]){
     gl.enableVertexAttribArray(attribute);gl.vertexAttribDivisor(attribute,1);
-    gl.vertexAttribPointer(attribute,2,gl.FLOAT,false,8,(first+attribute-5)*8);
+    gl.vertexAttribPointer(attribute,3,gl.FLOAT,false,12,(first+attribute-5)*12);
    }
    record.comparisonFirst=first;
   }
@@ -287,7 +291,8 @@ void main(){colour=vec4(0.0);}`);
    gl.uniform4f(u.windowTime,trackWindowSeconds(),high,0,stamp-high);
    gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2);
    gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
-   gl.uniform1i(u.handicapMode,comparison.basis==='handicap'?1:0);
+   gl.uniform1i(u.gainComponent,comparison.basis==='time'?2:comparison.basis==='handicap'?1:0);
+   gl.uniform1f(u.gainLimit,trackGainLimit());
    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.palette);gl.uniform1i(u.palette,0);
    for(const boat of order){
     const points=boat.points,first=Math.max(0,timeBoundary(points,time-trackWindowSeconds())-1),last=timeBoundary(points,time,true);

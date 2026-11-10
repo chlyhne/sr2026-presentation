@@ -8,7 +8,7 @@ async function loadTrackProfiles(){
  const response=await fetch('track-profiles/manifest.json',{cache:'no-store'});
  if(!response.ok)fail('manifest ('+response.status+').');
  const manifest=await response.json(),hex=/^[a-f0-9]{64}$/;
- if(!manifest||manifest.version!==2||!hex.test(manifest.sourceFingerprint)||!hex.test(manifest.dataDigest)||!hex.test(manifest.rhumblineDigest)
+ if(!manifest||manifest.version!==3||!hex.test(manifest.sourceFingerprint)||!hex.test(manifest.dataDigest)||!hex.test(manifest.rhumblineDigest)
   ||manifest.start!==D.start||manifest.byteOrder!=='little-endian'||manifest.sampleWords!==3||manifest.stationWords!==1
   ||manifest.stationSpacingMeters!==REFERENCE_STATION_METERS||manifest.profileEncoding!=='uint8'
   ||manifest.stationCount!==referenceStationCount()
@@ -21,14 +21,18 @@ async function loadTrackProfiles(){
  }
  const rhumblineDigest=await digest(window.SR_RHUMBLINE);
  if(rhumblineDigest!==manifest.rhumblineDigest)fail('rhumbline stemmer ikke med de forberedte profiler. Genbyg profilerne og genindlæs siden.');
+ if(manifest.bundleFile!==`track-profiles/${manifest.sourceFingerprint}/fleet.bin`||!Number.isSafeInteger(manifest.bundleBytes)||manifest.bundleBytes<0)fail('ugyldig samlet profilfil.');
  const byId=new Map(boats.map(boat=>[boat.id,boat])),seen=new Set(),pending=[];
+ let offset=0;
  for(const entry of manifest.boats){
   const boat=byId.get(entry?.id);
   if(!boat||seen.has(entry.id)||entry.pointCount!==boat.points.length||entry.stationCount!==referenceStationCount())fail('ugyldig båd eller antal i manifestet.');
   seen.add(entry.id);
-  for(const [name,kind] of [[entry.sampleFile,'samples'],[entry.profileFile,'profile']]){
-   if(typeof name!=='string'||!new RegExp('^track-profiles/'+manifest.sourceFingerprint+'/[0-9]{3,}\\.'+kind+'\\.bin$').test(name))fail('ugyldigt filnavn i manifestet.');
-  }
+  if(entry.sampleOffset!==offset)fail('ugyldig kildeposition i manifestet.');
+  offset+=(entry.pointCount+1)*9;
+  if(!Number.isSafeInteger(offset)||entry.profileOffset!==offset)fail('ugyldig profilposition i manifestet.');
+  offset+=entry.stationCount;
+  if(!Number.isSafeInteger(offset)||offset>manifest.bundleBytes)fail('ugyldig profilstørrelse i manifestet.');
   pending.push({boat,entry});
  }
  async function load(name,byteLength){
@@ -38,21 +42,19 @@ async function loadTrackProfiles(){
   if(buffer.byteLength!==byteLength)fail('forkert filstørrelse: '+name+'.');
   return new Uint8Array(buffer);
  }
- let next=0,maximum=0;
+ if(offset!==manifest.bundleBytes)fail('forkert samlet profilstørrelse i manifestet.');
+ const bundle=await load(manifest.bundleFile,manifest.bundleBytes);
+ let maximum=0;
  const prepared=new Map();
- async function worker(){
-  while(next<pending.length){
-   const {boat,entry}=pending[next++];
-   const [packed,stations]=await Promise.all([load(entry.sampleFile,(entry.pointCount+1)*9),load(entry.profileFile,entry.stationCount)]);
-   const samples=unpackProjectedTrack(packed);
-   for(let index=0;index<samples.length;index+=3){
-    if(!Number.isInteger(samples[index])||samples[index]<-1||samples[index]>=entry.stationCount)fail('ugyldigt stationsindeks: '+boat.name+'.');
-   }
-   if(entry.pointCount)for(let i=0;i<3;i++)if(samples[entry.pointCount*3+i]!==samples[(entry.pointCount-1)*3+i])fail('manglende slutprøve: '+boat.name+'.');
-   maximum=Math.max(maximum,entry.stationCount);prepared.set(boat.points,{samples,stations});
+ for(const {boat,entry} of pending){
+  const packed=bundle.subarray(entry.sampleOffset,entry.profileOffset),stations=bundle.slice(entry.profileOffset,entry.profileOffset+entry.stationCount);
+  const samples=unpackProjectedTrack(packed);
+  for(let index=0;index<samples.length;index+=3){
+   if(!Number.isInteger(samples[index])||samples[index]<-1||samples[index]>=entry.stationCount)fail('ugyldigt stationsindeks: '+boat.name+'.');
   }
+  if(entry.pointCount)for(let i=0;i<3;i++)if(samples[entry.pointCount*3+i]!==samples[(entry.pointCount-1)*3+i])fail('manglende slutprøve: '+boat.name+'.');
+  maximum=Math.max(maximum,entry.stationCount);prepared.set(boat.points,{samples,stations});
  }
- await Promise.all(Array.from({length:Math.min(4,pending.length)},()=>worker()));
  for(const [points,profile] of prepared)trackProfileCache.set(points,profile);
  maxReferenceStations=maximum;
 }

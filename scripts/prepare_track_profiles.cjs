@@ -26,22 +26,25 @@ function currentManifest(state){
   if(error instanceof SyntaxError)return null;
   throw error;
  }
- if(manifest.version!==2||manifest.sourceFingerprint!==state.sourceFingerprint||!Array.isArray(manifest.boats)
+ if(manifest.version!==3||manifest.sourceFingerprint!==state.sourceFingerprint||!Array.isArray(manifest.boats)
   ||manifest.stationSpacingMeters!==10||manifest.profileEncoding!=='uint8'||manifest.speedMaximum!==25
   ||manifest.speedCodes!==254||manifest.missingValue!==255||manifest.sampleMissingValue!==-1e20
   ||manifest.sampleWords!==3||manifest.sampleBytes!==9||manifest.sampleEncoding!=='uint8-speed-planar'
   ||manifest.speedSignEncoding!=='signed-station-index'||manifest.stationWords!==1||manifest.byteOrder!=='little-endian')return null;
  if(!Number.isSafeInteger(manifest.stationCount)||manifest.stationCount<1)return null;
- const ids=new Set();
+ if(manifest.bundleFile!==`track-profiles/${state.sourceFingerprint}/fleet.bin`||!Number.isSafeInteger(manifest.bundleBytes)||manifest.bundleBytes<0)return null;
+ const ids=new Set();let offset=0;
  for(const boat of manifest.boats){
   if(typeof boat.id!=='string'||ids.has(boat.id)||!Number.isSafeInteger(boat.pointCount)||boat.pointCount<0||boat.stationCount!==manifest.stationCount)return null;
   ids.add(boat.id);
-  for(const [name,size] of [[boat.sampleFile,(boat.pointCount+1)*9],[boat.profileFile,boat.stationCount]]){
-   if(typeof name!=='string'||!name.startsWith('track-profiles/'+state.sourceFingerprint+'/')||name.includes('..'))return null;
-   const file=path.join(ROOT,'viewer',name);
-   if(!fs.existsSync(file)||fs.statSync(file).size!==size)return null;
-  }
+  if(boat.sampleOffset!==offset)return null;
+  offset+=(boat.pointCount+1)*9;
+  if(!Number.isSafeInteger(offset)||boat.profileOffset!==offset)return null;
+  offset+=boat.stationCount;
+  if(!Number.isSafeInteger(offset))return null;
  }
+ const file=path.join(ROOT,'viewer',manifest.bundleFile);
+ if(offset!==manifest.bundleBytes||!fs.existsSync(file)||fs.statSync(file).size!==offset)return null;
  return manifest;
 }
 
@@ -83,22 +86,22 @@ function generate({ifStale=false}={}){
  const {definition,D,boats,prepareReferenceProfile,prepareProjectedTrack,referenceStationCount}=loadNominalMath();
  const directory=path.join(OUTPUT,state.sourceFingerprint);
  fs.mkdirSync(directory,{recursive:true});
- const entries=[],ids=new Set();let byteLength=0,stationCount=0,pointCount=0;
+ const entries=[],chunks=[],ids=new Set();let byteLength=0,stationCount=0,pointCount=0;
  for(const [index,boat] of boats.entries()){
   if(typeof boat.id!=='string'||ids.has(boat.id))throw Error('Track profile boats must have unique string IDs.');
   ids.add(boat.id);
   const samples=packProjectedTrack(prepareProjectedTrack(boat)),profile=prepareReferenceProfile(boat);
-  const stem=String(index).padStart(3,'0'),sampleFile=`track-profiles/${state.sourceFingerprint}/${stem}.samples.bin`,profileFile=`track-profiles/${state.sourceFingerprint}/${stem}.profile.bin`;
-  for(const [name,values] of [[sampleFile,samples],[profileFile,profile]]){
-   writeAtomic(path.join(ROOT,'viewer',name),Buffer.from(values.buffer,values.byteOffset,values.byteLength));
-   byteLength+=values.byteLength;
-  }
-  entries.push({id:boat.id,pointCount:boat.points.length,stationCount:profile.length,sampleFile,profileFile});
+  const sampleOffset=byteLength,profileOffset=sampleOffset+samples.byteLength;
+  for(const values of [samples,profile])chunks.push(Buffer.from(values.buffer,values.byteOffset,values.byteLength));
+  byteLength=profileOffset+profile.byteLength;
+  entries.push({id:boat.id,pointCount:boat.points.length,stationCount:profile.length,sampleOffset,profileOffset});
   stationCount+=profile.length;pointCount+=boat.points.length;
   if((index+1)%10===0||index+1===boats.length)console.log(`Prepared ${index+1}/${boats.length} boats`);
  }
  if(sourceState().sourceFingerprint!==state.sourceFingerprint)throw Error('Track profile sources changed during generation; run the generator again.');
- const manifest={version:2,sourceFingerprint:state.sourceFingerprint,sources:state.sources,dataDigest:digest(JSON.stringify(D)),rhumblineDigest:digest(JSON.stringify(definition)),start:D.start,byteOrder:'little-endian',stationCount:referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint8',speedMaximum:25,speedCodes:254,missingValue:255,sampleMissingValue:-1e20,sampleWords:3,sampleBytes:9,sampleEncoding:'uint8-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,boats:entries};
+ const bundleFile=`track-profiles/${state.sourceFingerprint}/fleet.bin`;
+ writeAtomic(path.join(ROOT,'viewer',bundleFile),Buffer.concat(chunks,byteLength));
+ const manifest={version:3,sourceFingerprint:state.sourceFingerprint,sources:state.sources,dataDigest:digest(JSON.stringify(D)),rhumblineDigest:digest(JSON.stringify(definition)),start:D.start,byteOrder:'little-endian',stationCount:referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint8',speedMaximum:25,speedCodes:254,missingValue:255,sampleMissingValue:-1e20,sampleWords:3,sampleBytes:9,sampleEncoding:'uint8-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,bundleFile,bundleBytes:byteLength,boats:entries};
  writeAtomic(MANIFEST,JSON.stringify(manifest,null,2)+'\n');
  console.log(`Track profiles: ${boats.length} boats, ${pointCount} points, ${stationCount} stations, ${byteLength} bytes (${(byteLength/1048576).toFixed(2)} MiB), ${((performance.now()-started)/1000).toFixed(2)} s`);
  return manifest;

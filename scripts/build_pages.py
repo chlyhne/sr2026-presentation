@@ -33,9 +33,7 @@ def build():
         stage = Path(temporary) / 'public'
         stage.mkdir()
         profile_manifest = json.loads((ROOT / 'viewer' / 'track-profiles' / 'manifest.json').read_text(encoding='utf-8'))
-        profile_files = {'track-profiles/manifest.json'}
-        for boat in profile_manifest['boats']:
-            profile_files.update((boat['sampleFile'], boat['profileFile']))
+        profile_files = {'track-profiles/manifest.json', profile_manifest['bundleFile']}
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
             if relative.parts[0] == 'track-profiles' and relative.as_posix() not in profile_files:

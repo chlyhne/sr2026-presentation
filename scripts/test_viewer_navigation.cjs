@@ -82,6 +82,15 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   near(numeric.handicap,6/(1+80.6*6/3600));assert.equal(numeric.missingRating,null);
   near(numeric.north.bearing,0);near(numeric.east.bearing,90);
   near(numeric.north.distance,1.00067567,.00001);
+  const timeMath=await page.evaluate(()=>({
+   slow:timeGainPer100Meters(3,4),fast:timeGainPer100Meters(13,14),
+   gain:timeGainPer100Meters(4,3),equal:timeGainPer100Meters(6,6),
+   missing:[[0,4],[4,0],[0,0],[-1,4],[4,-1],[NaN,4],[Infinity,4],[4,Infinity]].map(([speed,reference])=>timeGainPer100Meters(speed,reference))
+  }));
+  near(timeMath.slow,-360000/1852/12);near(timeMath.fast,-360000/1852/182);
+  near(timeMath.gain,-timeMath.slow);near(timeMath.equal,0);
+  assert.ok(Math.abs(timeMath.slow)>15*Math.abs(timeMath.fast));
+  assert.deepEqual(timeMath.missing,Array(8).fill(null));
   const projectionChecks=await page.evaluate(()=>{
    const time=boats[1].points[4][2],northbound={...boats[1],points:[[12.04,55.59,time-60],[12.04,55.61,time+60]],speeds:[6,6]};
    const noPassage={...boats[1],points:[[12.085,55.6,time],[12.086,55.6,time+60]],speeds:[6,6]};
@@ -129,6 +138,30 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   const rated=await page.evaluate(()=>trackGainSample(boats[2],boats[2].points[4][2]));
   near(rated.gain,numeric.handicap-6,.06);
   assert.match(await page.locator('#trackSpeedLegend').textContent(),/ToD/);
+  const timeMode=await page.evaluate(()=>{
+   const gl=webglTracks.gl,originals=new Map();
+   for(const name of ['bufferData','bufferSubData','createBuffer','texSubImage2D','beginTransformFeedback']){
+    originals.set(name,gl[name]);gl[name]=()=>{throw Error('Changing track style recomputed or uploaded comparison data');};
+   }
+   try{
+    if(!saveComparison({enabled:true,basis:'time'}))throw Error($('comparisonStatus').textContent);
+    render();
+    if(!webglTracks.active)throw Error(webglTracks.error);
+    return [0,4,8].map(index=>trackGainSample(boats[1],boats[1].points[index][2]));
+   }finally{for(const [name,method] of originals)gl[name]=method;}
+  });
+  for(const sample of timeMode)near(sample.gain,360000/1852*(1/sample.referenceVmg-1/sample.vmg));
+  assert.match(await page.locator('#trackSpeedLegend').getAttribute('aria-label'),/sekunder pr\. 100 meter/);
+  assert.match(await page.locator('#trackSpeedLegend').textContent(),/−20.*\+20/);
+  const timePixels=await pixels();
+  assert.ok(timePixels.red[0]>timePixels.red[2],JSON.stringify(timePixels));
+  assert.ok(timePixels.blue[2]>timePixels.blue[0],JSON.stringify(timePixels));
+  assert.deepEqual(timePixels.reference,original.reference,'Reference SOG is unchanged in time mode');
+  const hoverPoint=await page.evaluate(()=>{
+   const point=new DOMPoint(...xy([12.005,55.602])).matrixTransform($('map').getScreenCTM());return {x:point.x,y:point.y};
+  });
+  await page.mouse.move(hoverPoint.x,hoverPoint.y);
+  await page.waitForFunction(()=>document.querySelector('#trackHover')?.textContent.includes('s/100 m'));
   await page.locator('#trackLength').selectOption('900');
   const short=await pixels();assert.equal(short.reference[3],0);assert.equal(short.red[3],0);assert.equal(short.blue[3],255);
   const oldReferenceHit=await page.evaluate(()=>{
@@ -158,7 +191,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(TRACK_COMPARISON_KEY)));
   await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});
   assert.deepEqual(await page.evaluate(()=>comparison),saved);
-  assert.equal(await page.locator('#trackStyle').inputValue(),'handicap');
+  assert.equal(await page.locator('#trackStyle').inputValue(),'time');
   await page.evaluate(()=>setPresentationMode(true));
   await page.locator('#mapMeasureToggle').click();await page.locator('#measureDistance').click();
   await page.keyboard.press('Escape');
@@ -168,7 +201,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.equal(await page.locator('#mapMeasureToggle').isVisible(),true);
   await page.locator('#presentationFullscreen').click();
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:'firefox',checks:'permanent route asset, rhumb geometry and measurement, same-place speed independent of passage time, red/blue WebGL pixels, Mercutio unchanged, ToD, missing data, immutable geometry, PNG, persistence, presentation/fullscreen',numeric,coloured,errors}));
+  console.log(JSON.stringify({browser:'firefox',checks:'permanent route asset, rhumb geometry and measurement, same-place speed independent of passage time, red/blue WebGL pixels, reference unchanged, ToD, seconds per 100 metres, zero/reverse speeds, hover units, no mode recomputation, missing data, immutable geometry, PNG, persistence, presentation/fullscreen',numeric,timeMath,coloured,timePixels,errors}));
   await page.close();
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

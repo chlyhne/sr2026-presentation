@@ -34,6 +34,10 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   assert.equal(format.textureBytes,1024*Math.ceil(format.count/1024)*4);
   const manifest=await page.evaluate(async()=>await (await fetch('track-profiles/manifest.json',{cache:'no-store'})).json());
   assert.equal(manifest.sampleBytes,9);assert.equal(manifest.sampleEncoding,'uint8-speed-planar');
+  assert.equal(manifest.version,3);
+  const downloads=await page.evaluate(()=>performance.getEntriesByType('resource').filter(entry=>/\/track-profiles\/.*\.bin$/.test(new URL(entry.name).pathname)).map(entry=>entry.name));
+  assert.equal(downloads.length,1);assert.ok(downloads[0].endsWith('/fleet.bin'));
+  assert.equal(await page.evaluate(()=>boats.every(boat=>trackProfileCache.get(boat.points).stations.buffer.byteLength===referenceStationCount())),true);
   await page.locator('#mapTracksToggle').click();
   assert.equal(await page.locator('#referenceBoat option').count(),baseline.count);
   const candidates=await page.evaluate(()=>['Vera','My','THE HULK'].map(name=>boats.find(boat=>boat.name===name).id));
@@ -47,22 +51,23 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
     let checked=0,maxError=0,missing=0;
     for(const boat of boats){
      const samples=trackProfileCache.get(boat.points).samples,record=webglTracks.buffers.get(boat.points);
-     const gains=new Float32Array((boat.points.length+1)*2);
+     const gains=new Float32Array((boat.points.length+1)*3);
      gl.bindBuffer(gl.COPY_READ_BUFFER,record.comparisonBuffer);gl.getBufferSubData(gl.COPY_READ_BUFFER,0,gains);
      const stride=Math.max(1,Math.floor(boat.points.length/31));
      for(let index=0;index<boat.points.length;index+=stride){
       const speed=samples[index*3+2],station=samples[index*3];
       const passage=speed<-1e19?null:referenceAtStation(station,stations);
       const corrected=correctedProjectedSpeed(speed,boat.handicapSecondsPerNm,reference.handicapSecondsPerNm);
-      const expected=[passage?speed-passage.vmg:null,passage&&corrected!==null?corrected-passage.vmg:null];
-      for(let basis=0;basis<2;basis++){
-       const actual=gains[index*2+basis];
+      const expected=[passage?speed-passage.vmg:null,passage&&corrected!==null?corrected-passage.vmg:null,passage?timeGainPer100Meters(speed,passage.vmg):null];
+      for(let basis=0;basis<3;basis++){
+       const actual=gains[index*3+basis];
        if(expected[basis]===null){
         if(actual>=-1e19)throw Error(`Missing comparison was coloured: ${boat.name} #${index}`);
         missing++;
        }else{
         const difference=Math.abs(actual-expected[basis]);maxError=Math.max(maxError,difference);
-        if(difference>0.0002)throw Error(`CPU/GPU mismatch: ${boat.name} #${index}: ${actual} vs ${expected[basis]}`);
+        const tolerance=basis===2?.002+Math.abs(expected[basis])*.000001:.0002;
+        if(difference>tolerance)throw Error(`CPU/GPU mismatch: ${boat.name} #${index}: ${actual} vs ${expected[basis]}`);
         checked++;
        }
       }
@@ -79,6 +84,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   }
   await page.locator('#trackStyle').selectOption('absolute');
   await page.locator('#trackStyle').selectOption('handicap');
+  await page.locator('#trackStyle').selectOption('time');
   await page.evaluate(()=>{
    chosen.clear();selectedTime+=60;render();
    for(const boat of boats)chosen.add(boat.name);
@@ -115,10 +121,12 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   assert.equal(await broken.locator('main').getAttribute('inert'),'');
   assert.equal(await broken.locator('#viewerLoadingRetry').isVisible(),true);
   await broken.close();
-  for(const [key,value] of [['version',1],['stationSpacingMeters',5],['profileEncoding','float16'],['missingValue',0],['stationCount',1],['sampleBytes',12],['sampleEncoding','float32']]){
+  for(const [key,value] of [['version',2],['stationSpacingMeters',5],['profileEncoding','float16'],['missingValue',0],['stationCount',1],['sampleBytes',12],['sampleEncoding','float32'],['bundleFile','track-profiles/../fleet.bin'],['bundleBytes',1],['sampleOffset',1],['profileOffset',1]]){
    const invalid=await browser.newPage();
    await invalid.route('**/track-profiles/manifest.json',async route=>{
-    const response=await route.fetch(),manifest=await response.json();manifest[key]=value;
+    const response=await route.fetch(),manifest=await response.json();
+    if(key==='sampleOffset'||key==='profileOffset')manifest.boats[0][key]=value;
+    else manifest[key]=value;
     await route.fulfill({json:manifest});
    });
    await invalid.goto(url);await invalid.waitForSelector('#viewerLoadingError:not([hidden])');
@@ -127,7 +135,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   }
   for(const kind of ['profile','samples']){
    const invalid=await browser.newPage();
-   await invalid.route(`**/000.${kind}.bin`,async route=>{
+   await invalid.route('**/fleet.bin',async route=>{
     const response=await route.fetch(),body=await response.body();
     if(kind==='profile')await route.fulfill({body:body.subarray(1)});
     else {body.writeFloatLE(-1.5,0);await route.fulfill({body});}

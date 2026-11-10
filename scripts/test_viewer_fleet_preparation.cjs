@@ -34,6 +34,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#trackStyle').selectOption('absolute');
   await page.locator('#trackStyle').selectOption('handicap');
   await page.waitForFunction(()=>comparison.enabled&&comparison.basis==='handicap');
+  await page.locator('#trackStyle').selectOption('time');
+  await page.waitForFunction(()=>comparison.enabled&&comparison.basis==='time');
   await page.evaluate(()=>{flushRender();if(!webglTracks.active)throw Error(webglTracks.error);});
   await page.locator('#trackStyle').selectOption('absolute');
   await page.locator('#trackLength').selectOption('900');
@@ -59,6 +61,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await page.locator('#mapTracksPanel').isVisible(),false);
   assert.equal(await page.locator('#mapLayersPanel').isVisible(),true);
   assert.deepEqual(errors,[]);
-  console.log('Firefox: hele feltet og begge farvegrundlag er forberedt før betjening; bådvalg, grundlag og tidsskift genberegner eller uploader ingen faste spordata.');
+  console.log('Firefox: hele feltet og alle tre farvegrundlag er forberedt før betjening; bådvalg, grundlag og tidsskift genberegner eller uploader ingen faste spordata.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});
