@@ -180,7 +180,7 @@ function updateTimeline({preserveTime=false}={}){
  const ranges=[];
  for(const boat of boats)if(boatIsDisplayed(boat)){
   ranges.push(...visibleBoatRanges(boat.points,bounds));
-  if(ghostBoatIds.has(boat.id)){
+  if(showHandicapGhost(boat)){
    const clock=ghostClocks.get(boat.id);
    if(!clock.error){
     ranges.push(...visibleBoatRanges(boat.points,bounds,clock));

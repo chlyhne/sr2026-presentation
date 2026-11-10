@@ -168,11 +168,12 @@ python3 scripts/serve_viewer.py
   `node scripts/test_viewer_rhumbline_setup.cjs` tester det separate tegnekort
   med simuleret gemning. `python3 scripts/test_rhumbline_server.py` tester den
   permanente engangsgemning på en isoleret lokal server.
-- **Spor → Spøgelsesbåde** tilføjer et gennemsigtigt spøgelse for hver af de
-  viste både, du afkrydser. Det bruger samme skrog, størrelse, farve og oprindelige
+- **Spor → Handicapkompenseret spor** er ét flueben, som tilføjer en gennemsigtig
+  båd for hver af de valgte både. Det bruger samme skrog, størrelse, farve og oprindelige
   PCHIP-kurve som båden, med 38 % opacitet og uden en ekstra sporlinje.
   Spøgelset skjules sammen med originalen og følger dens navnevisning.
-  Valgene huskes lokalt, ligesom sportype og referencebåd.
+  Fluebenet huskes lokalt, ligesom sportype og referencebåd. Det almindelige bådvalg
+  bestemmer automatisk, hvilke både der får en kompenseret kopi; der er ingen særskilt bådliste.
   Korrektionen bruger bådens **eget ToD-måltal og klassestart**, uafhængigt af
   referencebåden. Inden for hver rute bruges seneste klassestart som fælles start
   og feltets højeste ToD-måltal som fast grundlag. Alle spøgelser forsinkes derfor;
@@ -188,8 +189,8 @@ python3 scripts/serve_viewer.py
   sporgeometri genbruges uændret. Trackinghuller følger den normale femminuttersregel.
   Tidslinjen medtager spøgelsernes passager og kan forlænges ud over vejrperioden;
   ved mål holdes spøgelset stille i fem minutter. Events kan også gemmes og redigeres
-  ved de forlængede tider. Både uden et registreret måltid
-  eller tracking ved start/mål kan ikke vælges og får en synlig forklaring.
+  ved de forlængede tider. Både uden et registreret måltid eller tracking ved
+  start/mål får en synlig forklaring på den manglende kompensation.
   `node scripts/test_ghost_math.cjs` kontrollerer ToD, forskudte starter, mål-rækkefølge
   og hele feltets faste tidsforløb. `node scripts/test_viewer_ghosts.cjs` tester
   valg, gennemsigtighed, genbrug af spor, tidslinje, målpassager, genindlæsning og
