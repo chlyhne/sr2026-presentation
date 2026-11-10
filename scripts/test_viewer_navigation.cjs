@@ -102,12 +102,12 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.equal(projectionChecks.noPassage,null);assert.equal(projectionChecks.nextLeg.leg,1);
   near(projectionChecks.nextLeg.bearing,0);near(projectionChecks.hiddenReference.gain,0,.06);
   const grid=await page.evaluate(()=>{
-   const stations=new Uint8Array(referenceStationCount()).fill(REFERENCE_MISSING);
-   stations[0]=0;stations[1]=254;
+   const stations=new Uint16Array(referenceStationCount()).fill(REFERENCE_MISSING);
+   stations[0]=0;stations[1]=1022;
    return {bytes:stations.byteLength,count:stations.length,
     values:[0,10/1852,20/1852].map(progress=>referenceAtProgress(progress,stations)?.vmg??null)};
   });
-  assert.equal(grid.bytes,grid.count);assert.deepEqual(grid.values,[0,25,null],'One byte per 10-metre station, including zero and missing');
+  assert.equal(grid.bytes,grid.count*2);assert.deepEqual(grid.values,[0,25,null],'Decoded 10-bit station codes, including zero and missing');
   // Read actual WebGL pixels, so the sign and Mercutio exception are tested
   // through the nominal renderer rather than only through a colour helper.
   async function pixels(){return page.evaluate(()=>{

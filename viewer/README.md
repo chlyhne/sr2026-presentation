@@ -886,24 +886,25 @@ Generator og visning bruger den samme nominelle matematik i
 [`tracks.js`](./tracks.js), [`rhumbline-geometry.js`](./rhumbline-geometry.js) og
 [`navigation-math.js`](./navigation-math.js); den fælles tidsgrænsesøgning ligger i
 [`track-time.js`](./track-time.js). Der findes ingen separat alternativ beregningsvej.
-Profilerne bruger ét byte pr. 10-meterstation: 0–254 koder for 0–25 knob,
-255 for manglende data. Højere hastigheder klippes til 25; negative til 0.
-Afrunding til nærmeste kode giver højst cirka 0,049 knobs kvantiseringsfejl
+Profilerne bruger pakkede 10 bit pr. 10-meterstation: 0–1022 koder for 0–25 knob,
+1023 for manglende data. Højere hastigheder klippes til 25; negative til 0.
+Afrunding til nærmeste kode giver højst cirka 0,0123 knobs kvantiseringsfejl
 inden for intervallet. Ruten på cirka 417 km giver 41.709 stationer pr. båd.
-Fart ved hvert oprindeligt tidsindekseret kildepunkt gemmes også med ét byte.
-På serveren fylder en kildeprøve ni bytes: Float32-indeks og -progression samt
-én fartkode. Negativ egen VMG bevares i indeksfeltets fortegn uden ekstra bytes;
-positioner og tidsstempler kvantiseres ikke til otte bit.
+Fart ved hvert oprindeligt tidsindekseret kildepunkt gemmes også med pakkede 10 bit.
+På serveren fylder kildepositionen otte bytes: Float32-indeks og -progression;
+dertil kommer fartkoderne, fire værdier i fem bytes. Kun sidste bytes ubrugte
+høje bits nuludfyldes. Negativ egen VMG bevares i indeksfeltets fortegn uden ekstra bytes;
+positioner og tidsstempler kvantiseres ikke til 10 bit.
 Alle både pakkes i én fingerprint-navngivet `fleet.bin`, som hentes med ét request.
-Manifest v3 angiver hver båds byte-offsets og den samlede filstørrelse; indlæsningen
+Manifest v4 angiver hver båds byte-offsets og den samlede filstørrelse; indlæsningen
 afviser ugyldige områder, overlap og afkortede filer uden at offentliggøre delvise data.
 Pages publicerer kun det aktuelle manifest og den tilhørende samlede fil.
-Filen fylder samlet cirka 10,49 MiB: 6,27 MiB kildeprøver og
-4,22 MiB referenceprofiler. Browseren afkoder kildeprøverne én gang til GPU'ens
-Float32-format (8,36 MiB), mens alle referenceprofiler beholdes som bytes.
-Profilerne kopieres ud af downloadbufferen, så denne kan frigives efter indlæsning;
-ellers ville byte-views fastholde alle de allerede afkodede kildeprøver i hukommelsen.
-Det samlede CPU-lager er derfor cirka 12,58 MiB. Lageret vokser lineært med
+Filen fylder samlet cirka 11,71 MiB: 6,44 MiB kildeprøver og
+5,27 MiB referenceprofiler. Browseren afkoder kildeprøverne én gang til GPU'ens
+Float32-format (8,36 MiB), mens alle referenceprofiler beholdes som Uint16-koder (8,43 MiB).
+Profilerne pakkes ud af downloadbufferen, så denne kan frigives efter indlæsning;
+der beholdes ingen views, som fastholder de allerede afkodede kildeprøver.
+Det samlede CPU-lager er derfor cirka 16,79 MiB. Lageret vokser lineært med
 kildeprøver og antal både; der opbygges ingen cache for alle bådpar.
 Profilerne gemmer hverken stationspositioner eller tider. Hoverens omtrentlige
 referencetid findes ved opslag og interpolation mellem de allerede forberedte
