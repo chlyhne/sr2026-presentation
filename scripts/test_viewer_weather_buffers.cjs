@@ -47,8 +47,7 @@ async function check(type){
   assert.equal(await page.locator('#precipitation image[visibility="visible"]').count(),1);
   assert.equal(await page.locator('#windField image[visibility="visible"]').count(),1);
   await page.screenshot({path:'/tmp/sr2026-weather-buffers-'+type.name()+'.png'});
-  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());await(await download).saveAs('/tmp/sr2026-weather-buffers-'+type.name()+'-export.png');
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),checks:'prefetched instant radar/wind swaps, two SVG buffers, no blank while loading, stale requests, load errors, retry, layer toggles, PNG export',errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),checks:'prefetched instant radar/wind swaps, two SVG buffers, no blank while loading, stale requests, load errors, retry, layer toggles',errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1);});

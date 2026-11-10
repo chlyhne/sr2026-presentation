@@ -1,4 +1,4 @@
-const militaryFeatures=(D.military_areas?.features||[]).map(feature=>{
+const militaryFeatures=D.military_areas.features.map(feature=>{
  const rings=feature.geometry.coordinates;
  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
  for(const ring of rings)for(const [lon,lat] of ring){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}

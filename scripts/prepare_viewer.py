@@ -24,27 +24,40 @@ def get(url, params):
 
 def wind(model='era5'):
     cache=ROOT/f'data/weather/{model}_grid_gusts.json'
-    if cache.exists():return json.loads(cache.read_text())
+    if cache.exists():return json.loads(cache.read_text(encoding='utf-8'))
     points=[(54+i*.25,9.5+j*.25) for i in range(13) for j in range(19)]
     checkpoint=cache.with_suffix('.partial.json')
-    result=json.loads(checkpoint.read_text()) if checkpoint.exists() else []
+    result=json.loads(checkpoint.read_text(encoding='utf-8')) if checkpoint.exists() else []
     for offset in range(len(result),len(points),40):
         batch=points[offset:offset+40]
         url='https://archive-api.open-meteo.com/v1/archive' if model in ('era5','ecmwf_ifs') else 'https://historical-forecast-api.open-meteo.com/v1/forecast'
         r=get(url,dict(latitude=','.join(str(p[0]) for p in batch),longitude=','.join(str(p[1]) for p in batch),start_date='2026-06-11',end_date='2026-06-13',hourly='wind_speed_10m,wind_direction_10m,wind_gusts_10m',models=model,wind_speed_unit='ms',timezone='UTC',timeformat='unixtime',cell_selection='nearest',elevation=','.join(['nan']*len(batch))))
         data=r.json();result.extend(data if isinstance(data,list) else [data])
-        checkpoint.write_text(json.dumps(result))
+        checkpoint.write_text(json.dumps(result),encoding='utf-8')
     assert len(result)==len(points)
     assert all(len(p['hourly']['time'])==72 and all(v is not None for v in p['hourly']['wind_speed_10m']) for p in result)
-    cache.write_text(json.dumps(result));return result
+    cache.write_text(json.dumps(result),encoding='utf-8');return result
 
-if __name__=='__main__':
+def main():
+    coast_source=json.loads((ROOT/'data/coastline-osm.geojson').read_text(encoding='utf-8'))
+    coast_metadata=coast_source['metadata']
+    if (coast_metadata.get('source')!='OpenStreetMap natural=coastline'
+            or coast_metadata.get('license')!='ODbL-1.0'
+            or not coast_metadata.get('attribution')):
+        raise ValueError('Detailed OSM coastline requires OpenStreetMap source, ODbL-1.0 license and attribution metadata')
+    layers={key:json.loads((ROOT/'data'/filename).read_text(encoding='utf-8'))
+            for key,filename in (
+                ('traffic_separation','traffic-separation.geojson'),
+                ('military_areas','military-areas.geojson'),
+                ('route_t','route-t.geojson'),
+                ('land','land-osm.geojson'),
+                ('course_lines','course-lines.geojson'))}
     wind_models={model:wind(model) for model in ('era5','ecmwf_ifs','dmi_harmonie_arome_europe')}
-    radar=json.loads((OUT/'radar/manifest.json').read_text())
-    winds=wind_models['era5'];print('Wind ready:',len(winds),'grid points, 3 models with gusts',flush=True)
-    source=json.loads((ROOT/'data/tractrac/combined_tracks.json').read_text())
+    radar=json.loads((OUT/'radar/manifest.json').read_text(encoding='utf-8'))
+    print('Wind ready:',len(wind_models['era5']),'grid points, 3 models with gusts',flush=True)
+    source=json.loads((ROOT/'data/tractrac/combined_tracks.json').read_text(encoding='utf-8'))
     boats=[]
-    speed_sources={course:json.loads((ROOT/f'data/tractrac/speeds_{course}.json').read_text())
+    speed_sources={course:json.loads((ROOT/f'data/tractrac/speeds_{course}.json').read_text(encoding='utf-8'))
                    for course in ('groensund','boegestroemmen')}
     speed_count=0
     for key,points in source['tracks'].items():
@@ -61,41 +74,19 @@ if __name__=='__main__':
         speed_count+=sum(v is not None for v in speeds)
         boats.append({'id':key,'name':c.get('nameShort',key),'course':c['source_course'],'points':selected,'speeds':speeds})
     coast=[]
-    detailed_coast=ROOT/'data/coastline-osm.geojson'
-    coast_source=json.loads((detailed_coast if detailed_coast.exists() else ROOT/'data/coastline.geojson').read_text())
     for f in coast_source['features']:
         g=f['geometry'];lines=[g['coordinates']] if g['type']=='LineString' else g['coordinates']
-        for line in lines:
-            if detailed_coast.exists():
-                coast.append(line)
-                continue
-            part=[]
-            for p in line:
-                if 9.3<=p[0]<=14.2 and 53.8<=p[1]<=57.2:part.append(p[:2])
-                else:
-                    if len(part)>1:coast.append(part)
-                    part=[]
-            if len(part)>1:coast.append(part)
-    data={'start':START,'end':END,'boats':boats,'wind':winds,'wind_models':wind_models,'radar':radar,'coast':coast,
-          'coast_metadata':coast_source.get('metadata',{'source':'Natural Earth 1:10m','attribution':'Natural Earth'}),
+        coast.extend(lines)
+    data={'start':START,'end':END,'boats':boats,'wind_models':wind_models,'radar':radar,'coast':coast,
+          'coast_metadata':coast_metadata,
           'track_speed_metadata':{'source':'TracTrac MTB position.speed','source_unit':'km/h','unit':'knots',
             'conversion':'speed_raw / 1.852','finite_difference':False,'matched_positions':sum(len(b['points']) for b in boats),
             'valid_speeds':speed_count,'missing_speeds':sum(len(b['points']) for b in boats)-speed_count,
             'unit_reference':'https://live.tractrac.com/viewer/app.CuZgOaCm.js, formatSpeed/Kts'}}
-    traffic_path=ROOT/'data/traffic-separation.geojson'
-    if traffic_path.exists():
-        data['traffic_separation']=json.loads(traffic_path.read_text())
-    military_path=ROOT/'data/military-areas.geojson'
-    if military_path.exists():
-        data['military_areas']=json.loads(military_path.read_text())
-    route_t_path=ROOT/'data/route-t.geojson'
-    if route_t_path.exists():
-        data['route_t']=json.loads(route_t_path.read_text())
-    land_path=ROOT/'data/land-osm.geojson'
-    if land_path.exists():
-        data['land']=json.loads(land_path.read_text())
-    course_lines_path=ROOT/'data/course-lines.geojson'
-    if course_lines_path.exists():
-        data['course_lines']=json.loads(course_lines_path.read_text())
-    (OUT/'data.js').write_text('window.DATA='+json.dumps(data,ensure_ascii=False,separators=(',',':'))+';')
+    data.update(layers)
+    (OUT/'data.js').write_text('window.DATA='+json.dumps(data,ensure_ascii=False,separators=(',',':'))+';',encoding='utf-8')
     print('Ready:',len(radar['frames']),'radar frames;',len(boats),'boats',flush=True)
+
+
+if __name__=='__main__':
+    main()

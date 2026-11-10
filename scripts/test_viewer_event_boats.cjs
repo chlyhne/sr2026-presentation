@@ -1,9 +1,8 @@
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
-const standard=['Mercutio','Vera','My','THE HULK','Rosa-Lux'];
 async function check(type){
  const browser=await type.launch({headless:true});
  try{
@@ -21,22 +20,22 @@ async function check(type){
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
   await page.waitForFunction(()=>typeof changeBoatSelection==='function');
   const store=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-notes')));
-  const defaultNameIds=await page.evaluate(()=>boats.filter(b=>featured.has(b.name)).map(b=>b.id));
-  const initialized=fixtures.map(n=>({...n,settings:{...n.settings,boats:standard,boatNames:defaultNameIds}}));
-  assert.deepEqual(await store(),initialized,'All existing events are initialized with the standard boats, preserving other fields');
-  assert.equal(await page.evaluate(()=>localStorage.getItem(EVENT_BOATS_INITIALIZED_KEY)),'1');
+  assert.deepEqual(await store(),fixtures,'Loading must preserve explicit empty/custom boats and missing optional settings');
+  const migrationKeys=['sr2026-event-boats-initialized-v1','sr2026-event-boats-rosa-lux-v1','sr2026-event-boat-names-shown-v1'];
+  assert.deepEqual(await page.evaluate(keys=>keys.map(key=>localStorage.getItem(key)),migrationKeys),[null,null,null]);
   const extra=await page.evaluate(()=>boats.find(b=>!featured.has(b.name)).name);
   const indices=await page.evaluate(()=>Object.fromEntries(boats.map((b,i)=>[b.name,i])));
   const checkbox=name=>page.locator('#choices input').nth(indices[name]);
   const chosenNames=()=>page.evaluate(()=>[...chosen]);
   await page.locator('.note-jump').first().click();
-  for(const name of ['Vera','My','THE HULK','Rosa-Lux'])await checkbox(name).uncheck();
+  assert.deepEqual(await chosenNames(),[],'Explicit empty boat selection survives initial loading');
+  await checkbox('Mercutio').check();
   await checkbox(extra).check();assert.deepEqual(await chosenNames(),['Mercutio',extra]);
-  const afterA=await store();assert.deepEqual(afterA[0].settings.boats,['Mercutio',extra]);assert.deepEqual(afterA.slice(1),initialized.slice(1));
+  const afterA=await store();assert.deepEqual(afterA[0].settings.boats,['Mercutio',extra]);assert.deepEqual(afterA.slice(1),fixtures.slice(1));
   assert.equal(await page.evaluate(()=>currentTime()),fixtures[0].time);
   assert.equal(await page.evaluate(()=>webglTracks.active),true);
-  await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),standard);
-  for(const name of ['Mercutio','Vera','THE HULK','Rosa-Lux'])await checkbox(name).uncheck();await checkbox('Vera').check();
+  await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),['My']);
+  await checkbox('Vera').check();
   assert.deepEqual(await chosenNames(),['My','Vera']);
   const afterB=await store();assert.deepEqual(afterB[0],afterA[0]);assert.deepEqual(afterB[1].settings.boats,['My','Vera']);
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),['Mercutio',extra]);
@@ -46,7 +45,8 @@ async function check(type){
    return {boats:[...chosen],event:activePresentationNote.text,time:currentTime(),before,after:localStorage.getItem('sr2026-notes')};
   });
   assert.deepEqual(snapped.boats,['Mercutio',extra]);assert.equal(snapped.event,'Event B');assert.equal(snapped.time,fixtures[1].time);assert.equal(snapped.after,snapped.before);
-  await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),standard);
+  await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),['Mercutio',extra],'Missing optional settings preserve the current boat selection');
+  assert.deepEqual((await store())[2],fixtures[2],'Visiting an event without settings must not migrate it');
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),['My','Vera']);
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),['Mercutio',extra]);
   await page.locator('#startPresentation').click();await page.locator('#nextEvent').click();
@@ -63,7 +63,7 @@ async function check(type){
   await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),['My','Vera']);
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),[],'An event may intentionally have no active boats');
   await page.reload();await page.waitForFunction(()=>document.querySelectorAll('.note-jump').length===3);
-  await page.locator('.note-jump').first().click();assert.deepEqual(await chosenNames(),[],'One-time initialization must not overwrite later custom choices');
+  await page.locator('.note-jump').first().click();assert.deepEqual(await chosenNames(),[],'Reload must preserve saved custom choices');
   await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),['My','Vera']);
   const beforeExplore=await store();
   await page.evaluate(()=>{selectedTime+=900;render();});await checkbox('Mercutio').check();
@@ -77,7 +77,7 @@ async function check(type){
   assert.equal(await checkbox('Mercutio').isChecked(),false);assert.match(await page.locator('#eventBoatStatus').textContent(),/kunne ikke gemmes/);
   await page.evaluate(()=>{Storage.prototype.setItem=originalBoatStorage;});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'one-time standard-boat initialization, per-event autosave, draft save/cancel, next/previous restore, snap leaves choices/storage unchanged, empty selection, reload, new event, exploration, failed save rollback',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'no historical boat migrations, per-event autosave, draft save/cancel, next/previous restore, snap leaves choices/storage unchanged, empty selection, reload, new event, exploration, failed save rollback',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{for(const type of [firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

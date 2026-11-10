@@ -89,6 +89,7 @@ test('validation refuses external images, unsafe settings, malformed drawings an
 test('invalid image content rejected; valid PNG written under generated UUID',async()=>{
  const calls=mockGithub('write',(url,options)=>{
   assert.match(url,/\/contents\/viewer\/event-images\/[a-f0-9-]{36}\.png$/);
+  assert.deepEqual(Buffer.from(JSON.parse(options.body).content,'base64'),Buffer.from([137,80,78,71,13,10,26,10,0,0,0,0]));
   assert.equal(options.method,'PUT');return reply({content:{sha},commit:{sha}});
  });
  assert.equal((await request('/api/event-images',{method:'POST',headers:{'Content-Type':'image/png'},body:'<svg/>'})).status,415);
@@ -136,16 +137,65 @@ test('HEAD serves static metadata without response body or login side effects',a
  const response=await request('/admin/',{method:'HEAD'});assert.equal(response.status,200);assert.equal(await response.text(),'');
  assert.equal((await request('/auth/login',{method:'HEAD'})).status,405);
 });
-test('publishing checks all images in one repository tree, accepting migrated image paths',async()=>{
+test('publishing checks canonical images in one repository tree',async()=>{
  const id='12345678-1234-1234-1234-123456789abc';
  const doc=structuredClone(document);doc.notes[0].image={id,name:'Photo',url:`event-images/${id}.webp`};
  const calls=mockGithub('write',(url,options)=>{
-  if(url.includes('/git/trees/')) return reply({tree:[{type:'blob',path:`data/event-images/${id}.webp`}],truncated:false});
-  if(options.method==='PUT')return reply({content:{sha},commit:{sha}});
+  if(url.includes('/git/trees/')) return reply({tree:[{type:'blob',path:`viewer/event-images/${id}.webp`}],truncated:false});
+  if(options.method==='PUT') {
+   assert.deepEqual(JSON.parse(Buffer.from(JSON.parse(options.body).content,'base64').toString('utf8')),doc);
+   return reply({content:{sha},commit:{sha}});
+  }
   return reply({sha,content:Buffer.from(JSON.stringify(document)).toString('base64')});
  });
  assert.equal((await request('/api/presentation',{method:'PUT',body:JSON.stringify({document:doc,sha})})).status,200);
  assert.equal(calls.filter(c=>c.url.includes('/git/trees/')).length,1);
+});
+
+test('publishing rejects images present only under the removed data path',async()=>{
+ const id='12345678-1234-1234-1234-123456789abc';
+ const doc=structuredClone(document);doc.notes[0].image={id,name:'Photo',url:`event-images/${id}.webp`};
+ const calls=mockGithub('write',(url)=>{
+  if(url.includes('/git/trees/')) return reply({tree:[{type:'blob',path:`data/event-images/${id}.webp`}],truncated:false});
+  return reply({sha,content:Buffer.from(JSON.stringify(document)).toString('base64')});
+ });
+ const response=await request('/api/presentation',{method:'PUT',body:JSON.stringify({document:doc,sha})});
+ assert.equal(response.status,400);assert.match((await response.json()).error,/billeder mangler/);
+ assert.equal(calls.filter(c=>c.options.method==='PUT').length,0);
+ assert.equal(calls.filter(c=>c.url.includes('/contents/data/')).length,0);
+});
+
+test('protected image reads preserve bytes and use only canonical storage',async()=>{
+ const id='12345678-1234-1234-1234-123456789abc';
+ for(const [extension,type,bytes] of [
+  ['png','image/png',[137,80,78,71,13,10,26,10,0,255]],
+  ['jpg','image/jpeg',[255,216,255,0,128]],
+  ['webp','image/webp',[82,73,70,70,0,0,0,0,87,69,66,80,255]]
+ ]) {
+  const calls=mockGithub('write',(url,options)=>{
+   assert.equal(url,`https://api.github.com/repos/owner/repo/contents/viewer/event-images/${id}.${extension}?ref=main`);
+   assert.equal(options.headers.Accept,'application/vnd.github.raw+json');
+   return new Response(Uint8Array.from(bytes));
+  });
+  const response=await request(`/admin/event-images/${id}.${extension}`);
+  assert.equal(response.status,200);assert.equal(response.headers.get('Content-Type'),type);
+  assert.equal(response.headers.get('Cache-Control'),'private, no-store');
+  assert.deepEqual(new Uint8Array(await response.arrayBuffer()),Uint8Array.from(bytes));
+  assert.equal(calls.length,3);
+ }
+});
+
+test('failed canonical image reads expose errors without legacy or public requests',async()=>{
+ const name='12345678-1234-1234-1234-123456789abc.webp';
+ for(const status of [404,403,502]) {
+  const calls=mockGithub('write',(url)=>{
+   assert.equal(url,`https://api.github.com/repos/owner/repo/contents/viewer/event-images/${name}?ref=main`);
+   return reply({message:'Image unavailable'},status);
+  });
+  const response=await request(`/admin/event-images/${name}`);
+  assert.equal(response.status,status);assert.ok((await response.json()).error);
+  assert.equal(calls.length,3);
+ }
 });
 test('static proxy uses manual redirects and rejects them without following',async()=>{
  let calls=0;

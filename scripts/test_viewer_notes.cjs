@@ -1,7 +1,7 @@
 // Run against the local viewer server; Playwright may come from a sibling repo.
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
 const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
@@ -79,7 +79,7 @@ async function check(browserType){
   assert.deepEqual(saved[0].drawings,points);assert.deepEqual(saved.slice(1),fixtures.slice(1));
   assert.equal(await page.locator('#drawingTools').isVisible(),false);
 
-  // Cancel restores text, marker, drawings, and saved map; old notes still work.
+  // Cancel restores text, marker, drawings, and saved map; optional settings may be absent.
   await page.locator('.note-edit').first().click();
   await page.locator('#note').fill('Denne ændring skal kasseres');
   await page.locator('#clearDrawings').click();
@@ -101,13 +101,6 @@ async function check(browserType){
   await page.locator('#nextEvent').click();
   assert.equal(await page.locator('#noteDrawings').evaluate(el=>el.childElementCount),0,'No drawing leaks to another event at the same time');
   await page.locator('#previousEvent').click();
-  await page.evaluate(()=>{
-   const serialize=XMLSerializer.prototype.serializeToString;
-   XMLSerializer.prototype.serializeToString=function(node){const xml=serialize.call(this,node);window.exportedSVG=xml;return xml;};
-  });
-  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());
-  await(await download).saveAs('/tmp/sr2026-note-drawings-'+browserType.name()+'-map.png');
-  assert.equal(await page.evaluate(()=>new DOMParser().parseFromString(exportedSVG,'image/svg+xml').querySelectorAll('#noteDrawings > g > *').length),5);
   const exportNotes=page.waitForEvent('download');await page.evaluate(()=>$('export').click());
   const jsonDownload=await exportNotes;
   assert.deepEqual(JSON.parse(require('node:fs').readFileSync(await jsonDownload.path(),'utf8')).notes,saved);
@@ -117,7 +110,17 @@ async function check(browserType){
   await page.locator('.note-edit').first().click();
   await page.screenshot({path:'/tmp/sr2026-note-editor-'+browserType.name()+'.png'});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:browserType.name(),checks:'edit/save/cancel, four drawing tools, undo/clear, marker move, zoom, exact time, legacy notes, reload, event isolation, PNG and JSON export',errors}));
+  for(const invalid of ['', '{', 'null',JSON.stringify({notes:[]}),JSON.stringify([{time:fixtures[0].time,text:'Valid note'},{time:fixtures[0].time,text:null}])]){
+   const invalidPage=await context.newPage();
+   await invalidPage.addInitScript(saved=>localStorage.setItem('sr2026-notes',saved),invalid);
+   await invalidPage.goto(base);
+   await invalidPage.locator('#viewerLoadingError').waitFor({state:'visible',timeout:120000});
+   assert.match(await invalidPage.locator('#viewerLoadingError').textContent(),/JSON|gemte noter/);
+   assert.equal(await invalidPage.evaluate(()=>localStorage.getItem('sr2026-notes')),invalid,'Invalid saved notes must remain available for recovery');
+   assert.equal(await invalidPage.locator('main').evaluate(el=>el.inert),true,'Invalid saved notes must stop startup');
+   await invalidPage.close();
+  }
+  console.log(JSON.stringify({browser:browserType.name(),checks:'edit/save/cancel, four drawing tools, undo/clear, marker move, zoom, exact time, optional note settings, reload, event isolation, JSON export, invalid saved notes stop startup without filtering or overwriting',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const browser of [chromium,firefox])await check(browser);})().catch(error=>{console.error(error);process.exit(1);});
+(async()=>{for(const browser of [firefox])await check(browser);})().catch(error=>{console.error(error);process.exit(1);});

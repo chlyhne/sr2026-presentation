@@ -42,7 +42,7 @@ function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>
 // Shared end points keep the detailed coastline continuous at chunk boundaries.
 const coastChunks=[];
 const LAND_FILL='#bdc7cb';
-const landPolygons=(D.land?.features||[]).map(feature=>{
+const landPolygons=D.land.features.map(feature=>{
  const rings=feature.geometry.coordinates,points=rings.flat();
  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
  for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
@@ -64,11 +64,10 @@ function renderMapCredit(){
  const point=new DOMPoint(rect.right-8,rect.bottom-8).matrixTransform(matrix.inverse());
  const group=screenGroup(point.x,point.y,layer);
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
- const osm=D.coast_metadata?.license==='ODbL-1.0';
- el('rect',{x:osm?-185:-90,y:osm?-26:-15,width:osm?185:90,height:osm?32:20,rx:3,fill:'#ffffff',opacity:.88},group);
- const text=el('text',{x:-5,y:osm?-12:0,'text-anchor':'end','font-size':10,fill:'#173d4c'},group);
- text.textContent=D.coast_metadata?.attribution||'Natural Earth';
- if(osm)el('text',{x:-5,y:1,'text-anchor':'end','font-size':10,fill:'#173d4c'},group).textContent='openstreetmap.org/copyright';
+ el('rect',{x:-185,y:-26,width:185,height:32,rx:3,fill:'#ffffff',opacity:.88},group);
+ const text=el('text',{x:-5,y:-12,'text-anchor':'end','font-size':10,fill:'#173d4c'},group);
+ text.textContent=D.coast_metadata.attribution;
+ el('text',{x:-5,y:1,'text-anchor':'end','font-size':10,fill:'#173d4c'},group).textContent='openstreetmap.org/copyright';
 }
 const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff84'};
 const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
@@ -147,7 +146,7 @@ for(const [name,lon,lat] of [['Helsingør',12.61,56.04],['København',12.57,55.6
  el('title',{},group).textContent='Rød i Snekkeløb · 56° 2.391′ N 11° 16.523′ E';
 }
 // Rute T is an open line through the user's waypoints, in the base map layer.
-for(const feature of D.course_lines?.features||[]){
+for(const feature of D.course_lines.features){
  const {kind,name,reference_boat,reference_utc}=feature.properties,coordinates=feature.geometry.coordinates;
  const colour=kind==='start'?'#087b3d':'#c62738';
  const group=el('g',{'data-course-line':kind},$('courseLines'));
@@ -165,7 +164,7 @@ for(const feature of D.course_lines?.features||[]){
  el('text',{x:0,y:-10,'text-anchor':'middle',fill:colour,'font-size':12,'font-weight':750,
   stroke:'#ffffff','stroke-width':3,'paint-order':'stroke'},label).textContent=name;
 }
-for(const feature of D.route_t?.features||[]){
+for(const feature of D.route_t.features){
  const line=el('path',{'data-route-id':feature.id,d:path(feature.geometry.coordinates),fill:'none',
   stroke:'#000000','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round',
   'vector-effect':'non-scaling-stroke'},$('routeT'));

@@ -1,9 +1,9 @@
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const assert=require('node:assert/strict'),path=require('node:path');
 const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 (async()=>{
  const browser=await firefox.launch({headless:true});
  try{
-  const page=await browser.newPage({viewport:{width:1300,height:850},acceptDownloads:true}),errors=[];
+  const page=await browser.newPage({viewport:{width:1300,height:850}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
@@ -59,25 +59,10 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
      check(uploads===0,'playback uploaded new geometry');
     }
     render();renderer.render(selectedTime,[a,b],true);
-    window.layerExpected={first:expected(2),second:expected(12)};
     return {mode,crossings:[pixel(600,460),pixel(600,500)],uploads};
    },mode);
-   const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());
-   const file=await(await download).path(),base64=fs.readFileSync(file).toString('base64');
-   const exported=await page.evaluate(async base64=>{
-    const image=new Image();image.src='data:image/png;base64,'+base64;await image.decode();
-    const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
-    const context=canvas.getContext('2d');context.drawImage(image,0,0);
-    const viewport=mapViewport();
-    return [[600,460],[600,500]].map(([x,y])=>{
-     const p=new DOMPoint(x,y).matrixTransform(viewport.matrix);
-     return [...context.getImageData(Math.floor((p.x-viewport.rect.left)*canvas.width/viewport.rect.width),Math.floor((p.y-viewport.rect.top)*canvas.height/viewport.rect.height),1,1).data];
-    });
-   },base64);
-   const expected=await page.evaluate(()=>layerExpected);
-   for(const [i,colour] of [expected.first,expected.second].entries())assert.ok(exported[i].slice(0,3).every((value,j)=>Math.abs(value-colour[j])<=20),'PNG must preserve temporal ordering: '+JSON.stringify({mode,exported,expected}));
-   console.log(JSON.stringify({...result,png:true}));
+   console.log(JSON.stringify(result));
   }
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',checks:'local timestamps, two opposite crossings, boat-order independence, self-crossing, millisecond precision, gaps, time-window clipping, reverse seek, click selection, immutable GPU buffers, PNG from nominal renderers',errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',checks:'local timestamps, two opposite crossings, boat-order independence, self-crossing, millisecond precision, gaps, time-window clipping, reverse seek, click selection, immutable GPU buffers',errors}));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1)});

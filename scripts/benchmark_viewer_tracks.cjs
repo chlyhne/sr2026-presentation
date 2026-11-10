@@ -6,7 +6,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}});
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
-  await page.waitForFunction(()=>typeof captureMap==='function');
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
   const result=await page.evaluate(async()=>{
    if(!webglTracks.active)throw Error(webglTracks.error);
    $('wind').checked=$('rain').checked=false;chosen.clear();for(const boat of boats)chosen.add(boat.name);

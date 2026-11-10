@@ -163,7 +163,7 @@ async function routes(request, env) {
       const tree = await (await github(`${repo(env)}/git/trees/${encodeURIComponent(branch(env))}?recursive=1`, user.token)).json();
       if (tree.truncated) fail(502, 'Repositoryets filliste er for stor til at kontrollere billederne.');
       const paths = new Set(tree.tree.filter(entry => entry.type === 'blob').map(entry => entry.path));
-      if (imageURLs.some(imagePath => !paths.has(`viewer/${imagePath}`) && !paths.has(`data/${imagePath}`))) fail(400, 'Et af præsentationens billeder mangler. Upload det igen før udgivelse.');
+      if (imageURLs.some(imagePath => !paths.has(`viewer/${imagePath}`))) fail(400, 'Et af præsentationens billeder mangler. Upload det igen før udgivelse.');
     }
     const saved = await putContent(env, user.token, DOCUMENT_PATH, encoder.encode(JSON.stringify(doc, null, 2) + '\n'), `Update presentation by ${user.login}`, input.sha);
     return json({sha: saved.content.sha, commit: saved.commit.sha});
@@ -181,12 +181,7 @@ async function routes(request, env) {
   if (method === 'GET' && path.startsWith('/admin/event-images/')) {
     const name = path.slice('/admin/event-images/'.length); if (!IMAGE.test(name)) fail(404, 'Billedet findes ikke.');
     const user = await authorize(request, env);
-    let source;
-    try { source = await github(`${contentsPath(env, `viewer/event-images/${name}`)}?ref=${encodeURIComponent(branch(env))}`, user.token, {headers: {Accept: 'application/vnd.github.raw+json'}}); }
-    catch (error) {
-      if (error.status !== 404) throw error;
-      source = await github(`${contentsPath(env, `data/event-images/${name}`)}?ref=${encodeURIComponent(branch(env))}`, user.token, {headers: {Accept: 'application/vnd.github.raw+json'}});
-    }
+    const source = await github(`${contentsPath(env, `viewer/event-images/${name}`)}?ref=${encodeURIComponent(branch(env))}`, user.token, {headers: {Accept: 'application/vnd.github.raw+json'}});
     return new Response(source.body, {headers: {'Content-Type': name.endsWith('.webp') ? 'image/webp' : name.endsWith('.png') ? 'image/png' : 'image/jpeg', 'Cache-Control': 'private, no-store'}});
   }
   if (method === 'GET' && (path === '/' || path === '/admin')) return Response.redirect(`${url.origin}/admin/`, 302);

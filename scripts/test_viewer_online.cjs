@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 const publicBase=process.env.SR_PUBLIC_URL||'http://127.0.0.1:18098/';
 const localBase=process.env.SR_LOCAL_URL||'http://127.0.0.1:18097/';
 const origin=new URL(publicBase).origin;
@@ -80,6 +80,15 @@ async function check(type){
   const bundle=await exported(writer);
   assert.equal(bundle.version,1);assert.deepEqual(bundle.speedPins,fixture.speedPins);
   assert.match(bundle.notes[0].image.dataUrl,/^data:image\/png;base64,/);
+  const beforeImport=await writer.evaluate(()=>({notes,speedPins,draft:localStorage.getItem(SR_DRAFT_KEY)}));
+  for(const invalid of [bundle.notes,{notes:bundle.notes,speedPins:bundle.speedPins},{version:1,notes:bundle.notes},{...bundle,version:2},{...bundle,version:'1'},{...bundle,notes:{}},{...bundle,speedPins:null},null]){
+   const chooser=writer.waitForEvent('filechooser');
+   await writer.getByRole('button',{name:'Importér noter',exact:true}).click();
+   await (await chooser).setFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(invalid))});
+   await writer.waitForFunction(()=>document.querySelector('#onlineStatus').textContent==='Ugyldige præsentationsdata: version 1, notes og speedPins er påkrævet.'&&document.querySelector('input[type="file"][accept=".json,application/json"]').value==='');
+   assert.deepEqual(await writer.evaluate(()=>({notes,speedPins,draft:localStorage.getItem(SR_DRAFT_KEY)})),beforeImport,'Invalid documents must not change notes, pins or the draft');
+   assert.equal(uploads,0,'Invalid documents must be rejected before uploading embedded images');
+  }
   bundle.notes[0].text='Importeret event';
   writer.once('dialog',d=>d.accept());
   const chooserPromise=writer.waitForEvent('filechooser');
@@ -121,7 +130,6 @@ async function check(type){
   await photoRoutes(local);
   await local.addInitScript(f=>{
    localStorage.setItem('sr2026-notes',JSON.stringify(f.notes));localStorage.setItem('sr2026-speed-pins',JSON.stringify(f.speedPins));
-   for(const key of ['sr2026-event-boats-initialized-v1','sr2026-event-boats-rosa-lux-v1','sr2026-event-boat-names-shown-v1'])localStorage.setItem(key,'1');
   },fixture);
   await local.goto(localBase);await ready(local);
   assert.equal(await local.evaluate(()=>SR_READONLY),false);
@@ -129,8 +137,14 @@ async function check(type){
   assert.equal(localBundle.notes[0].text,fixture.notes[0].text);
   assert.deepEqual(localBundle.speedPins,fixture.speedPins);
   assert.match(localBundle.notes[0].image.dataUrl,/^data:image\/png;base64,/);
+  local.once('dialog',d=>d.accept());
+  const emptyChooser=local.waitForEvent('filechooser');
+  await local.getByRole('button',{name:'Importér noter',exact:true}).click();
+  await (await emptyChooser).setFiles({name:'empty.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({version:1,notes:[],speedPins:[]}))});
+  await local.waitForFunction(()=>document.querySelector('#onlineStatus').textContent==='Noter og fart-pins er importeret.');
+  assert.deepEqual(await local.evaluate(()=>({notes,speedPins})),{notes:[],speedPins:[]},'A complete empty version 1 document is valid');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'public snapshot, readonly Escape, local storage isolation, writer edit, reload draft, revision publish, conflict retention, stale draft recovery/download, portable image/pin export/import, read-only login, legacy local export',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'public snapshot, readonly Escape, local storage isolation, writer edit, reload draft, revision publish, conflict retention, stale draft recovery/download, strict version 1 import rejection, portable image/pin export/import, read-only login, local export without migration markers',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{for(const type of [firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

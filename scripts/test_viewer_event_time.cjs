@@ -6,7 +6,7 @@ async function check(type){
   // Editing must use Danish time even when the browser uses another zone.
   const page=await browser.newPage({viewport:{width:1500,height:1000},timezoneId:'America/Los_Angeles'}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForFunction(()=>typeof captureMap==='function');
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('main:not([inert])',{timeout:120000});
   const fixture=await page.evaluate(()=>{
    const settings={...sceneSettings(),wind:false,rain:false,boats:[],boatNames:[]};
    notes=[{time:D.start+3600,utc:new Date((D.start+3600)*1000).toISOString(),text:'Flytbart event',point:[600,420],lon:12.2,lat:55.9,

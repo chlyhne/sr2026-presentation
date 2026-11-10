@@ -75,8 +75,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   const resized=await zoom(.1);assert.ok(Math.abs(resized.beam-resized.expectedBeam)<.001);
   const marker=page.locator('.boat-marker');await marker.focus();const pressed=await marker.getAttribute('aria-pressed');await page.keyboard.press('Enter');assert.notEqual(await page.locator('.boat-marker').getAttribute('aria-pressed'),pressed);
   await page.evaluate(()=>setPresentationMode(true));assert.equal(await page.locator('.boat-icon').count(),1);
-  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());await(await download).saveAs('/tmp/sr2026-boats-export.png');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({checks:'all boat dimensions, shared 8px per 2.54m minimum, physical beam and length, viewport resize, name toggle, presentation, PNG export',wide,close,resized,errors}));
+  console.log(JSON.stringify({checks:'all boat dimensions, shared 8px per 2.54m minimum, physical beam and length, viewport resize, name toggle, presentation',wide,close,resized,errors}));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

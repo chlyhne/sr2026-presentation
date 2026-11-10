@@ -54,15 +54,6 @@ async function check(readonly){
   assert.deepEqual(await markers(),['name','outside','skipper','type'],'Preview includes unchecked matches with a current position');
   assert.deepEqual(await chosenNames(),['Borealis','Mercutio'],'Typing does not change the selection');
   assert.deepEqual(await page.evaluate(()=>({time:currentTime(),view:[...view],notes:JSON.stringify(notes),stored:SRStorage.getItem('sr2026-notes')})),scene,'Search leaves scene and saved events unchanged');
-  if(!readonly){
-   await page.evaluate(()=>{
-    window.originalSearchSnapshot=webglTracks.snapshot;
-    webglTracks.snapshot=function(time,order,scale){window.searchSnapshotBoatIds=order.map(boat=>boat.id).sort();return originalSearchSnapshot.call(this,time,order,scale);};
-   });
-   const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());await download;
-   assert.deepEqual(await page.evaluate(()=>searchSnapshotBoatIds),await tracks(),'PNG uses the same filtered WebGL boat set');
-   await page.evaluate(()=>{webglTracks.snapshot=originalSearchSnapshot;});
-  }
   await search.press('ArrowLeft');await search.press('Home');await search.press('End');await search.press('Space');
   assert.equal(await search.inputValue(),'mAtCh ','Search retains native cursor/space behavior');
   assert.equal(await search.evaluate(node=>document.activeElement===node),true);

@@ -54,7 +54,6 @@ async function loadingState(page){
   await page.locator('#boatSearchInput').fill('Mercutio');
   await page.locator('#boatSearchInput').fill('');
   await page.evaluate(()=>{selectedTime=D.start+3600;render();});
-  await page.evaluate(()=>captureMap());
   assert.equal(await page.evaluate(()=>window.loadingReopened),false);
   assert.equal(await page.locator('#viewerLoading').isVisible(),false);
   assert.deepEqual(errors,[]);
@@ -74,6 +73,39 @@ async function loadingState(page){
   await recovery.waitForSelector('main:not([inert])',{timeout:120000});
   assert.equal(await recovery.locator('#viewerLoading').isVisible(),false);
   await recovery.close();
+
+  const invalid=await browser.newPage();
+  await invalid.route('**/config.js',route=>route.fulfill({contentType:'application/javascript',body:'window.SR_CONFIG={admin:false,apiBase:""};'}));
+  for(const document of [[],{notes:[],speedPins:[]},{version:1,notes:[]}]){
+   await invalid.route('**/presentation.json',route=>route.fulfill({json:document}));
+   await invalid.goto(url);
+   await invalid.locator('#viewerLoadingError').waitFor({state:'visible'});
+   assert.match(await invalid.locator('#viewerLoadingError').textContent(),/version 1, notes og speedPins/);
+   assert.equal((await loadingState(invalid)).hidden,true);
+   await invalid.unroute('**/presentation.json');
+  }
+  await invalid.close();
+
+  const executionFailure=await browser.newPage();
+  await executionFailure.route('**/boat-icons.js',route=>route.fulfill({contentType:'application/javascript',body:'throw Error("Fejl under opstart af bådikoner.");'}));
+  await executionFailure.goto(url);
+  await executionFailure.locator('#viewerLoadingError').waitFor({state:'visible'});
+  assert.match(await executionFailure.locator('#viewerLoadingError').textContent(),/Fejl under opstart af bådikoner/);
+  assert.equal((await loadingState(executionFailure)).hidden,true);
+  await executionFailure.close();
+
+  for(const missing of ['coast_metadata','land','course_lines','route_t','traffic_separation','military_areas']){
+   const incomplete=await browser.newPage();
+   await incomplete.route('**/data.js',async route=>{
+    const response=await route.fetch();
+    await route.fulfill({response,body:await response.text()+'\ndelete window.DATA.'+missing+';'});
+   });
+   await incomplete.goto(url);
+   await incomplete.locator('#viewerLoadingError').waitFor({state:'visible'});
+   assert.match(await incomplete.locator('#viewerLoadingError').textContent(),missing==='coast_metadata'?/OSM-kystlinje/:new RegExp(missing));
+   assert.equal((await loadingState(incomplete)).hidden,true);
+   await incomplete.close();
+  }
 
   const publicPage=await browser.newPage();
   await publicPage.addInitScript(()=>{
@@ -109,6 +141,6 @@ async function loadingState(page){
   await publicPage.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   assert.equal(await publicPage.evaluate(()=>window.publicEditorFlash),false);
   await publicPage.close();
-  console.log('Firefox: initial-only loading, real layout and fleet preparation, monotonic progress, PNG without reopening, explicit failures and reload recovery.');
+  console.log('Firefox: initial-only loading, real layout and fleet preparation, monotonic progress, interactions without reopening, explicit failures and reload recovery.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

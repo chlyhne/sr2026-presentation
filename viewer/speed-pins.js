@@ -1,9 +1,6 @@
 // Pins identify a boat and source time. Values always come from recorded SOG.
-let speedPins=[],pickedTrackSpeed=null;
-try{
- const saved=JSON.parse(SRStorage.getItem('sr2026-speed-pins')||'[]');
- if(Array.isArray(saved))speedPins=saved.filter(p=>p&&typeof p.id==='string'&&typeof p.boatId==='string'&&Number.isFinite(p.time)&&boats.some(b=>b.id===p.boatId));
-}catch{}
+let speedPins=JSON.parse(SRStorage.getItem('sr2026-speed-pins')??'[]'),pickedTrackSpeed=null;
+if(!Array.isArray(speedPins)||speedPins.some(pin=>!pin||typeof pin.id!=='string'||typeof pin.boatId!=='string'||!Number.isFinite(pin.time)||!boats.some(boat=>boat.id===pin.boatId)))throw Error('Ugyldige gemte fartmærker.');
 function trackSpeedSample(boat,time){
  const points=boat.points,i=timeBoundary(points,time,true)-1;if(i<0)return null;
  const a=points[i],b=points[i+1],s0=boat.speeds?.[i],s1=boat.speeds?.[i+1];
