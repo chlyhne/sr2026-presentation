@@ -32,7 +32,7 @@
   <p class="help">Spor og positioner interpoleres glidende mellem målepunkterne og følger kortets zoom. Huller over 5 minutter forbindes ikke.</p>
   <div id="choices"></div>
   <p class="help">Klik på et spor for at vise farten. Vælg Pin ved fartmærket for at beholde det i præsentationen. Klik på et pinnet mærke for at fjerne det igen.</p>
-  <div class="button-row"><button id="all">Vælg hele feltet</button><button id="reset">Vis Sjælland</button></div>
+  <div class="button-row"><button id="reset">Vis Sjælland</button></div>
   <p class="help">Zoom med musehjulet, og træk kortet. Tidslinjen følger udsnittet og de valgte både. Klik på en bådprik for at vise eller skjule navnet. Piletaster flytter tiden 1 sekund; hold Shift nede for 1 minut. Både med over 5 minutter gamle positioner skjules.</p>
   <div class="annotation-tools">
     <p id="noteEditorTitle" class="help">Ny note · vælg Redigér ved en eksisterende note for at ændre den eller tegne.</p>
@@ -128,15 +128,21 @@
   <pre id="renderingErrorDetails"></pre>
   <button id="reloadRendering" type="button">Genindlæs siden</button>
 </section>
-<section id="visibleBoats" aria-label="Både i kortudsnittet">
-  <button id="visibleBoatsToggle" type="button" aria-expanded="false" aria-controls="visibleBoatsPanel"><span><span id="visibleBoatsTitle">Både i udsnittet</span> <span id="visibleBoatsCount">· 0</span></span><span class="boat-list-chevron" aria-hidden="true">⌄</span></button>
+<section id="visibleBoats" aria-label="Både">
+  <button id="visibleBoatsToggle" type="button" aria-expanded="false" aria-controls="visibleBoatsPanel"><span><span id="visibleBoatsTitle">Både</span> <span id="visibleBoatsCount">· 0</span></span><span class="boat-list-chevron" aria-hidden="true">⌄</span></button>
   <div id="visibleBoatsPanel" hidden>
     <div id="boatSearch">
-      <div class="boat-search-heading"><label for="boatSearchInput">Søg både</label><div class="boat-selection-actions"><button id="boatSelectAll" type="button">Vælg alle</button><button id="boatDeselectAll" type="button">Fravælg alle</button></div></div>
-      <div class="boat-search-field"><input id="boatSearchInput" type="search" placeholder="Båd, skipper eller bådtype" title="Enter skifter flueben for hver båd på listen" autocomplete="off" spellcheck="false" aria-controls="visibleBoatsList"><button id="boatSearchClear" type="button" aria-label="Afslut søgning" title="Afslut søgning og vis de afkrydsede både" hidden>Færdig</button></div>
+      <div class="boat-search-heading">
+        <label for="boatSearchInput" title="Filter både"><span class="sr-only">Filter både</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18l-7 8v7l-4 2v-9Z"/></svg></label>
+        <div class="boat-selection-actions">
+          <button id="boatFavouritesOnly" type="button" aria-label="Vis kun favoritter" title="Vis kun favoritter" aria-pressed="false" aria-controls="visibleBoatsList"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <button id="boatClearFavourites" type="button" aria-label="Fjern alle favoritter" title="Fjern alle favoritter"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3.5a5.5 5.5 0 0 0-5.9 8.9L12 21l8.8-8.6A5.5 5.5 0 0 0 15 3.5M12 3l-2 5 4 3-4 3 2 7"/></svg></button>
+        </div>
+      </div>
+      <div class="boat-search-field"><input id="boatSearchInput" type="search" placeholder="Båd, skipper eller bådtype" title="Enter skifter hjertet for hver båd på listen" autocomplete="off" spellcheck="false" aria-controls="visibleBoatsList"></div>
     </div>
-    <ul id="visibleBoatsList" aria-label="Synlige både"></ul>
-    <p id="visibleBoatsEmpty" hidden>Ingen både i udsnittet ved dette tidspunkt.</p>
+    <ul id="visibleBoatsList" aria-label="Filtrerede både"></ul>
+    <p id="visibleBoatsEmpty" hidden>Ingen både.</p>
   </div>
 </section>
 

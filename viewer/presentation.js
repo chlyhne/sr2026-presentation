@@ -93,7 +93,7 @@ function changeBoatSelection(change){
   target.settings=updated.settings;
  }else if(editingNote)noteDraft.settings={...noteDraft.settings,boats:[...chosen],boatNames:[...shownBoatNames]};
  prepareSelectedTracks();
- $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline({preserveTime:isBoatSearchActive()});
+ $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline({preserveTime:true});
  if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
  requestRender();
 }

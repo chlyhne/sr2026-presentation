@@ -71,22 +71,28 @@ body.rhumbline-setup #rhumblineSaveStatus:empty{display:none}
 .boat-list-chevron{font-size:17px;line-height:1;transition:transform .15s}
 #visibleBoatsToggle[aria-expanded=true] .boat-list-chevron{transform:rotate(180deg)}
 #visibleBoatsPanel{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin;scrollbar-gutter:stable;overflow-anchor:none;border-top:1px solid #b8cbd5}
-#boatSearch{position:sticky;top:0;z-index:1;height:72px;padding:9px 10px;background:#f7fafb;border-bottom:1px solid #b8cbd5}
-#boatSearch label{margin:0;font-size:11px;color:#365766}
-.boat-search-heading{display:flex;align-items:center;justify-content:space-between;gap:4px;height:20px;margin-bottom:4px}
+#boatSearch{position:sticky;top:0;z-index:1;height:86px;padding:9px 10px;background:#f7fafb;border-bottom:1px solid #b8cbd5}
+#boatSearch label{display:flex;align-items:center;margin:0;color:#365766;cursor:text}
+.boat-search-heading{display:flex;align-items:center;justify-content:space-between;gap:4px;height:28px;margin-bottom:4px}
 .boat-selection-actions{display:flex;gap:4px}
 .boat-search-field{display:flex;gap:4px}
 #boatSearchInput{width:100%;min-width:0;padding:6px;border:1px solid #607e90;border-radius:4px;background:white;color:#173d4c;font-size:12px}
-#boatSearchClear,#boatSelectAll,#boatDeselectAll{padding:5px;border:1px solid #607e90;background:#dcecf0;color:#173d4c;font-size:11px}
-#boatSelectAll,#boatDeselectAll{padding:2px 5px;white-space:nowrap}
-#boatSelectAll:disabled,#boatDeselectAll:disabled{cursor:default}
+#boatFavouritesOnly,#boatClearFavourites{display:grid;place-items:center;padding:4px;border:1px solid #b8cbd5;background:white;color:#365766;border-radius:4px;cursor:pointer}
+#boatFavouritesOnly,#boatClearFavourites{width:30px;height:28px}
+#boatFavouritesOnly:hover,#boatClearFavourites:hover{background:#dcecf0}
+#boatFavouritesOnly[aria-pressed=true]{background:#fbe7ec;color:#bc3154;border-color:#d58b9d}
+#boatFavouritesOnly[aria-pressed=true] svg{fill:currentColor}
+#boatClearFavourites:disabled{cursor:default}
 #visibleBoatsList{margin:0;padding:0;list-style:none}
-.visible-boat{height:72px;padding:9px 10px;border-left:4px solid var(--boat-colour);border-bottom:1px solid #d5e1e7;overflow-wrap:anywhere;outline:none;cursor:default;scroll-margin-top:72px}
+.visible-boat{height:72px;padding:9px 10px;border-left:4px solid var(--boat-colour);border-bottom:1px solid #d5e1e7;overflow-wrap:anywhere;outline:none;cursor:default;scroll-margin-top:86px}
 .visible-boat:last-child{border-bottom-color:transparent}
 .visible-boat:hover,.visible-boat:focus,.visible-boat.highlighted{background:#dcecf0;box-shadow:inset 0 0 0 1px #173d4c}
 .visible-boat:focus-visible{outline:2px solid #173d4c;outline-offset:-2px}
-.visible-boat-heading{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:0;cursor:pointer}
-.visible-boat-choice{margin:0;width:14px;height:14px;flex-shrink:0;accent-color:#173d4c;cursor:pointer}
+.visible-boat-heading{position:relative;display:flex;justify-content:space-between;align-items:center;gap:6px;margin:0;cursor:pointer}
+.boat-heart-choice{position:absolute;left:0;top:50%;transform:translateY(-50%);width:20px;height:20px;margin:0;opacity:0;cursor:pointer}
+.boat-heart-icon{pointer-events:none;display:block;flex-shrink:0;color:#607e90}
+.boat-heart-choice:checked+.boat-heart-icon{fill:#bc3154;color:#bc3154}
+.boat-heart-choice:focus-visible+.boat-heart-icon{outline:2px solid #173d4c;outline-offset:2px;border-radius:3px}
 .visible-boat-name{flex:1;font-size:12px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .visible-boat-speed{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
 .visible-boat-skipper,.visible-boat-type{display:block;margin-top:3px;font-size:11px;line-height:1.35;color:#365766;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -122,7 +128,7 @@ body.presenting #map .speed-marker circle{pointer-events:none}
 #eventBoatStatus:empty{display:none}
 #map .boat-marker:focus-visible .boat-hull{stroke:white;stroke-width:3}
 #map.panning .boat-marker{cursor:grabbing}#map.placing .boat-marker{cursor:crosshair}
-.legend{font-size:13px}.boat{margin:7px 0}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.legend{font-size:13px}.boat{position:relative;display:flex;align-items:center;gap:6px;margin:7px 0}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
 footer{padding:8px 12px;background:#162e3e;min-width:0;min-height:0;border-top:1px solid #38505f}
 .controls{display:flex;align-items:center;gap:10px;height:100%}#clock{display:block;font-size:20px;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums;flex-shrink:0}
 .transport-controls{display:flex;align-items:center;gap:4px;flex-shrink:0}

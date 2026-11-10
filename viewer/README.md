@@ -15,7 +15,7 @@ python3 scripts/serve_viewer.py
   Bjælken vises ikke igen ved bådvalg, afspilning eller navigation på siden.
   Hvis indlæsningen fejler, vises fejlen og en knap til at genindlæse.
 - Bådnavne vises som standard; klik på båden for at skjule eller vise navnet.
-  Når en båd vælges til, vises dens navn også, inklusive ved Vælg alle.
+  Når en båd får et fyldt hjerte, vises dens navn også.
   Et events gemte valg af bådnavne bruges fortsat ved navigation til eventet.
 - **Lag → Grid** viser et antialiaseret afstandsgrid oven på kortbaggrunden,
   under sporene. Afstanden skifter automatisk mellem **15 sømil, 5 sømil,
@@ -56,7 +56,7 @@ python3 scripts/serve_viewer.py
   sig pladsen, mens kortets centrum, zoom og tidspunkt bevares.
   Frem og tilbage mellem events åbner højrepanelet igen, også når Næste starter
   afspilning frem til eventet.
-- **Enter i bådsøgningen** vender fluebenet for hver båd på den aktuelle liste.
+- **Enter i bådfilteret** vender hjertet for hver båd på den aktuelle liste.
   Søgeteksten og bådvalget uden for listen bevares.
 - I redigering kan du **klikke direkte på eventteksten i højrepanelet** og rette
   den dér. Klik udenfor eller tryk **Ctrl+Enter** (Cmd+Enter på Mac) for at gemme;
@@ -241,34 +241,28 @@ python3 scripts/serve_viewer.py
   en jet-farveskala fra 0 til 15 knob. Farven mættes ved 15 knob. Kortets farvebjælke
   viser 0, 5, 10 og 15+ knob og følger med i præsentationen.
   Gråt spor betyder manglende fartdata. Sporene har en mørk kant mod vejrkortets farver.
-- **Både i udsnittet** ligger som en lille bjælke lige under fartskalaen med
-  samme bredde. Klik på bjælken for at folde listen ud eller sammen. Listen kan
-  rulles og viser bådnavn, skipper, SOG i knob og bådtype for valgte både, hvis
-  aktuelle ikon er i kortudsnittet. Den følger tidspunkt, afspilning, panorering,
-  zoom og bådvalg; gamle spor uden et aktuelt ikon tæller ikke med. Farten bruger
-  TracTracs registrerede SOG med samme tidsinterpolation som fartmærkerne. Ved en
-  kort trackingpause vises seneste kendte position og dens målte fart, indtil
-  ikonet udløber efter fem minutter. Manglende felter angives i listen.
-  Øverst er et søgefelt, der filtrerer løbende på bådnavn, skipper eller bådtype
-  uden forskel på store og små bogstaver. Under søgning indeholder listen alle
-  matchende både, også dem uden et aktuelt ikon i udsnittet. Kortet viser kun
-  matchende både og deres spor, uanset om de er afkrydset; afkrydsede både, som
-  ikke matcher, er midlertidigt skjult. Søgningen ændrer ikke det gemte bådvalg.
-  Brug afkrydsningen for at vælge eller fravælge en båd. Under søgning vælger eller
-  fravælger klik på kortets bådikoner også båden i stedet for at vise/skjule navnet.
-  Ryd feltet, tryk **Færdig** eller Escape, eller fold listen sammen for at afslutte
-  søgningen; så vises kun de afkrydsede både igen. Både kan også fravælges uden
-  søgning. Mellemrum på en fokuseret række skifter afkrydsningen.
-  De to knapper **Vælg alle** og **Fravælg alle** øverst i menuen vælger eller
-  fravælger alle både på én gang, også når kun nogle er afkrydset.
-  Under søgning gælder knapperne kun søgeresultaterne; andre bådvalg bevares.
+- **Både** ligger som en lille bjælke lige under fartskalaen med samme bredde.
+  Klik på bjælken for at folde den alfabetiske liste ud eller sammen. Den viser
+  bådnavn, skipper, SOG i knob og bådtype, også for både uden et aktuelt ikon i
+  kortudsnittet. Manglende fart angives som “Fart mangler”.
+  Tragtikonet markerer filterfeltet, som filtrerer løbende på bådnavn, skipper
+  eller bådtype uden forskel på store og små bogstaver. Tomt felt viser alle både.
+  Et fyldt hjerte ved en båd betyder favorit. Hjertet ved filterfeltet begrænser
+  listen og kortet til favoritter; teksten filtrerer videre inden for dette udvalg.
+  Slås hjertet fra, filtreres igen blandt alle både. Det knuste hjerte fjerner
+  favoritter fra **hele feltet**, også både skjult af filterteksten.
+  Ændringer vises straks, uden en Færdig-knap. Filter og favoritvisning bevares,
+  når listen foldes sammen. Escape rydder først en filtertekst og folder ellers
+  listen sammen. Enter i feltet eller mellemrum på en fokuseret række skifter
+  hjerterne. Tekst og favoritvisning ændrer ikke gemte events; hjertevalg bruger
+  den eksisterende eventgemning i redigering. I præsentation ændres kun visningen.
+  Under tekstfiltrering skifter klik på kortets bådikoner også favoritstatus.
   Hold musen over en række, eller fokusér den med Tab, for at forstørre det
   tilsvarende bådikon midlertidigt. Op/ned, Home og End flytter fokus i listen;
   Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,
   og skjules, når et eventbillede dækker kortet. I præsentation ændrer bådvalg ikke
   gemte events; i redigering bruges samme eventgemning som det øvrige bådvalg.
-  Listen er altid alfabetisk og indeholder uden søgning kun de aktuelt synlige både.
-  Både, der forlader udsnittet, fjernes med det samme. Når listen er foldet ud,
+  Når listen er foldet ud,
   fylder den ned til kortets bund. Hold musen over et bådikon på kortet for at
   rulle den åbne liste til bådens række og fremhæve den. Det ændrer ikke kortet
   eller tastaturfokus og åbner ikke en sammenfoldet liste.

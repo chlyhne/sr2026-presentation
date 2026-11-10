@@ -112,7 +112,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.deepEqual(await page.evaluate(()=>[...chosen].sort()),[matches[0],outside].sort());
   await page.locator('#boatSearchInput').fill('zz-no-matches');await settle();
   await page.locator('#boatSearchInput').press('Enter');assert.deepEqual(await page.evaluate(()=>[...chosen].sort()),[matches[0],outside].sort());
-  await page.locator('#boatSearchClear').click();await page.locator('#visibleBoatsToggle').click();
+  await page.locator('#boatSearchInput').fill('');await page.locator('#visibleBoatsToggle').click();
   // Presentation keeps the manual setting; navigating to an event opens its panel.
   await page.locator('#eventPanelToggle').click();await settle();await page.locator('#startPresentation').click();await settle();
   assert.equal(await page.locator('#eventPanel').isVisible(),false);await aligned();

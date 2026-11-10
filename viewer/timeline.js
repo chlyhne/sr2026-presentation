@@ -210,7 +210,7 @@ function updateTimeline({preserveTime=false}={}){
  renderTimelineEvents();
  $('timeWindow').textContent=timelineLength
   ? `I udsnittet: ${fmt(visibleTimeRanges[0].start)} – ${fmt(visibleTimeRanges.at(-1).end)} · ${visibleTimeRanges.length} ${visibleTimeRanges.length===1?'periode':'perioder'} · trin: 1 sekund · pauser uden både springes over`
-  : isBoatSearchActive()?'Ingen matchende både passerer dette udsnit. Prøv en anden søgning eller zoom ud.':chosen.size?'Ingen valgte både passerer dette udsnit. Zoom ud eller flyt kortet.':'Vælg mindst én båd for at bruge tidslinjen.';
+  : isBoatFilterActive()?'Ingen både i filteret passerer dette udsnit. Ret filteret eller zoom ud.':'Ingen både passerer dette udsnit. Zoom ud eller flyt kortet.';
  if(interval&&!eventPlaybackTarget){playbackOffset=offsetAtTime(selectedTime);playbackTickTime=performance.now();}
  return selectedTime!==before;
 }
