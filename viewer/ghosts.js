@@ -23,7 +23,7 @@ function trackUsesBoatColour(){return handicapTracksEnabled||comparison.boatColo
 function trackUsesComparison(){return !handicapTracksEnabled&&comparison.enabled;}
 function syncHandicapTracks(){
  $('handicapCompensatedTracks').checked=handicapTracksEnabled;
- const missing=handicapTracksEnabled?boats.filter(boat=>boatIsDisplayed(boat)&&chosen.has(boat.name)&&ghostClocks.get(boat.id).error):[];
+ const missing=handicapTracksEnabled?boats.filter(boat=>boatIsDisplayed(boat)&&ghostClocks.get(boat.id).error):[];
  const message=handicapPreferenceError||(missing.length?`Handicapkompensation mangler for ${missing.map(boat=>boat.name).join(', ')}: ${[...new Set(missing.map(boat=>ghostClocks.get(boat.id).error))].join(' · ')}.`:'');
  if($('ghostStatus').textContent!==message)$('ghostStatus').textContent=message;
  $('ghostStatus').hidden=!message;

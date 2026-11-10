@@ -105,12 +105,19 @@ $('referenceBoat').onchange=async()=>{
  catch(error){comparisonMessage('Referencebåden kunne ikke ændres: '+error.message);syncReferenceBoatControls();}
 };
 const shownBoatNames=new Set(boats.map(b=>b.id));
-let boatSearchQuery='';
+let boatSearchQuery='',boatFavouritesOnly=false;
 function isBoatSearchActive(){return boatSearchQuery.length>0;}
+function isBoatFilterActive(){return boatFavouritesOnly||isBoatSearchActive();}
 function boatIsDisplayed(boat){
- return isBoatSearchActive()
-  ?[boat.name,boat.skipper,boat.boatType||boat.metadata.boatType].some(value=>String(value||'').toLocaleLowerCase('da').includes(boatSearchQuery))
-  :chosen.has(boat.name);
+ return (!boatFavouritesOnly||chosen.has(boat.name))&&(!isBoatSearchActive()
+  ||[boat.name,boat.skipper,boat.boatType||boat.metadata?.boatType].some(value=>String(value||'').toLocaleLowerCase('da').includes(boatSearchQuery)));
+}
+function createBoatHeartChoice(boat,className=''){
+ const choice=document.createElement('input');choice.type='checkbox';choice.className='boat-heart-choice '+className;choice.value=boat.name;choice.checked=chosen.has(boat.name);
+ choice.setAttribute('aria-label','Favorit: '+boat.name);choice.onchange=()=>setBoatSelected(boat,choice.checked);
+ const heart=el('svg',{class:'boat-heart-icon',width:20,height:20,viewBox:'0 0 24 24','aria-hidden':'true',fill:'none',stroke:'currentColor','stroke-width':1.7,'stroke-linecap':'round','stroke-linejoin':'round'});
+ el('path',{d:'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z'},heart);
+ return {choice,heart};
 }
 function syncBoatChoices(){
  for(const [i,b] of boats.entries()){
@@ -121,12 +128,9 @@ function syncBoatChoices(){
 function setBoatSelected(boat,selected){
  changeBoatSelection(()=>{if(selected)chosen.add(boat.name);else chosen.delete(boat.name);});
 }
-function boatSelectionScope(){return isBoatSearchActive()?boats.filter(boatIsDisplayed):boats;}
 function setAllBoatsSelected(selected){
- const scope=boatSelectionScope();if(!scope.length)return;
- changeBoatSelection(()=>{for(const boat of scope){if(selected)chosen.add(boat.name);else chosen.delete(boat.name);}});
+ changeBoatSelection(()=>{for(const boat of boats){if(selected)chosen.add(boat.name);else chosen.delete(boat.name);}});
 }
-function toggleAllBoats(){setAllBoatsSelected(!boatSelectionScope().every(boat=>chosen.has(boat.name)));}
 function activateBoatMarker(id,focus=false){
  if(!isBoatSearchActive()){toggleBoatName(id,focus);return;}
  const boat=boats.find(boat=>boat.id===id);if(!boat)return;
@@ -143,7 +147,7 @@ function toggleBoatName(id,focus=false){
 for(const [i,name] of [...new Set(boats.map(b=>b.name))].sort().entries()){
  if(!Object.hasOwn(colours,name))colours[name]=`hsl(${((18+i*137.507764)%360).toFixed(3)},78%,${42+i%3*7}%)`;
 }
-for(const b of boats){const label=document.createElement('label');label.className='boat';const box=document.createElement('input');box.type='checkbox';box.checked=chosen.has(b.name);box.addEventListener('change',()=>setBoatSelected(b,box.checked));const dot=document.createElement('span');dot.className='dot';dot.style.background=colours[b.name];label.append(box,dot,document.createTextNode(b.name));$('choices').append(label)}
+for(const b of boats){const label=document.createElement('label');label.className='boat';const {choice,heart}=createBoatHeartChoice(b);const dot=document.createElement('span');dot.className='dot';dot.style.background=colours[b.name];label.append(choice,heart,dot,document.createTextNode(b.name));$('choices').append(label)}
 for(const [name,lon,lat] of [['Helsingør',12.61,56.04],['København',12.57,55.67],['Stevns',12.45,55.28],['Møn',12.3,54.98],['Farø',11.99,54.95],['Agersø',11.2,55.21],['Storebæltsbroen',11.03,55.33],['Røsnæs',10.87,55.74],['Sj. Odde',11.3,55.97],['Gilleleje',12.31,56.13]]){const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('places'));el('circle',{cx:0,cy:0,r:2,fill:'#173d4c'},group);const n=el('text',{x:4,y:-4,fill:'#173d4c','font-size':11,stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);n.textContent=name}
 // Red mark in Snekkeløb: user-supplied 56° 2.391′ N, 11° 16.523′ E.
 {
@@ -295,7 +299,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
   if(handicapTracksEnabled)group.dataset.handicapCompensated='true';
   if(position.finished)group.dataset.handicapFinished='true';
   group.setAttribute('role','button');group.setAttribute('tabindex','0');
-  group.setAttribute('aria-label',`${isBoatSearchActive()?'Vælg/fravælg båd':'Vis/skjul navn'}: ${b.name}`);
+  group.setAttribute('aria-label',`${isBoatSearchActive()?'Tilføj/fjern favorit':'Vis/skjul navn'}: ${b.name}`);
   group.setAttribute('aria-pressed',String(isBoatSearchActive()?chosen.has(b.name):shownBoatNames.has(b.id)));
   el('title',{},group).textContent=`${b.name} · ${handicapTracksEnabled?'handicapkompenseret position · oprindeligt spor ved '+fmt(position.replayTime):position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
   el('circle',{cx:0,cy:0,r:10,fill:'transparent','pointer-events':'all'},group);
@@ -393,7 +397,6 @@ $('play').onclick=()=>{
 };
 $('playbackSpeed').onchange=updatePlaybackSpeed;
 document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
-$('all').onclick=toggleAllBoats;
 let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));requestRender({viewportOnly:!updateTimeline()}); }$('reset').onclick=()=>{view=[230,250,620,760];setview()};
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
 $('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture)return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*(e.deltaY>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform($('map').getScreenCTM().inverse());view=[anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f];setview()},{passive:false});

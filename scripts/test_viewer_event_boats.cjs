@@ -17,7 +17,7 @@ async function check(type){
     localStorage.setItem('sr2026-notes',JSON.stringify(fixtures));localStorage.setItem('sr2026-boat-test-seeded','1');
    }
   },fixtures);
-  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForFunction(()=>typeof changeBoatSelection==='function');
   const store=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-notes')));
   assert.deepEqual(await store(),fixtures,'Loading must preserve explicit empty/custom boats and missing optional settings');
@@ -58,7 +58,7 @@ async function check(type){
   await page.locator('#cancelEdit').click();assert.deepEqual(await chosenNames(),['Mercutio',extra]);
   await page.locator('.note-edit').first().click();await checkbox('Vera').check();await page.locator('#save').click();
   assert.deepEqual((await store())[0].settings.boats,['Mercutio',extra,'Vera']);
-  await page.locator('#all').click();assert.ok((await chosenNames()).length>4);await page.locator('#all').click();
+  await page.locator('#visibleBoatsToggle').click();await page.locator('#boatClearFavourites').click();
   assert.deepEqual(await chosenNames(),[]);assert.deepEqual((await store())[0].settings.boats,[]);
   await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),['My','Vera']);
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),[],'An event may intentionally have no active boats');
