@@ -220,6 +220,7 @@ void main(){colour=vec4(0.0);}`);
   if(this.comparisonProgram){
    const profile=trackProfileCache.get(points);if(!profile)throw Error('Bådens sporprofil er ikke forberedt: '+boat.name);
    record.projectedBuffer=gl.createBuffer();record.comparisonBuffer=gl.createBuffer();record.comparisonFirst=null;
+   record.comparisonSamples=new Map();
    record.comparisonVao=gl.createVertexArray();gl.bindVertexArray(record.comparisonVao);
    gl.bindBuffer(gl.ARRAY_BUFFER,record.projectedBuffer);gl.bufferData(gl.ARRAY_BUFFER,profile.samples,gl.STATIC_DRAW);
    gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,12,0);
@@ -252,6 +253,7 @@ void main(){colour=vec4(0.0);}`);
     gl.bindVertexArray(record.comparisonVao);gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER,0,record.comparisonBuffer);
     gl.uniform2f(u.handicaps,boat.handicapSecondsPerNm||0,reference.handicapSecondsPerNm||0);
     gl.beginTransformFeedback(gl.POINTS);gl.drawArrays(gl.POINTS,0,boat.points.length+1);gl.endTransformFeedback();
+    record.comparisonSamples.clear();
    }
   }finally{
    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER,0,null);gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK,null);
@@ -259,6 +261,33 @@ void main(){colour=vec4(0.0);}`);
   }
   const error=gl.getError();if(error!==gl.NO_ERROR)throw Error('Referencebådens sporfarver kunne ikke klargøres i WebGL ('+error+').');
   this.comparisonReference=reference.points;
+ }
+ comparisonSample(boat,time){
+  try{
+   const record=this.buffers.get(boat.points);
+   if(!this.active||!record?.comparisonBuffer||this.comparisonReference!==referenceBoat()?.points)throw Error('Sammenligningsdata er ikke forberedt.');
+   const index=timeBoundary(boat.points,time,true)-1;if(index<0)return null;
+   const a=boat.points[index],b=boat.points[index+1];
+   const connects=b&&b[2]>a[2]&&b[2]-a[2]<=TRACK_MAX_GAP;
+   if(time!==a[2]&&(!connects||time>b[2]))return null;
+   // Read the nominal, already prepared colour values once per source interval.
+   // A style change only selects a component; it never recalculates comparisons.
+   let values=record.comparisonSamples.get(index);
+   if(!values){
+    values=new Float32Array(connects?6:3);
+    const gl=this.gl;gl.bindBuffer(gl.COPY_READ_BUFFER,record.comparisonBuffer);
+    gl.getBufferSubData(gl.COPY_READ_BUFFER,index*12,values);gl.bindBuffer(gl.COPY_READ_BUFFER,null);
+    const error=gl.getError();if(error!==gl.NO_ERROR)throw Error('Sammenligningsdata kunne ikke læses fra WebGL ('+error+').');
+    record.comparisonSamples.set(index,values);
+   }
+   const fraction=connects?(time-a[2])/(b[2]-a[2]):0;
+   return Object.fromEntries(['absoluteGain','handicapGain','timeGain'].map((name,component)=>{
+    const start=values[component],end=values[component+(connects?3:0)];
+    return [name,start<-1e19||end<-1e19?null:start+(end-start)*fraction];
+   }));
+  }catch(error){
+   this.fail(error);throw error;
+  }
  }
  bindComparison(record,first){
   if(!record.comparisonBuffer)throw Error('Sammenligningsdata er ikke forberedt.');
