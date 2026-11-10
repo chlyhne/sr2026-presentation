@@ -71,8 +71,8 @@ function trackPinValue(boat,sample){
  if(trackUsesComparison()&&referenceBoat()?.id!==boat.id){
   const gains=webglTracks.comparisonSample(boat,sample.time),timeMode=comparison.basis==='time';
   const value=gains?.[timeMode?'timeGain':comparison.basis==='handicap'?'handicapGain':'absoluteGain']??null;
-  const unit=timeMode?'s/100 m':'kn';
-  const description=`${timeMode?'Tidsgevinst':'Fartforskel'+(comparison.basis==='handicap'?' (ToD)':' (absolut)')} mod ${referenceBoat().name} ved samme sted på ruten`;
+  const unit=timeMode?'s/100 m ref.':'kn';
+  const description=`${timeMode?'Tidsgevinst pr. 100 m referencefremdrift':'Fartforskel'+(comparison.basis==='handicap'?' (ToD)':' (absolut)')} mod ${referenceBoat().name} ved samme sted på ruten${timeMode?'. Negativ værdi er tabt tid; stilstand og baglæns sejlads tæller med.':''}`;
   return {value,label:value===null?'Sammenligning mangler':`${value>0?'+':''}${value.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} ${unit}`,description};
  }
  return {value:sample.speed,label:sample.speed===null?'Fart mangler':sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})+' kn',description:'SOG fra TracTrac'};
@@ -104,9 +104,9 @@ function updateTrackHover(e){
   const speed=sample.speed===null?'fart mangler':`SOG ${sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})} knob`;
   let difference='';
   if(trackUsesComparison()&&referenceBoat()?.id!==boat.id){
-   const relative=trackGainSample(boat,hit.time),basis=comparison.basis==='handicap'?'ToD':'absolut';
-   const unit=comparison.basis==='time'?'s/100 m':`kn (${basis})`;
-   difference=relative?` · ${relative.gain>=0?'Henter +':'Taber '}${relative.gain.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} ${unit}${relative.referenceTime===null?'':` · ${referenceBoat().name} samme sted ca. kl. ${fmt(relative.referenceTime)}`}`:' · Sammenligning mangler ved dette sted';
+   const relative=trackPinValue(boat,sample),projected=projectedTrackSample(boat,hit.time);
+   const referenceTime=projected?referenceTimeAtProgress(projected.progress):null;
+   difference=relative.value===null?' · Sammenligning mangler ved dette sted':` · ${relative.value>=0?'Henter':'Taber'} ${relative.label}${referenceTime===null?'':` · ${referenceBoat().name} samme sted ca. kl. ${fmt(referenceTime)}`}`;
   }
   trackHoverTip.textContent=`${boat.name} · ${speed}${difference} · TracTrac`;
   trackHoverTip.hidden=false;trackHoverTip.style.left=Math.max(4,Math.min(clientX+12,innerWidth-trackHoverTip.offsetWidth-4))+'px';

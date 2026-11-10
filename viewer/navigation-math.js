@@ -1,4 +1,12 @@
 const REFERENCE_STATION_METERS=10,REFERENCE_SPEED_MAX=25,REFERENCE_SPEED_CODES=1022,REFERENCE_SPEED_SCALE=REFERENCE_SPEED_CODES/25,REFERENCE_MISSING=1023;
+const TRACK_SECONDS_PER_100_REFERENCE_METERS=3600*100/1852;
+// Signed time gained per 100 m of reference progress, using speeds in knots.
+// Multiplying by referenceSpeed * dt / this constant recovers dt * (v/vRef - 1).
+// Own zero/negative VMG is valid; the reference must have positive progress.
+function timeGainPer100ReferenceMeters(speed,referenceSpeed){
+ if(!Number.isFinite(speed)||!Number.isFinite(referenceSpeed)||referenceSpeed<=0)return null;
+ return TRACK_SECONDS_PER_100_REFERENCE_METERS*(speed-referenceSpeed)/(referenceSpeed*referenceSpeed);
+}
 function packedSpeedBytes(count){return Math.ceil(count*10/8);}
 function packSpeedCodes(values){
  const bytes=new Uint8Array(packedSpeedBytes(values.length));

@@ -126,7 +126,7 @@ void main(){
  evaluatedGains.x=projected.z-referenceSpeed;
  float factor=1.0+(handicaps.y-handicaps.x)*projected.z/3600.0;
  if(handicaps.x>0.0&&handicaps.y>0.0&&factor>0.0)evaluatedGains.y=projected.z/factor-referenceSpeed;
- if(projected.z>0.0&&referenceSpeed>0.0)evaluatedGains.z=${TRACK_SECONDS_PER_100_METERS}*(1.0/referenceSpeed-1.0/projected.z);
+ if(referenceSpeed>0.0)evaluatedGains.z=${TRACK_SECONDS_PER_100_REFERENCE_METERS}*(projected.z-referenceSpeed)/(referenceSpeed*referenceSpeed);
 }`);
     const evaluationFragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
 precision highp float;

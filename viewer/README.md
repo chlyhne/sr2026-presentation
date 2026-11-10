@@ -168,9 +168,9 @@ python3 scripts/serve_viewer.py
   Referencebådens navn vises i overskriften, sportyperne og signaturforklaringen.
   Valgene huskes lokalt og ændrer ikke præsentationens events. Klik udenfor
   eller tryk Escape for at lukke menuen, også i præsentation og fuld skærm.
-  **Sportype** vælger mellem de almindelige SOG-farver og en blå–rød skala
-  for forskellen i fremdrift langs rhumblinen. Rød betyder hurtigere end referencebåden
-  ved **samme sted på ruten**; blå betyder langsommere. Bådenes passagetidspunkter
+  **Sportype** vælger mellem de almindelige SOG-farver og en rød–blå skala
+  for forskellen i fremdrift langs rhumblinen. Rød betyder langsommere end referencebåden
+  ved **samme sted på ruten**; mættet blå betyder hurtigere. Bådenes passagetidspunkter
   kan være forskellige. I alle tre sammenligningsvisninger tegnes referencebådens
   spor i bådens egen farve med 18 % opacitet, under de andre bådes spor.
   Vælg **Mod [referencebådens navn] · absolut** eller **Mod [referencebådens navn] · handicap**. Skalaen mættes
@@ -296,7 +296,7 @@ python3 scripts/serve_viewer.py
   eller den afrundede jet-farve. Tal over 15 knob vises med deres faktiske værdi.
   Manglende fartdata vises som **Fart mangler**. Punktet kan stadig pinnes.
 - Mærkets værdi følger den synlige sportype: SOG i **kn**, absolut eller
-  handicapkorrigeret fartforskel i **kn**, eller tidsgevinst i **s/100 m**.
+  handicapkorrigeret fartforskel i **kn**, eller tidsgevinst i **s/100 m referencefremdrift**.
   Positive forskelle betyder hurtigere fremdrift end referencebåden ved samme
   sted på ruten. Sammenligningsværdierne læses fra sporets forberedte WebGL-data;
   skift af sportype genberegner dem ikke. Referencebådens mærker viser fortsat SOG.
@@ -922,15 +922,23 @@ nævner giver manglende sammenligning. Beregningen er en lokal sammenligning af
 fremdrift, ikke en resultatliste med starttidskorrektion.
 Baggrund: [Dansk Sejlunions forklaring af DH og tid på distance](https://dansksejlunion.dk/kapsejlads/regler-og-vejledning/dh-reglen).
 
-Visningen **sekunder pr. 100 m** bruger de samme projicerede farter ved samme
-sted, uden handicapkorrektion. Den viser
-`(3600 × 100 / 1852) × (1 / v_reference − 1 / v_båd)` i sekunder pr. 100 meter.
-Positiv værdi betyder indhentet tid (rød), negativ tabt tid (blå).
-3 mod 4 knob giver cirka −16,2 s/100 m, mens 13 mod 14 knob giver cirka
-−1,1 s/100 m. Den lineære farveskala mættes ved ±120 s/100 m; hover og pins viser
-den umættede værdi. Hvis en af de projicerede farter er nul eller negativ, kan en endelig
-sejltid fremad over 100 meter ikke beregnes, og sporet vises gråt.
-Det er en lokal tidsforskel pr. distance, ikke det samlede tidsmæssige forspring.
+Visningen **tid pr. 100 m referencefremdrift** bruger de samme projicerede farter
+ved samme sted, uden handicapkorrektion. Med farterne i knob viser den
+`(3600 × 100 / 1852) × (v_båd − v_reference) / v_reference²`.
+Positiv værdi betyder indhentet tid (mættet blå), negativ tabt tid (rød).
+Referencefarten skal være positiv; egen stilstand og baglæns sejlads er gyldige
+og giver voksende tidstab. Med referencefart 5 knob giver egen fremdrift 2,5 knob
+cirka −19,4 s/100 m ref., stilstand −38,9 og 2,5 knob baglæns −58,3.
+Den lineære farveskala mættes ved ±120; hover og pins viser den umættede værdi.
+Grå betyder manglende fælles data eller en referencefart på nul eller derunder.
+
+Ved summering vægtes hver værdi med referencefremdriften i intervallet divideret
+med 100 m. I et interval `dt` er det dermed `dt × (1 − v_båd / v_reference)`
+sekunders tab, hvor negativ fremdrift lægger ekstra tab til. Det er både tid brugt
+og tidsværdien af tabt fremdrift. Hvis A–B tager referencebåden 100 sekunder, og en
+anden båd sejler A–B–A–B med samme fart på 300 sekunder, giver bidragene 0, 200 og
+0 sekunders tab: samlet 200. Et minuts stilstand giver 60 sekunders tab.
+Visningen på sporet er den lokale normaliserede værdi, ikke et akkumuleret forspring.
 Valget gemmes ligesom de øvrige sporvalg.
 
 De projicerede kildeprøver og passageprofiler for alle både bygges offline af

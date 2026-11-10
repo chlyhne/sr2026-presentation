@@ -1,6 +1,6 @@
 // The route comes only from the permanent project asset loaded by boot.js.
 const TRACK_GAIN_LIMIT=2,TRACK_GAIN_MISSING=-1e20,TRACK_COMPARISON_KEY='sr2026-track-comparison';
-const TRACK_TIME_GAIN_LIMIT=120,TRACK_SECONDS_PER_100_METERS=3600*100/1852;
+const TRACK_TIME_GAIN_LIMIT=120;
 const TRACK_LENGTH_KEY='sr2026-track-length',TRACK_LENGTHS=new Set([0,900,1800,3600,7200,14400,28800]);
 const TRACK_FULL_WINDOW=boats.reduce((span,boat)=>boat.points.length?Math.max(span,D.end-boat.points[0][2]+1):span,D.end-D.start+1);
 let trackLengthSeconds=7200;
@@ -44,17 +44,13 @@ function correctedProjectedSpeed(speed,handicap,referenceHandicap){
  const factor=1+(referenceHandicap-handicap)*speed/3600;
  return factor>0?speed/factor:null;
 }
-function timeGainPer100Meters(speed,referenceSpeed){
- if(!Number.isFinite(speed)||!Number.isFinite(referenceSpeed)||speed<=0||referenceSpeed<=0)return null;
- return TRACK_SECONDS_PER_100_METERS*(1/referenceSpeed-1/speed);
-}
 function trackGainLimit(){return comparison.basis==='time'?TRACK_TIME_GAIN_LIMIT:TRACK_GAIN_LIMIT;}
 function trackComparisonSample(boat,time){
  const sample=projectedTrackSample(boat,time);if(!sample)return null;
  const reference=referenceAtProgress(sample.progress);if(!reference)return null;
  const vmg=quantizeProjectedSpeed(sample.vmg);
  const corrected=correctedProjectedSpeed(vmg,boat.handicapSecondsPerNm,referenceBoat()?.handicapSecondsPerNm);
- return {absoluteGain:vmg-reference.vmg,handicapGain:corrected===null?null:corrected-reference.vmg,timeGain:timeGainPer100Meters(vmg,reference.vmg),
+ return {absoluteGain:vmg-reference.vmg,handicapGain:corrected===null?null:corrected-reference.vmg,timeGain:timeGainPer100ReferenceMeters(vmg,reference.vmg),
   vmg,referenceVmg:reference.vmg,referenceTime:referenceTimeAtProgress(sample.progress),progress:sample.progress};
 }
 function trackGainSample(boat,time){
@@ -75,7 +71,7 @@ function saveReferenceBoat(id){
 }
 function trackGainColour(value,limit=TRACK_GAIN_LIMIT){
  if(!Number.isFinite(value))return TRACK_SPEED_MISSING;
- const intensity=Math.min(1,Math.abs(value)/limit),target=value>=0?[215,25,28]:[33,102,172];
+ const intensity=Math.min(1,Math.abs(value)/limit),target=value>=0?[0,60,255]:[215,25,28];
  return `rgb(${target.map(channel=>Math.round(245+(channel-245)*intensity)).join(',')})`;
 }
 const TRACK_GAIN_COLOURS=Array.from({length:TRACK_SPEED_BINS},(_,i)=>trackGainColour(-TRACK_GAIN_LIMIT+2*TRACK_GAIN_LIMIT*i/(TRACK_SPEED_BINS-1)));
