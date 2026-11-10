@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict');
 const path=require('node:path');
+const installTrackFixtures=require('./viewer-track-fixtures.cjs');
 const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
@@ -7,9 +8,10 @@ async function check(type){
  const browser=await type.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
+  await installTrackFixtures(page);
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>typeof captureMap==='function');
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
   const fixtures=await page.evaluate(()=>{
    const settings={...sceneSettings(),rain:false,wind:false,boats:['Mercutio']};
    return [{time:D.start+3600,text:'Event ved start',point:xy([12.6,56.02]),view:[230,250,620,760],settings},
@@ -18,7 +20,7 @@ async function check(type){
     {time:D.start+25*3600,text:'Et andet event på samme tid',view:[900,60,15,15],settings:{...settings,boats:[]}}];
   });
   await page.evaluate(notes=>localStorage.setItem('sr2026-notes',JSON.stringify(notes)),fixtures);
-  await page.reload();await page.waitForFunction(()=>document.querySelectorAll('.note-jump').length===4);
+  await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});await page.waitForFunction(()=>document.querySelectorAll('.note-jump').length===4);
   const original=await page.evaluate(()=>localStorage.getItem('sr2026-notes'));
   async function checkDesktopControls(){
    const map=await page.locator('#map').boundingBox(),panel=await page.locator('#eventPanel').boundingBox();
@@ -109,6 +111,7 @@ async function check(type){
    const start=D.start,end=D.end;
    const points=[[11,55,start+1000],[11.001,55,start+1060],[11,55,end-1060],[11.001,55,end-1000]];
    boats.splice(0,boats.length,{id:'gap-test',name:'Gap Test',metadata:boatMetadata('Gap Test'),points,speeds:[4,4,5,5]});
+   referenceBoatId=boats[0].id;prepareTrackFixture(boats[0]);
    colours['Gap Test']='#ffdc42';chosen.clear();chosen.add('Gap Test');
    const [x,y]=xy([11,55]),mapView=[x-5,y-5,20,20];
    const settings={...sceneSettings(),boats:['Gap Test']};
@@ -156,6 +159,7 @@ async function check(type){
    const eventTime=D.start+10800,[x,y]=xy([11,55]);
    const boat={id:'snap-test',name:'Snap Test',metadata:boatMetadata('Snap Test'),points:Array.from({length:361},(_,i)=>[11,55,D.start+i*60]),speeds:Array(361).fill(5)};
    boats.splice(0,boats.length,boat);colours[boat.name]='#ffdc42';chosen.clear();chosen.add(boat.name);
+   referenceBoatId=boat.id;prepareTrackFixture(boat);
    notes=[{time:eventTime,text:'Zoom snap',view:[x-310,y-310,620,620],settings:{...sceneSettings(),boats:[boat.name]}}];
    showNotes();restoreNote(notes[0]);
    const stored=localStorage.getItem('sr2026-notes');
@@ -178,11 +182,13 @@ async function check(type){
     }
     // Adjacent offsets across a compressed gap must not snap backwards in time.
     boat.points=[[11,55,D.start+1000],[11,55,D.start+1060],[11,55,D.end-1060],[11,55,D.end-1000]];
+    prepareTrackFixture(boat);
     view=[x-310,y-310,620,620];setview();
     notes[0].time=boatTimeRanges[0].end;renderTimelineEvents();
     const afterGap=offsetAtTime(boatTimeRanges[1].start);seekTimeline(afterGap);
     check(currentTime()===boatTimeRanges[1].start,'No snap across a hidden time gap even one slider second away');
     boat.points=Array.from({length:361},(_,i)=>[11,55,D.start+i*60]);notes[0].time=eventTime;
+    prepareTrackFixture(boat);
    }
    check(localStorage.getItem('sr2026-notes')===stored,'Proportional snapping does not persist changes');
    return true;
@@ -193,6 +199,7 @@ async function check(type){
     setPresentationMode(presenting);
     const t=notes[0].time;
     boats[0].points=[-60,0,60].map(delta=>[11,55,t+delta]);
+    prepareTrackFixture(boats[0]);
     view=[...notes[0].view];setview();
    },presenting);
    await page.waitForTimeout(100);

@@ -29,7 +29,7 @@ function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
   const [x,y]=xy(point),dx=matrix.a*x+matrix.c*y+matrix.e-clientX,dy=matrix.b*x+matrix.d*y+matrix.f-clientY;
   return dx*dx+dy*dy;
  }
- const order=topmost?[...boats].sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio')):boats;
+ const order=topmost?[...boats].sort((a,b)=>(referenceBoat()?.id===a.id)-(referenceBoat()?.id===b.id)):boats;
  for(const boat of order){
   if(!boatIsDisplayed(boat)||(boatId&&boat.id!==boatId))continue;
   const points=boat.points,model=getTrackModel(points);
@@ -94,9 +94,9 @@ function updateTrackHover(e){
   if(!trackHoverTip){trackHoverTip=document.createElement('div');trackHoverTip.id='trackHover';trackHoverTip.setAttribute('role','tooltip');document.body.append(trackHoverTip);}
   const speed=sample.speed===null?'fart mangler':`SOG ${sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})} knob`;
   let difference='';
-  if(comparison.enabled&&boat.name!=='Mercutio'){
+  if(comparison.enabled&&referenceBoat()?.id!==boat.id){
    const relative=trackGainSample(boat,hit.time),basis=comparison.basis==='handicap'?'ToD':'absolut';
-   difference=relative?` · ${relative.gain>=0?'Henter +':'Taber '}${relative.gain.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kn (${basis}) · Mercutio samme sted kl. ${fmt(relative.referenceTime)}`:' · Sammenligning mangler ved dette sted';
+   difference=relative?` · ${relative.gain>=0?'Henter +':'Taber '}${relative.gain.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kn (${basis}) · ${referenceBoat().name} samme sted kl. ${fmt(relative.referenceTime)}`:' · Sammenligning mangler ved dette sted';
   }
   trackHoverTip.textContent=`${boat.name} · ${speed}${difference} · TracTrac`;
   trackHoverTip.hidden=false;trackHoverTip.style.left=Math.max(4,Math.min(clientX+12,innerWidth-trackHoverTip.offsetWidth-4))+'px';
@@ -130,8 +130,7 @@ function renderSpeedPins(){
  const presenting=document.body.classList.contains('presenting');
  const entries=speedPins.map(pin=>({...pin,pinned:true}));
  if(!presenting&&pickedTrackSpeed&&!matchingSpeedPin(pickedTrackSpeed))entries.push({...pickedTrackSpeed,id:'preview',pinned:false});
- const mercutioIds=new Set(boats.filter(b=>b.name==='Mercutio').map(b=>b.id));
- entries.sort((a,b)=>mercutioIds.has(a.boatId)-mercutioIds.has(b.boatId));
+ entries.sort((a,b)=>(referenceBoat()?.id===a.boatId)-(referenceBoat()?.id===b.boatId));
  for(const entry of entries){
   const boat=boats.find(b=>b.id===entry.boatId);
   if(!boat||!boatIsDisplayed(boat)||entry.time<now-trackWindowSeconds()||entry.time>now)continue;

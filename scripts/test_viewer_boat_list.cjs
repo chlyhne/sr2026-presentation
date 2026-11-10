@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os');
+const installTrackFixtures=require('./viewer-track-fixtures.cjs');
 const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
@@ -8,9 +9,10 @@ async function check(browserType){
  const browser=await browserType.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
+  await installTrackFixtures(page);
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
   // Metadata is matched by participant ID, including boats with manual dimension overrides.
   const metadata=await page.evaluate(()=>boats.map(({id,skipper,boatType})=>({id,skipper,boatType})));
   assert.equal(metadata.length,106);
@@ -41,6 +43,8 @@ async function check(browserType){
     {...visible[0],id:'deselected',name:'Fravalgt båd'}
    ];
    boats.splice(0,boats.length,...visible,...extra);chosen.clear();
+   referenceBoatId=boats[0].id;
+   for(const boat of boats)prepareTrackFixture(boat);
    for(const boat of boats){colours[boat.name]='#ffdc42';if(boat.id!=='deselected')chosen.add(boat.name);}
    const [x,y]=xy([11.8,55.6]);view=[x-200,y-200,400,400];$('map').setAttribute('viewBox',view.join(' '));render();
    return t;
@@ -72,8 +76,9 @@ async function check(browserType){
   await page.evaluate(()=>{
    window.listOriginalPoints=boats[0].points;
    const t=currentTime();boats[0].points=[[25,50,t-60],[25,50,t+60]];
+   prepareTrackFixture(boats[0]);
    const arrival={...boats[5],id:'arrival',name:'Albatros',skipper:'Et meget langt skippernavn som ikke må flytte andre rækker',boatType:'En meget lang bådtype der tidligere kunne ombryde teksten'};
-   boats.push(arrival);chosen.add(arrival.name);colours[arrival.name]='#ffdc42';render();
+   prepareTrackFixture(arrival);boats.push(arrival);chosen.add(arrival.name);colours[arrival.name]='#ffdc42';render();
   });
   assert.equal(await page.locator('.visible-boat').first().getAttribute('data-boat-id'),'arrival','New boats join alphabetically');
   assert.equal(await page.locator('.visible-boat[data-boat-id="list-0"]').count(),0,'Departing boats are removed immediately');
@@ -81,13 +86,13 @@ async function check(browserType){
   assert.deepEqual(names,[...names].sort((a,b)=>a.localeCompare(b,'da')));
   assert.equal(await page.locator('.visible-boat').first().evaluate(node=>node.getBoundingClientRect().height),await page.locator('.visible-boat').last().evaluate(node=>node.getBoundingClientRect().height),'Long names and status text retain the same row height');
   await page.evaluate(()=>{
-   boats[0].points=listOriginalPoints;chosen.delete('Albatros');boats.splice(boats.findIndex(boat=>boat.id==='arrival'),1);render();
+   boats[0].points=listOriginalPoints;prepareTrackFixture(boats[0]);chosen.delete('Albatros');boats.splice(boats.findIndex(boat=>boat.id==='arrival'),1);render();
   });
   assert.equal(await page.locator('.visible-boat').first().getAttribute('data-boat-id'),'list-0','Returning boats join alphabetically');
   // Map hover reveals a row without changing keyboard focus, map view or time.
   await page.evaluate(()=>{
    const boat=boats.find(boat=>boat.id==='list-13');
-   boat.points=boats[0].points.map(point=>[12.3,55.4,point[2]]);render();$('visibleBoatsPanel').scrollTop=0;
+   boat.points=boats[0].points.map(point=>[12.3,55.4,point[2]]);prepareTrackFixture(boat);render();$('visibleBoatsPanel').scrollTop=0;
   });
   const target=page.locator('.visible-boat[data-boat-id="list-13"]');
   const colour=await target.evaluate(node=>getComputedStyle(node).borderLeftColor);
@@ -133,7 +138,7 @@ async function check(browserType){
    const {rect,inverse}=mapViewport(),p=new DOMPoint(rect.left+3,rect.top+3).matrixTransform(inverse);
    const point=[9.5+p.x*4.5/1000,57-p.y*3/1180];
    const boat={...boats[0],id:'gutter',name:'Synlig i sidekant',points:[[...point,t-60],[...point,t+60]]};
-   boats.push(boat);chosen.add(boat.name);colours[boat.name]='#ffffff';render();
+   prepareTrackFixture(boat);boats.push(boat);chosen.add(boat.name);colours[boat.name]='#ffffff';render();
   },testTime);
   assert.equal(await page.locator('[data-boat-id="gutter"].visible-boat').count(),1);
   await page.screenshot({path:path.join(os.tmpdir(),'sr2026-boat-list-'+browserType.name()+'-desktop.png')});

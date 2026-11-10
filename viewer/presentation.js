@@ -435,7 +435,7 @@ async function captureMap() {
   for(const id of ['windField','land','precipitation','coast'])clone.querySelector('#'+id)?.remove();
   // Re-render tracks at the final PNG resolution with the same local-time depth rule.
   const routes=clone.querySelector('#routes');routes.replaceChildren();
-  const order=boats.filter(boatIsDisplayed).sort((a,b)=>(a.name==='Mercutio')-(b.name==='Mercutio'));
+  const order=boats.filter(boatIsDisplayed).sort((a,b)=>(referenceBoat()?.id===a.id)-(referenceBoat()?.id===b.id));
   const trackImage=webglTracks.snapshot(currentTime(),order,2);
   el('image',{'data-render-layer':'tracks',x:bounds[0],y:bounds[1],width:bounds[2],height:bounds[3],preserveAspectRatio:'none',href:trackImage},routes);
   for(const host of clone.querySelectorAll('[data-webgl-tracks],[data-webgl-background]'))host.remove();

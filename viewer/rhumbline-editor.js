@@ -21,7 +21,7 @@ function updateSetupHelp(){
 function lockRhumblineEditor(points){
  navigationMode=null;navigationDraft=[];measurement=points.map(p=>[...p]);syncNavigationControls();renderNavigation();
  $('finishMapLine').disabled=$('undoMapPoint').disabled=reverseRoute.disabled=restartRoute.disabled=true;
- $('measurementHelp').textContent='Rhumbline er gemt permanent. Præsentationen bruger nu disse punkter ved sammenligning med Mercutio.';
+ $('measurementHelp').textContent='Rhumbline er gemt permanent. Præsentationen bruger nu disse punkter ved sammenligning med referencebåden.';
  setupStatus.textContent=`${points.length} punkter gemt · ${buildRhumbRoute(points).total.toLocaleString('da-DK',{maximumFractionDigits:2})} sømil`;
  $('cancelMapLine').hidden=true;
 }

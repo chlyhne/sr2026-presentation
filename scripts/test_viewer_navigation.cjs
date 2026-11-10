@@ -8,9 +8,13 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
-  await page.route('**/rhumbline.json',route=>route.fulfill({json:{version:1,points:[[11.99,55.6],[12.09,55.6]]}}));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
-  await page.waitForSelector('#onlineStatus');
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
+  await page.evaluate(()=>{
+   const points=[[11.99,55.6],[12.09,55.6]],route=buildRhumbRoute(points);
+   rhumbRoute.legs=route.legs;rhumbRoute.total=route.total;
+   window.SR_RHUMBLINE={version:1,points};
+  });
   assert.equal(await page.evaluate(()=>boats.every(b=>b.handicapSecondsPerNm>0)),true);
   const alignment=await page.evaluate(()=>{
    const map=$('map').getBoundingClientRect(),measure=$('mapMeasureToggle').getBoundingClientRect(),layers=$('mapLayersToggle').getBoundingClientRect();
@@ -37,7 +41,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   // A mouse click is quantized to screen pixels at this overview zoom.
   near(await page.evaluate(()=>buildRhumbRoute(navigationDraft).total),1.00067567,.15);
   await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>navigationMode),null);
-  assert.match(await page.locator('#measurementResult').textContent(),/1,\d\d sømil/);
+  assert.match(await page.locator('#measurementResult').textContent(),/^\d+,\d{2} sømil$/);
   assert.deepEqual(await page.evaluate(()=>SR_RHUMBLINE.points),[[11.99,55.6],[12.09,55.6]]);
   // All boats pass the same positions at different times; cross-track offsets
   // must not change the comparison, and Mercutio need not be selected.
@@ -51,6 +55,12 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     boat('rival','Rival',600,55.602,Array(9).fill(6)),
     boat('rated','Hurtig rating',1200,55.604,Array(9).fill(6),500),
     boat('later','Senere passage',1800,55.606,Array(9).fill(6)));
+   referenceBoatId='reference';
+   for(const boat of boats){
+    trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:packReferenceStations(prepareReferencePassages(boat).stations)});
+    webglTracks.prepare(boat);
+   }
+   webglTracks.prepareComparison();
    for(const boat of boats){colours[boat.name]='#ffdc42';shownBoatNames.add(boat.id);}
    chosen.clear();chosen.add('Mercutio');chosen.add('Rival');chosen.add('Hurtig rating');
    selectedTime=time+1680;
@@ -85,7 +95,8 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   const overlap=await page.evaluate(()=>{
    const interval=(low,high,time,vmg)=>({low,high,a:{time,vmg},b:{time:time+60,vmg}});
    const stations=prepareReferenceStations([interval(0,100,100,4),interval(10,20,10,8),interval(20,30,20,6)]);
-   return [0,10,20,20.1,30,30.1,100,101].map(progress=>referenceAtProgress(progress,stations)?.vmg??null);
+   const packed=packReferenceStations(stations);
+   return [0,10,20,20.1,30,30.1,100,101].map(progress=>referenceAtProgress(progress,packed)?.vmg??null);
   });
   assert.deepEqual(overlap,[4,8,8,6,6,4,4,null],'Overlaps and exact endpoints keep the first forward passage');
   // Read actual WebGL pixels, so the sign and Mercutio exception are tested
@@ -106,6 +117,13 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   await page.locator('#mapTracksToggle').click();
   await page.locator('#trackStyle').selectOption('speed');
   const original=await pixels();assert.deepEqual(coloured.reference,original.reference,'Mercutio keeps the recorded-SOG colour');
+  await page.evaluate(()=>{referenceBoatId='rival';comparisonRevision++;webglTracks.prepareComparison();});
+  await page.locator('#trackStyle').selectOption('absolute');
+  const switched=await pixels();
+  assert.deepEqual(switched.red,original.red,'Selected Rival keeps its own SOG colour at the early endpoint');
+  assert.deepEqual(switched.blue,original.blue,'Selected Rival keeps its own SOG colour at the late endpoint');
+  assert.notDeepEqual(switched.reference,original.reference,'The former reference now uses the comparison palette');
+  await page.evaluate(()=>{referenceBoatId='reference';comparisonRevision++;webglTracks.prepareComparison();});
   await page.locator('#trackStyle').selectOption('absolute');
   await page.locator('#trackStyle').selectOption('handicap');
   const rated=await page.evaluate(()=>trackGainSample(boats[2],boats[2].points[4][2]));
@@ -138,7 +156,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.match(await page.locator('#captureStatus').textContent(),/PNG klar/);
   // Saved global geometry survives event changes and a page reload.
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(TRACK_COMPARISON_KEY)));
-  await page.reload();await page.waitForSelector('#onlineStatus');
+  await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});
   assert.deepEqual(await page.evaluate(()=>comparison),saved);
   assert.equal(await page.locator('#trackStyle').inputValue(),'handicap');
   await page.evaluate(()=>setPresentationMode(true));

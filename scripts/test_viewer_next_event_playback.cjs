@@ -12,6 +12,7 @@ async function check(type){
   const imageID='11111111-1111-4111-8111-111111111111';
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
   await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
+  await page.locator('main:not([inert])').waitFor({state:'visible',timeout:120000});
   const photo=Buffer.from(await page.evaluate(()=>{
    const canvas=document.createElement('canvas');canvas.width=80;canvas.height=60;
    const context=canvas.getContext('2d');context.fillStyle='#ffce5c';context.fillRect(0,0,80,60);
@@ -37,7 +38,9 @@ async function check(type){
   await page.clock.install();await page.clock.pauseAt(new Date());
   const state=()=>page.evaluate(()=>({time:currentTime(),playing:!!interval,target:eventPlaybackTarget?.text||null,
    event:activePresentationNote.text,settings:sceneSettings(),view:[...view],
-   mercutio:xy(trackPosition(boats.find(boat=>boat.name==='Mercutio').points,currentTime()).point)}));
+   mercutio:xy(trackPosition(boats.find(boat=>boat.name==='Mercutio').points,currentTime()).point),
+   referenceId:referenceBoatId,reference:xy(trackPosition(referenceBoat().points,currentTime()).point),
+   referenceSelected:chosen.has(referenceBoat().name)}));
   const sceneMatches=(actual,index)=>{assert.deepEqual(actual.settings,fixture.notes[index].settings);assert.deepEqual(actual.view,fixture.notes[index].view);};
   const arrivalMatches=(actual,index,zoomIndex)=>{
    assert.deepEqual(actual.settings,fixture.notes[index].settings);
@@ -109,10 +112,45 @@ async function check(type){
   await page.locator('#mapEventImageContent').waitFor({state:'visible'});
   assert.equal(await page.locator('#eventImageFigure').isVisible(),false);
   assert.equal(await page.locator('#nextEvent').isDisabled(),true);
+  await page.locator('#eventSelect').selectOption('0');
+  const alternate=await page.evaluate(()=>{
+   const boat=boats.find(boat=>boat.name!=='Mercutio'&&!chosen.has(boat.name)
+    &&trackPosition(boat.points,currentTime())&&trackPosition(boat.points,currentTime()+2));
+   if(!boat)throw Error('No unchecked alternative reference boat has positions for the transition.');
+   return {id:boat.id,name:boat.name,count:boats.length};
+  });
+  await page.locator('#mapTracksToggle').click();
+  assert.equal(await page.locator('#referenceBoat option').count(),alternate.count,'Every boat can be selected as reference');
+  await page.locator('#referenceBoat').selectOption(alternate.id);
+  await page.waitForFunction(id=>referenceBoatId===id,alternate.id);
+  assert.equal(await page.locator('#referenceBoatHeading').textContent(),` / ${alternate.name}`);
+  assert.equal(await page.locator('#trackStyle option[value="absolute"]').textContent(),`Mod ${alternate.name} · absolut`);
+  assert.equal(await page.locator('#trackStyle option[value="handicap"]').textContent(),`Mod ${alternate.name} · handicap`);
+  await page.locator('#mapTracksToggle').click();
+  await page.locator('#playbackSpeed').selectOption('10');await page.locator('#nextEvent').click();
+  const referenceFollowingMatches=actual=>{
+   assert.equal(actual.referenceId,alternate.id);assert.equal(actual.referenceSelected,false,'Reference remains unchecked');
+   assert.deepEqual(actual.settings,fixture.notes[0].settings);
+   assert.deepEqual(actual.view.slice(2),fixture.notes[0].view.slice(2));
+   assert.ok(Math.abs(actual.view[0]+actual.view[2]/2-actual.reference[0])<1e-6,'Selected reference is centered horizontally');
+   assert.ok(Math.abs(actual.view[1]+actual.view[3]/2-actual.reference[1])<1e-6,'Selected reference is centered vertically');
+  };
+  s=await state();assert.equal(s.target,'B');assert.equal(s.playing,true);referenceFollowingMatches(s);
+  const referenceView=s.view;
+  await page.clock.runFor(200);s=await state();
+  assert.ok(Math.abs(s.time-fixture.time-2)<.001);referenceFollowingMatches(s);
+  assert.notDeepEqual(s.view,referenceView,'Timed Next follows the moving selected reference');
+  await page.locator('#nextEvent').click();s=await state();
+  assert.equal(s.playing,false);assert.equal(s.target,null);assert.equal(s.referenceId,alternate.id);sceneMatches(s,1);
+  await page.locator('#eventSelect').selectOption('0');
+  await page.locator('#play').click();await page.clock.runFor(200);s=await state();
+  assert.equal(s.playing,true);assert.equal(s.target,null);assert.equal(s.referenceId,alternate.id);
+  assert.equal(s.referenceSelected,false);assert.ok(Math.abs(s.time-fixture.time-2)<.001);sceneMatches(s,0);
+  await page.locator('#play').click();
   assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify(notes))),fixture.notes,'Navigation never edits the published events');
   assert.equal(await page.evaluate(()=>window.SR_READONLY&&document.body.classList.contains('presenting')),true);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'public presentation, timed Next follows Mercutio with unchanged zoom even when unselected, selected/live speed, exact arrival preserves followed viewport and restores other settings, same-time events, keyboard/second press restores saved viewport, ordinary playback preserves setup, between-event skip, scrub cancellation, direct previous/dropdown, excluded time ranges, disabled slider, image arrival preserves viewport, final event, unchanged notes',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'public presentation, timed Next follows Mercutio with unchanged zoom even when unselected, selected/live speed, exact arrival preserves followed viewport and restores other settings, same-time events, keyboard/second press restores saved viewport, ordinary playback preserves setup, between-event skip, scrub cancellation, direct previous/dropdown, excluded time ranges, disabled slider, image arrival preserves viewport, final event, all boats available as reference, selected unchecked reference follows during timed Next only, direct Next restores viewport with alternate reference, unchanged notes',errors}));
  }finally{await browser.close();}
 }
 check(firefox).catch(error=>{console.error(error);process.exit(1)});

@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),path=require('node:path'),os=require('node:os');
+const installTrackFixtures=require('./viewer-track-fixtures.cjs');
 const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
@@ -6,13 +7,14 @@ async function check(readonly){
  const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
+  await installTrackFixtures(page);
   page.on('pageerror',error=>errors.push(error.message));
   if(readonly){
    await page.route('**/config.js',route=>route.fulfill({contentType:'application/javascript',body:'window.SR_CONFIG={admin:false,apiBase:""};'}));
    await page.route('**/presentation.json',route=>route.fulfill({json:{version:1,speedPins:[],notes:[]}}));
   }
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
   assert.equal(await page.evaluate(()=>window.SR_READONLY),readonly);
   await page.evaluate(()=>{
    stopPlayback();$('wind').checked=$('rain').checked=false;selectedTime=D.start+3600;
@@ -26,6 +28,8 @@ async function check(readonly){
     makeBoat('type','Cirrus','Peter','Match 28',12.4),
     makeBoat('outside','Match Udenfor','Bent','X-99',25),
     {...makeBoat('future','Match Senere','Sofie','X-99',12.3),points:[[12.3,55.6,time+600],[12.4,55.6,time+720]]});
+   referenceBoatId=boats[0].id;
+   for(const boat of boats)prepareTrackFixture(boat);
    chosen.clear();chosen.add('Mercutio');chosen.add('Borealis');
    for(const boat of boats)colours[boat.name]='#ffdc42';
    const [x,y]=xy([12,55.6]);view=[x-200,y-200,400,400];$('map').setAttribute('viewBox',view.join(' '));

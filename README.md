@@ -15,6 +15,35 @@ Kør fra denne projektmappe:
 python3 scripts/serve_viewer.py
 ```
 
+Node.js 24 skal være installeret sammen med Python. Serveren kontrollerer ved
+opstart fingeraftrykket af data, sporberegninger, rhumbline og profilgenerator.
+Ændrede kilder udløser forberedelse af alle bådes referenceprofiler og egne
+projekterede prøver, før serveren starter. Beregningen bruger de samme nominelle
+funktioner i [navigation-math.js](viewer/navigation-math.js) som vieweren.
+Manglende Node.js eller fejl i forberedelsen stopper opstarten med en fejl.
+
+Genererede filer i `viewer/track-profiles/` ignoreres af Git. De kan forberedes
+direkte med `node scripts/prepare_track_profiles.cjs --if-stale`.
+Pages-buildet udfører samme kontrol og medtager kun de aktuelle binære aktiver.
+Genstart den lokale server efter ændringer af beregningskilder eller rhumbline.
+
+Manifestet `track-profiles/manifest.json` skal hentes med `cache: 'no-store'`.
+Det indeholder formatversion, kildefingeraftryk, SHA-256 af `JSON.stringify(DATA)`, SHA-256 af
+`JSON.stringify(rhumbline)` og bådenes ID, punktantal, stationsantal og filnavne.
+Browseren validerer rhumblinens digest, bådenes ID og punktantal samt binærformatet.
+Det fulde datafingeraftryk beregnes kun offline; browseren serialiserer ikke DATA.
+Filnavnene indeholder kildefingeraftrykket og er relative til viewerens rod.
+Begge binære formater bruger little-endian Float32. `sampleFile` indeholder
+`pointCount + 1` tripler `[progressHigh, progressLow, vmg]`; den sidste er en
+kopi af den sidste kildeprøve. `profileFile` indeholder `stationCount` rækker af
+otte ord `[atHigh, pointVMG, pointTimeOffset, atLow, afterVMGAtAt,
+afterVMGSlope, afterTimeAtAtOffset, afterTimeSlope]`. Tider er sekunder fra
+manifestets `start`; manglende VMG er `-1e20`. Progression er sømil opdelt med
+`high = Math.fround(progress)` og `low = Math.fround(progress - high)`.
+Grænser sammenlignes leksikografisk som `(high, low)`, også ved CPU-opslag.
+Et præcist match bruger punktværdien; ellers bruges intervallet efter stationen.
+Generatoren afviser stationsgrænser, som ikke kan holdes adskilt i formatet.
+
 Åbn <http://127.0.0.1:8097/>. Brug samme browser og adresse som før flytningen;
 browserens eksisterende noter følger adressen, ikke mappens placering.
 Lokalt uploadede billeder ligger i `data/event-images/`.

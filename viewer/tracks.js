@@ -44,9 +44,22 @@ function renderTrackSpeedLegend(){
  const group=screenGroup(point.x,point.y,layer);
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
  el('rect',{width,height:layout.height,rx:5,fill:'#ffffff',opacity:.94},group);
- const relative=comparison.enabled;
- layer.setAttribute('aria-label',relative?'Fartforskel fra Mercutio ved samme sted: blå taber, rød henter':'Bådfart over grunden, jet-farveskala fra 0 til 15 knob');
- el('text',{x:10,y:17,fill:'#173d4c','font-size':11,'font-weight':650},group).textContent=relative?`Mod Mercutio · ${comparison.basis==='handicap'?'ToD':'absolut'} · kn`:'Bådfart · SOG · knob';
+ const relative=comparison.enabled,referenceName=referenceBoat()?.name??'referencebåd';
+ function legendLabel(label,attrs){
+  const text=el('text',{x:10,fill:'#173d4c',...attrs,'aria-label':label},group);
+  text.textContent=label;
+  if(text.getComputedTextLength()>width-20){
+   const characters=Array.from(label);let lo=0,hi=characters.length;
+   while(lo<hi){
+    const mid=Math.ceil((lo+hi)/2);text.textContent=characters.slice(0,mid).join('')+'…';
+    if(text.getComputedTextLength()<=width-20)lo=mid;else hi=mid-1;
+   }
+   text.textContent=characters.slice(0,lo).join('')+'…';
+  }
+  el('title',{},text).textContent=label;
+ }
+ layer.setAttribute('aria-label',relative?`Fartforskel fra ${referenceName} ved samme sted: blå taber, rød henter. ${referenceName}: uændret SOG-farve`:'Bådfart over grunden, jet-farveskala fra 0 til 15 knob');
+ legendLabel(relative?`Mod ${referenceName} · ${comparison.basis==='handicap'?'ToD':'absolut'} · kn`:'Bådfart · SOG · knob',{y:17,'font-size':11,'font-weight':650});
  const gradient=el('linearGradient',{id:'trackSpeedJetGradient',x1:0,x2:1,y1:0,y2:0},el('defs',{},group));
  for(let i=0;i<=128;i++)el('stop',{offset:i/128,'stop-color':relative?trackGainColour(-TRACK_GAIN_LIMIT+2*TRACK_GAIN_LIMIT*i/128):trackSpeedColour(TRACK_SPEED_MAX*i/128)},gradient);
  el('rect',{x:10,y:24,width:width-20,height:13,fill:'url(#trackSpeedJetGradient)'},group);
@@ -58,7 +71,7 @@ function renderTrackSpeedLegend(){
  if(relative){
   el('text',{x:10,y:69,fill:'#173d4c','font-size':10},group).textContent='Blå: taber · Rød: henter · Samme sted';
   el('text',{x:10,y:83,fill:'#173d4c','font-size':10},group).textContent='Grå: mangler fælles passage/data';
-  el('text',{x:10,y:96,fill:'#173d4c','font-size':10},group).textContent='Mercutio: uændret SOG-farve';
+  legendLabel(`${referenceName}: uændret SOG-farve`,{y:96,'font-size':10});
  }
 }
 

@@ -55,7 +55,7 @@ document.getElementById('viewerLoadingRetry').onclick=()=>location.reload();
   window.SR_DRAFT_KEY=draftKey;
  }
  updateViewerLoading(5);
- const files=['data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','rhumbline-geometry','navigation','track-renderer','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
+ const files=['data','boat-measurements','boat-details','boat-icons','weather','track-time','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','rhumbline-geometry','navigation-math','navigation','track-profiles','track-renderer','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
  const preparationWeight=60,totalSteps=files.length+preparationWeight;
  let completed=0;
  for(const file of files){
@@ -68,9 +68,13 @@ document.getElementById('viewerLoadingRetry').onclick=()=>location.reload();
    window.SR_RHUMBLINE=Object.freeze({version:1,points:Object.freeze(route.points.map(p=>Object.freeze(p)))});
   }
   if(file==='boat-icons')await loadBoatHulls();
+  if(file==='track-profiles'&&!routeSetup)await loadTrackProfiles();
   if(file==='track-renderer'){
    if(routeSetup)prepareSelectedTracks();
-   else await prepareFleetTracks((prepared,total)=>updateViewerLoading(5+90*(completed+preparationWeight*prepared/total)/totalSteps));
+   else{
+    await prepareFleetTracks((prepared,total)=>updateViewerLoading(5+90*(completed+preparationWeight*prepared/total)/totalSteps));
+    if(webglTracks.active)webglTracks.prepareComparison();
+   }
    completed+=preparationWeight;
   }
   updateViewerLoading(5+90*++completed/totalSteps);
