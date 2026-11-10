@@ -4,7 +4,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
 }));
 const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)<tolerance,`${actual} ≈ ${expected}`);
 (async()=>{
- const browser=await firefox.launch({headless:false});
+ const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
@@ -18,7 +18,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.equal(await page.evaluate(()=>boats.every(b=>b.handicapSecondsPerNm>0)),true);
   const alignment=await page.evaluate(()=>{
    const map=$('map').getBoundingClientRect(),measure=$('mapMeasureToggle').getBoundingClientRect(),layers=$('mapLayersToggle').getBoundingClientRect();
-   return {gap:layers.left-measure.right,top:layers.top-map.top,right:map.right-layers.right,aligned:measure.top===layers.top};
+   return {gap:layers.left-measure.right,top:layers.top-map.top,right:map.right-$('mapTools').getBoundingClientRect().right,aligned:measure.top===layers.top};
   });
   assert.ok(alignment.aligned);near(alignment.gap,6,1);near(alignment.top,12,1);near(alignment.right,12,1);
   await page.setViewportSize({width:1200,height:900});
@@ -127,12 +127,13 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.ok(coloured.blue[2]>coloured.blue[0]+80,JSON.stringify(coloured));
   await page.locator('#mapTracksToggle').click();
   await page.locator('#trackStyle').selectOption('speed');
-  const original=await pixels();assert.deepEqual(coloured.reference,original.reference,'Mercutio keeps the recorded-SOG colour');
+  const original=await pixels();assert.deepEqual(coloured.reference,[46,40,12,46],'Reference uses its own premultiplied boat colour at 18% opacity');
+  assert.notDeepEqual(coloured.reference,original.reference,'Ordinary SOG view keeps its original colours and opacity');
   await page.evaluate(()=>{referenceBoatId='rival';comparisonRevision++;webglTracks.prepareComparison();});
   await page.locator('#trackStyle').selectOption('absolute');
   const switched=await pixels();
-  assert.deepEqual(switched.red,original.red,'Selected Rival keeps its own SOG colour at the early endpoint');
-  assert.deepEqual(switched.blue,original.blue,'Selected Rival keeps its own SOG colour at the late endpoint');
+  assert.deepEqual(switched.red,[46,14,31,46],'New reference uses its own faint boat colour');
+  assert.deepEqual(switched.blue,switched.red,'Reference colour and opacity are constant along its track');
   assert.notDeepEqual(switched.reference,original.reference,'The former reference now uses the comparison palette');
   await page.evaluate(()=>{referenceBoatId='reference';comparisonRevision++;webglTracks.prepareComparison();});
   await page.locator('#trackStyle').selectOption('absolute');
@@ -140,6 +141,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   const rated=await page.evaluate(()=>trackGainSample(boats[2],boats[2].points[4][2]));
   near(rated.gain,numeric.handicap-6,.06);
   assert.match(await page.locator('#trackSpeedLegend').textContent(),/ToD/);
+  assert.deepEqual((await pixels()).reference,coloured.reference,'Handicap comparison uses the same faint reference');
   const timeMode=await page.evaluate(()=>{
    const gl=webglTracks.gl,originals=new Map();
    for(const name of ['bufferData','bufferSubData','createBuffer','texSubImage2D','beginTransformFeedback']){
@@ -154,11 +156,27 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   });
   for(const sample of timeMode)near(sample.gain,360000/1852*(1/sample.referenceVmg-1/sample.vmg));
   assert.match(await page.locator('#trackSpeedLegend').getAttribute('aria-label'),/sekunder pr\. 100 meter/);
-  assert.match(await page.locator('#trackSpeedLegend').textContent(),/−20.*\+20/);
+  assert.match(await page.locator('#trackSpeedLegend').textContent(),/−120.*\+120/);
   const timePixels=await pixels();
   assert.ok(timePixels.red[0]>timePixels.red[2],JSON.stringify(timePixels));
   assert.ok(timePixels.blue[2]>timePixels.blue[0],JSON.stringify(timePixels));
-  assert.deepEqual(timePixels.reference,original.reference,'Reference SOG is unchanged in time mode');
+  assert.deepEqual(timePixels.reference,coloured.reference,'Time comparison uses the same faint reference');
+  const overlap=await page.evaluate(()=>{
+   const laterReference={...boats[0],points:boats[0].points.map(p=>[p[0],55.602,p[2]+1200])};
+   trackProfileCache.set(laterReference.points,{samples:prepareProjectedTrack(laterReference),stations:prepareReferenceProfile(laterReference)});
+   webglTracks.prepare(laterReference);
+   // Submit the newer reference last: it must still stay below the older rival.
+   webglTracks.render(currentTime(),[boats[1],laterReference],true);
+   const gl=webglTracks.gl,rect=$('map').getBoundingClientRect(),matrix=$('map').getScreenCTM();
+   return [12.005,12.075].map(lon=>{
+    const point=new DOMPoint(...xy([lon,55.602])).matrixTransform(matrix),rgba=new Uint8Array(4);
+    gl.readPixels(Math.floor((point.x-rect.left)/rect.width*gl.drawingBufferWidth),Math.floor((rect.bottom-point.y)/rect.height*gl.drawingBufferHeight),1,1,gl.RGBA,gl.UNSIGNED_BYTE,rgba);
+    return [...rgba];
+   });
+  });
+  assert.deepEqual(overlap,[timePixels.red,timePixels.blue],'The faint reference never covers other boats, regardless of passage time or submission order');
+  await pixels();
+  await page.screenshot({path:'/tmp/sr2026-reference-track-firefox.png'});
   const hoverPoint=await page.evaluate(()=>{
    const point=new DOMPoint(...xy([12.005,55.602])).matrixTransform($('map').getScreenCTM());return {x:point.x,y:point.y};
   });
@@ -172,7 +190,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   });
   assert.equal(oldReferenceHit,null,'Hidden old tracks cannot be picked');
   await page.locator('#trackLength').selectOption('0');
-  const full=await pixels();assert.deepEqual(full.reference,original.reference);assert.equal(full.red[3],255);
+  const full=await pixels();assert.deepEqual(full.reference,coloured.reference);assert.equal(full.red[3],255);
   await page.locator('#trackLength').selectOption('7200');
   const uploads=await page.evaluate(()=>webglTracks.uploads);
   await page.evaluate(()=>{selectedTime-=1;render();selectedTime+=1;render();});
@@ -228,7 +246,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.equal(await page.locator('#mapMeasureToggle').isVisible(),true);
   await page.locator('#presentationFullscreen').click();
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:'firefox',checks:'permanent route asset, rhumb geometry and measurement, same-place speed independent of passage time, red/blue WebGL pixels, reference unchanged, ToD, seconds per 100 metres, zero/reverse speeds, hover units, no mode recomputation, missing data, immutable geometry, persistence, presentation/fullscreen',numeric,timeMath,coloured,timePixels,errors}));
+  console.log(JSON.stringify({browser:'firefox',checks:'permanent route asset, rhumb geometry and measurement, same-place speed independent of passage time, red/blue WebGL pixels, faint reference in its own colour, ToD, seconds per 100 metres, zero/reverse speeds, hover units, no mode recomputation, missing data, immutable geometry, persistence, presentation/fullscreen',numeric,timeMath,coloured,timePixels,errors}));
   await page.close();
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

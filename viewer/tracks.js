@@ -59,7 +59,7 @@ function renderTrackSpeedLegend(){
   }
   el('title',{},text).textContent=label;
  }
- const comparisonHelp=`Sammenlignet med ${referenceName} ved samme sted på ruten. ${timeMode?'Grå: ingen fremdrift eller fælles data.':'Grå: mangler fælles passage eller data.'} ${referenceName}: uændret SOG-farve.`;
+ const comparisonHelp=`Sammenlignet med ${referenceName} ved samme sted på ruten. ${timeMode?'Grå: ingen fremdrift eller fælles data.':'Grå: mangler fælles passage eller data.'} ${referenceName}: gennemsigtigt spor i bådens egen farve.`;
  layer.setAttribute('aria-label',relative?`${timeMode?'Tidsforskel i sekunder pr. 100 meter':'Fartforskel'}: blå langsommere, rød hurtigere. ${comparisonHelp}`:'Bådfart over grunden, jet-farveskala fra 0 til 15 knob');
  if(relative)el('title',{},group).textContent=comparisonHelp;
  legendLabel(relative?`Mod ${referenceName} · ${timeMode?'s/100 m':comparison.basis==='handicap'?'ToD · kn':'absolut · kn'}`:'Bådfart · SOG · knob',{y:17,'font-size':11,'font-weight':650});

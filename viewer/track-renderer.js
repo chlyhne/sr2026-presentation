@@ -86,6 +86,7 @@ uniform float innerRatio;
 uniform bool relativeMode;
 uniform bool boatColourMode;
 uniform vec3 boatColour;
+uniform float opacity;
 uniform int gainComponent;
 uniform float gainLimit;
 out vec4 colour;
@@ -99,11 +100,12 @@ void main(){
  float feather=max(fwidth(distance)*0.5,0.000001);
  float outline=smoothstep(innerRatio-feather,innerRatio+feather,distance);
  colour=mix(boatColourMode?vec4(boatColour,1.0):texelFetch(palette,ivec2(bin,0),0),vec4(23.0/255.0,49.0/255.0,62.0/255.0,1.0),outline);
+ colour*=opacity;
 }`);
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
-   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','boatColourMode','boatColour','gainComponent','gainLimit'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
+   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','boatColourMode','boatColour','opacity','gainComponent','gainLimit'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
    if(!window.SR_RHUMBLINE_SETUP&&rhumbRoute.legs.length){
     const evaluationVertex=shader(gl.VERTEX_SHADER,`#version 300 es
 precision highp float;
@@ -330,11 +332,13 @@ void main(){colour=vec4(0.0);}`);
    gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2);
    gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
    const boatColourMode=trackUsesBoatColour();
-   gl.uniform1i(u.boatColourMode,boatColourMode?1:0);
+   const comparisonReference=trackUsesComparison()?referenceBoat():null;
+   // The faint reference is a guide underneath the other boats' comparison tracks.
+   const drawOrder=comparisonReference?[...order.filter(b=>b.id===comparisonReference.id),...order.filter(b=>b.id!==comparisonReference.id)]:order;
    gl.uniform1i(u.gainComponent,comparison.basis==='time'?2:comparison.basis==='handicap'?1:0);
    gl.uniform1f(u.gainLimit,trackGainLimit());
    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.palette);gl.uniform1i(u.palette,0);
-   for(const boat of order){
+   for(const boat of drawOrder){
     const window=displayTrackWindow(boat,time);if(!window)continue;
     const points=boat.points,first=Math.max(0,timeBoundary(points,window.from)-1),last=timeBoundary(points,window.to,true);
     if(last<=first)continue;
@@ -342,12 +346,15 @@ void main(){colour=vec4(0.0);}`);
     gl.uniform4f(u.windowTime,Math.max(1e-6,window.to-window.from),high,0,stamp-high);
     this.prepare(boat);const record=this.buffers.get(points);
     gl.bindVertexArray(record.vao);
-    if(boatColourMode){
+    const isReference=boat.id===comparisonReference?.id,solidColour=boatColourMode||isReference;
+    gl.uniform1i(u.boatColourMode,solidColour?1:0);
+    gl.uniform1f(u.opacity,isReference?0.18:1);
+    if(solidColour){
      const colour=this.boatColours.get(colours[boat.name]);
      if(!colour)throw Error('Bådens sporfarve er ikke forberedt: '+boat.name);
      gl.uniform3fv(u.boatColour,colour);
     }
-    const relative=trackUsesComparison()&&boat.id!==referenceBoat()?.id;
+    const relative=!!comparisonReference&&!isReference;
     gl.uniform1i(u.relativeMode,relative?1:0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
     if(relative)this.bindComparison(record,first);
     // WebGL has no base-instance draw: adjust the view into the same immutable
@@ -358,6 +365,9 @@ void main(){colour=vec4(0.0);}`);
      record.first=first;
     }
     gl.drawArraysInstanced(gl.TRIANGLES,0,this.vertexCount,last-first);
+    // Preserve the reference's newest passage internally, then let every other
+    // boat cover it, including older passages. Pixels use premultiplied alpha.
+    if(isReference)gl.clear(gl.DEPTH_BUFFER_BIT);
    }
    gl.bindVertexArray(null);gl.flush();
    return true;
