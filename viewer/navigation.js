@@ -1,6 +1,6 @@
 // The route comes only from the permanent project asset loaded by boot.js.
 const TRACK_GAIN_LIMIT=2,TRACK_GAIN_MISSING=-1e20,TRACK_COMPARISON_KEY='sr2026-track-comparison';
-const TRACK_TIME_GAIN_LIMIT=20,TRACK_SECONDS_PER_100_METERS=3600*100/1852;
+const TRACK_TIME_GAIN_LIMIT=120,TRACK_SECONDS_PER_100_METERS=3600*100/1852;
 const TRACK_LENGTH_KEY='sr2026-track-length',TRACK_LENGTHS=new Set([0,900,1800,3600,7200,14400,28800]);
 const TRACK_FULL_WINDOW=boats.reduce((span,boat)=>boat.points.length?Math.max(span,D.end-boat.points[0][2]+1):span,D.end-D.start+1);
 let trackLengthSeconds=7200;

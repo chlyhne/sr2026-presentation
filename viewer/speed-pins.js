@@ -118,7 +118,6 @@ function toggleSpeedPin(){
  const boat=boats.find(b=>b.id===pickedTrackSpeed.boatId),sample=boat&&trackSpeedSample(boat,pickedTrackSpeed.time);
  if(!sample)return;
  const existing=matchingSpeedPin(sample);
- if(!existing&&trackPinValue(boat,sample).value===null)return;
  const next=existing?speedPins.filter(p=>p!==existing):[...speedPins,{id:crypto.randomUUID(),boatId:sample.boatId,time:sample.time}];
  try{SRStorage.setItem('sr2026-speed-pins',JSON.stringify(next));speedPins=next;$('speedPinStatus').textContent='';}
  catch{$('speedPinStatus').textContent='Fartmærket kunne ikke gemmes i browseren.';}
@@ -150,7 +149,7 @@ function renderSpeedPins(){
   group.dataset.speedKey=entry.id;group.dataset.boatId=boat.id;group.dataset.trackTime=entry.time;
   group.dataset.pinned=String(entry.pinned);group.setAttribute('class','speed-marker');
   group.setAttribute('transform',`translate(${x} ${y}) scale(${scale})`);
-  const {value,label,description}=trackPinValue(boat,sample),accessibleLabel=boat.name+' · '+label+' · '+description;
+  const {label,description}=trackPinValue(boat,sample),accessibleLabel=boat.name+' · '+label+' · '+description;
   el('title',{},group).textContent=`${label} · ${fmt(entry.time)} · ${description}`;
   el('circle',{r:10,fill:'transparent','pointer-events':'all'},group);
   if(entry.pinned)el('circle',{r:7,fill:'none',stroke:colour,'stroke-width':1.5},group);
@@ -162,7 +161,7 @@ function renderSpeedPins(){
   if(!presenting){
    group.setAttribute('role','button');group.setAttribute('tabindex','0');group.setAttribute('aria-label',accessibleLabel);
    const selected=pickedTrackSpeed&&entry.boatId===pickedTrackSpeed.boatId&&Math.abs(entry.time-pickedTrackSpeed.time)<.05;
-   if(selected&&(entry.pinned||value!==null)){
+   if(selected){
     const button=el('g',{'data-speed-action':entry.pinned?'unpin':'pin',role:'button',tabindex:0,
      'aria-label':entry.pinned?'Fjern pin for '+accessibleLabel:'Pin '+accessibleLabel},group);
     const buttonWidth=entry.pinned?76:44;

@@ -248,14 +248,14 @@ python3 scripts/serve_viewer.py
   kildepunkterne. Farten kommer fra TracTracs oprindelige SOG-felt og interpoleres
   lineært mellem de to tilhørende kildetider; den beregnes ikke fra positionsændringer
   eller den afrundede jet-farve. Tal over 15 knob vises med deres faktiske værdi.
-  Manglende fartdata vises som **Fart mangler** og kan ikke pinnes.
+  Manglende fartdata vises som **Fart mangler**. Punktet kan stadig pinnes.
 - Mærkets værdi følger den synlige sportype: SOG i **kn**, absolut eller
   handicapkorrigeret fartforskel i **kn**, eller tidsgevinst i **s/100 m**.
   Positive forskelle betyder hurtigere fremdrift end referencebåden ved samme
   sted på ruten. Sammenligningsværdierne læses fra sporets forberedte WebGL-data;
   skift af sportype genberegner dem ikke. Referencebådens mærker viser fortsat SOG.
   Manglende sammenligning vises som **Sammenligning mangler**, uden skift til SOG.
-  En eksisterende pin kan stadig fjernes, når data mangler.
+  Punktet kan både pinnes og fjernes, når data mangler.
 - **Pin** ved fartmærket gemmer punktet. Et pinnet mærke vises i både redigering
   og præsentation, når båden er valgt, punktets tid ligger i det viste to-timersspor,
   og selve punktet er i kortudsnittet. Det behøver ikke være bådens aktuelle position.
@@ -875,8 +875,8 @@ sted, uden handicapkorrektion. Den viser
 `(3600 × 100 / 1852) × (1 / v_reference − 1 / v_båd)` i sekunder pr. 100 meter.
 Positiv værdi betyder indhentet tid (rød), negativ tabt tid (blå).
 3 mod 4 knob giver cirka −16,2 s/100 m, mens 13 mod 14 knob giver cirka
-−1,1 s/100 m. Farveskalaen mættes ved ±20 s/100 m; hover viser den umættede
-værdi. Hvis en af de projicerede farter er nul eller negativ, kan en endelig
+−1,1 s/100 m. Den lineære farveskala mættes ved ±120 s/100 m; hover og pins viser
+den umættede værdi. Hvis en af de projicerede farter er nul eller negativ, kan en endelig
 sejltid fremad over 100 meter ikke beregnes, og sporet vises gråt.
 Det er en lokal tidsforskel pr. distance, ikke det samlede tidsmæssige forspring.
 Valget gemmes ligesom de øvrige sporvalg.
