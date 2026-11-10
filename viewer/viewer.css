@@ -23,30 +23,29 @@ body.presenting #renderingError{grid-column:1}
 .rendering-failed #map,.rendering-failed #mapEventImage,.rendering-failed #visibleBoats,.rendering-failed #mapTools{visibility:hidden}
 #mapTools{grid-column:2;grid-row:1;align-self:start;justify-self:end;position:relative;z-index:3;margin:12px;display:flex;align-items:start;gap:6px;color:#173d4c;font-size:13px}
 #mapLayers,#mapMeasure,#mapTracks{position:relative}
-#mapMeasureToggle,#mapTracksToggle,#mapTracksPanel,#mapMeasurePanel,#comparisonStatus{background:#fffffff0;color:#173d4c;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26}
+#mapMeasureToggle,#mapTracksToggle,#mapTracksPanel,#rhumblineTools,#comparisonStatus{background:#fffffff0;color:#173d4c;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26}
 #mapMeasureToggle,#mapTracksToggle{display:flex;align-items:center;gap:7px;padding:8px 10px;font-size:13px;font-weight:650;min-height:36px}
 #mapTracksToggle[aria-expanded=true]>span{transform:rotate(180deg)}
 #mapMeasureToggle:hover,#mapTracksToggle:hover{background:#dcecf0}
-#mapMeasurePanel button[aria-pressed=true]{background:#173d4c;color:white}
+#mapMeasureToggle[aria-pressed=true]{background:#173d4c;color:white}
 #mapTracksPanel{position:absolute;right:0;top:calc(100% + 6px);width:250px;padding:12px;background:white}
 #mapTracksPanel label{margin:0 0 5px;font-size:12px}
 #mapTracksPanel select{background:white;color:#173d4c;border-color:#b8cbd5;font-size:12px}
 #mapTracksPanel select+label{margin-top:12px}
-#mapMeasurePanel{position:absolute;right:0;top:calc(100% + 6px);width:300px;padding:12px;background:#fff}
-#mapMeasurePanel p,#comparisonStatus{color:#365766;font-size:12px;line-height:1.5}
-#mapMeasurePanel p{margin:10px 0}
-#mapMeasurePanel button{background:#dcecf0;color:#173d4c;border-color:#b8cbd5;padding:7px;font-size:12px}
-#mapMeasurePanel button:hover{background:#c7dfe6}
+#rhumblineTools{width:330px;padding:12px;background:#fff}
+#rhumblineTools p,#comparisonStatus{color:#365766;font-size:12px;line-height:1.5}
+#rhumblineTools p{margin:10px 0}
+#rhumblineTools button{background:#dcecf0;color:#173d4c;border-color:#b8cbd5;padding:7px;font-size:12px}
+#rhumblineTools button:hover{background:#c7dfe6}
 .map-tool-actions{display:flex;gap:6px;flex-wrap:wrap}
 #measurementResult{display:block;margin:8px 0;font-weight:650;font-variant-numeric:tabular-nums}
 #comparisonStatus{position:absolute;right:0;top:calc(100% + 6px);max-width:330px;margin:0;padding:10px;pointer-events:none}
 #map.measuring,#map.measuring:active,#map.measuring .boat-marker{cursor:crosshair}
-body.rhumbline-setup header,body.rhumbline-setup aside,body.rhumbline-setup #onlineStatus,body.rhumbline-setup #eventPanel,body.rhumbline-setup footer,body.rhumbline-setup #visibleBoats,body.rhumbline-setup #trackSpeedLegend,body.rhumbline-setup #mapTracks,body.rhumbline-setup #mapLayers,body.rhumbline-setup #mapMeasureToggle,body.rhumbline-setup #measureDistance,body.rhumbline-setup #clearMeasurement,body.rhumbline-setup #cancelMapLine{display:none!important}
+body.rhumbline-setup header,body.rhumbline-setup aside,body.rhumbline-setup #onlineStatus,body.rhumbline-setup #eventPanel,body.rhumbline-setup footer,body.rhumbline-setup #visibleBoats,body.rhumbline-setup #trackSpeedLegend,body.rhumbline-setup #mapTracks,body.rhumbline-setup #mapLayers,body.rhumbline-setup #mapMeasureToggle{display:none!important}
 body.rhumbline-setup.presenting main{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
 body.rhumbline-setup #map,body.rhumbline-setup #mapTools,body.rhumbline-setup #renderingError{grid-column:1;grid-row:1}
 body.rhumbline-setup #mapTools{display:block}
-body.rhumbline-setup #mapMeasurePanel{position:static;width:330px}
-body.rhumbline-setup #mapMeasurePanel h1{font-size:18px;margin-bottom:8px}
+body.rhumbline-setup #rhumblineTools h1{font-size:18px;margin-bottom:8px}
 body.rhumbline-setup #finishMapLine{background:#173d4c;color:white}
 body.rhumbline-setup #rhumblineSaveStatus:empty{display:none}
 #mapLayersToggle,#mapLayersPanel{background:#fffffff0;color:#173d4c;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26}

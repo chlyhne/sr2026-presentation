@@ -19,12 +19,13 @@ python3 scripts/serve_viewer.py
   Et events gemte valg af bådnavne bruges fortsat ved navigation til eventet.
 - **Lag → Grid** viser et antialiaseret afstandsgrid oven på kortbaggrunden,
   under sporene. Afstanden skifter automatisk mellem **15 sømil, 5 sømil,
-  1 sømil, 400 m og 100 m**, så cellerne normalt er mindst 80 skærmpixel brede.
+  2 sømil, 1 sømil, 400 m og 100 m**, så cellerne normalt er mindst 80 skærmpixel brede.
   Den aktuelle afstand vises i lagmenuen, og lagets tilstand gemmes med eventet.
   Grid er forankret ved 55° N, 12° Ø; afstandene er kalibreret ved 55° N
   i kortets eksisterende længde-/breddegradsprojektion.
 - Nederst til højre vises en målestok i sømil eller meter, også når grid er slået
-  fra. Den følger zoom og beregnes ved målestokkens aktuelle breddegrad.
+  fra. Den viser altid gridets aktuelle afstand, og stregen svarer til bredden
+  af én gridcelle på kortet.
 - **Start præsentation** skjuler indstillinger. Kortet står til venstre, og det
   valgte events tekst og eventuelle billede vises i panelet til højre.
   På smalle skærme ligger eventpanelet under kortet og kan rulles.
@@ -129,12 +130,10 @@ python3 scripts/serve_viewer.py
   Vindmodel og radarens synlighed justeres
   fortsat i sidepanelet.
   `node scripts/test_viewer_layers.cjs` tester lagmenuen lokalt i Firefox på PC.
-- **Mål** står ved siden af **Lag** øverst til højre på kortet. Vælg **Mål afstand**,
-  og klik punkter på kortet. Hver lige delstrækning viser distance i sømil og
-  kurs i grader; målingen viser også den samlede distance. Træk kortet og zoom
-  undervejs. **Færdig** eller Enter afslutter; **Fortryd punkt** fjerner sidste
-  punkt, og Escape annullerer den igangværende linje. **Ryd måling** fjerner den
-  afsluttede måling. Måleværktøjet virker også i præsentation og fuld skærm.
+- **Linealknappen** ved siden af **Lag** starter en afstandsmåling uden undermenu.
+  Klik to steder på kortet: afstand i sømil og kurs vises direkte på målingen.
+  Tryk på linealen igen for at fjerne målingen, eller tryk Escape. Kortet kan
+  trækkes og zoomes undervejs. Måleværktøjet virker også i præsentation og fuld skærm.
 - Den permanente rhumbline tegnes én gang på det separate lokale kort
   <http://127.0.0.1:18097/rhumbline.html> (start serveren med
   `python3 scripts/serve_viewer.py --port 18097`). Klik punkterne i sejlretningen,

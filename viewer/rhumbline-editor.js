@@ -1,29 +1,25 @@
 // Local, one-time setup. It reuses the presentation's nominal WebGL map.
 document.body.classList.add('rhumbline-setup');document.title='Tegn permanent rhumbline';
 $('wind').checked=$('rain').checked=$('traffic').checked=$('military').checked=false;
-chosen.clear();setMeasurementExpanded(true);
+chosen.clear();$('rhumblineTools').hidden=false;
 const setupTitle=document.createElement('h1');setupTitle.textContent='Tegn rhumbline';
-$('mapMeasurePanel').prepend(setupTitle);
+$('rhumblineTools').prepend(setupTitle);
 const setupStatus=document.createElement('p');setupStatus.id='rhumblineSaveStatus';setupStatus.setAttribute('role','status');
-$('mapMeasurePanel').append(setupStatus);
+$('rhumblineTools').append(setupStatus);
 const setupActions=document.createElement('div');setupActions.className='map-tool-actions';
 const reverseRoute=document.createElement('button');reverseRoute.textContent='Vend retning';reverseRoute.type='button';
 const restartRoute=document.createElement('button');restartRoute.textContent='Start forfra';restartRoute.type='button';
-setupActions.append(reverseRoute,restartRoute);$('mapMeasurePanel').append(setupActions);
+setupActions.append(reverseRoute,restartRoute);$('rhumblineTools').append(setupActions);
 reverseRoute.onclick=()=>{navigationDraft.reverse();renderNavigation();};
 restartRoute.onclick=()=>{startMapLine('route');updateSetupHelp();};
-$('finishMapLine').textContent='Gem permanent rhumbline';
-$('cancelMapLine').hidden=true;
 function updateSetupHelp(){
  $('measurementHelp').textContent='Klik punkterne på kortet i sejlretningen. Punkterne forbindes med lige streger. Zoom med musehjulet, og træk for at flytte kortet. Gem, når hele ruten er tegnet.';
- $('cancelMapLine').hidden=true;
 }
 function lockRhumblineEditor(points){
  navigationMode=null;navigationDraft=[];measurement=points.map(p=>[...p]);syncNavigationControls();renderNavigation();
  $('finishMapLine').disabled=$('undoMapPoint').disabled=reverseRoute.disabled=restartRoute.disabled=true;
  $('measurementHelp').textContent='Rhumbline er gemt permanent. Præsentationen bruger nu disse punkter ved sammenligning med referencebåden.';
  setupStatus.textContent=`${points.length} punkter gemt · ${buildRhumbRoute(points).total.toLocaleString('da-DK',{maximumFractionDigits:2})} sømil`;
- $('cancelMapLine').hidden=true;
 }
 let savingRhumbline=false;
 async function savePermanentRhumbline(){

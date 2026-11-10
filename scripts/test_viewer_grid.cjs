@@ -21,7 +21,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   const levels=await page.evaluate(()=>{
    stopPlayback();$('wind').checked=$('rain').checked=false;
    const center=xy([12,55]);
-   return [15*1852,5*1852,1852,400,100].map(meters=>{
+   return [15*1852,5*1852,2*1852,1852,400,100].map(meters=>{
     const width=meters*MAP_GRID_UNITS_PER_METER[0]*10;
     view=[center[0]-width/2,center[1]-width/2,width,width];setview();render();
     const viewport=mapViewport(),level=mapGridLevel(viewport);
@@ -29,14 +29,16 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     const scale=$('mapCredit').querySelector('[data-map-scale]');
     const scaleMeters=+scale.dataset.meters,scaleWidth=+scale.dataset.pixelWidth;
     const scaleBounds=scale.getBoundingClientRect();
-    if(!(scaleWidth>40&&scaleWidth<=140))throw Error('Scale must remain compact');
+    const gridWidth=level.meters*MAP_GRID_UNITS_PER_METER[0]*Math.hypot(viewport.matrix.a,viewport.matrix.b);
+    if(scaleMeters!==level.meters||Math.abs(scaleWidth-gridWidth)>1e-6)throw Error('Scale must match one grid cell');
+    if(scale.querySelector('text').textContent!==level.label)throw Error('Scale and grid must use the same label');
     if(scaleBounds.right>viewport.rect.right||scaleBounds.bottom>viewport.rect.bottom||scaleBounds.bottom<viewport.rect.bottom-90)throw Error('Scale must stay in the bottom right corner');
     return {meters:level.meters,label:$('gridSpacing').textContent,scaleMeters};
    });
   });
-  assert.deepEqual(levels.map(level=>level.meters),[27780,9260,1852,400,100]);
-  assert.deepEqual(levels.map(level=>level.label),['15 sømil','5 sømil','1 sømil','400 m','100 m']);
-  assert.ok(levels.every((level,index)=>index===0||level.scaleMeters<levels[index-1].scaleMeters),'Scale follows zoom');
+  assert.deepEqual(levels.map(level=>level.meters),[27780,9260,3704,1852,400,100]);
+  assert.deepEqual(levels.map(level=>level.label),['15 sømil','5 sømil','2 sømil','1 sømil','400 m','100 m']);
+  assert.deepEqual(levels.map(level=>level.scaleMeters),levels.map(level=>level.meters),'Scale follows grid size at every zoom level');
   const coverage=await page.evaluate(()=>{
    $('land').setAttribute('visibility','hidden');$('coast').setAttribute('visibility','hidden');
    const read=()=>{
