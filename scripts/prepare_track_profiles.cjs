@@ -9,6 +9,7 @@ const OUTPUT=path.join(ROOT,'viewer','track-profiles');
 const MANIFEST=path.join(OUTPUT,'manifest.json');
 const SOURCES=['viewer/data.js','viewer/track-time.js','viewer/tracks.js','viewer/rhumbline-geometry.js','viewer/navigation-math.js','viewer/rhumbline.json','scripts/prepare_track_profiles.cjs'];
 const digest=value=>crypto.createHash('sha256').update(value).digest('hex');
+const {packProjectedTrack,packSpeedCodes,packedSpeedBytes}=vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer','navigation-math.js'),'utf8')+'\n({packProjectedTrack,packSpeedCodes,packedSpeedBytes});',vm.createContext(vm.constants.DONT_CONTEXTIFY));
 
 function sourceState(){
  const hash=crypto.createHash('sha256'),sources={};
@@ -26,10 +27,10 @@ function currentManifest(state){
   if(error instanceof SyntaxError)return null;
   throw error;
  }
- if(manifest.version!==3||manifest.sourceFingerprint!==state.sourceFingerprint||!Array.isArray(manifest.boats)
-  ||manifest.stationSpacingMeters!==10||manifest.profileEncoding!=='uint8'||manifest.speedMaximum!==25
-  ||manifest.speedCodes!==254||manifest.missingValue!==255||manifest.sampleMissingValue!==-1e20
-  ||manifest.sampleWords!==3||manifest.sampleBytes!==9||manifest.sampleEncoding!=='uint8-speed-planar'
+ if(manifest.version!==4||manifest.sourceFingerprint!==state.sourceFingerprint||!Array.isArray(manifest.boats)
+  ||manifest.stationSpacingMeters!==10||manifest.profileEncoding!=='uint10-packed'||manifest.speedMaximum!==25
+  ||manifest.speedCodes!==1022||manifest.speedBits!==10||manifest.missingValue!==1023||manifest.sampleMissingValue!==-1e20
+  ||manifest.sampleWords!==3||manifest.samplePositionBytes!==8||manifest.sampleEncoding!=='uint10-speed-planar'
   ||manifest.speedSignEncoding!=='signed-station-index'||manifest.stationWords!==1||manifest.byteOrder!=='little-endian')return null;
  if(!Number.isSafeInteger(manifest.stationCount)||manifest.stationCount<1)return null;
  if(manifest.bundleFile!==`track-profiles/${state.sourceFingerprint}/fleet.bin`||!Number.isSafeInteger(manifest.bundleBytes)||manifest.bundleBytes<0)return null;
@@ -38,9 +39,9 @@ function currentManifest(state){
   if(typeof boat.id!=='string'||ids.has(boat.id)||!Number.isSafeInteger(boat.pointCount)||boat.pointCount<0||boat.stationCount!==manifest.stationCount)return null;
   ids.add(boat.id);
   if(boat.sampleOffset!==offset)return null;
-  offset+=(boat.pointCount+1)*9;
+  offset+=(boat.pointCount+1)*8+packedSpeedBytes(boat.pointCount+1);
   if(!Number.isSafeInteger(offset)||boat.profileOffset!==offset)return null;
-  offset+=boat.stationCount;
+  offset+=packedSpeedBytes(boat.stationCount);
   if(!Number.isSafeInteger(offset))return null;
  }
  const file=path.join(ROOT,'viewer',manifest.bundleFile);
@@ -66,20 +67,6 @@ function writeAtomic(filename,value){
  try{fs.writeFileSync(temporary,value);fs.renameSync(temporary,filename);}finally{if(fs.existsSync(temporary))fs.unlinkSync(temporary);}
 }
 
-function packProjectedTrack(samples){
- if(samples.length%3)throw Error('Projected track must contain triplets.');
- const count=samples.length/3,bytes=new Uint8Array(count*9),view=new DataView(bytes.buffer);
- for(let i=0;i<count;i++){
-  const index=samples[i*3],progress=samples[i*3+1],speed=samples[i*3+2];
-  if(!Number.isInteger(index)||index< -1||!Number.isFinite(progress)||progress<0||!Number.isFinite(speed))throw Error('Invalid projected track sample.');
-  const signedIndex=index===-1?-1:(speed<0||Object.is(speed,-0)?-index-2:index);
-  if(Math.fround(signedIndex)!==signedIndex)throw Error('Projected station index cannot be represented distinctly.');
-  view.setFloat32(i*8,signedIndex,true);view.setFloat32(i*8+4,progress,true);
-  bytes[count*8+i]=index===-1?255:Math.round(Math.min(Math.abs(speed),25)*254/25);
- }
- return bytes;
-}
-
 function generate({ifStale=false}={}){
  if(os.endianness()!=='LE')throw Error('Track profile generation requires a little-endian Node.js host.');
  const started=performance.now(),state=sourceState();
@@ -91,18 +78,18 @@ function generate({ifStale=false}={}){
  for(const [index,boat] of boats.entries()){
   if(typeof boat.id!=='string'||ids.has(boat.id))throw Error('Track profile boats must have unique string IDs.');
   ids.add(boat.id);
-  const samples=packProjectedTrack(prepareProjectedTrack(boat)),profile=prepareReferenceProfile(boat);
+  const samples=packProjectedTrack(prepareProjectedTrack(boat)),stations=prepareReferenceProfile(boat),profile=packSpeedCodes(stations);
   const sampleOffset=byteLength,profileOffset=sampleOffset+samples.byteLength;
   for(const values of [samples,profile])chunks.push(Buffer.from(values.buffer,values.byteOffset,values.byteLength));
   byteLength=profileOffset+profile.byteLength;
-  entries.push({id:boat.id,pointCount:boat.points.length,stationCount:profile.length,sampleOffset,profileOffset});
-  stationCount+=profile.length;pointCount+=boat.points.length;
+  entries.push({id:boat.id,pointCount:boat.points.length,stationCount:stations.length,sampleOffset,profileOffset});
+  stationCount+=stations.length;pointCount+=boat.points.length;
   if((index+1)%10===0||index+1===boats.length)console.log(`Prepared ${index+1}/${boats.length} boats`);
  }
  if(sourceState().sourceFingerprint!==state.sourceFingerprint)throw Error('Track profile sources changed during generation; run the generator again.');
  const bundleFile=`track-profiles/${state.sourceFingerprint}/fleet.bin`;
  writeAtomic(path.join(ROOT,'viewer',bundleFile),Buffer.concat(chunks,byteLength));
- const manifest={version:3,sourceFingerprint:state.sourceFingerprint,sources:state.sources,dataDigest:digest(JSON.stringify(D)),rhumblineDigest:digest(JSON.stringify(definition)),start:D.start,byteOrder:'little-endian',stationCount:referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint8',speedMaximum:25,speedCodes:254,missingValue:255,sampleMissingValue:-1e20,sampleWords:3,sampleBytes:9,sampleEncoding:'uint8-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,bundleFile,bundleBytes:byteLength,boats:entries};
+ const manifest={version:4,sourceFingerprint:state.sourceFingerprint,sources:state.sources,dataDigest:digest(JSON.stringify(D)),rhumblineDigest:digest(JSON.stringify(definition)),start:D.start,byteOrder:'little-endian',stationCount:referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint10-packed',speedMaximum:25,speedCodes:1022,speedBits:10,missingValue:1023,sampleMissingValue:-1e20,sampleWords:3,samplePositionBytes:8,sampleEncoding:'uint10-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,bundleFile,bundleBytes:byteLength,boats:entries};
  writeAtomic(MANIFEST,JSON.stringify(manifest,null,2)+'\n');
  console.log(`Track profiles: ${boats.length} boats, ${pointCount} points, ${stationCount} stations, ${byteLength} bytes (${(byteLength/1048576).toFixed(2)} MiB), ${((performance.now()-started)/1000).toFixed(2)} s`);
  return manifest;

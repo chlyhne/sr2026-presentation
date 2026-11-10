@@ -39,22 +39,23 @@ Det indeholder formatversion, kildefingeraftryk, SHA-256 af `JSON.stringify(DATA
 Browseren validerer rhumblinens digest, bådenes ID og punktantal samt binærformatet.
 Det fulde datafingeraftryk beregnes kun offline; browseren serialiserer ikke DATA.
 Filnavnene indeholder kildefingeraftrykket og er relative til viewerens rod.
-Manifestversion 3 bruger et fælles gitter med 10 meters afstand langs rhumblinen.
+Manifestversion 4 bruger et fælles gitter med 10 meters afstand langs rhumblinen.
 Alle både ligger i én `bundleFile`, hvor manifestets `sampleOffset` og
 `profileOffset` angiver hvert dataområde, og `bundleBytes` angiver filstørrelsen.
-Kildeområdet indeholder `pointCount + 1` prøver à ni bytes: først alle
-little-endian Float32-par `[signedStationIndex, progressNm]`, derefter ét byte
-med fartkoden pr. prøve. Den sidste prøve gentager sidste kildeprøve.
+Kildeområdet indeholder `pointCount + 1` prøver: først alle little-endian
+Float32-par `[signedStationIndex, progressNm]` à otte bytes, derefter pakkede
+10-bit-fartkoder. Fire fartkoder fylder fem bytes, mindst betydende bits først;
+kun sidste bytes ubrugte høje bits nuludfyldes. Den sidste prøve gentager sidste kildeprøve.
 Indekset er forberedt før Float32-konvertering, så CPU og GPU vælger samme station.
-Negativ VMG gemmes med indeks `-stationIndex-2`; `-1` og fartkode 255 betyder
+Negativ VMG gemmes med indeks `-stationIndex-2`; `-1` og fartkode 1023 betyder
 manglende kildeprøve. Browseren afkoder dette til Float32-tripler
 `[stationIndex, progressNm, vmg]` én gang før betjening. Tidsstempler ændres ikke.
-Profilområdet indeholder præcis én byte pr. station: koderne 0–254 repræsenterer
-0–25 knob (`knob = kode * 25 / 254`), og 255 betyder manglende passage.
+Profilområdet indeholder pakkede 10-bit-koder pr. station: koderne 0–1022 repræsenterer
+0–25 knob (`knob = kode * 25 / 1022`), og 1023 betyder manglende passage.
 Hastigheder klippes til intervallet før afrunding til nærmeste kode. Kildeprøvernes
-fartstørrelse bruger samme byteformat, men bevarer negativ fremdrift via indekset.
+fartstørrelse bruger samme bitformat, men bevarer negativ fremdrift via indekset.
 Afstanden bestemmes af indekset; positioner og tider gentages ikke i profilen.
-Browseren beholder byteprofilerne kompakte og afkoder kun den valgte til en
+Browseren pakker profilerne ud til Uint16-koder én gang og afkoder kun den valgte til en
 genbrugt Float32-tekstur på GPU'en. Ældre profilformater afvises tydeligt.
 
 Åbn <http://127.0.0.1:8097/>. Brug samme browser og adresse som før flytningen;

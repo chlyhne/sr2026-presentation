@@ -8,12 +8,12 @@ async function loadTrackProfiles(){
  const response=await fetch('track-profiles/manifest.json',{cache:'no-store'});
  if(!response.ok)fail('manifest ('+response.status+').');
  const manifest=await response.json(),hex=/^[a-f0-9]{64}$/;
- if(!manifest||manifest.version!==3||!hex.test(manifest.sourceFingerprint)||!hex.test(manifest.dataDigest)||!hex.test(manifest.rhumblineDigest)
+ if(!manifest||manifest.version!==4||!hex.test(manifest.sourceFingerprint)||!hex.test(manifest.dataDigest)||!hex.test(manifest.rhumblineDigest)
   ||manifest.start!==D.start||manifest.byteOrder!=='little-endian'||manifest.sampleWords!==3||manifest.stationWords!==1
-  ||manifest.stationSpacingMeters!==REFERENCE_STATION_METERS||manifest.profileEncoding!=='uint8'
+  ||manifest.stationSpacingMeters!==REFERENCE_STATION_METERS||manifest.profileEncoding!=='uint10-packed'
   ||manifest.stationCount!==referenceStationCount()
-  ||manifest.sampleBytes!==9||manifest.sampleEncoding!=='uint8-speed-planar'||manifest.speedSignEncoding!=='signed-station-index'
-  ||manifest.speedMaximum!==REFERENCE_SPEED_MAX||manifest.speedCodes!==254||manifest.missingValue!==REFERENCE_MISSING||manifest.sampleMissingValue!==-1e20
+  ||manifest.samplePositionBytes!==8||manifest.sampleEncoding!=='uint10-speed-planar'||manifest.speedSignEncoding!=='signed-station-index'
+  ||manifest.speedMaximum!==REFERENCE_SPEED_MAX||manifest.speedBits!==10||manifest.speedCodes!==REFERENCE_SPEED_CODES||manifest.missingValue!==REFERENCE_MISSING||manifest.sampleMissingValue!==-1e20
   ||!Array.isArray(manifest.boats)||manifest.boats.length!==boats.length)fail('ugyldigt manifestformat.');
  async function digest(value){
   const bytes=new TextEncoder().encode(JSON.stringify(value));
@@ -29,9 +29,9 @@ async function loadTrackProfiles(){
   if(!boat||seen.has(entry.id)||entry.pointCount!==boat.points.length||entry.stationCount!==referenceStationCount())fail('ugyldig båd eller antal i manifestet.');
   seen.add(entry.id);
   if(entry.sampleOffset!==offset)fail('ugyldig kildeposition i manifestet.');
-  offset+=(entry.pointCount+1)*9;
+  offset+=(entry.pointCount+1)*8+packedSpeedBytes(entry.pointCount+1);
   if(!Number.isSafeInteger(offset)||entry.profileOffset!==offset)fail('ugyldig profilposition i manifestet.');
-  offset+=entry.stationCount;
+  offset+=packedSpeedBytes(entry.stationCount);
   if(!Number.isSafeInteger(offset)||offset>manifest.bundleBytes)fail('ugyldig profilstørrelse i manifestet.');
   pending.push({boat,entry});
  }
@@ -47,7 +47,7 @@ async function loadTrackProfiles(){
  let maximum=0;
  const prepared=new Map();
  for(const {boat,entry} of pending){
-  const packed=bundle.subarray(entry.sampleOffset,entry.profileOffset),stations=bundle.slice(entry.profileOffset,entry.profileOffset+entry.stationCount);
+  const packed=bundle.subarray(entry.sampleOffset,entry.profileOffset),stations=unpackSpeedCodes(bundle.subarray(entry.profileOffset,entry.profileOffset+packedSpeedBytes(entry.stationCount)),entry.stationCount);
   const samples=unpackProjectedTrack(packed);
   for(let index=0;index<samples.length;index+=3){
    if(!Number.isInteger(samples[index])||samples[index]<-1||samples[index]>=entry.stationCount)fail('ugyldigt stationsindeks: '+boat.name+'.');

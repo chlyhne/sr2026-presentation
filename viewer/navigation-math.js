@@ -1,4 +1,25 @@
-const REFERENCE_STATION_METERS=10,REFERENCE_SPEED_MAX=25,REFERENCE_SPEED_SCALE=254/25,REFERENCE_MISSING=255;
+const REFERENCE_STATION_METERS=10,REFERENCE_SPEED_MAX=25,REFERENCE_SPEED_CODES=1022,REFERENCE_SPEED_SCALE=REFERENCE_SPEED_CODES/25,REFERENCE_MISSING=1023;
+function packedSpeedBytes(count){return Math.ceil(count*10/8);}
+function packSpeedCodes(values){
+ const bytes=new Uint8Array(packedSpeedBytes(values.length));
+ for(let index=0;index<values.length;index++){
+  const code=values[index],bit=index*10,offset=Math.floor(bit/8),shift=bit%8;
+  if(!Number.isInteger(code)||code<0||code>REFERENCE_MISSING)throw Error('Invalid 10-bit speed code.');
+  bytes[offset]|=code<<shift;bytes[offset+1]|=code>>>(8-shift);
+ }
+ return bytes;
+}
+function unpackSpeedCodes(bytes,count){
+ if(Object.prototype.toString.call(bytes)!=='[object Uint8Array]'||!Number.isSafeInteger(count)||count<0||bytes.length!==packedSpeedBytes(count))throw Error('Invalid packed speed byte length or type.');
+ const usedBits=count*10%8;
+ if(usedBits&&bytes[bytes.length-1]>>>usedBits)throw Error('Nonzero packed speed padding.');
+ const values=new Uint16Array(count);
+ for(let index=0;index<count;index++){
+  const bit=index*10,offset=Math.floor(bit/8),shift=bit%8;
+  values[index]=((bytes[offset]|bytes[offset+1]<<8)>>>shift)&REFERENCE_MISSING;
+ }
+ return values;
+}
 function referenceStationCount(){return Math.ceil(rhumbRoute.total*1852/REFERENCE_STATION_METERS)+1;}
 function referenceStationIndex(progress){
  if(!Number.isFinite(progress)||progress<0||progress>rhumbRoute.total)return -1;
@@ -27,7 +48,7 @@ function projectedTrackSample(boat,time,index=timeBoundary(boat.points,time,true
  return {...projected,vmg,time};
 }
 function prepareReferenceProfile(boat){
- const values=new Uint8Array(referenceStationCount());values.fill(REFERENCE_MISSING);
+ const values=new Uint16Array(referenceStationCount());values.fill(REFERENCE_MISSING);
  const step=REFERENCE_STATION_METERS/1852,last=values.length-1,model=getTrackModel(boat.points);
  let passage=null;
  function write(index,progress,a,b){
@@ -80,24 +101,40 @@ function prepareReferenceProfile(boat){
 }
 function referenceAtStation(index,values){
  if(!Number.isInteger(index)||index<0||index>=values.length||values[index]===REFERENCE_MISSING)return null;
- return {vmg:values[index]*REFERENCE_SPEED_MAX/254};
+ return {vmg:values[index]*REFERENCE_SPEED_MAX/REFERENCE_SPEED_CODES};
 }
 function packedReferenceAtProgress(progress,values){
  return referenceAtStation(referenceStationIndex(progress),values);
 }
 function quantizeProjectedSpeed(speed){
  if(!Number.isFinite(speed))throw Error('Projected speed must be finite.');
- return Math.sign(speed)*Math.round(Math.min(Math.abs(speed),REFERENCE_SPEED_MAX)*REFERENCE_SPEED_SCALE)*REFERENCE_SPEED_MAX/254;
+ return Math.sign(speed)*Math.round(Math.min(Math.abs(speed),REFERENCE_SPEED_MAX)*REFERENCE_SPEED_SCALE)*REFERENCE_SPEED_MAX/REFERENCE_SPEED_CODES;
+}
+function packProjectedTrack(samples){
+ if(samples.length%3)throw Error('Projected track must contain triplets.');
+ const count=samples.length/3,bytes=new Uint8Array(count*8+packedSpeedBytes(count)),view=new DataView(bytes.buffer),codes=new Uint16Array(count);
+ for(let index=0;index<count;index++){
+  const station=samples[index*3],progress=samples[index*3+1],speed=samples[index*3+2];
+  if(!Number.isInteger(station)||station< -1||!Number.isFinite(progress)||progress<0||!Number.isFinite(speed))throw Error('Invalid projected track sample.');
+  const signedIndex=station===-1?-1:(speed<0||Object.is(speed,-0)?-station-2:station);
+  if(Math.fround(signedIndex)!==signedIndex)throw Error('Projected station index cannot be represented distinctly.');
+  view.setFloat32(index*8,signedIndex,true);view.setFloat32(index*8+4,progress,true);
+  codes[index]=station===-1?REFERENCE_MISSING:Math.round(Math.min(Math.abs(speed),REFERENCE_SPEED_MAX)*REFERENCE_SPEED_SCALE);
+ }
+ bytes.set(packSpeedCodes(codes),count*8);
+ return bytes;
 }
 function unpackProjectedTrack(bytes){
- if(Object.prototype.toString.call(bytes)!=='[object Uint8Array]'||bytes.length%9)throw Error('Invalid packed projected track byte length or type.');
- const count=bytes.length/9,view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),values=new Float32Array(count*3);
+ if(Object.prototype.toString.call(bytes)!=='[object Uint8Array]')throw Error('Invalid packed projected track byte length or type.');
+ const count=Math.floor(bytes.length*8/74);
+ if(bytes.length!==count*8+packedSpeedBytes(count))throw Error('Invalid packed projected track byte length or type.');
+ const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),values=new Float32Array(count*3),codes=unpackSpeedCodes(bytes.subarray(count*8),count);
  for(let i=0;i<count;i++){
-  const signedIndex=view.getFloat32(i*8,true),progress=view.getFloat32(i*8+4,true),code=bytes[count*8+i],offset=i*3;
+  const signedIndex=view.getFloat32(i*8,true),progress=view.getFloat32(i*8+4,true),code=codes[i],offset=i*3;
   if(!Number.isFinite(signedIndex)||!Number.isInteger(signedIndex)||!Number.isFinite(progress)||progress<0)throw Error('Invalid packed projected track position.');
   if((code===REFERENCE_MISSING)!==(signedIndex===-1))throw Error('Packed projected track missing speed/index mismatch.');
   values[offset]=signedIndex<-1?-signedIndex-2:signedIndex;values[offset+1]=progress;
-  values[offset+2]=code===REFERENCE_MISSING?-1e20:(signedIndex<-1?-1:1)*code*REFERENCE_SPEED_MAX/254;
+  values[offset+2]=code===REFERENCE_MISSING?-1e20:(signedIndex<-1?-1:1)*code*REFERENCE_SPEED_MAX/REFERENCE_SPEED_CODES;
  }
  return values;
 }

@@ -22,22 +22,46 @@ function setup(length=207,latitude=55.6){
 function near(actual,expected,tolerance=1e-8){
  assert.ok(Number.isFinite(actual)&&Math.abs(actual-expected)<=tolerance,`${actual} expected ${expected} within ${tolerance}`);
 }
-const encode=speed=>Math.round(Math.max(0,Math.min(25,speed))*254/25);
+const encode=speed=>Math.round(Math.max(0,Math.min(25,speed))*1022/25);
 
-test('uint8 fixed point clips to 0..25 kn and reserves only 255 for missing',()=>{
+test('packed 10-bit codes cover every value, byte boundary and partial final group',()=>{
+ const {context:c}=setup();
+ for(const count of [...Array.from({length:18},(_,index)=>index),1024]){
+  const codes=Array.from({length:count},(_,index)=>count===1024?index:(index*277+1023)%1024);
+  const packed=c.packSpeedCodes(codes),expected=new Uint8Array(Math.ceil(count*10/8));
+  for(let index=0;index<count;index++)for(let bit=0;bit<10;bit++){
+   if(codes[index]&(1<<bit))expected[Math.floor((index*10+bit)/8)]|=1<<((index*10+bit)%8);
+  }
+  assert.deepEqual(Array.from(packed),Array.from(expected));
+  assert.deepEqual(Array.from(c.unpackSpeedCodes(packed,count)),codes);
+  const unaligned=new Uint8Array(packed.length+3);unaligned.set(packed,1);
+  assert.deepEqual(Array.from(c.unpackSpeedCodes(unaligned.subarray(1,1+packed.length),count)),codes);
+  if(count%4){
+   packed[packed.length-1]|=1<<(count*10%8);
+   assert.throws(()=>c.unpackSpeedCodes(packed,count),/padding/);
+  }
+ }
+ for(const code of [-1,1024,NaN,Infinity,.5])assert.throws(()=>c.packSpeedCodes([code]),/code/);
+ for(const count of [-1,.5,NaN,Infinity])assert.throws(()=>c.unpackSpeedCodes(new Uint8Array(),count),/length or type/);
+ assert.throws(()=>c.unpackSpeedCodes(new Uint16Array(2),1),/length or type/);
+ assert.throws(()=>c.unpackSpeedCodes(new Uint8Array(1),1),/length or type/);
+ assert.equal(c.packSpeedCodes([0,1,1022,1023]).byteLength,5);
+});
+
+test('uint10 fixed point clips to 0..25 kn and reserves only 1023 for missing',()=>{
  const {context:c,boat}=setup();
- assert.deepEqual(Array.from(vm.runInContext('[REFERENCE_STATION_METERS,REFERENCE_SPEED_MAX,REFERENCE_SPEED_SCALE,REFERENCE_MISSING]',c)),[10,25,254/25,255]);
+ assert.deepEqual(Array.from(vm.runInContext('[REFERENCE_STATION_METERS,REFERENCE_SPEED_MAX,REFERENCE_SPEED_SCALE,REFERENCE_MISSING]',c)),[10,25,1022/25,1023]);
  for(const speed of [0,.03,.05,1,6.789,12.5,24.99,25,26,100]){
   const profile=c.prepareReferenceProfile(boat([20,180],[speed,speed]));
-  assert.equal(profile.BYTES_PER_ELEMENT,1);
-  assert.equal(Object.prototype.toString.call(profile),'[object Uint8Array]');
+  assert.equal(profile.BYTES_PER_ELEMENT,2);
+  assert.equal(Object.prototype.toString.call(profile),'[object Uint16Array]');
   assert.equal(profile[10],encode(speed));
   const result=c.referenceAtStation(10,profile);
   assert.deepEqual(Object.keys(result),['vmg']);
-  near(result.vmg,encode(speed)*25/254);
+  near(result.vmg,encode(speed)*25/1022);
   near(c.packedReferenceAtProgress(100/1852,profile).vmg,result.vmg);
-  if(speed<=25)near(result.vmg,speed,25/254/2+1e-12);
-  assert.equal(profile[0],255);
+  if(speed<=25)near(result.vmg,speed,25/1022/2+1e-12);
+  assert.equal(profile[0],1023);
  }
  const original=c.projectedTrackSample;
  c.projectedTrackSample=(reference,time,...prepared)=>{
@@ -45,7 +69,7 @@ test('uint8 fixed point clips to 0..25 kn and reserves only 255 for missing',()=
  };
  assert.equal(c.prepareReferenceProfile(boat([20,180],[6,6]))[10],0);
  c.projectedTrackSample=original;
- const values=new Uint8Array([0,127,254,255]);
+ const values=new Uint16Array([0,511,1022,1023]);
  assert.equal(c.referenceAtStation(3,values),null);
  for(const index of [-1,4,NaN,Infinity,.5])assert.equal(c.referenceAtStation(index,values),null);
  near(c.referenceAtStation(0,values).vmg,0);
@@ -66,36 +90,36 @@ test('count, nearest physical 10 m index, outside rejection and exact final endp
   assert.equal(c.referenceStationIndex(15.000001/1852),2);
   for(const progress of [-1e-15,total+1e-15,NaN,Infinity,-Infinity]){
    assert.equal(c.referenceStationIndex(progress),-1);
-   assert.equal(c.packedReferenceAtProgress(progress,new Uint8Array(22)),null);
+   assert.equal(c.packedReferenceAtProgress(progress,new Uint16Array(22)),null);
   }
   const profile=c.prepareReferenceProfile(boat([0,207],[0,25]));
   assert.equal(profile.length,22);
-  assert.equal(profile.byteLength,22);
+  assert.equal(profile.byteLength,44);
   for(let index=0;index<=20;index++)assert.equal(profile[index],encode(25*index*10/207));
-  assert.equal(profile[21],254);
+  assert.equal(profile[21],1022);
   near(c.packedReferenceAtProgress(total,profile).vmg,25);
  }
  const {context:c}=setup();
  vm.runInContext('rhumbRoute=buildRhumbRoute([])',c);
  assert.equal(c.referenceStationCount(),1);
- assert.deepEqual(Array.from(c.prepareReferenceProfile({points:[],speeds:[]})),[255]);
- assert.equal(c.packedReferenceAtProgress(0,new Uint8Array([255])),null);
+ assert.deepEqual(Array.from(c.prepareReferenceProfile({points:[],speeds:[]})),[1023]);
+ assert.equal(c.packedReferenceAtProgress(0,new Uint16Array([1023])),null);
 });
 
 test('both endpoints quantize coverage to nearest nodes and clamp VMG to passage bounds',()=>{
  const {context:c,boat}=setup();
  const profile=c.prepareReferenceProfile(boat([24,66],[4,12]));
- assert.equal(profile[1],255);
+ assert.equal(profile[1],1023);
  assert.equal(profile[2],encode(4));
  assert.equal(profile[7],encode(12));
- assert.equal(profile[8],255);
+ assert.equal(profile[8],1023);
  assert.equal(c.referenceStationIndex(24/1852),2);
  assert.equal(c.referenceStationIndex(66/1852),7);
  assert.ok(c.packedReferenceAtProgress(24/1852,profile));
  assert.ok(c.packedReferenceAtProgress(66/1852,profile));
  const short=c.prepareReferenceProfile(boat([27,29],[3,9]));
  assert.equal(short[3],encode(9));
- assert.equal(Array.from(short).filter(value=>value!==255).length,1);
+ assert.equal(Array.from(short).filter(value=>value!==1023).length,1);
 });
 
 test('earliest forward overlap wins; reversing alone fills no nodes',()=>{
@@ -105,7 +129,7 @@ test('earliest forward overlap wins; reversing alone fills no nodes',()=>{
  assert.equal(profile[3],encode(4));
  assert.equal(profile[6],encode(4));
  assert.equal(profile[12],encode(9));
- assert.ok(Array.from(c.prepareReferenceProfile(boat([180,20],[8,8]))).every(value=>value===255));
+ assert.ok(Array.from(c.prepareReferenceProfile(boat([180,20],[8,8]))).every(value=>value===1023));
  const short=c.prepareReferenceProfile(boat([27,29,100,101],[3,3,9,9],[0,10,311,321]));
  assert.equal(short[3],encode(3));
 });
@@ -116,20 +140,20 @@ test('gaps above 300 s, missing SOG, undefined direction and outside samples rem
  const profile=c.prepareReferenceProfile(reference);
  assert.equal(profile[3],encode(6));
  assert.equal(profile[12],encode(9));
- for(let index=5;index<=9;index++)assert.equal(profile[index],255);
+ for(let index=5;index<=9;index++)assert.equal(profile[index],1023);
  assert.equal(c.projectedTrackSample(reference,start+200),null);
  for(const speeds of [[null,null],[6,null],[undefined,8],[-1,8],[NaN,8],undefined]){
   const missing=boat([10,180],speeds);
   assert.equal(c.projectedTrackSample(missing,start+30),null);
-  assert.ok(Array.from(c.prepareReferenceProfile(missing)).every(value=>value===255));
+  assert.ok(Array.from(c.prepareReferenceProfile(missing)).every(value=>value===1023));
  }
  for(const reference of [boat([10,180],[6,6],[0,301]),boat([-100,-20],[6,6]),boat([230,280],[6,6]),boat([30,30],[6,6])]){
-  assert.ok(Array.from(c.prepareReferenceProfile(reference)).every(value=>value===255));
+  assert.ok(Array.from(c.prepareReferenceProfile(reference)).every(value=>value===1023));
  }
- assert.ok(c.prepareReferenceProfile(boat([10,180],[6,6],[0,300])).some(value=>value!==255));
+ assert.ok(c.prepareReferenceProfile(boat([10,180],[6,6],[0,300])).some(value=>value!==1023));
  const missing=boat([10,40,80,140],[6,null,9,9]);
  const missingProfile=c.prepareReferenceProfile(missing);
- for(let index=0;index<=7;index++)assert.equal(missingProfile[index],255);
+ for(let index=0;index<=7;index++)assert.equal(missingProfile[index],1023);
  assert.equal(missingProfile[10],encode(9));
 });
 
@@ -239,35 +263,35 @@ test('source station indices survive Float32 rounding at a nearest-node boundary
  assert.equal(progress[0],progress[1]);
 });
 
-test('generator VM exposes only the nominal profile API and strict bundled v3 format validation',()=>{
+test('generator VM exposes only the nominal profile API and strict bundled v4 format validation',()=>{
  const generator=require('./prepare_track_profiles.cjs');
  const math=generator.loadNominalMath();
  assert.ok(math.D&&Array.isArray(math.boats));
  for(const name of ['prepareReferenceProfile','prepareProjectedTrack','referenceStationCount'])assert.equal(typeof math[name],'function');
  assert.equal(math.prepareReferencePassages,undefined);
  assert.equal(math.packReferenceStations,undefined);
- assert.equal(Object.prototype.toString.call(math.prepareReferenceProfile({points:[],speeds:[]})),'[object Uint8Array]');
+ assert.equal(Object.prototype.toString.call(math.prepareReferenceProfile({points:[],speeds:[]})),'[object Uint16Array]');
  const state={sourceFingerprint:'test'},prefix='track-profiles/test/';
- const manifest={version:3,sourceFingerprint:'test',stationCount:22,stationSpacingMeters:10,profileEncoding:'uint8',speedMaximum:25,speedCodes:254,missingValue:255,sampleMissingValue:-1e20,sampleWords:3,sampleBytes:9,sampleEncoding:'uint8-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,byteOrder:'little-endian',bundleFile:prefix+'fleet.bin',bundleBytes:49,boats:[{id:'one',pointCount:2,stationCount:22,sampleOffset:0,profileOffset:27}]};
+ const manifest={version:4,sourceFingerprint:'test',stationCount:22,stationSpacingMeters:10,profileEncoding:'uint10-packed',speedMaximum:25,speedCodes:1022,missingValue:1023,sampleMissingValue:-1e20,sampleWords:3,samplePositionBytes:8,speedBits:10,sampleEncoding:'uint10-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,byteOrder:'little-endian',bundleFile:prefix+'fleet.bin',bundleBytes:56,boats:[{id:'one',pointCount:2,stationCount:22,sampleOffset:0,profileOffset:28}]};
  const saved={existsSync:fs.existsSync,readFileSync:fs.readFileSync,statSync:fs.statSync};
- let current=manifest,bundleSize=49;
+ let current=manifest,bundleSize=56;
  try{
   fs.existsSync=()=>true;
   fs.readFileSync=()=>JSON.stringify(current);
   fs.statSync=()=>({size:bundleSize});
   assert.deepEqual(generator.currentManifest(state),manifest);
-  for(const [key,value] of Object.entries({version:1,stationSpacingMeters:5,profileEncoding:'float16',speedMaximum:15,speedCodes:255,missingValue:-1e20,sampleMissingValue:255,sampleWords:2,sampleBytes:12,sampleEncoding:'float32',speedSignEncoding:'none',stationWords:8,byteOrder:'big-endian',stationCount:0})){
+  for(const [key,value] of Object.entries({version:1,stationSpacingMeters:5,profileEncoding:'float16',speedMaximum:15,speedCodes:1023,missingValue:-1e20,sampleMissingValue:1023,sampleWords:2,samplePositionBytes:12,sampleEncoding:'float32',speedSignEncoding:'none',stationWords:8,byteOrder:'big-endian',stationCount:0})){
    current={...manifest,[key]:value};assert.equal(generator.currentManifest(state),null,key);
   }
   for(const [key,value] of Object.entries({sampleOffset:1,profileOffset:26,pointCount:Number.MAX_SAFE_INTEGER})){
    current={...manifest,boats:[{...manifest.boats[0],[key]:value}]};assert.equal(generator.currentManifest(state),null,key);
   }
-  for(const [key,value] of Object.entries({bundleFile:prefix+'../fleet.bin',bundleBytes:50})){
+  for(const [key,value] of Object.entries({bundleFile:prefix+'../fleet.bin',bundleBytes:57})){
    current={...manifest,[key]:value};assert.equal(generator.currentManifest(state),null,key);
   }
-  current=manifest;bundleSize=48;
+  current=manifest;bundleSize=55;
   assert.equal(generator.currentManifest(state),null);
-  bundleSize=50;
+  bundleSize=57;
   assert.equal(generator.currentManifest(state),null);
  }finally{Object.assign(fs,saved);}
 });
@@ -283,9 +307,10 @@ test('bundled loader fetches once, decodes unaligned ranges and rejects corrupt 
   for(const source of fleet){
    const samples=packProjectedTrack(context.prepareProjectedTrack(source)),profile=context.prepareReferenceProfile(source);
    entries.push({id:source.id,pointCount:source.points.length,stationCount:profile.length,sampleOffset:offset,profileOffset:offset+samples.byteLength});
-   chunks.push(Buffer.from(samples),Buffer.from(profile));offset+=samples.byteLength+profile.byteLength;
+   const packedProfile=context.packSpeedCodes(profile);
+   chunks.push(Buffer.from(samples),Buffer.from(packedProfile));offset+=samples.byteLength+packedProfile.byteLength;
   }
-  const manifest={version:3,sourceFingerprint:fingerprint,dataDigest:'b'.repeat(64),rhumblineDigest:crypto.createHash('sha256').update(JSON.stringify(definition)).digest('hex'),start,byteOrder:'little-endian',stationCount:context.referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint8',speedMaximum:25,speedCodes:254,missingValue:255,sampleMissingValue:-1e20,sampleWords:3,sampleBytes:9,sampleEncoding:'uint8-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,bundleFile:`track-profiles/${fingerprint}/fleet.bin`,bundleBytes:offset,boats:entries};
+  const manifest={version:4,sourceFingerprint:fingerprint,dataDigest:'b'.repeat(64),rhumblineDigest:crypto.createHash('sha256').update(JSON.stringify(definition)).digest('hex'),start,byteOrder:'little-endian',stationCount:context.referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint10-packed',speedMaximum:25,speedCodes:1022,missingValue:1023,sampleMissingValue:-1e20,sampleWords:3,samplePositionBytes:8,speedBits:10,sampleEncoding:'uint10-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,bundleFile:`track-profiles/${fingerprint}/fleet.bin`,bundleBytes:offset,boats:entries};
   const state={manifest,body:Buffer.concat(chunks)},requests=[];
   mutate(state);
   Object.assign(context,{boats:fleet,window:{SR_RHUMBLINE:definition},crypto:crypto.webcrypto,TextEncoder,fetch:async name=>{
@@ -318,19 +343,22 @@ test('bundled loader fetches once, decodes unaligned ranges and rejects corrupt 
   state=>{state.body=Buffer.concat([state.body,Buffer.alloc(1)]);},
   state=>{state.body.writeFloatLE(NaN,state.manifest.boats[1].sampleOffset);},
   state=>{state.body.writeFloatLE(999,state.manifest.boats[1].sampleOffset);},
-  state=>{state.body.writeFloatLE(0,state.manifest.boats[1].sampleOffset+24);}
+  state=>{state.body.writeFloatLE(0,state.manifest.boats[1].sampleOffset+24);},
+  state=>{state.body[state.manifest.boats[1].profileOffset+Math.ceil(state.manifest.stationCount*10/8)-1]|=128;},
+  state=>{state.manifest.speedBits=8;},
+  state=>{state.manifest.sampleEncoding='uint8-speed-planar';}
  ]){
   const invalid=await run(mutate);
   assert.ok(invalid.error);assert.ok(invalid.profiles.every(profile=>profile===undefined));
  }
 });
 
-test('shared source speed quantization preserves sign, clips magnitudes and stays within .05 kn',()=>{
+test('shared source speed quantization preserves sign, clips magnitudes and stays within .013 kn',()=>{
  const {context:c,boat}=setup();
  for(const speed of [-100,-25,-24.99,-12.5,-8,-.03,-0,0,.03,8,12.5,24.99,25,100]){
-  const expected=Math.sign(speed)*encode(Math.abs(speed))*25/254;
+  const expected=Math.sign(speed)*encode(Math.abs(speed))*25/1022;
   assert.equal(c.quantizeProjectedSpeed(speed),expected);
-  near(c.quantizeProjectedSpeed(speed),Math.max(-25,Math.min(25,speed)),.05);
+  near(c.quantizeProjectedSpeed(speed),Math.max(-25,Math.min(25,speed)),.013);
  }
  for(const speed of [NaN,Infinity,-Infinity,null,undefined])assert.throws(()=>c.quantizeProjectedSpeed(speed),/finite/);
  for(const speed of [.03,8,24.99,25,100]){
@@ -339,24 +367,24 @@ test('shared source speed quantization preserves sign, clips magnitudes and stay
    const sample=c.projectedTrackSample(source,start);
    const prepared=c.prepareProjectedTrack(source);
    assert.equal(prepared[2],Math.fround(c.quantizeProjectedSpeed(sample.vmg)));
-   near(prepared[2],Math.max(-25,Math.min(25,sample.vmg)),.05);
+   near(prepared[2],Math.max(-25,Math.min(25,sample.vmg)),.013);
   }
  }
 });
 
-test('planar source packing uses exactly 9 bytes/sample and roundtrips through nominal browser decoder',()=>{
+test('planar source packing uses 8 position bytes plus packed 10-bit speeds and roundtrips through nominal browser decoder',()=>{
  const {packProjectedTrack}=require('./prepare_track_profiles.cjs');
  const {context:c,boat}=setup();
  for(const source of [boat([24,66,180],[4,7,6]),boat([180,80,20],[100,8,.03]),boat([10,180],[6,6],[0,301]),boat([],[])]){
   const samples=c.prepareProjectedTrack(source),bytes=packProjectedTrack(samples),count=source.points.length+1;
   assert.equal(Object.prototype.toString.call(bytes),'[object Uint8Array]');
-  assert.equal(bytes.byteLength,count*9);
+  assert.equal(bytes.byteLength,count*8+Math.ceil(count*10/8));
   const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
   for(let i=0;i<count;i++){
    const index=samples[i*3],speed=samples[i*3+2],negative=speed<0||Object.is(speed,-0);
    assert.equal(view.getFloat32(i*8,true),index===-1?-1:negative?-index-2:index);
    assert.equal(view.getFloat32(i*8+4,true),samples[i*3+1]);
-   assert.equal(bytes[count*8+i],index===-1?255:encode(Math.abs(speed)));
+   assert.equal(c.unpackSpeedCodes(bytes.subarray(count*8),count)[i],index===-1?1023:encode(Math.abs(speed)));
   }
   const decoded=c.unpackProjectedTrack(bytes);
   assert.deepEqual(Array.from(decoded),Array.from(samples));
@@ -367,10 +395,10 @@ test('planar source packing uses exactly 9 bytes/sample and roundtrips through n
  const signedZero=new Float32Array([0,0,-0,0,0,0,1,.1,-.03,1,.1,100,2,.2,-100,-1,0,-1e20]);
  const bytes=packProjectedTrack(signedZero),count=signedZero.length/3,view=new DataView(bytes.buffer);
  assert.equal(view.getFloat32(0,true),-2);
- assert.deepEqual(Array.from(bytes.subarray(count*8)),[0,0,0,254,254,255]);
+ assert.deepEqual(Array.from(c.unpackSpeedCodes(bytes.subarray(count*8),count)),[0,0,1,1022,1022,1023]);
  const decoded=c.unpackProjectedTrack(bytes);
  assert.ok(Object.is(decoded[2],-0));
- assert.ok(Object.is(decoded[8],-0));
+ near(decoded[8],-25/1022,1e-8);
  assert.equal(decoded[11],25);
  assert.equal(decoded[14],-25);
  assert.equal(decoded[15],-1);
@@ -381,15 +409,15 @@ test('planar source packing uses exactly 9 bytes/sample and roundtrips through n
 test('nominal source decoder rejects malformed bytes and inconsistent missing markers',()=>{
  const {context:c}=setup();
  const {packProjectedTrack}=require('./prepare_track_profiles.cjs');
- for(const input of [new Uint8Array(8),new Uint8Array(10),new Float32Array(9),[],null])assert.throws(()=>c.unpackProjectedTrack(input),/length or type/);
+ for(const input of [new Uint8Array(8),new Uint8Array(9),new Float32Array(9),[],null])assert.throws(()=>c.unpackProjectedTrack(input),/length or type/);
  function packed(index,progress,code){
-  const bytes=new Uint8Array(9),view=new DataView(bytes.buffer);
-  view.setFloat32(0,index,true);view.setFloat32(4,progress,true);bytes[8]=code;return bytes;
+  const bytes=new Uint8Array(10),view=new DataView(bytes.buffer);
+  view.setFloat32(0,index,true);view.setFloat32(4,progress,true);bytes.set(c.packSpeedCodes([code]),8);return bytes;
  }
  for(const index of [NaN,Infinity,-Infinity,.5,-2.5])assert.throws(()=>c.unpackProjectedTrack(packed(index,0,10)),/position/);
  for(const progress of [NaN,Infinity,-Infinity,-.1])assert.throws(()=>c.unpackProjectedTrack(packed(0,progress,10)),/position/);
- for(const [index,code] of [[-1,0],[-1,254],[0,255],[-2,255]])assert.throws(()=>c.unpackProjectedTrack(packed(index,0,code)),/mismatch/);
- for(const [index,code,expected] of [[0,0,0],[0,254,25],[-2,254,-25],[-3,127,-12.5]]){
+ for(const [index,code] of [[-1,0],[-1,1022],[0,1023],[-2,1023]])assert.throws(()=>c.unpackProjectedTrack(packed(index,0,code)),/mismatch/);
+ for(const [index,code,expected] of [[0,0,0],[0,1022,25],[-2,1022,-25],[-3,511,-12.5]]){
   const decoded=c.unpackProjectedTrack(packed(index,0,code));
   assert.equal(decoded[0],index< -1?-index-2:index);assert.equal(decoded[2],expected);
  }

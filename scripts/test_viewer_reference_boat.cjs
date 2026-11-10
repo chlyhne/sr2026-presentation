@@ -23,21 +23,21 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
    webglTracks.gl.createBuffer=webglTracks.gl.bufferData=webglTracks.gl.bufferSubData=forbidden;
    return {id:referenceBoatId,count:boats.length,bytes:referenceTestInitial};
   });
-  assert.ok(baseline.bytes.cpu<14*1024*1024,'Byte profiles should keep the entire compact fleet below 14 MiB');
+  assert.ok(baseline.bytes.cpu<17*1024*1024,'Decoded profiles should keep the entire compact fleet below 17 MiB');
   const format=await page.evaluate(()=>({
    bytes:boats.reduce((sum,boat)=>sum+trackProfileCache.get(boat.points).stations.byteLength,0),
    count:referenceStationCount(),boats:boats.length,
-   compact:boats.every(boat=>trackProfileCache.get(boat.points).stations instanceof Uint8Array),
+   compact:boats.every(boat=>trackProfileCache.get(boat.points).stations instanceof Uint16Array),
    textureBytes:webglTracks.referenceUpload.byteLength
   }));
-  assert.equal(format.compact,true);assert.equal(format.bytes,format.count*format.boats);
+  assert.equal(format.compact,true);assert.equal(format.bytes,format.count*format.boats*2);
   assert.equal(format.textureBytes,1024*Math.ceil(format.count/1024)*4);
   const manifest=await page.evaluate(async()=>await (await fetch('track-profiles/manifest.json',{cache:'no-store'})).json());
-  assert.equal(manifest.sampleBytes,9);assert.equal(manifest.sampleEncoding,'uint8-speed-planar');
-  assert.equal(manifest.version,3);
+  assert.equal(manifest.samplePositionBytes,8);assert.equal(manifest.sampleEncoding,'uint10-speed-planar');
+  assert.equal(manifest.speedBits,10);assert.equal(manifest.version,4);
   const downloads=await page.evaluate(()=>performance.getEntriesByType('resource').filter(entry=>/\/track-profiles\/.*\.bin$/.test(new URL(entry.name).pathname)).map(entry=>entry.name));
   assert.equal(downloads.length,1);assert.ok(downloads[0].endsWith('/fleet.bin'));
-  assert.equal(await page.evaluate(()=>boats.every(boat=>trackProfileCache.get(boat.points).stations.buffer.byteLength===referenceStationCount())),true);
+  assert.equal(await page.evaluate(()=>boats.every(boat=>trackProfileCache.get(boat.points).stations.buffer.byteLength===referenceStationCount()*2)),true);
   await page.locator('#mapTracksToggle').click();
   assert.equal(await page.locator('#referenceBoat option').count(),baseline.count);
   const candidates=await page.evaluate(()=>['Vera','My','THE HULK'].map(name=>boats.find(boat=>boat.name===name).id));
@@ -121,7 +121,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   assert.equal(await broken.locator('main').getAttribute('inert'),'');
   assert.equal(await broken.locator('#viewerLoadingRetry').isVisible(),true);
   await broken.close();
-  for(const [key,value] of [['version',2],['stationSpacingMeters',5],['profileEncoding','float16'],['missingValue',0],['stationCount',1],['sampleBytes',12],['sampleEncoding','float32'],['bundleFile','track-profiles/../fleet.bin'],['bundleBytes',1],['sampleOffset',1],['profileOffset',1]]){
+  for(const [key,value] of [['version',3],['stationSpacingMeters',5],['profileEncoding','float16'],['missingValue',0],['stationCount',1],['samplePositionBytes',12],['speedBits',8],['sampleEncoding','float32'],['bundleFile','track-profiles/../fleet.bin'],['bundleBytes',1],['sampleOffset',1],['profileOffset',1]]){
    const invalid=await browser.newPage();
    await invalid.route('**/track-profiles/manifest.json',async route=>{
     const response=await route.fetch(),manifest=await response.json();
