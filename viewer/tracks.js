@@ -38,6 +38,7 @@ function trackSpeedLegendLayout(){
 }
 function renderTrackSpeedLegend(){
  const layer=$('trackSpeedLegend');layer.replaceChildren();
+ if(comparison.boatColour){layer.removeAttribute('aria-label');return;}
  const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();if(!matrix)return;
  const layout=trackSpeedLegendLayout(),{width}=layout;
  const point=new DOMPoint(rect.left+layout.left,rect.top+layout.top).matrixTransform(matrix.inverse());

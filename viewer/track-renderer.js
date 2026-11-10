@@ -84,6 +84,8 @@ flat in vec3 gainsEnd;
 uniform sampler2D palette;
 uniform float innerRatio;
 uniform bool relativeMode;
+uniform bool boatColourMode;
+uniform vec3 boatColour;
 uniform int gainComponent;
 uniform float gainLimit;
 out vec4 colour;
@@ -96,12 +98,12 @@ void main(){
  float distance=length(strokeOffset);
  float feather=max(fwidth(distance)*0.5,0.000001);
  float outline=smoothstep(innerRatio-feather,innerRatio+feather,distance);
- colour=mix(texelFetch(palette,ivec2(bin,0),0),vec4(23.0/255.0,49.0/255.0,62.0/255.0,1.0),outline);
+ colour=mix(boatColourMode?vec4(boatColour,1.0):texelFetch(palette,ivec2(bin,0),0),vec4(23.0/255.0,49.0/255.0,62.0/255.0,1.0),outline);
 }`);
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
-   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','gainComponent','gainLimit'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
+   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','boatColourMode','boatColour','gainComponent','gainLimit'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
    if(!window.SR_RHUMBLINE_SETUP&&rhumbRoute.legs.length){
     const evaluationVertex=shader(gl.VERTEX_SHADER,`#version 300 es
 precision highp float;
@@ -168,6 +170,15 @@ void main(){colour=vec4(0.0);}`);
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,colours.length,1,0,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
    }
+   this.boatColours=new Map();
+   const colourProbe=document.createElement('span');colourProbe.hidden=true;document.body.append(colourProbe);
+   try{
+    for(const colour of new Set(Object.values(colours))){
+     colourProbe.style.color=colour;
+     const rgb=getComputedStyle(colourProbe).color.match(/[\d.]+/g).slice(0,3).map(Number);
+     this.boatColours.set(colour,new Float32Array(rgb.map(channel=>channel/255)));
+    }
+   }finally{colourProbe.remove();}
    this.active=true;this.host.removeAttribute('display');this.lastKey=null;this.viewportKey=null;
    clearRenderingFailure('Spor');
   }catch(error){
@@ -270,7 +281,7 @@ void main(){colour=vec4(0.0);}`);
    const viewport={...baseViewport,pixelWidth:baseViewport.pixelWidth*2,pixelHeight:baseViewport.pixelHeight*2};
    const {rect,matrix,topLeft:top,pixelWidth:width,pixelHeight:height}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
-   const key=[time,viewportKey,trackLengthSeconds,comparison.enabled,comparison.basis,comparisonRevision,...order.map(b=>b.id)].join(':');
+   const key=[time,viewportKey,trackLengthSeconds,comparison.enabled,comparison.basis,comparison.boatColour,comparisonRevision,...order.map(b=>b.id)].join(':');
    if(!force&&this.lastKey===key)return true;
    this.lastKey=key;
    const gl=this.gl,u=this.uniforms;
@@ -291,6 +302,7 @@ void main(){colour=vec4(0.0);}`);
    gl.uniform4f(u.windowTime,trackWindowSeconds(),high,0,stamp-high);
    gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2);
    gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
+   gl.uniform1i(u.boatColourMode,comparison.boatColour?1:0);
    gl.uniform1i(u.gainComponent,comparison.basis==='time'?2:comparison.basis==='handicap'?1:0);
    gl.uniform1f(u.gainLimit,trackGainLimit());
    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.palette);gl.uniform1i(u.palette,0);
@@ -299,6 +311,11 @@ void main(){colour=vec4(0.0);}`);
     if(last<=first)continue;
     this.prepare(boat);const record=this.buffers.get(points);
     gl.bindVertexArray(record.vao);
+    if(comparison.boatColour){
+     const colour=this.boatColours.get(colours[boat.name]);
+     if(!colour)throw Error('Bådens sporfarve er ikke forberedt: '+boat.name);
+     gl.uniform3fv(u.boatColour,colour);
+    }
     const relative=comparison.enabled&&boat.id!==referenceBoat()?.id;
     gl.uniform1i(u.relativeMode,relative?1:0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
     if(relative)this.bindComparison(record,first);

@@ -61,7 +61,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     webglTracks.prepare(boat);
    }
    webglTracks.prepareComparison();
-   for(const boat of boats){colours[boat.name]='#ffdc42';shownBoatNames.add(boat.id);}
+   for(const boat of boats){colours[boat.name]=boat.id==='rival'?'#ff4dac':'#ffdc42';shownBoatNames.add(boat.id);}
    chosen.clear();chosen.add('Mercutio');chosen.add('Rival');chosen.add('Hurtig rating');
    selectedTime=time+1680;
    const [x,y]=xy([12.04,55.6]);view=[x-18,y-15,36,30];$('map').setAttribute('viewBox',view.join(' '));
@@ -118,7 +118,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     const px=Math.floor((screenPoint.x-rect.left)/rect.width*gl.drawingBufferWidth),py=Math.floor((rect.bottom-screenPoint.y)/rect.height*gl.drawingBufferHeight);
     const rgba=new Uint8Array(4);gl.readPixels(px,py,1,1,gl.RGBA,gl.UNSIGNED_BYTE,rgba);return [...rgba];
    }
-   return {red:pixel(12.005,55.602),blue:pixel(12.075,55.602),reference:pixel(12.035,55.6)};
+   return {red:pixel(12.005,55.602),blue:pixel(12.075,55.602),reference:pixel(12.035,55.6),missing:pixel(12.035,55.608)};
   });}
   const coloured=await pixels();
   assert.ok(coloured.red[0]>coloured.red[2]+80,JSON.stringify(coloured));
@@ -182,6 +182,34 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     missingSog:projectedTrackSample({...boats[1],speeds:Array(9).fill(null)},boats[1].points[4][2])};
   });
   assert.deepEqual(await page.evaluate(()=>navigationMissingChecks),{outside:null,gap:null,missingSog:null});
+  await page.evaluate(()=>{
+   const boat={...boats[0],id:'missing-speed',name:'Missing speed',
+    points:boats[0].points.map(point=>[point[0],55.608,point[2]]),speeds:Array(9).fill(null)};
+   colours[boat.name]='#6cffff';boats.push(boat);chosen.add(boat.name);
+   trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat)});
+   webglTracks.prepare(boat);
+   window.boatModeOriginals=new Map();
+   for(const name of ['bufferData','bufferSubData','createBuffer','texSubImage2D','beginTransformFeedback']){
+    boatModeOriginals.set(name,webglTracks.gl[name]);
+    webglTracks.gl[name]=()=>{throw Error('Boat colours must not allocate or upload sample data');};
+   }
+  });
+  await page.locator('#trackStyle').selectOption('boat');
+  const boatPixels=await pixels();
+  assert.deepEqual(boatPixels.reference,[255,220,66,255]);
+  assert.deepEqual(boatPixels.red,[255,77,172,255]);
+  assert.deepEqual(boatPixels.blue,boatPixels.red,'Boat colour is constant along the track');
+  assert.deepEqual(boatPixels.missing,[108,255,255,255],'Missing speed does not hide the boat colour');
+  assert.equal(await page.locator('#trackSpeedLegend').textContent(),'');
+  assert.equal(await page.locator('#trackSpeedLegend').getAttribute('aria-label'),null);
+  await page.locator('#trackStyle').selectOption('speed');
+  const speedAgain=await pixels();assert.deepEqual(speedAgain.reference,original.reference);
+  assert.deepEqual(speedAgain.missing,[138,148,155,255]);
+  await page.locator('#trackStyle').selectOption('boat');
+  await page.evaluate(()=>{
+   for(const [name,method] of boatModeOriginals)webglTracks.gl[name]=method;
+   if(!webglTracks.active)throw Error(webglTracks.error);
+  });
   await page.locator('#mapMeasureToggle').click();
   await page.screenshot({path:'/tmp/sr2026-navigation-comparison.png'});
   const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());
@@ -191,7 +219,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(TRACK_COMPARISON_KEY)));
   await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});
   assert.deepEqual(await page.evaluate(()=>comparison),saved);
-  assert.equal(await page.locator('#trackStyle').inputValue(),'time');
+  assert.equal(await page.locator('#trackStyle').inputValue(),'boat');
   await page.evaluate(()=>setPresentationMode(true));
   await page.locator('#mapMeasureToggle').click();await page.locator('#measureDistance').click();
   await page.keyboard.press('Escape');

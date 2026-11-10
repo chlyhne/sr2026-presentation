@@ -17,6 +17,10 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     trackProfileCache.has(boat.points)&&!!webglTracks.buffers.get(boat.points).comparisonBuffer)
   }));
   assert.deepEqual(prepared,{geometry:true,models:true,timeline:true,comparison:true});
+  assert.equal(await page.evaluate(()=>boats.every(boat=>{
+   const rgb=webglTracks.boatColours.get(colours[boat.name]);
+   return rgb?.length===3&&rgb.every(channel=>Number.isFinite(channel)&&channel>=0&&channel<=1);
+  })),true);
   await page.evaluate(()=>{
    $('wind').checked=$('rain').checked=false;selectedTime=D.start+43200;render();
    window.fleetBufferUploads=webglTracks.uploads;
@@ -37,6 +41,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#trackStyle').selectOption('time');
   await page.waitForFunction(()=>comparison.enabled&&comparison.basis==='time');
   await page.evaluate(()=>{flushRender();if(!webglTracks.active)throw Error(webglTracks.error);});
+  await page.locator('#trackStyle').selectOption('boat');
+  await page.evaluate(()=>{flushRender();if(!webglTracks.active)throw Error(webglTracks.error);});
+  assert.equal(await page.locator('#trackSpeedLegend').textContent(),'');
   await page.locator('#trackStyle').selectOption('absolute');
   await page.locator('#trackLength').selectOption('900');
   await page.locator('#trackLength').selectOption('0');
@@ -61,6 +68,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await page.locator('#mapTracksPanel').isVisible(),false);
   assert.equal(await page.locator('#mapLayersPanel').isVisible(),true);
   assert.deepEqual(errors,[]);
-  console.log('Firefox: hele feltet og alle tre farvegrundlag er forberedt før betjening; bådvalg, grundlag og tidsskift genberegner eller uploader ingen faste spordata.');
+  console.log('Firefox: hele feltet, bådfarver og alle tre sammenligningsgrundlag er forberedt før betjening; bådvalg, grundlag og tidsskift genberegner eller uploader ingen faste spordata.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});
