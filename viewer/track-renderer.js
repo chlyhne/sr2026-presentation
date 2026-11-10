@@ -108,27 +108,14 @@ uniform highp sampler2D referenceProfile;
 uniform int stationCount;
 uniform vec2 handicaps;
 out vec2 evaluatedGains;
-vec4 station(int index,int halfIndex){
- int texel=index*2+halfIndex;
- return texelFetch(referenceProfile,ivec2(texel%1024,texel/1024),0);
-}
 void main(){
  evaluatedGains=vec2(-1e20);
  gl_Position=vec4(0.0,0.0,0.0,1.0);
- if(projected.z<-1e19)return;
- int low=0,high=stationCount;
- while(low<high){
-  int middle=(low+high)/2;
-  vec4 value=station(middle,0);
-  if(value.x<projected.x||(value.x==projected.x&&value.w<=projected.y))low=middle+1;
-  else high=middle;
- }
- if(low==0)return;
- vec4 point=station(low-1,0),after=station(low-1,1);
- bool exact=projected.x==point.x&&projected.y==point.w;
- float referenceSpeed=exact?point.y:after.x;
+ if(projected.z<-1e19||projected.x<0.0)return;
+ int index=int(projected.x);
+ if(index>=stationCount)return;
+ float referenceSpeed=texelFetch(referenceProfile,ivec2(index%1024,index/1024),0).r;
  if(referenceSpeed<-1e19)return;
- if(!exact)referenceSpeed+=((projected.x-point.x)+(projected.y-point.w))*after.y;
  evaluatedGains.x=projected.z-referenceSpeed;
  float factor=1.0+(handicaps.y-handicaps.x)*projected.z/3600.0;
  if(handicaps.x>0.0&&handicaps.y>0.0&&factor>0.0)evaluatedGains.y=projected.z/factor-referenceSpeed;
@@ -144,9 +131,9 @@ void main(){colour=vec4(0.0);}`);
     if(!gl.getProgramParameter(this.comparisonProgram,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.comparisonProgram));
     this.comparisonUniforms=Object.fromEntries(['referenceProfile','stationCount','handicaps'].map(name=>[name,gl.getUniformLocation(this.comparisonProgram,name)]));
     this.referenceTexture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this.referenceTexture);
-    this.referenceHeight=Math.max(1,Math.ceil(maxReferenceStations*2/1024));
-    this.referenceUpload=new Float32Array(1024*this.referenceHeight*4);
-    gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA32F,1024,this.referenceHeight);
+    this.referenceHeight=Math.max(1,Math.ceil(maxReferenceStations/1024));
+    this.referenceUpload=new Float32Array(1024*this.referenceHeight);
+    gl.texStorage2D(gl.TEXTURE_2D,1,gl.R32F,1024,this.referenceHeight);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
     this.feedback=gl.createTransformFeedback();this.comparisonReference=null;
    }
@@ -233,10 +220,15 @@ void main(){colour=vec4(0.0);}`);
   if(this.comparisonReference===reference.points)return;
   const profile=trackProfileCache.get(reference.points);if(!profile)throw Error('Referencebådens sporprofil er ikke forberedt.');
   const gl=this.gl,u=this.comparisonUniforms;
-  this.referenceUpload.set(profile.stations);
+  if(profile.stations.length>this.referenceUpload.length)throw Error('Referenceprofilen overstiger den forberedte GPU-tekstur.');
+  this.referenceUpload.fill(-1e20);
+  for(let index=0;index<profile.stations.length;index++){
+   const value=profile.stations[index];
+   this.referenceUpload[index]=value===REFERENCE_MISSING?-1e20:value/REFERENCE_SPEED_SCALE;
+  }
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.referenceTexture);
-  gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,1024,this.referenceHeight,gl.RGBA,gl.FLOAT,this.referenceUpload);
-  gl.useProgram(this.comparisonProgram);gl.uniform1i(u.referenceProfile,1);gl.uniform1i(u.stationCount,profile.stations.length/8);
+  gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,1024,this.referenceHeight,gl.RED,gl.FLOAT,this.referenceUpload);
+  gl.useProgram(this.comparisonProgram);gl.uniform1i(u.referenceProfile,1);gl.uniform1i(u.stationCount,profile.stations.length);
   gl.bindBuffer(gl.ARRAY_BUFFER,null);
   gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK,this.feedback);gl.enable(gl.RASTERIZER_DISCARD);
   try{

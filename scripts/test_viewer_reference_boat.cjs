@@ -19,10 +19,21 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
    window.referenceTestBytes=bytes;window.referenceTestInitial=bytes();
    window.referenceTestUploads=webglTracks.uploads;
    const forbidden=()=>{throw Error('Referencevalg genberegnede eller allokerede faste spordata');};
-   projectedTrackSample=prepareProjectedTrack=prepareReferencePassages=forbidden;
+   projectedTrackSample=prepareProjectedTrack=prepareReferenceProfile=forbidden;
    webglTracks.gl.createBuffer=webglTracks.gl.bufferData=webglTracks.gl.bufferSubData=forbidden;
    return {id:referenceBoatId,count:boats.length,bytes:referenceTestInitial};
   });
+  assert.ok(baseline.bytes.cpu<14*1024*1024,'Byte profiles should keep the entire compact fleet below 14 MiB');
+  const format=await page.evaluate(()=>({
+   bytes:boats.reduce((sum,boat)=>sum+trackProfileCache.get(boat.points).stations.byteLength,0),
+   count:referenceStationCount(),boats:boats.length,
+   compact:boats.every(boat=>trackProfileCache.get(boat.points).stations instanceof Uint8Array),
+   textureBytes:webglTracks.referenceUpload.byteLength
+  }));
+  assert.equal(format.compact,true);assert.equal(format.bytes,format.count*format.boats);
+  assert.equal(format.textureBytes,1024*Math.ceil(format.count/1024)*4);
+  const manifest=await page.evaluate(async()=>await (await fetch('track-profiles/manifest.json',{cache:'no-store'})).json());
+  assert.equal(manifest.sampleBytes,9);assert.equal(manifest.sampleEncoding,'uint8-speed-planar');
   await page.locator('#mapTracksToggle').click();
   assert.equal(await page.locator('#referenceBoat option').count(),baseline.count);
   const candidates=await page.evaluate(()=>['Vera','My','THE HULK'].map(name=>boats.find(boat=>boat.name===name).id));
@@ -40,8 +51,8 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
      gl.bindBuffer(gl.COPY_READ_BUFFER,record.comparisonBuffer);gl.getBufferSubData(gl.COPY_READ_BUFFER,0,gains);
      const stride=Math.max(1,Math.floor(boat.points.length/31));
      for(let index=0;index<boat.points.length;index+=stride){
-      const speed=samples[index*3+2],progress=samples[index*3]+samples[index*3+1];
-      const passage=speed<-1e19?null:packedReferenceAtProgress(progress,stations);
+      const speed=samples[index*3+2],station=samples[index*3];
+      const passage=speed<-1e19?null:referenceAtStation(station,stations);
       const corrected=correctedProjectedSpeed(speed,boat.handicapSecondsPerNm,reference.handicapSecondsPerNm);
       const expected=[passage?speed-passage.vmg:null,passage&&corrected!==null?corrected-passage.vmg:null];
       for(let basis=0;basis<2;basis++){
@@ -103,6 +114,28 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   await broken.goto(url);await broken.waitForSelector('#viewerLoadingError:not([hidden])');
   assert.equal(await broken.locator('main').getAttribute('inert'),'');
   assert.equal(await broken.locator('#viewerLoadingRetry').isVisible(),true);
-  console.log(JSON.stringify({browser:'firefox',checks,timingsMs:timings,bytes:baseline.bytes,errors}));
+  await broken.close();
+  for(const [key,value] of [['version',1],['stationSpacingMeters',5],['profileEncoding','float16'],['missingValue',0],['stationCount',1],['sampleBytes',12],['sampleEncoding','float32']]){
+   const invalid=await browser.newPage();
+   await invalid.route('**/track-profiles/manifest.json',async route=>{
+    const response=await route.fetch(),manifest=await response.json();manifest[key]=value;
+    await route.fulfill({json:manifest});
+   });
+   await invalid.goto(url);await invalid.waitForSelector('#viewerLoadingError:not([hidden])');
+   assert.equal(await invalid.evaluate(()=>boats.every(boat=>!trackProfileCache.has(boat.points))),true);
+   await invalid.close();
+  }
+  for(const kind of ['profile','samples']){
+   const invalid=await browser.newPage();
+   await invalid.route(`**/000.${kind}.bin`,async route=>{
+    const response=await route.fetch(),body=await response.body();
+    if(kind==='profile')await route.fulfill({body:body.subarray(1)});
+    else {body.writeFloatLE(-1.5,0);await route.fulfill({body});}
+   });
+   await invalid.goto(url);await invalid.waitForSelector('#viewerLoadingError:not([hidden])');
+   assert.equal(await invalid.evaluate(()=>boats.every(boat=>!trackProfileCache.has(boat.points))),true);
+   await invalid.close();
+  }
+  console.log(JSON.stringify({browser:'firefox',checks,timingsMs:timings,bytes:baseline.bytes,format,errors}));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

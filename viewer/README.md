@@ -843,15 +843,20 @@ Der ekstrapoleres ikke før/efter den tegnede rute.
 
 Den målte TracTrac-SOG projiceres på delstrækkets kurs ved hjælp af retningen fra
 den nominelle PCHIP-kurve. Sideværts sejlads tæller derfor ikke som fremdrift.
-Hver mulig referencebåds gyldige trackintervaller samples med højst fem sekunders afstand.
-Fremdriften interpoleres derefter ved den anden båds **samme langs-rute-position**,
+Hver mulig referencebåds gyldige trackintervaller samples med højst 10 meters
+geografisk bueafstand, ikke et fast tidsinterval. Fremdriften gemmes ved et fælles
+gitter langs rhumblinen med 10 meters afstand. Den anden båds **samme langs-rute-position**
+slås direkte op ved den nærmeste station,
 uanset klokkeslæt og tværgående afstand fra ruten. Hvis referencebåden passerer samme
 rute-position flere gange, bruges den første fremadgående passage. Sammenligningen
-bruger en forberedt opdeling af overlappende passager, så opslag ved et bestemt
-sted kun kræver en binær søgning. Den samme opdeling bruges af begge grundlag.
+bruger ét forberedt bytearray pr. båd, så opslag kun kræver et array-indeks.
+Den samme profil bruges af begge grundlag. Passagegrænser afrundes til nærmeste
+station (højst fem meters usikkerhed); en kort passage kan dække én station.
+Den sidste station repræsenterer rutens præcise slutpunkt.
 Sammenligningen kan bruge referencebådens senere passage, også når den ligger efter kortets aktuelle tid.
 Trackinghuller over fem minutter forbindes ikke, og der ekstrapoleres ikke til
-rute-positioner, som referencebåden ikke har passeret med gyldige data.
+rute-positioner ud over gitterets halve stationsbredde, som referencebåden ikke
+har passeret med gyldige data. Huller større end 10 meter bevares som manglende.
 
 Absolut forskel er `v_båd − v_reference`, hvor begge farter er den projicerede
 fremdrift i knob ved samme sted. Handicapvisningen bruger løbets TracTrac-felt
@@ -870,16 +875,29 @@ Generator og visning bruger den samme nominelle matematik i
 [`tracks.js`](./tracks.js), [`rhumbline-geometry.js`](./rhumbline-geometry.js) og
 [`navigation-math.js`](./navigation-math.js); den fælles tidsgrænsesøgning ligger i
 [`track-time.js`](./track-time.js). Der findes ingen separat alternativ beregningsvej.
-De kompakte binærdata fylder for det aktuelle felt cirka 107,39 MiB på CPU'en:
-8,36 MiB kildeprøver og 99,03 MiB passageprofiler. Lageret vokser lineært med
-kildeprøver og profilstationer; der opbygges ingen cache for alle bådpar.
-Det er en nødvendig, afgrænset hukommelsesforøgelse i forhold til én fast
-Mercutio-reference, i samme størrelsesorden som de øvrige spordata.
+Profilerne bruger ét byte pr. 10-meterstation: 0–254 koder for 0–25 knob,
+255 for manglende data. Højere hastigheder klippes til 25; negative til 0.
+Afrunding til nærmeste kode giver højst cirka 0,049 knobs kvantiseringsfejl
+inden for intervallet. Ruten på cirka 417 km giver 41.709 stationer pr. båd.
+Fart ved hvert oprindeligt tidsindekseret kildepunkt gemmes også med ét byte.
+På serveren fylder en kildeprøve ni bytes: Float32-indeks og -progression samt
+én fartkode. Negativ egen VMG bevares i indeksfeltets fortegn uden ekstra bytes;
+positioner og tidsstempler kvantiseres ikke til otte bit.
+De binære filer fylder samlet cirka 10,49 MiB: 6,27 MiB kildeprøver og
+4,22 MiB referenceprofiler. Browseren afkoder kildeprøverne én gang til GPU'ens
+Float32-format (8,36 MiB), mens alle referenceprofiler beholdes som bytes.
+Det samlede CPU-lager er derfor cirka 12,58 MiB. Lageret vokser lineært med
+kildeprøver og antal både; der opbygges ingen cache for alle bådpar.
+Profilerne gemmer hverken stationspositioner eller tider. Hoverens omtrentlige
+referencetid findes ved opslag og interpolation mellem de allerede forberedte
+kildepositioner og deres oprindelige tidsstempler.
 
-Kun den valgte referenceprofil uploades til en GPU-tekstur, cirka 1,34 MiB i den
-aktuelle opsætning. Transform feedback slår dens passager op én gang pr.
+Kun den valgte referenceprofil afkodes til en genbrugt R32F GPU-tekstur, cirka
+0,160 MiB i den aktuelle opsætning. Transform feedback slår dens stationer op én gang pr.
 referencevalg og skriver både absolut- og handicapforskel ved de oprindelige
-kildepunkter til en genbrugt GPU-buffer med to floats pr. kildeprøve.
+kildepunkter til en genbrugt GPU-buffer med to floats pr. kildeprøve. Kildebufferen
+indeholder det heltallige stationsindeks, progression i sømil og egen VMG; indekset
+beregnes før Float32-konvertering, så GPU'en ikke afrunder til en anden station.
 Forskellene interpoleres langs sporet i den fælles WebGL 2-renderer, som også
 bruges til PNG. Et grundlagsskift ændrer kun shaderens valg af de allerede
 forberedte værdier. Referencevalg genberegner ingen CPU-profiler og uploader
