@@ -1,12 +1,12 @@
 // Hosted viewers read the published snapshot; writers work through the authenticated backend.
 (()=>{
- const config=window.SR_CONFIG,bar=document.querySelector('.header-actions');
- const status=document.createElement('p');status.id='onlineStatus';status.setAttribute('role','status');status.style.cssText='margin:0;padding:4px 22px;background:#162e3e';
- document.querySelector('header').after(status);
+ const config=window.SR_CONFIG,bar=document.querySelector('.editor-actions');
+ const status=document.createElement('p');status.id='onlineStatus';status.setAttribute('role','status');
+ bar.after(status);
  const button=(label,action)=>{const b=document.createElement('button');b.textContent=label;b.onclick=action;bar.append(b);return b;};
  if(window.SR_READONLY){
   setPresentationMode(true);$('endPresentation').hidden=true;
-  if(config.apiBase)button('Log ind og redigér',()=>location.assign(config.apiBase+'/auth/login'));
+  if(config.apiBase){$('loginLink').href=config.apiBase+'/auth/login';$('loginLink').hidden=false;}
   status.textContent=notes.length?'':'Der er endnu ingen udgivne events.';
   return;
  }

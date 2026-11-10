@@ -7,14 +7,14 @@ async function loadingState(page){
  return page.evaluate(()=>({
   loading:document.documentElement.classList.contains('viewer-loading'),
   busy:document.body.getAttribute('aria-busy'),
-  hidden:['header','main'].every(selector=>getComputedStyle(document.querySelector(selector)).visibility==='hidden'),
+  hidden:['main'].every(selector=>getComputedStyle(document.querySelector(selector)).visibility==='hidden'),
   geometry:document.querySelector('#map').getBoundingClientRect().width>0,
-  inert:['header','main'].every(selector=>document.querySelector(selector).inert),
+  inert:['main'].every(selector=>document.querySelector(selector).inert),
   progress:document.querySelector('#viewerLoadingProgress').value
  }));
 }
 (async()=>{
- const browser=await firefox.launch({headless:false});
+ const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
@@ -45,7 +45,7 @@ async function loadingState(page){
   releaseOnline();
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   assert.equal(await page.locator('#viewerLoading').isVisible(),false);
-  assert.equal(await page.locator('header').isVisible(),true);
+  assert.equal(await page.locator('#mapHeading').isVisible(),true);
   assert.equal(await page.locator('#viewerLoadingProgress').evaluate(node=>node.value),100);
   assert.equal(await page.locator('body').getAttribute('aria-busy'),'false');
   assert.equal(await page.evaluate(()=>loadingProgress.every((value,index)=>index===0||value>=loadingProgress[index-1])),true);
@@ -121,7 +121,9 @@ async function loadingState(page){
   await publicPage.route('**/config.js',route=>route.fulfill({contentType:'application/javascript',body:'window.SR_CONFIG={admin:false,apiBase:""};'}));
   await publicPage.route('**/presentation.json',route=>publicFail
    ?route.fulfill({status:500,body:'Unavailable'})
-   :route.fulfill({json:{version:1,speedPins:[],notes:[]}}));
+   :route.fulfill({json:{version:1,speedPins:[],notes:[
+    {time:Date.UTC(2026,5,11,8)/1000,text:'Indlæsningskontrol',view:[230,250,620,760]}
+   ]}}));
   await publicPage.route('**/radar/*.png',async route=>{await weatherGate;await route.continue();});
   await publicPage.goto(url);
   await publicPage.locator('#viewerLoadingError').waitFor({state:'visible'});
@@ -131,9 +133,10 @@ async function loadingState(page){
   await publicPage.locator('#viewerLoadingRetry').click();
   await publicPage.waitForFunction(()=>document.querySelector('#viewerLoadingProgress').value===95,{},{timeout:120000});
   assert.equal((await loadingState(publicPage)).hidden,true);
-  assert.equal(await publicPage.locator('#viewerLoadingProgress').isVisible(),true);
+  assert.equal(await publicPage.locator('#viewerLoadingProgress').isVisible(),true,await publicPage.locator('#viewerLoadingError').textContent());
   releaseWeather();
   await publicPage.waitForSelector('main:not([inert])',{timeout:120000});
+  assert.equal(await publicPage.evaluate(()=>radarImageBuffer.front?.key),String(Date.UTC(2026,5,11,8)/1000),'Radar uses UTC ten-minute frames even when boat data starts between frames');
   assert.equal(await publicPage.locator('#viewerLoading').isVisible(),false);
   assert.equal(await publicPage.evaluate(()=>window.SR_READONLY),true);
   assert.equal(await publicPage.locator('aside').isVisible(),false);
