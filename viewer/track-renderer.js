@@ -310,7 +310,7 @@ void main(){colour=vec4(0.0);}`);
    const viewport={...baseViewport,pixelWidth:baseViewport.pixelWidth*2,pixelHeight:baseViewport.pixelHeight*2};
    const {rect,matrix,topLeft:top,pixelWidth:width,pixelHeight:height}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
-   const key=[time,viewportKey,trackLengthSeconds,comparison.enabled,comparison.basis,comparison.boatColour,comparisonRevision,...order.map(b=>b.id)].join(':');
+   const key=[time,viewportKey,trackLengthSeconds,handicapTracksEnabled,comparison.enabled,comparison.basis,comparison.boatColour,comparisonRevision,...order.map(b=>b.id)].join(':');
    if(!force&&this.lastKey===key)return true;
    this.lastKey=key;
    const gl=this.gl,u=this.uniforms;
@@ -327,25 +327,27 @@ void main(){colour=vec4(0.0);}`);
    }
    gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);gl.clearColor(0,0,0,0);gl.clearDepth(1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
    gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.useProgram(this.program);
-   const stamp=time-D.start,high=Math.fround(stamp);
-   gl.uniform4f(u.windowTime,trackWindowSeconds(),high,0,stamp-high);
    gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2);
    gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
-   gl.uniform1i(u.boatColourMode,comparison.boatColour?1:0);
+   const boatColourMode=trackUsesBoatColour();
+   gl.uniform1i(u.boatColourMode,boatColourMode?1:0);
    gl.uniform1i(u.gainComponent,comparison.basis==='time'?2:comparison.basis==='handicap'?1:0);
    gl.uniform1f(u.gainLimit,trackGainLimit());
    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.palette);gl.uniform1i(u.palette,0);
    for(const boat of order){
-    const points=boat.points,first=Math.max(0,timeBoundary(points,time-trackWindowSeconds())-1),last=timeBoundary(points,time,true);
+    const window=displayTrackWindow(boat,time);if(!window)continue;
+    const points=boat.points,first=Math.max(0,timeBoundary(points,window.from)-1),last=timeBoundary(points,window.to,true);
     if(last<=first)continue;
+    const stamp=window.to-D.start,high=Math.fround(stamp);
+    gl.uniform4f(u.windowTime,Math.max(1e-6,window.to-window.from),high,0,stamp-high);
     this.prepare(boat);const record=this.buffers.get(points);
     gl.bindVertexArray(record.vao);
-    if(comparison.boatColour){
+    if(boatColourMode){
      const colour=this.boatColours.get(colours[boat.name]);
      if(!colour)throw Error('Bådens sporfarve er ikke forberedt: '+boat.name);
      gl.uniform3fv(u.boatColour,colour);
     }
-    const relative=comparison.enabled&&boat.id!==referenceBoat()?.id;
+    const relative=trackUsesComparison()&&boat.id!==referenceBoat()?.id;
     gl.uniform1i(u.relativeMode,relative?1:0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
     if(relative)this.bindComparison(record,first);
     // WebGL has no base-instance draw: adjust the view into the same immutable

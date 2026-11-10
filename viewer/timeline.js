@@ -179,8 +179,8 @@ function updateTimeline({preserveTime=false}={}){
  const bounds=visibleMapBounds();if(!bounds)return false;
  const ranges=[];
  for(const boat of boats)if(boatIsDisplayed(boat)){
-  ranges.push(...visibleBoatRanges(boat.points,bounds));
-  if(showHandicapGhost(boat)){
+  if(!handicapTracksEnabled)ranges.push(...visibleBoatRanges(boat.points,bounds));
+  else{
    const clock=ghostClocks.get(boat.id);
    if(!clock.error){
     ranges.push(...visibleBoatRanges(boat.points,bounds,clock));

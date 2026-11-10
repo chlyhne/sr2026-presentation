@@ -11,16 +11,16 @@ function trackSpeedSample(boat,time){
 }
 function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
  const matrix=$('map').getScreenCTM();if(!matrix)return null;
- const now=currentTime(),start=now-trackWindowSeconds(),limit=topmost?8*8:12*12;
- let best=null,bestDistance=limit,bestPainted=false;
+ const limit=topmost?8*8:12*12;
+ let best=null,bestDistance=limit,bestPainted=false,bestTime=-Infinity;
  const paintedRadius2=(TRACK_OUTLINE_WIDTH/2+.5)**2;
  function consider(boat,time,d){
   if(d>limit)return;
-  const painted=d<=paintedRadius2;
+  const painted=d<=paintedRadius2,displayTime=displayedTrackTime(boat,time);if(displayTime===null)return;
   const wins=topmost
-   ?!best||(painted&&!bestPainted)||(painted===bestPainted&&(painted?time>=best.time:d<bestDistance||(d===bestDistance&&time>=best.time)))
+   ?!best||(painted&&!bestPainted)||(painted===bestPainted&&(painted?displayTime>=bestTime:d<bestDistance||(d===bestDistance&&displayTime>=bestTime)))
    :d<=bestDistance;
-  if(wins){bestDistance=d;bestPainted=painted;best={boatId:boat.id,time};}
+  if(wins){bestDistance=d;bestPainted=painted;bestTime=displayTime;best={boatId:boat.id,time};}
  }
  function distance(point){
   const [x,y]=xy(point),dx=matrix.a*x+matrix.c*y+matrix.e-clientX,dy=matrix.b*x+matrix.d*y+matrix.f-clientY;
@@ -29,6 +29,8 @@ function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
  const order=topmost?[...boats].sort((a,b)=>(referenceBoat()?.id===a.id)-(referenceBoat()?.id===b.id)):boats;
  for(const boat of order){
   if(!boatIsDisplayed(boat)||(boatId&&boat.id!==boatId))continue;
+  const window=displayTrackWindow(boat,currentTime());if(!window)continue;
+  const start=window.from,now=window.to;
   const points=boat.points,model=getTrackModel(points);
   for(let i=Math.max(0,timeBoundary(points,start)-1);i<points.length&&points[i][2]<=now;i++){
    const a=points[i],b=points[i+1],gap=b?b[2]-a[2]:0;
@@ -66,7 +68,7 @@ function matchingSpeedPin(sample){
  return speedPins.find(p=>p.boatId===sample.boatId&&Math.abs(p.time-sample.time)<.05);
 }
 function trackPinValue(boat,sample){
- if(comparison.enabled&&referenceBoat()?.id!==boat.id){
+ if(trackUsesComparison()&&referenceBoat()?.id!==boat.id){
   const gains=webglTracks.comparisonSample(boat,sample.time),timeMode=comparison.basis==='time';
   const value=gains?.[timeMode?'timeGain':comparison.basis==='handicap'?'handicapGain':'absoluteGain']??null;
   const unit=timeMode?'s/100 m':'kn';
@@ -101,7 +103,7 @@ function updateTrackHover(e){
   if(!trackHoverTip){trackHoverTip=document.createElement('div');trackHoverTip.id='trackHover';trackHoverTip.setAttribute('role','tooltip');document.body.append(trackHoverTip);}
   const speed=sample.speed===null?'fart mangler':`SOG ${sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})} knob`;
   let difference='';
-  if(comparison.enabled&&referenceBoat()?.id!==boat.id){
+  if(trackUsesComparison()&&referenceBoat()?.id!==boat.id){
    const relative=trackGainSample(boat,hit.time),basis=comparison.basis==='handicap'?'ToD':'absolut';
    const unit=comparison.basis==='time'?'s/100 m':`kn (${basis})`;
    difference=relative?` · ${relative.gain>=0?'Henter +':'Taber '}${relative.gain.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} ${unit}${relative.referenceTime===null?'':` · ${referenceBoat().name} samme sted ca. kl. ${fmt(relative.referenceTime)}`}`:' · Sammenligning mangler ved dette sted';
@@ -141,7 +143,9 @@ function renderSpeedPins(){
  entries.sort((a,b)=>(referenceBoat()?.id===a.boatId)-(referenceBoat()?.id===b.boatId));
  for(const entry of entries){
   const boat=boats.find(b=>b.id===entry.boatId);
-  if(!boat||!boatIsDisplayed(boat)||entry.time<now-trackWindowSeconds()||entry.time>now)continue;
+  if(!boat||!boatIsDisplayed(boat))continue;
+  const window=displayTrackWindow(boat,now);
+  if(!window||entry.time<window.from||entry.time>window.to)continue;
   const sample=trackSpeedSample(boat,entry.time);if(!sample)continue;
   const [x,y]=xy(sample.point),screen=new DOMPoint(x,y).matrixTransform(matrix);
   if(screen.x<rect.left||screen.x>rect.right||screen.y<rect.top||screen.y>rect.bottom)continue;
@@ -150,7 +154,7 @@ function renderSpeedPins(){
   group.dataset.pinned=String(entry.pinned);group.setAttribute('class','speed-marker');
   group.setAttribute('transform',`translate(${x} ${y}) scale(${scale})`);
   const {label,description}=trackPinValue(boat,sample),accessibleLabel=boat.name+' · '+label+' · '+description;
-  el('title',{},group).textContent=`${label} · ${fmt(entry.time)} · ${description}`;
+  el('title',{},group).textContent=`${label} · ${fmt(displayedTrackTime(boat,entry.time))} · ${description}`;
   el('circle',{r:10,fill:'transparent','pointer-events':'all'},group);
   if(entry.pinned)el('circle',{r:7,fill:'none',stroke:colour,'stroke-width':1.5},group);
   el('circle',{r:4,fill:colour,stroke:'#14212a','stroke-width':1.5},group);

@@ -19,10 +19,11 @@ try{
  if(typeof stored!=='boolean')throw Error('Ugyldigt valg.');
  handicapTracksEnabled=stored;
 }catch(error){handicapPreferenceError='Handicapkompenseret spor kunne ikke indlæses: '+error.message;}
-function showHandicapGhost(boat){return handicapTracksEnabled&&chosen.has(boat.name)&&boatIsDisplayed(boat);}
+function trackUsesBoatColour(){return handicapTracksEnabled||comparison.boatColour;}
+function trackUsesComparison(){return !handicapTracksEnabled&&comparison.enabled;}
 function syncHandicapTracks(){
  $('handicapCompensatedTracks').checked=handicapTracksEnabled;
- const missing=boats.filter(boat=>showHandicapGhost(boat)&&ghostClocks.get(boat.id).error);
+ const missing=handicapTracksEnabled?boats.filter(boat=>boatIsDisplayed(boat)&&chosen.has(boat.name)&&ghostClocks.get(boat.id).error):[];
  const message=handicapPreferenceError||(missing.length?`Handicapkompensation mangler for ${missing.map(boat=>boat.name).join(', ')}: ${[...new Set(missing.map(boat=>ghostClocks.get(boat.id).error))].join(' · ')}.`:'');
  if($('ghostStatus').textContent!==message)$('ghostStatus').textContent=message;
  $('ghostStatus').hidden=!message;
@@ -31,33 +32,37 @@ function setHandicapTracks(enabled){
  try{localStorage.setItem(HANDICAP_TRACKS_KEY,JSON.stringify(enabled));}
  catch{handicapPreferenceError='Handicapkompenseret spor kunne ikke gemmes.';syncHandicapTracks();return false;}
  handicapTracksEnabled=enabled;handicapPreferenceError='';syncHandicapTracks();
+ clearTrackHover();comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();
  updateTimeline({preserveTime:true});requestRender();return true;
 }
 $('handicapCompensatedTracks').onchange=event=>setHandicapTracks(event.target.checked);
-function ghostPosition(boat,time){
+function handicapBoatPosition(boat,time){
  const clock=ghostClocks.get(boat.id);if(!clock||clock.error||time<clock.start||time>clock.end+GHOST_FINISH_HOLD)return null;
  const sourceTime=time>=clock.end?clock.sourceEnd:ghostSourceAtTime(clock,time);
  const position=trackPosition(boat.points,sourceTime);
  return position?{...position,replayTime:sourceTime,finished:time>=clock.end}:null;
 }
+function displayBoatPosition(boat,time){
+ if(handicapTracksEnabled)return handicapBoatPosition(boat,time);
+ const position=trackPosition(boat.points,time);return position?{...position,replayTime:time}:null;
+}
+function displayTrackWindow(boat,time){
+ const from=time-trackWindowSeconds();
+ if(!handicapTracksEnabled)return {from,to:time};
+ const clock=ghostClocks.get(boat.id);
+ if(!clock||clock.error||time<clock.start||time>clock.end+GHOST_FINISH_HOLD)return null;
+ return {from:ghostSourceAtTime(clock,trackLengthSeconds===0?clock.start:Math.min(clock.end,Math.max(clock.start,from))),
+  to:ghostSourceAtTime(clock,Math.min(clock.end,time))};
+}
+function displayedTrackTime(boat,sourceTime){
+ if(!handicapTracksEnabled)return sourceTime;
+ const clock=ghostClocks.get(boat.id);return clock&&!clock.error?ghostClockAtSource(clock,sourceTime):null;
+}
 function viewerEndTime(){
  let end=D.end;
- for(const boat of boats)if(showHandicapGhost(boat)){
+ for(const boat of boats)if(handicapTracksEnabled&&boatIsDisplayed(boat)){
   const clock=ghostClocks.get(boat.id);if(!clock.error)end=Math.max(end,Math.ceil(clock.end+GHOST_FINISH_HOLD));
  }
  return end;
 }
-function renderGhostBoats(time,order){
- const layer=$('ghostBoatMarkers');layer.replaceChildren();syncHandicapTracks();
- for(const boat of order){
-  if(!showHandicapGhost(boat))continue;
-  const position=ghostPosition(boat,time);if(!position)continue;
-  const [x,y]=xy(position.point),group=screenGroup(x,y,layer),colour=colours[boat.name];
-  group.setAttribute('class','ghost-boat');group.dataset.ghostBoat=boat.id;group.dataset.sourceTime=position.replayTime;
-  group.setAttribute('opacity','.38');group.setAttribute('role','img');
-  group.setAttribute('aria-label',`${boat.name} · handicapkompenseret${position.finished?' · i mål':''}`);
-  renderBoatIcon(group,boat,position,position.replayTime,colour);
-  if(shownBoatNames.has(boat.id))el('text',{class:'boat-name',x:7,y:-12,fill:colour,'font-size':12,'font-weight':700,
-   stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},group).textContent=boat.name+' · handicap'+(position.finished?' · i mål':'');
- }
-}
+syncNavigationControls();

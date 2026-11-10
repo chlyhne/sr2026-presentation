@@ -168,18 +168,22 @@ python3 scripts/serve_viewer.py
   `node scripts/test_viewer_rhumbline_setup.cjs` tester det separate tegnekort
   med simuleret gemning. `python3 scripts/test_rhumbline_server.py` tester den
   permanente engangsgemning på en isoleret lokal server.
-- **Spor → Handicapkompenseret spor** er ét flueben, som tilføjer en gennemsigtig
-  båd for hver af de valgte både. Det bruger samme skrog, størrelse, farve og oprindelige
-  PCHIP-kurve som båden, med 38 % opacitet og uden en ekstra sporlinje.
-  Spøgelset skjules sammen med originalen og følger dens navnevisning.
-  Fluebenet huskes lokalt, ligesom sportype og referencebåd. Det almindelige bådvalg
-  bestemmer automatisk, hvilke både der får en kompenseret kopi; der er ingen særskilt bådliste.
+- **Spor → Handicapkompenseret spor** er ét flueben, som skifter hele kortet til
+  handicapkompenserede positioner. Der vises én almindelig, fuldt synlig båd pr.
+  bådvalg, med samme skrog, størrelse, farve, navn og betjening som normalt.
+  Originalpositionerne og gennemsigtige kopier vises ikke i denne tilstand.
+  Sporene bruger altid bådens faste farve; sportype er derfor låst til **Bådfarve**,
+  og den tidligere sportype genskabes, når fluebenet fjernes.
+  Hvert spor slutter ved den kompenserede båd. Både endepunkt og sporlængde følger
+  den kompenserede tid, og kurven er stadig bådens oprindelige PCHIP-kurve.
+  Bådlisten, valg af fartpunkter og pins følger samme viste position og sporperiode.
+  Fluebenet huskes lokalt, ligesom sportype og referencebåd.
   Korrektionen bruger bådens **eget ToD-måltal og klassestart**, uafhængigt af
   referencebåden. Inden for hver rute bruges seneste klassestart som fælles start
-  og feltets højeste ToD-måltal som fast grundlag. Alle spøgelser forsinkes derfor;
+  og feltets højeste ToD-måltal som fast grundlag. Alle både forsinkes derfor;
   til- og fravalg af både ændrer ikke deres tidsforløb.
-  Ved mål er spøgelsestiden `fælles start + sejltid + (TA_maks − TA_båd) × banelængde`.
-  Første spøgelse i mål på **samme rute** har dermed den bedste korrigerede tid,
+  Ved mål er visningstiden `fælles start + sejltid + (TA_maks − TA_båd) × banelængde`.
+  Første båd i mål på **samme rute** har dermed den bedste korrigerede tid,
   også når originalerne startede på forskellige tidspunkter.
   Banelængden kommer fra TracTrac: 232 sømil via Grønsund og 216 via Bøgestrømmen.
   Det samlede tillæg fordeles efter bådens fremdrift langs dens eget sejlede spor
@@ -187,13 +191,13 @@ python3 scripts/serve_viewer.py
   sømil ændrer dermed ikke handicapkorrektionen ved mål.
   Kun tidsnøgler og et tidslinjeindeks forberedes før betjening; den oprindelige
   sporgeometri genbruges uændret. Trackinghuller følger den normale femminuttersregel.
-  Tidslinjen medtager spøgelsernes passager og kan forlænges ud over vejrperioden;
-  ved mål holdes spøgelset stille i fem minutter. Events kan også gemmes og redigeres
+  Tidslinjen følger de kompenserede passager og kan forlænges ud over vejrperioden;
+  ved mål holdes båden stille i fem minutter. Events kan også gemmes og redigeres
   ved de forlængede tider. Både uden et registreret måltid eller tracking ved
   start/mål får en synlig forklaring på den manglende kompensation.
   `node scripts/test_ghost_math.cjs` kontrollerer ToD, forskudte starter, mål-rækkefølge
   og hele feltets faste tidsforløb. `node scripts/test_viewer_ghosts.cjs` tester
-  valg, gennemsigtighed, genbrug af spor, tidslinje, målpassager, genindlæsning og
+  flueben, bådpositioner, fast sporfarve, sporender, tidslinje, målpassager, genindlæsning og
   præsentation lokalt i Firefox på PC.
 - Hvert event gemmer sit eget udvalg af aktive både. Ved Forrige/Næste, valg i
   eventlisten eller klik på en note genskabes netop dette udvalg, også et tomt udvalg.

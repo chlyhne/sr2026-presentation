@@ -283,19 +283,22 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  markerLayer.replaceChildren();
  const drawingOrder=boats.filter(boatIsDisplayed).sort((a,b)=>(referenceBoat()?.id===a.id)-(referenceBoat()?.id===b.id));
  if(!webglTracks.render(t,drawingOrder))return;
- renderGhostBoats(t,drawingOrder);
+ syncHandicapTracks();
  for(const b of drawingOrder){
   const markers=el('g',{class:'boat-markers'},markerLayer),color=colours[b.name];
-  const position=trackPosition(b.points,t);
+  const position=displayBoatPosition(b,t);
   if(!position)continue;
   const [x,y]=xy(position.point),group=screenGroup(x,y,markers);
   group.setAttribute('class','boat-marker');group.dataset.boatMarker=b.id;
+  group.dataset.sourceTime=position.replayTime;
+  if(handicapTracksEnabled)group.dataset.handicapCompensated='true';
+  if(position.finished)group.dataset.handicapFinished='true';
   group.setAttribute('role','button');group.setAttribute('tabindex','0');
   group.setAttribute('aria-label',`${isBoatSearchActive()?'Vælg/fravælg båd':'Vis/skjul navn'}: ${b.name}`);
   group.setAttribute('aria-pressed',String(isBoatSearchActive()?chosen.has(b.name):shownBoatNames.has(b.id)));
-  el('title',{},group).textContent=`${b.name} · ${position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
+  el('title',{},group).textContent=`${b.name} · ${handicapTracksEnabled?'handicapkompenseret position · oprindeligt spor ved '+fmt(position.replayTime):position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
   el('circle',{cx:0,cy:0,r:10,fill:'transparent','pointer-events':'all'},group);
-  renderBoatIcon(group,b,position,t,color);
+  renderBoatIcon(group,b,position,position.replayTime,color);
   if(shownBoatNames.has(b.id)){
    const text=el('text',{class:'boat-name','pointer-events':'none',x:7,y:({Mercutio:-12,Vera:15,My:-4,'THE HULK':27}[b.name]||3),fill:color,
     'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},group);
@@ -331,7 +334,7 @@ for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>req
 let playbackTickTime=0,playbackRate=1,playbackOffset=0,eventPlaybackTarget=null;
 function centerPlaybackOnReferenceBoat(){
  const boat=referenceBoat();
- const position=boat&&trackPosition(boat.points,currentTime());
+ const position=boat&&displayBoatPosition(boat,currentTime());
  if(!position)return;
  const [x,y]=xy(position.point);
  view=[x-view[2]/2,y-view[3]/2,view[2],view[3]];setview();
