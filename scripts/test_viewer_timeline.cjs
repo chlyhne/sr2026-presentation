@@ -88,7 +88,7 @@ async function check(type){
   assert.equal(await page.evaluate(()=>currentTime()),fixtures[3].time);
   await page.locator('#time').focus();await page.keyboard.press('ArrowLeft');
   assert.equal(await page.evaluate(()=>currentTime()),fixtures[3].time-1);
-  await page.locator('#next').click();assert.equal(await page.evaluate(()=>currentTime()),fixtures[3].time);
+  await page.locator('#time').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.evaluate(()=>currentTime()),fixtures[3].time);
   await page.locator('#play').click();
   await page.waitForFunction(time=>currentTime()>time,fixtures[3].time);
   await page.locator('#play').click();const paused=await page.evaluate(()=>currentTime());

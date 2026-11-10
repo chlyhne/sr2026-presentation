@@ -202,7 +202,6 @@ function updateTimeline({preserveTime=false}={}){
  visibleTimeRanges=boatTimeRanges.length?boatTimeRanges:presenting?[{start:D.start,end:viewerEndTime()}]:[];
  timelineLength=visibleTimeRanges.reduce((sum,r)=>sum+r.end-r.start+1,0);
  const slider=$('time');slider.min=0;slider.max=Math.max(0,timelineLength-1);slider.step=1;slider.disabled=timelineLength<2;
- $('back').disabled=$('next').disabled=timelineLength<2;
  $('play').disabled=hasRenderingFailure()||(timelineLength<2&&!eventPlaybackTarget);
  if(slider.disabled&&interval&&!eventPlaybackTarget)stopPlayback();
  const before=selectedTime;

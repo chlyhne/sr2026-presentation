@@ -21,9 +21,9 @@ async function check(type){
   await page.route('**/event-images/'+imageID+'.png',route=>route.fulfill({contentType:'image/png',body:photo}));
   const fixture=await page.evaluate(imageID=>{
    const time=D.start+3600;
-   const a={wind:false,windNumbers:false,rain:false,rainOpacity:.25,traffic:false,military:false,
+   const a={wind:false,windNumbers:false,rain:false,rainOpacity:.25,grid:true,traffic:false,military:false,
     annotationsVisible:true,windModel:'dmi_harmonie_arome_europe',boats:['Mercutio','Vera'],boatNames:[]};
-   const b={wind:true,windNumbers:true,rain:true,rainOpacity:.8,traffic:true,military:true,
+   const b={wind:true,windNumbers:true,rain:true,rainOpacity:.8,grid:true,traffic:true,military:true,
     annotationsVisible:false,windModel:'era5',boats:['My'],boatNames:[boats.find(boat=>boat.name==='My').id]};
    notes=[
     {time,text:'A',view:[230,250,620,760],settings:a},

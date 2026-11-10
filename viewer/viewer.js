@@ -329,9 +329,28 @@ document.addEventListener('keydown',event=>{
   event.preventDefault();event.stopImmediatePropagation();$(name+'Panel').hidden=true;$(name+'Toggle').setAttribute('aria-expanded','false');$(name+'Toggle').focus();return;
  }
 },true);
-for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};$('next').onclick=()=>step(1);$('back').onclick=()=>step(-1);
+for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
 let playbackTickTime=0,playbackRate=1,playbackOffset=0,eventPlaybackTarget=null;
+function syncPlaybackControls(){
+ const playing=interval!==null,label=playing?'Pause':'Afspil',speed=$('playbackSpeed'),index=speed.selectedIndex;
+ $('play').setAttribute('aria-label',label);$('play').title=label;
+ $('playIcon').toggleAttribute('hidden',playing);$('pauseIcon').toggleAttribute('hidden',!playing);
+ $('back').disabled=index<=0;$('next').disabled=index>=speed.options.length-1;
+ $('back').title=index>0?'Lavere hastighed: '+speed.options[index-1].textContent:'Laveste hastighed: '+speed.options[0].textContent;
+ $('next').title=index<speed.options.length-1?'Højere hastighed: '+speed.options[index+1].textContent:'Højeste hastighed: '+speed.options[index].textContent;
+}
+function updatePlaybackSpeed(){
+ if(interval)advancePlayback(performance.now());
+ playbackRate=+$('playbackSpeed').value;syncPlaybackControls();
+}
+function changePlaybackSpeed(direction){
+ const speed=$('playbackSpeed'),index=Math.max(0,Math.min(speed.options.length-1,speed.selectedIndex+direction));
+ if(index===speed.selectedIndex)return;
+ speed.selectedIndex=index;updatePlaybackSpeed();
+}
+$('back').onclick=()=>changePlaybackSpeed(-1);$('next').onclick=()=>changePlaybackSpeed(1);
+syncPlaybackControls();
 function centerPlaybackOnReferenceBoat(){
  const boat=referenceBoat();
  const position=boat&&displayBoatPosition(boat,currentTime());
@@ -364,17 +383,14 @@ function startPlayback({target=null}={}){
  if(!target&&playbackOffset>=timelineLength-1)return;
  eventPlaybackTarget=target;
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
- $('play').disabled=false;$('play').textContent='Pause';interval=setInterval(()=>advancePlayback(performance.now()),50);
+ $('play').disabled=false;interval=setInterval(()=>advancePlayback(performance.now()),50);syncPlaybackControls();
  if(target)centerPlaybackOnReferenceBoat();
 }
 $('play').onclick=()=>{
  if(interval){stopPlayback();return;}
  startPlayback();
 };
-$('playbackSpeed').onchange=()=>{
- if(interval)advancePlayback(performance.now());
- playbackRate=+$('playbackSpeed').value;
-};
+$('playbackSpeed').onchange=updatePlaybackSpeed;
 document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
 $('all').onclick=toggleAllBoats;
 let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));requestRender({viewportOnly:!updateTimeline()}); }$('reset').onclick=()=>{view=[230,250,620,760];setview()};

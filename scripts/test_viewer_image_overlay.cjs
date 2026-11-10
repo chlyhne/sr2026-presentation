@@ -77,7 +77,7 @@ async function check(type){
   await page.locator('#eventImageButton').click();await imageOpen();
   await page.evaluate(()=>seekTimeline(offsetAtTime(notes[2].time)));await imageOpen(false);
   await page.locator('#eventImageButton').click();await imageOpen();
-  await page.locator('#next').click();await imageOpen(false);
+  await page.locator('#time').focus();await page.keyboard.press('ArrowRight');await imageOpen(false);
   await page.locator('#eventSelect').selectOption('2');await imageOpen();
   await page.setViewportSize({width:1100,height:850});await page.waitForTimeout(100);await imageOpen();await sameMapBounds();
   await page.screenshot({path:'/tmp/sr2026-image-overlay-'+type.name()+'-desktop.png'});

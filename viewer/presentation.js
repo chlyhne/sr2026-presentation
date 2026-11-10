@@ -25,7 +25,8 @@ function parseEventTimeInput(value){
  return eventTimeInputValue(time)===`${year}-${month}-${day}T${hour}:${minute}:${second}`?time:null;
 }
 function stopPlayback() {
- if(interval) {clearInterval(interval);interval=null;$('play').textContent='Afspil';}
+ if(interval) {clearInterval(interval);interval=null;}
+ syncPlaybackControls();
  if(eventPlaybackTarget){$('presentationMessage').textContent='';$('nextEvent').title='Afspil frem til næste event';}
  eventPlaybackTarget=null;
  $('play').disabled=$('time').disabled;
