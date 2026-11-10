@@ -18,4 +18,17 @@ function clearRenderingFailure(layer){
 function assertRenderingReady(){
  if(hasRenderingFailure())throw Error([...renderingErrors].map(([name,message])=>`${name}: ${message}`).join('\n'));
 }
+async function waitForMapReady(){
+ assertRenderingReady();
+ await document.fonts.ready;
+ let radarPending,windPending;
+ do{
+  flushRender();
+  radarPending=radarReady;windPending=windReady;await Promise.all([radarPending,windPending]);
+  await Promise.all([radarImageBuffer.paintReady,windImageBuffer.paintReady]);
+ }while(renderRequestKind!==null||radarPending!==radarReady||windPending!==windReady);
+ assertRenderingReady();
+ if($('wind').checked&&windFieldError)throw Error('Vindkortet kunne ikke indlæses. Prøv igen.');
+ if($('rain').checked&&radarStatus==='kunne ikke indlæses')throw Error('Radaren kunne ikke indlæses. Prøv igen, eller slå radarlaget fra.');
+}
 $('reloadRendering').onclick=()=>location.reload();

@@ -1,15 +1,20 @@
 <!doctype html>
-<html lang="da">
+<html lang="da" class="viewer-loading">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sjælland Rundt · kort til præsentation</title>
 <link rel="stylesheet" href="viewer.css">
-<header><h1>Sjælland Rundt 2026 <span> / Mercutio</span></h1><div class="header-actions">
+<body aria-busy="true">
+<header inert><h1>Sjælland Rundt 2026 <span> / Mercutio</span></h1><div class="header-actions">
   <button id="startPresentation" class="mode-switch">Start præsentation</button>
   <button id="presentationFullscreen" aria-pressed="false" hidden>Fuld skærm</button>
   <button id="endPresentation" hidden>Redigér</button>
 </div></header>
-<p id="viewerLoading" role="status">Indlæser kort …</p>
+<section id="viewerLoading" aria-label="Indlæsning">
+  <progress id="viewerLoadingProgress" max="100" value="0" aria-label="Indlæser præsentationen"></progress>
+  <p id="viewerLoadingError" role="alert" hidden></p>
+  <button id="viewerLoadingRetry" type="button" hidden>Genindlæs siden</button>
+</section>
 <main inert><aside>
   <div class="presentation-tools">
     <button id="capture" class="primary">Gem kort som PNG</button>
@@ -182,4 +187,5 @@
   <div class="button-row"><button id="applyImageCrop" type="button" disabled>Brug beskæring</button><button id="resetImageCrop" type="button" disabled>Hele billedet</button><button id="cancelImageCrop" type="button">Annullér</button></div>
 </dialog>
 <script src="config.js"></script><script src="boot.js"></script>
+</body>
 </html>
