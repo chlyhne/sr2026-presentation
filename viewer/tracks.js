@@ -34,7 +34,7 @@ async function prepareFleetTracks(onProgress=()=>{}){
 }
 function trackSpeedLegendLayout(){
  const rect=$('map').getBoundingClientRect();
- return {left:12,top:12,width:Math.max(110,Math.min(230,rect.width-24)),height:comparison.enabled?103:63};
+ return {left:12,top:12,width:Math.max(110,Math.min(230,rect.width-24)),height:comparison.enabled?77:63};
 }
 function renderTrackSpeedLegend(){
  const layer=$('trackSpeedLegend');layer.replaceChildren();
@@ -59,7 +59,9 @@ function renderTrackSpeedLegend(){
   }
   el('title',{},text).textContent=label;
  }
- layer.setAttribute('aria-label',relative?`${timeMode?'Tidsforskel i sekunder pr. 100 meter':'Fartforskel'} fra ${referenceName} ved samme sted: blå taber, rød henter. ${referenceName}: uændret SOG-farve`:'Bådfart over grunden, jet-farveskala fra 0 til 15 knob');
+ const comparisonHelp=`Sammenlignet med ${referenceName} ved samme sted på ruten. ${timeMode?'Grå: ingen fremdrift eller fælles data.':'Grå: mangler fælles passage eller data.'} ${referenceName}: uændret SOG-farve.`;
+ layer.setAttribute('aria-label',relative?`${timeMode?'Tidsforskel i sekunder pr. 100 meter':'Fartforskel'}: blå langsommere, rød hurtigere. ${comparisonHelp}`:'Bådfart over grunden, jet-farveskala fra 0 til 15 knob');
+ if(relative)el('title',{},group).textContent=comparisonHelp;
  legendLabel(relative?`Mod ${referenceName} · ${timeMode?'s/100 m':comparison.basis==='handicap'?'ToD · kn':'absolut · kn'}`:'Bådfart · SOG · knob',{y:17,'font-size':11,'font-weight':650});
  const gradient=el('linearGradient',{id:'trackSpeedJetGradient',x1:0,x2:1,y1:0,y2:0},el('defs',{},group));
  for(let i=0;i<=128;i++)el('stop',{offset:i/128,'stop-color':relative?trackGainColour(-limit+2*limit*i/128,limit):trackSpeedColour(TRACK_SPEED_MAX*i/128)},gradient);
@@ -70,9 +72,7 @@ function renderTrackSpeedLegend(){
   el('text',{x,y:54,fill:'#173d4c','font-size':11,'text-anchor':value===(relative?-limit:0)?'start':value===(relative?limit:15)?'end':'middle'},group).textContent=relative?(value<0?`−${limit}`:value>0?`+${limit}`:0):value===15?'15+':value;
  }
  if(relative){
-  el('text',{x:10,y:69,fill:'#173d4c','font-size':10},group).textContent='Blå: taber · Rød: henter · Samme sted';
-  el('text',{x:10,y:83,fill:'#173d4c','font-size':10},group).textContent=timeMode?'Grå: ingen fremdrift/fælles data':'Grå: mangler fælles passage/data';
-  legendLabel(`${referenceName}: uændret SOG-farve`,{y:96,'font-size':10});
+  legendLabel('Blå: langsommere · Rød: hurtigere',{y:69,'font-size':10});
  }
 }
 

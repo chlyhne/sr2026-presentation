@@ -25,7 +25,7 @@ body.presenting #renderingError{grid-column:1}
 #mapLayers,#mapMeasure,#mapTracks{position:relative}
 #mapMeasureToggle,#mapTracksToggle,#mapTracksPanel,#rhumblineTools,#comparisonStatus{background:#fffffff0;color:#173d4c;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26}
 #mapMeasureToggle,#mapTracksToggle{display:flex;align-items:center;gap:7px;padding:8px 10px;font-size:13px;font-weight:650;min-height:36px}
-#mapTracksToggle[aria-expanded=true]>span{transform:rotate(180deg)}
+#mapTracksToggle[aria-expanded=true],#mapLayersToggle[aria-expanded=true]{background:#dcecf0}
 #mapMeasureToggle:hover,#mapTracksToggle:hover{background:#dcecf0}
 #mapMeasureToggle[aria-pressed=true]{background:#173d4c;color:white}
 #mapTracksPanel{position:absolute;right:0;top:calc(100% + 6px);width:250px;padding:12px;background:white}
@@ -51,7 +51,6 @@ body.rhumbline-setup #rhumblineSaveStatus:empty{display:none}
 #mapLayersToggle,#mapLayersPanel{background:#fffffff0;color:#173d4c;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26}
 #mapLayersToggle{display:flex;align-items:center;gap:7px;padding:8px 10px;font-weight:650}
 #mapLayersToggle:hover,#mapLayersPanel label:hover{background:#dcecf0}
-#mapLayersToggle[aria-expanded=true]>span{transform:rotate(180deg)}
 #mapLayersPanel{position:absolute;right:0;top:calc(100% + 6px);width:180px;padding:5px}
 #mapLayersPanel label{display:flex;align-items:center;gap:8px;margin:0;padding:10px;border-radius:3px;cursor:pointer}
 #mapLayersPanel input{margin:0;accent-color:#173d4c}
