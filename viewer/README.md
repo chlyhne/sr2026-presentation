@@ -187,7 +187,8 @@ python3 scripts/serve_viewer.py
   Ved mål er visningstiden `fælles start + sejltid + (TA_maks − TA_båd) × banelængde`.
   Første båd i mål på **samme rute** har dermed den bedste korrigerede tid,
   også når originalerne startede på forskellige tidspunkter.
-  Banelængden kommer fra TracTrac: 232 sømil via Grønsund og 216 via Bøgestrømmen.
+  Den officielle banelængde i handicapberegningen er 232 sømil via Grønsund
+  og 216 sømil via Bøgestrømmen, bestemt af den enkelte båds bane.
   Det samlede tillæg fordeles efter bådens fremdrift langs dens eget sejlede spor
   fra start til registreret mål, normaliseret til løbets banelængde. Ekstra sejlede
   sømil ændrer dermed ikke handicapkorrektionen ved mål.

@@ -28,6 +28,7 @@ near(api.ghostClockAtSource(lateClock,300),900);
 assert.ok(api.ghostClockAtSource(lateClock,600)>=1200,'Crossing the line must not reset the start clock');
 const courses=new Map(),commonStart=Math.max(...api.boats.map(boat=>boat.raceStartTime));
 for(const boat of api.boats){
+ assert.equal(boat.courseLengthNm,{groensund:232,boegestroemmen:216}[boat.course],'Official distance must match the boat’s course');
  const course=courses.get(boat.course)||{handicap:0};
  course.handicap=Math.max(course.handicap,boat.handicapSecondsPerNm);courses.set(boat.course,course);
 }
