@@ -4,7 +4,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
 }));
 const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
 (async()=>{
- const browser=await firefox.launch({headless:false});
+ const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
@@ -58,7 +58,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
       const speed=samples[index*3+2],station=samples[index*3];
       const passage=speed<-1e19?null:referenceAtStation(station,stations);
       const corrected=correctedProjectedSpeed(speed,boat.handicapSecondsPerNm,reference.handicapSecondsPerNm);
-      const expected=[passage?speed-passage.vmg:null,passage&&corrected!==null?corrected-passage.vmg:null,passage?timeGainPer100Meters(speed,passage.vmg):null];
+      const expected=[passage?speed-passage.vmg:null,passage&&corrected!==null?corrected-passage.vmg:null,passage?timeGainPer100ReferenceMeters(speed,passage.vmg):null];
       for(let basis=0;basis<3;basis++){
        const actual=gains[index*3+basis];
        if(expected[basis]===null){

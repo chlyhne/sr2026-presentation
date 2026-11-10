@@ -59,10 +59,10 @@ function renderTrackSpeedLegend(){
   }
   el('title',{},text).textContent=label;
  }
- const comparisonHelp=`Sammenlignet med ${referenceName} ved samme sted på ruten. ${timeMode?'Grå: ingen fremdrift eller fælles data.':'Grå: mangler fælles passage eller data.'} ${referenceName}: gennemsigtigt spor i bådens egen farve.`;
- layer.setAttribute('aria-label',relative?`${timeMode?'Tidsforskel i sekunder pr. 100 meter':'Fartforskel'}: blå langsommere, rød hurtigere. ${comparisonHelp}`:'Bådfart over grunden, jet-farveskala fra 0 til 15 knob');
+ const comparisonHelp=`Sammenlignet med ${referenceName} ved samme sted på ruten. ${timeMode?'Tid pr. 100 meter referencefremdrift. Stilstand og baglæns sejlads tæller som tab. Grå: mangler fælles data eller positiv referencefart.':'Grå: mangler fælles passage eller data.'} ${referenceName}: gennemsigtigt spor i bådens egen farve.`;
+ layer.setAttribute('aria-label',relative?`${timeMode?'Tidsforskel i sekunder pr. 100 meter referencefremdrift: rød tab, blå gevinst':'Fartforskel: rød langsommere, blå hurtigere'}. ${comparisonHelp}`:'Bådfart over grunden, jet-farveskala fra 0 til 15 knob');
  if(relative)el('title',{},group).textContent=comparisonHelp;
- legendLabel(relative?`Mod ${referenceName} · ${timeMode?'s/100 m':comparison.basis==='handicap'?'ToD · kn':'absolut · kn'}`:'Bådfart · SOG · knob',{y:17,'font-size':11,'font-weight':650});
+ legendLabel(relative?(timeMode?`s/100 m ref. · ${referenceName}`:`Mod ${referenceName} · ${comparison.basis==='handicap'?'ToD · kn':'absolut · kn'}`):'Bådfart · SOG · knob',{y:17,'font-size':11,'font-weight':650});
  const gradient=el('linearGradient',{id:'trackSpeedJetGradient',x1:0,x2:1,y1:0,y2:0},el('defs',{},group));
  for(let i=0;i<=128;i++)el('stop',{offset:i/128,'stop-color':relative?trackGainColour(-limit+2*limit*i/128,limit):trackSpeedColour(TRACK_SPEED_MAX*i/128)},gradient);
  el('rect',{x:10,y:24,width:width-20,height:13,fill:'url(#trackSpeedJetGradient)'},group);
@@ -72,7 +72,7 @@ function renderTrackSpeedLegend(){
   el('text',{x,y:54,fill:'#173d4c','font-size':11,'text-anchor':value===(relative?-limit:0)?'start':value===(relative?limit:15)?'end':'middle'},group).textContent=relative?(value<0?`−${limit}`:value>0?`+${limit}`:0):value===15?'15+':value;
  }
  if(relative){
-  legendLabel('Blå: langsommere · Rød: hurtigere',{y:69,'font-size':10});
+  legendLabel(timeMode?'Rød: tab · Blå: gevinst':'Rød: langsommere · Blå: hurtigere',{y:69,'font-size':10});
  }
 }
 

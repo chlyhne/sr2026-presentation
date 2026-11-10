@@ -94,6 +94,7 @@ function syncReferenceBoatControls(){
  $('referenceBoatHeading').textContent=` / ${boat.name}`;
  $('mapHeading').title='Sjælland Rundt 2026 / '+boat.name;
  for(const basis of ['absolute','handicap'])$('trackStyle').querySelector(`option[value="${basis}"]`).textContent=`Mod ${boat.name} · ${basis==='absolute'?'absolut':'handicap'}`;
+ $('trackStyle').querySelector('option[value="time"]').textContent=`Mod ${boat.name} · tid / 100 m ref.`;
 }
 for(const boat of boats){
  const option=document.createElement('option');option.value=boat.id;option.textContent=boat.name;

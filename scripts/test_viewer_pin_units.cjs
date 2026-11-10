@@ -18,7 +18,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
      const speed=profile.samples[i*3+2],passage=referenceAtStation(profile.samples[i*3],trackProfileCache.get(reference.points).stations);
      if(speed<-1e19||!passage)return null;
      const corrected=correctedProjectedSpeed(speed,boat.handicapSecondsPerNm,reference.handicapSecondsPerNm);
-     return [speed-passage.vmg,corrected===null?null:corrected-passage.vmg,timeGainPer100Meters(speed,passage.vmg)];
+     return [speed-passage.vmg,corrected===null?null:corrected-passage.vmg,timeGainPer100ReferenceMeters(speed,passage.vmg)];
     });
     return ['absolute','handicap','time'].map((basis,i)=>!gains[0]||!gains[1]||gains[0][i]===null||gains[1][i]===null?null:gains[0][i]+.37*(gains[1][i]-gains[0][i]));
    };
@@ -40,6 +40,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    if(!target||!missing)throw Error('Expected valid and missing comparison fixtures');
    window.pinTarget=target;window.pinMissing=missing;
    window.showPinFixture=fixture=>{
+    setBoatFavouritesOnly(true);
     const boat=boats.find(b=>b.id===fixture.boatId),sample=trackSpeedSample(boat,fixture.time),[x,y]=xy(sample.point);
     chosen.clear();chosen.add(boat.name);view=[x-4,y-4,8,8];selectedTime=fixture.time+60;
     pickedTrackSpeed={boatId:boat.id,time:fixture.time};setview();render();
@@ -68,7 +69,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    await page.locator('[data-speed-action="pin"]').click();
    await page.waitForSelector('[data-pinned="true"]');
    assert.equal(await page.evaluate(()=>speedPins.length),1,style+' pin click must save');
-   assert.match(await label.textContent(),style==='time'?/s\/100 m$/:/ kn$/);
+   assert.match(await label.textContent(),style==='time'?/s\/100 m ref\.$/:/ kn$/);
    await page.locator('[data-speed-action="unpin"]').click();
    assert.equal(await page.evaluate(()=>speedPins.length),0);
   }
@@ -84,7 +85,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    window.pinOriginalRead=webglTracks.gl.getBufferSubData;webglTracks.gl.getBufferSubData=forbidden;
    webglTracks.prepareComparison=forbidden;
   });
-  for(const [style,index,unit] of [['absolute',0,'kn'],['handicap',1,'kn'],['time',2,'s/100 m'],['absolute',0,'kn']]){
+  for(const [style,index,unit] of [['absolute',0,'kn'],['handicap',1,'kn'],['time',2,'s/100 m ref.'],['absolute',0,'kn']]){
    await setStyle(style);
    const expected=target.expected[index],text=await label.textContent();
    assert.equal(text,(expected>0?'+':'')+format(expected,2)+' '+unit);
@@ -100,7 +101,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   }));
   assert.deepEqual(scale.labels,['−120','0','+120']);assert.equal(scale.limit,120);
   await page.locator('#startPresentation').click();
-  assert.match(await label.textContent(),/s\/100 m$/);
+  assert.match(await label.textContent(),/s\/100 m ref\.$/);
   assert.equal(await page.locator('[data-speed-action]').count(),0);
   await page.screenshot({path:'/tmp/sr2026-pin-units.png'});
   assert.deepEqual(await page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-speed-pins'))),pins);
@@ -108,8 +109,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.evaluate(target=>{
    const boat=boats.find(b=>b.id===target.boatId),[x,y]=xy(trackSpeedSample(boat,target.time).point);
    chosen.clear();chosen.add(boat.name);view=[x-4,y-4,8,8];selectedTime=target.time+60;setview();render();
+   setBoatFavouritesOnly(true);
   },target);
-  assert.match(await label.textContent(),/s\/100 m$/);
+  assert.match(await label.textContent(),/s\/100 m ref\.$/);
   // Reference changes invalidate cached numeric values; the reference's own
   // visible track and pin keep their original SOG rather than showing zero.
   await page.locator('#mapTracksToggle').click();await page.locator('#referenceBoat').selectOption(target.boatId);await page.locator('#mapTracksToggle').click();
@@ -117,7 +119,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#mapTracksToggle').click();
   const otherReference=await page.evaluate(id=>boats.find(b=>b.id!==id&&b.name==='Mercutio').id,target.boatId);
   await page.locator('#referenceBoat').selectOption(otherReference);await page.locator('#mapTracksToggle').click();
-  assert.equal(await label.textContent(),(target.expected[2]>0?'+':'')+format(target.expected[2],2)+' s/100 m');
+  assert.equal(await label.textContent(),(target.expected[2]>0?'+':'')+format(target.expected[2],2)+' s/100 m ref.');
   // Use a real interval whose prepared comparisons are missing but SOG exists.
   const missing=target.missing;
   for(const style of ['absolute','handicap','time']){
