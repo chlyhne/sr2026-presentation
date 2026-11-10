@@ -96,6 +96,10 @@ void main(){
  float value=mix(values.x,values.y,sourceU);
  float fraction=relativeMode?(clamp(value,-gainLimit,gainLimit)+gainLimit)/(2.0*gainLimit):clamp(value,0.0,15.0)/15.0;
  int bin=missing?0:1+int(floor(fraction*127.0+0.5));
+ if(!missing&&relativeMode){
+  if(value < -gainLimit)bin=${TRACK_SPEED_BINS+1};
+  else if(value > gainLimit)bin=${TRACK_SPEED_BINS+2};
+ }
  float distance=length(strokeOffset);
  float feather=max(fwidth(distance)*0.5,0.000001);
  float outline=smoothstep(innerRatio-feather,innerRatio+feather,distance);
@@ -164,7 +168,7 @@ void main(){colour=vec4(0.0);}`);
    this.mesh=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.mesh);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(mesh),gl.STATIC_DRAW);
    for(const [name,scale] of [['palette',TRACK_SPEED_COLOURS],['gainPalette',TRACK_GAIN_COLOURS]]){
     this[name]=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this[name]);
-    const colours=[TRACK_SPEED_MISSING,...scale],pixels=new Uint8Array(colours.length*4);
+    const colours=[TRACK_SPEED_MISSING,...scale,...(name==='gainPalette'?[TRACK_GAIN_UNDERFLOW_COLOUR,TRACK_GAIN_OVERFLOW_COLOUR]:[])],pixels=new Uint8Array(colours.length*4);
     colours.forEach((c,i)=>{
      const rgb=c[0]==='#'?[1,3,5].map(offset=>parseInt(c.slice(offset,offset+2),16)):c.match(/\d+/g).map(Number);
      pixels.set([...rgb,255],i*4);

@@ -174,7 +174,9 @@ python3 scripts/serve_viewer.py
   kan være forskellige. I alle tre sammenligningsvisninger tegnes referencebådens
   spor i bådens egen farve med 18 % opacitet, under de andre bådes spor.
   Vælg **Mod [referencebådens navn] · absolut** eller **Mod [referencebådens navn] · handicap**. Skalaen mættes
-  ved ±2 knob og er lys ved nul. Hold musen over et spor i redigering for at se
+  ved ±2 knob og er lys ved nul. Værdier under den røde grænse får varm gul,
+  og værdier over den blå grænse får magenta. Skalaens spidser viser disse farver.
+  Hold musen over et spor i redigering for at se
   forskellen og tidspunktet for referencebådens passage. Der kræves en defineret permanent rhumbline.
   Grå betyder manglende fælles passage, fart, retning eller nødvendigt måltal;
   der skiftes ikke til en anden beregningsmetode.
@@ -929,7 +931,10 @@ Positiv værdi betyder indhentet tid (mættet blå), negativ tabt tid (rød).
 Referencefarten skal være positiv; egen stilstand og baglæns sejlads er gyldige
 og giver voksende tidstab. Med referencefart 5 knob giver egen fremdrift 2,5 knob
 cirka −19,4 s/100 m ref., stilstand −38,9 og 2,5 knob baglæns −58,3.
-Den lineære farveskala mættes ved ±120; hover og pins viser den umættede værdi.
+Den lineære farveskala går til ±120. Større tab (under −120) vises varmt gult,
+og større gevinst (over +120) vises magenta. Præcis på grænserne er farverne
+fortsat rød og blå. Skalaens spidser viser farverne uden for intervallet;
+hover og pins viser altid den faktiske værdi.
 Grå betyder manglende fælles data eller en referencefart på nul eller derunder.
 
 Ved summering vægtes hver værdi med referencefremdriften i intervallet divideret
