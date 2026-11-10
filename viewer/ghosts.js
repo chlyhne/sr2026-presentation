@@ -3,15 +3,15 @@ const ghostClocks=new Map();
 let handicapTracksEnabled=false,handicapPreferenceError='';
 // Prepare every boat before interaction. Selection and styling only read clocks.
 const ghostCourses=new Map();
+const HANDICAP_COMMON_START=Math.max(...boats.map(boat=>boat.raceStartTime));
 for(const boat of boats){
  let course=ghostCourses.get(boat.course);
- if(!course){course={start:-Infinity,handicap:0};ghostCourses.set(boat.course,course);}
- course.start=Math.max(course.start,boat.raceStartTime);
+ if(!course){course={handicap:0};ghostCourses.set(boat.course,course);}
  course.handicap=Math.max(course.handicap,boat.handicapSecondsPerNm);
 }
 for(const boat of boats){
  const course=ghostCourses.get(boat.course);
- ghostClocks.set(boat.id,prepareGhostClock(boat,course.start,course.handicap));
+ ghostClocks.set(boat.id,prepareGhostClock(boat,HANDICAP_COMMON_START,course.handicap));
 }
 const VIEWER_DATA_END=Math.ceil(Math.max(D.end,...[...ghostClocks.values()].filter(clock=>!clock.error).map(clock=>clock.end+GHOST_FINISH_HOLD)));
 try{

@@ -43,7 +43,9 @@ class PrepareViewerTests(unittest.TestCase):
                                            'metadata': {'source': key, 'attribution': 'Øresund'}})
         self.write('viewer/radar/manifest.json', {'frames': ['frame.png']})
         self.write('data/tractrac/combined_tracks.json', {
-            'competitors': {'boat': {'nameShort': 'Ørn', 'source_course': 'groensund', 'source_id': '1'}},
+            'races': {'groensund': {'handicap': {'divisions': [{'uuid': 'class', 'raceStartTime': '1970-01-01 00:00:01 UTC'}]}}},
+            'competitors': {'boat': {'nameShort': 'Ørn', 'source_course': 'groensund', 'source_id': '1',
+                                     'classId': 'class', 'status': 10, 'statusTime': '1970-01-01T00:00:02Z'}},
             'tracks': {'boat': [[10, 54, 1000], [11, 55, 2000]]},
         })
         self.write('data/tractrac/speeds_groensund.json',
@@ -80,7 +82,7 @@ class PrepareViewerTests(unittest.TestCase):
         self.assertIsNone(data['boats'][0]['speeds'][1])
         self.assertEqual(data['track_speed_metadata']['missing_speeds'], 1)
         self.assertEqual(data['radar'], {'frames': ['frame.png']})
-        self.assertEqual((data['start'], data['end']), (prepare_viewer.START, prepare_viewer.END))
+        self.assertEqual((data['start'], data['end']), (-299, 302))
 
     def test_missing_nominal_map_source_fails_before_weather_and_preserves_output(self):
         output = self.out / 'data.js'

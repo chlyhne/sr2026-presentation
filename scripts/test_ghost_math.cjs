@@ -20,16 +20,24 @@ const longest=api.prepareGhostClock({...a,handicapSecondsPerNm:650},600,650);nea
 // Changing sailed distance must not change the official ToD finish allowance.
 const detour=api.prepareGhostClock({...a,points:a.points.map(([x,y,t],i)=>[x+(i===2?.1:0),y,t])},600,650);
 near(detour.end,clockA.end);
-const courses=new Map();
+// The official signal starts the clock even if the yacht waits behind the line.
+const lateCrossing={...a,points:[[11,54.99,0],[11,54.99,300],[11,55,600],[11,55.01,900],[11,55.02,1200]]};
+const lateClock=api.prepareGhostClock(lateCrossing,600,650);
+near(api.ghostSourceAtTime(lateClock,600),0);
+near(api.ghostClockAtSource(lateClock,300),900);
+assert.ok(api.ghostClockAtSource(lateClock,600)>=1200,'Crossing the line must not reset the start clock');
+const courses=new Map(),commonStart=Math.max(...api.boats.map(boat=>boat.raceStartTime));
 for(const boat of api.boats){
- const course=courses.get(boat.course)||{start:0,handicap:0};
- course.start=Math.max(course.start,boat.raceStartTime);course.handicap=Math.max(course.handicap,boat.handicapSecondsPerNm);courses.set(boat.course,course);
+ const course=courses.get(boat.course)||{handicap:0};
+ course.handicap=Math.max(course.handicap,boat.handicapSecondsPerNm);courses.set(boat.course,course);
 }
 let prepared=0,unavailable=[];
 for(const boat of api.boats){
- const course=courses.get(boat.course),clock=api.prepareGhostClock(boat,course.start,course.handicap);
+ const course=courses.get(boat.course),clock=api.prepareGhostClock(boat,commonStart,course.handicap);
  if(clock.error){unavailable.push({boat:boat.name,error:clock.error});continue;}
- near(clock.end,course.start+boat.raceFinishTime-boat.raceStartTime+(course.handicap-boat.handicapSecondsPerNm)*boat.courseLengthNm);
+ near(clock.start,commonStart);near(clock.times[0],commonStart);near(clock.sourceTimes[0],boat.raceStartTime);
+ near(api.ghostSourceAtTime(clock,commonStart),boat.raceStartTime);
+ near(clock.end,commonStart+boat.raceFinishTime-boat.raceStartTime+(course.handicap-boat.handicapSecondsPerNm)*boat.courseLengthNm);
  for(let i=1;i<clock.times.length;i++){assert.ok(clock.times[i]>clock.times[i-1]);assert.ok(clock.sourceTimes[i]>clock.sourceTimes[i-1]);}
  prepared++;
 }
