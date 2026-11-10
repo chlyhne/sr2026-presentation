@@ -1,11 +1,11 @@
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const assert=require('node:assert/strict'),path=require('node:path');
 const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 async function check(type){
  const browser=await type.launch({headless:process.env.SR_HEADLESS==='1'});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForFunction(()=>typeof captureMap==='function');
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('main:not([inert])',{timeout:120000});
   await page.evaluate(()=>{
    if(!webglBackground.active)throw Error(webglBackground.error);
    chosen.clear();notes=[];setPresentationMode(true);
@@ -68,15 +68,6 @@ async function check(type){
     windFieldKey=radarKey=null;render();await Promise.all([windReady,radarReady,windImageBuffer.paintReady,radarImageBuffer.paintReady]);flushRender();
    }
   });assert.equal(holes,true);
-  await page.evaluate(()=>{
-   const serialize=XMLSerializer.prototype.serializeToString;
-   XMLSerializer.prototype.serializeToString=function(node){const xml=serialize.call(this,node);window.backgroundExport=xml;return xml;};
-  });
-  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());await(await download).saveAs('/tmp/sr2026-background-'+type.name()+'-export.png');
-  assert.deepEqual(await page.evaluate(()=>{
-   const svg=new DOMParser().parseFromString(backgroundExport,'image/svg+xml');
-   return {background:!!svg.querySelector('[data-render-layer="background"]'),tracks:!!svg.querySelector('[data-render-layer="tracks"]'),canvas:!!svg.querySelector('foreignObject'),svgLand:!!svg.querySelector('#land path,#coast path')};
-  }),{background:true,tracks:true,canvas:false,svgLand:false});
   const lost=await page.evaluate(()=>{
    window.backgroundLoss=webglBackground.gl.getExtension('WEBGL_lose_context');if(!backgroundLoss)return false;backgroundLoss.loseContext();return true;
   });
@@ -85,7 +76,7 @@ async function check(type){
    await page.evaluate(()=>backgroundLoss.restoreContext());await page.waitForFunction(()=>webglBackground.active&&webglBackground.draws>1);
    assert.equal(await page.evaluate(()=>webglBackground.gl.getError()),0);
   }
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),...stats,checks:'nominal land holes, weather layer order, fixed buffers/textures, protected prefetch, prepared swaps, WebGL PNG, explicit context failure and recovery',errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),...stats,checks:'nominal land holes, weather layer order, fixed buffers/textures, protected prefetch, prepared swaps, explicit context failure and recovery',errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of [firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

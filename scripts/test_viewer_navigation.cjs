@@ -212,9 +212,6 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   });
   await page.locator('#mapMeasureToggle').click();
   await page.screenshot({path:'/tmp/sr2026-navigation-comparison.png'});
-  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());
-  await (await download).saveAs('/tmp/sr2026-navigation-export.png');
-  assert.match(await page.locator('#captureStatus').textContent(),/PNG klar/);
   // Saved global geometry survives event changes and a page reload.
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(TRACK_COMPARISON_KEY)));
   await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});
@@ -229,7 +226,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.equal(await page.locator('#mapMeasureToggle').isVisible(),true);
   await page.locator('#presentationFullscreen').click();
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:'firefox',checks:'permanent route asset, rhumb geometry and measurement, same-place speed independent of passage time, red/blue WebGL pixels, reference unchanged, ToD, seconds per 100 metres, zero/reverse speeds, hover units, no mode recomputation, missing data, immutable geometry, PNG, persistence, presentation/fullscreen',numeric,timeMath,coloured,timePixels,errors}));
+  console.log(JSON.stringify({browser:'firefox',checks:'permanent route asset, rhumb geometry and measurement, same-place speed independent of passage time, red/blue WebGL pixels, reference unchanged, ToD, seconds per 100 metres, zero/reverse speeds, hover units, no mode recomputation, missing data, immutable geometry, persistence, presentation/fullscreen',numeric,timeMath,coloured,timePixels,errors}));
   await page.close();
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

@@ -1,6 +1,6 @@
 // Hosted viewers read the published snapshot; writers work through the authenticated backend.
 (()=>{
- const config=window.SR_CONFIG||{},local=!!config.local,bar=document.querySelector('.header-actions');
+ const config=window.SR_CONFIG,bar=document.querySelector('.header-actions');
  const status=document.createElement('p');status.id='onlineStatus';status.setAttribute('role','status');status.style.cssText='margin:0;padding:4px 22px;background:#162e3e';
  document.querySelector('header').after(status);
  const button=(label,action)=>{const b=document.createElement('button');b.textContent=label;b.onclick=action;bar.append(b);return b;};
@@ -35,8 +35,9 @@
   const file=input.files[0];if(!file)return;
   try{
    if(!noteNavigationAllowed())return;
-   const data=JSON.parse(await file.text()),incoming=Array.isArray(data)?data:data.notes,pins=Array.isArray(data)?[]:data.speedPins||[];
-   if(!Array.isArray(incoming)||!Array.isArray(pins)||incoming.some(n=>!n||!Number.isFinite(n.time)||typeof n.text!=='string'))throw Error('Filen indeholder ikke gyldige noter.');
+   const data=validatePresentationDocument(JSON.parse(await file.text()));
+   const incoming=data.notes,pins=data.speedPins;
+   if(incoming.some(n=>!n||!Number.isFinite(n.time)||typeof n.text!=='string'))throw Error('Filen indeholder ikke gyldige noter.');
    if(notes.length&&!confirm('Erstat den aktuelle kladde med noterne fra filen? Eksportér først, hvis du vil beholde begge.'))return;
    status.textContent='Importerer noter og billeder …';
    for(const note of incoming){

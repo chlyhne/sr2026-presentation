@@ -96,22 +96,13 @@ de samlede tracks er sorteret efter tid.
 Mercutio, Vera, My, The Hulk og Moster er identificeret; se `data/tractrac/validation.json`.
 Tracking begynder før start og fortsætter efter mål: første/sidste trackpunkt må ikke
 bruges som start-/måltid uden yderligere afgrænsning.
-Vind- og satellitdata er endnu ikke hentet; de nævnte tjenester er undersøgte kandidater.
 
 ## Visuel tidsfæstelse
 
-Casper vil identificere hændelserne ved at se satellit, vind og track sammen.
-Derfor er næste arbejdsflade `viewer/index.html`, med fælles tidskyder og noter,
+Hændelser identificeres ved at se radar, vind og track sammen.
+Arbejdsfladen er `viewer/index.html`, med fælles tidskyder og noter,
 som kan eksporteres til JSON. Hændelser skal ikke tidsfæstes på forhånd.
 
-Adgang er nu afprøvet: EUMETView WMS leverer `mtg_fd:rgb_geocolour` for juni 2026,
-og Open-Meteo leverer timevise ERA5-vindværdier. 247 gitterpunkter er hentet til
-`data/weather/era5_grid.json`. Satellitserien hentes i 10-minutters trin.
+Visningen bruger lokale DMI-radarbilleder, tre vindmodeller med 247 gitterpunkter
+hver og 106 bådspor. Satellitlaget og dets billedserie er fjernet.
 Se `viewer/README.md` for kilder, fortolkning, databehandling og betjening.
-
-Den lokale visning er færdig med **253 forskellige satellitbilleder uden huller**,
-247 vindpunkter og 106 bådspor. Billederne dækker 11. juni 08.00 UTC til 13. juni
-02.00 UTC. Visning, tidsstyring, valg af felt og noter er afprøvet i Chromium;
-alle JPEG-filer er kontrolleret. `viewer/validation.json` indeholder optællingen.
-Fem billedforespørgsler krævede alternativ forespørgselsform; samme lag,
-geografiske udstrækning og nominelle tid blev bevaret.

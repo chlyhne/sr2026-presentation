@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 from build_pages import prepare_track_profiles
 
 ROOT = Path(__file__).resolve().parents[1]
-IMAGE_DIR = ROOT / 'data' / 'event-images'
+IMAGE_DIR = ROOT / 'viewer' / 'event-images'
 MAX_UPLOAD = 16 * 1024 * 1024
 IMAGE_NAME = re.compile(r'^[0-9a-f-]{36}\.(webp|png|jpg)$')
 RHUMBLINE_FILE = ROOT / 'viewer' / 'rhumbline.json'

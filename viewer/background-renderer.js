@@ -162,11 +162,11 @@ void main(){colour=texture(image,texCoord)*opacity;}`);
   }
   for(let i=0;i<count;i+=2)gl.drawElements(gl.TRIANGLES,mesh.ranges[i+1],gl.UNSIGNED_INT,mesh.ranges[i]*4);
  }
- render(force=false,viewportOverride=null){
+ render(force=false){
   if(!this.active)return false;
   try{
    if(this.gl.isContextLost())throw Error('WebGL-konteksten er mistet.');
-   const viewport=viewportOverride||mapViewport();if(!viewport)return true;
+   const viewport=mapViewport();if(!viewport)return true;
    const {rect,matrix,pixelWidth,pixelHeight}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,pixelWidth,pixelHeight].join(':');
    const states=this.layers.map(layer=>{
@@ -190,15 +190,6 @@ void main(){colour=texture(image,texCoord)*opacity;}`);
    }
    gl.bindVertexArray(null);this.draws++;return true;
   }catch(error){this.fail(error);return false;}
- }
- snapshot(scale=2){
-  if(!this.active)throw Error(this.error||'Baggrundens WebGL-rendering er ikke tilgængelig.');
-  const viewport=mapViewport();
-  try{
-   this.render(true,{...viewport,pixelWidth:Math.round(viewport.rect.width*scale),pixelHeight:Math.round(viewport.rect.height*scale)});
-   if(!this.active)throw Error(this.error||'Baggrunden kunne ikke eksporteres.');
-   return this.canvas.toDataURL('image/png');
-  }finally{if(this.active)this.render(true);}
  }
 }
 const webglBackground=window.SRBackground=new WebGLBackgroundRenderer();

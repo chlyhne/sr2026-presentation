@@ -1,11 +1,11 @@
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const assert=require('node:assert/strict'),path=require('node:path');
 const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 async function check(type){
  const browser=await type.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForFunction(()=>typeof captureMap==='function');
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('main:not([inert])',{timeout:120000});
   await page.waitForTimeout(100);
   const result=await page.evaluate(async()=>{
    const check=(v,message)=>{if(!v)throw Error(message);};
@@ -47,25 +47,7 @@ async function check(type){
     return {burstRequests:12,burstDraws:1,checks:'latest synchronous state, one paint per frame, full/viewport priority, marker reuse, one speed-pin paint, immediate flush, requests during drawing'};
    }finally{drawMap=originalMap;drawViewport=originalViewport;renderSpeedPins=originalPins;flushRender();}
   });
-  // Exporting immediately after input must include the queued scene, with no
-  // dependence on whether the browser has delivered its next animation frame.
-  await page.evaluate(()=>{
-   const serialize=XMLSerializer.prototype.serializeToString;
-   XMLSerializer.prototype.serializeToString=function(node){const value=serialize.call(this,node);window.schedulerExport=value;return value;};
-  });
-  const download=page.waitForEvent('download');
-  const expected=await page.evaluate(async()=>{
-   setCurrentTime(D.start+7300);requestRender();
-   const boat=boats.find(b=>b.name==='Mercutio'),x=xy(trackPosition(boat.points,currentTime()).point)[0],time=fmt(currentTime());
-   await captureMap();return {x,time};
-  });
-  const file=await(await download).path();assert.ok(fs.statSync(file).size>0);
-  const exported=await page.evaluate(()=>{
-   const doc=new DOMParser().parseFromString(schedulerExport,'image/svg+xml');
-   return {x:+doc.querySelector('.boat-marker').dataset.screenX,description:doc.querySelector('desc').textContent,pending:renderRequestKind};
-  });
-  assert.ok(Math.abs(exported.x-expected.x)<1e-8);assert.ok(exported.description.includes(expected.time));assert.equal(exported.pending,null);
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),...result,latestScenePNG:true,errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),...result,errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

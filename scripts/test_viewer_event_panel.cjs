@@ -30,16 +30,6 @@ async function check(type){
   assert.equal(await page.locator('#annotations rect,#annotations tspan').count(),0,'No annotation text boxes remain on the map');
   assert.equal(await page.locator('#annotations circle').count(),1,'Geographic event marker remains');
   assert.equal(await page.evaluate(()=>webglBackground.active),true);
-  await page.evaluate(()=>{
-   const serialize=XMLSerializer.prototype.serializeToString;
-   XMLSerializer.prototype.serializeToString=function(node){const xml=serialize.call(this,node);window.panelTestSVG=xml;return xml;};
-  });
-  const mapDownload=page.waitForEvent('download');await page.evaluate(()=>captureMap());
-  await(await mapDownload).saveAs('/tmp/sr2026-land-'+type.name()+'-map.png');
-  const mapExport=await page.evaluate(()=>{
-   const doc=new DOMParser().parseFromString(panelTestSVG,'image/svg+xml');
-   return {background:!!doc.querySelector('[data-render-layer="background"]'),panel:!!doc.querySelector('#eventPanel'),textBoxes:doc.querySelectorAll('#annotations rect,#annotations tspan').length};
-  });assert.deepEqual(mapExport,{background:true,panel:false,textBoxes:0});
   const original=await page.evaluate(()=>localStorage.getItem('sr2026-notes'));
   await page.evaluate(()=>{selectedTime=D.start+10800;render();});
   const file={name:'mercutio-test.png',mimeType:'image/png',buffer:Buffer.from(source,'base64')};

@@ -6,7 +6,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
-  await page.waitForFunction(()=>typeof captureMap==='function');
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
   const result=await page.evaluate(()=>{
    const check=(ok,message)=>{if(!ok)throw Error(message);};
    check(webglTracks.active,'Nominal WebGL 2 must be active: '+webglTracks.error);
@@ -67,17 +67,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    return {allocations,uploads:1,checks:'native cubic/SOG pixels, missing SOG, gaps, static buffers, forward/reverse seek, zoom, newest passage above older crossings, no SVG paths'};
   });
   await page.screenshot({path:'/tmp/sr2026-webgl-tracks.png'});
-  // Export embeds a fresh full-resolution track render, never a foreignObject canvas.
-  await page.evaluate(()=>{
-   const serialize=XMLSerializer.prototype.serializeToString;
-   XMLSerializer.prototype.serializeToString=function(node){const text=serialize.call(this,node);window.exportedTrackSVG=text;return text;};
-  });
-  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());
-  await(await download).saveAs('/tmp/sr2026-webgl-export.png');
-  assert.deepEqual(await page.evaluate(()=>{
-   const doc=new DOMParser().parseFromString(exportedTrackSVG,'image/svg+xml');
-   return {image:!!doc.querySelector('#routes image'),canvas:doc.querySelectorAll('canvas,foreignObject').length};
-  }),{image:true,canvas:0});
   // A lost GPU context must fail visibly, then recover using the same renderer.
   const contextLoss=await page.evaluate(()=>{
    const extension=webglTracks.gl.getExtension('WEBGL_lose_context');
@@ -89,6 +78,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    await page.waitForFunction(()=>webglTracks.active&&$('renderingError').hidden);
    assert.equal(await page.evaluate(()=>webglTracks.gl.getError()),0);
   }
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({...result,png:true,contextLoss,errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({...result,contextLoss,errors}));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});

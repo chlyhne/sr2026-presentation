@@ -1,6 +1,6 @@
 # Sjælland Rundt — kort til præsentation
 
-Kør fra projektroden for at bruge alle funktioner, inklusive billed-upload og PNG med radar.
+Kør fra projektroden for at bruge alle funktioner, inklusive billed-upload.
 Billeder, vind og tracks ligger lokalt, så der kræves ingen internetforbindelse:
 
 ```sh
@@ -106,7 +106,7 @@ python3 scripts/serve_viewer.py
   tiden væk fra et event i små trin. Piletaster uden for skyderen skifter events
   i præsentationen. Et træk i skyderen pauser afspilningen.
   Musehjulet over skyderen flytter ét sekund; Shift+musehjul flytter ét minut.
-  Klokken og PNG-filnavnet indeholder sekunder. Ved et nyt udsnit eller bådvalg
+  Klokken indeholder sekunder. Ved et nyt udsnit eller bådvalg
   flyttes en tid uden for de synlige perioder til nærmeste synlige tidspunkt.
   I præsentationen bevares den valgte tid ved zoom, panorering og ændret
   skærmstørrelse. Navigation og snap ændrer ikke de gemte noter.
@@ -115,7 +115,7 @@ python3 scripts/serve_viewer.py
   De kan slås til og fra hver for sig, også i præsentation og fuld skærm.
   Klik udenfor eller tryk Escape for at lukke lagmenuen. I redigering gemmes
   ændringer på det aktive event; i præsentation ændrer de kun den aktuelle visning.
-  PNG-billedet bruger de valgte lag. Vindmodel og radarens synlighed justeres
+  Vindmodel og radarens synlighed justeres
   fortsat i sidepanelet.
   `node scripts/test_viewer_layers.cjs` tester lagmenuen lokalt i Firefox på PC.
 - **Mål** står ved siden af **Lag** øverst til højre på kortet. Vælg **Mål afstand**,
@@ -134,7 +134,7 @@ python3 scripts/serve_viewer.py
   den samme projektfil. Genindlæs visningen efter den første definition.
 - **Spor** ved siden af **Mål** og **Lag** samler sporlængde, referencebåd og sportype.
   Vælg 15 eller 30 minutter, 1, 2, 4 eller 8 timer, eller hele forløbet.
-  Længden gælder både kortet, valg af spor med musen, fartmærker og PNG.
+  Længden gælder både kortet, valg af spor med musen og fartmærker.
   **Referencebåd** indeholder alle både, også dem der ikke er valgt til visning.
   Mercutio er standardreference. Valget ændrer sammenligningen og den båd,
   kortet følger under afspilning frem til næste event; det vælger ikke båden til visning.
@@ -151,7 +151,7 @@ python3 scripts/serve_viewer.py
   Grå betyder manglende fælles passage, fart, retning eller nødvendigt måltal;
   der skiftes ikke til en anden beregningsmetode.
   `node scripts/test_viewer_navigation.cjs` kontrollerer måling, tegning,
-  samme-sted-sammenligning, handicap, WebGL-farver, PNG, gemning og fuld skærm
+  samme-sted-sammenligning, handicap, WebGL-farver, gemning og fuld skærm
   lokalt i Firefox på PC. `node scripts/test_viewer_navigation_online.cjs`
   kontrollerer, at offentlig visning, redaktørkladde, import, eksport og udgivelse
   bruger projektfilen og aldrig indeholder rutepunkter.
@@ -166,10 +166,7 @@ python3 scripts/serve_viewer.py
   sammen med resten. Et nyt event husker det udvalg, der er aktivt ved oprettelsen.
   Når du udforsker et andet tidspunkt eller er ved at oprette en ny note,
   ændrer bådvalget ikke det sidst valgte event.
-  Ved første åbning af denne version initialiseres alle eksisterende events én
-  gang med standardbådene. **Rosa-Lux** tilføjes desuden én gang til alle eksisterende
-  events uden at ændre deres øvrige bådvalg. Andre eventfelter bevares.
-  Senere ændringer af udvalg nulstilles ikke ved genindlæsning.
+  Gemte bådvalg bevares ved genindlæsning.
   Snap på tidslinjen ændrer hverken det aktive bådvalg eller gemte bådvalg.
 - Sporenes lag følger tiden langs kurven: den nyeste passage ligger øverst,
   også ved selvkrydsninger. To både kan derfor skifte mellem at være over og
@@ -180,7 +177,7 @@ python3 scripts/serve_viewer.py
   standardbådes farver er bevaret.
 - **Sporfarven viser bådfarten over grunden (SOG)** fra TracTracs fartfelt med
   en jet-farveskala fra 0 til 15 knob. Farven mættes ved 15 knob. Kortets farvebjælke
-  viser 0, 5, 10 og 15+ knob og følger med i præsentationen og PNG-billedet.
+  viser 0, 5, 10 og 15+ knob og følger med i præsentationen.
   Gråt spor betyder manglende fartdata. Sporene har en mørk kant mod vejrkortets farver.
 - **Både i udsnittet** ligger som en lille bjælke lige under fartskalaen med
   samme bredde. Klik på bjælken for at folde listen ud eller sammen. Listen kan
@@ -208,7 +205,6 @@ python3 scripts/serve_viewer.py
   Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,
   og skjules, når et eventbillede dækker kortet. I præsentation ændrer bådvalg ikke
   gemte events; i redigering bruges samme eventgemning som det øvrige bådvalg.
-  Selve listen indgår ikke i PNG-eksporten, men kortets søgefilter gør.
   Listen er altid alfabetisk og indeholder uden søgning kun de aktuelt synlige både.
   Både, der forlader udsnittet, fjernes med det samme. Når listen er foldet ud,
   fylder den ned til kortets bund. Hold musen over et bådikon på kortet for at
@@ -232,11 +228,10 @@ python3 scripts/serve_viewer.py
   `SR_FULL_TEST=1` aktiverer den bredere browser- og mobiltest ved en endelig udgivelse.
 - Klik på en båds bådikon for at vise eller skjule navnet. Det gælder alle
   både. Tab og Enter/mellemrum kan også bruges. Navnevalget bevares ved zoom,
-  tidsskift og til-/fravalg af både, gemmes med noter og kommer med i PNG-billedet.
+  tidsskift og til-/fravalg af både og gemmes med noter.
   Alle bådes navne er vist som standard, også når flere både vælges eller findes
   med søgning. At trække fra et bådikon flytter kortet.
-  Alle eksisterende events får én gang vist navnene på deres aktive både.
-  Bådudvalgene ændres ikke, og senere manuelle navneskjul bevares ved genindlæsning.
+  Gemte bådudvalg og manuelle navneskjul bevares ved genindlæsning.
 - Klik på et sted på et spor i redigering for at vise farten i knob
   som et mærke ved punktet, uden bådnavn. Mærket har bådens farve.
   Der klikkes på den glatte PCHIP-kurve, også mellem
@@ -253,14 +248,13 @@ python3 scripts/serve_viewer.py
   pinnede mærker bevares. Et træk fra sporet panorerer stadig kortet.
   Pin-knapperne kan også betjenes med Tab og Enter/mellemrum.
   Midlertidige mærker vises kun under redigering. Præsentationen viser kun pins.
-  Synlige fartmærker kommer med på PNG-billedet; Pin/Fjern pin-knapperne gør ikke.
 
 Fart-pins gemmes separat i browserens `sr2026-speed-pins` som `id`, `boatId` og
 præcis tracktid i sekunder. De bevares ved genindlæsning og deles mellem events,
 uden at ændre noterne. Position og fart slås op i det uændrede track ved visning.
 Pins er lokale for browseren; den eksisterende note-JSON eksporterer noter og billeder.
 `node scripts/test_viewer_speed_pins.cjs` kontrollerer valg af kurvepunkt, fart,
-pin/unpin, genindlæsning, perioder og udsnit, panorering, præsentation og PNG i
+pin/unpin, genindlæsning, perioder og udsnit, panorering og præsentation i
 Chromium og Firefox.
 
 - Zoom og træk kortet. Alle både har samme faste sporbredde på skærmen:
@@ -274,23 +268,23 @@ Chromium og Firefox.
   Pilene interpolerer vinden ved gitterets geografiske placeringer.
 - **Trafikseparering · TSS** viser skillezoner med lilla skravering, skillelinjer
   med fuldt optrukne lilla linjer, grænser med stiplede linjer og trafikretning med
-  store, åbne lilla pile. Laget er slået til fra start og kan skjules før en eksport.
+  store, åbne lilla pile. Laget er slået til fra start og kan skjules.
   Valget gemmes med noter. Pile og skravering har fast skærmstørrelse ved zoom.
 - **Skydeområde · Hatter Barn** viser polygonen fra dine syv hjørnekoordinater med
-  sort kant og skravering. Laget kan vælges uafhængigt af TSS, gemmes med noter
-  og følger med på PNG-billedet. Skraveringen har samme faste størrelse som TSS.
+  sort kant og skravering. Laget kan vælges uafhængigt af TSS og gemmes med noter.
+  Skraveringen har samme faste størrelse som TSS.
   Kyst, trafikseparering, skydeområde og Rute T ligger samlet i landkortets SVG-lag
-  `baseMap`, over vindfarver, landfyld og radarbyger, men under vindpile og bådspor,
-  også ved PNG-eksport. Landfyldet er et separat lag under radaren.
+  `baseMap`, over vindfarver, landfyld og radarbyger, men under vindpile og bådspor.
+  Landfyldet er et separat lag under radaren.
 - **Rute T** tegnes som en åben, sort linje gennem brugerens 11 koordinater i
-  den angivne rækkefølge. Linjen har fast stregbredde ved zoom og følger med i
-  PNG-billedet. Koordinater og kildeoplysninger ligger i `../data/route-t.geojson`;
+  den angivne rækkefølge. Linjen har fast stregbredde ved zoom.
+  Koordinater og kildeoplysninger ligger i `../data/route-t.geojson`;
   decimalminutterne er bevaret i metadata. Linjen markerer den Rute T, der ifølge
   brugerens sejladsbestemmelser ikke måtte krydses.
 - **Start og mål** er indtegnet fra TracTrac event 3539 og markeret med tekst og
   endepunkter. Startlinjen er grøn; mållinjen er rød og stiplet. Begge linjer
-  ligger i `baseMap`, over radaren og under vindpile og bådspor, og kommer med
-  i PNG-billedet. Stregbredde, endepunkter og tekst har fast størrelse ved zoom.
+  ligger i `baseMap`, over radaren og under vindpile og bådspor.
+  Stregbredde, endepunkter og tekst har fast størrelse ved zoom.
   De to replaybaner har samme linjer og tegnes derfor kun én gang.
 
 Mållinjen bruger de statiske banepunkter **Helsingør Mål Mole**
@@ -317,18 +311,13 @@ linjerne sammenlægges; der afrundes ikke.
   tidspunkt. Sporene tegnes som kurver gennem målepunkterne og forbliver glatte
   ved alle zoomniveauer. Punkterne findes med binær søgning, så resten af tracket
   ikke gennemløbes ved hver opdatering.
-- **Gem kort som PNG** downloader præcis det aktuelle kortudsnit i dobbelt
-  skærmopløsning. Kun kortet kommer med, inklusive synlige annotationer, både,
-  stednavne, vind og radar. Sidepanel og tidslinje kommer ikke med. Filnavnet
-  indeholder kortets dato og klokkeslæt i dansk sommertid. Afspilning pauses,
-  og den valgte radar indlæses færdig før billedet dannes.
 - Skriv en hændelse, tryk **Placér på kortet**, og klik hvor den skete.
   Noten bliver en nummereret markør på kortet. Teksten vises i højrepanelet,
   som også er synligt under redigering. Zoom og træk kan stadig
   bruges under placering; **Annullér** eller Escape afbryder placeringen.
 - Annotationer vises ved deres gemte tidspunkt. Klik på en note i listen for at
   genskabe tidspunkt, zoom, kortudsnit, vindmodel, vejrlag og valgte både.
-  **Vis annotationer ved dette tidspunkt** kan skjule dem før en eksport.
+  **Vis annotationer ved dette tidspunkt** kan skjule dem.
   **Slet** fjerner noten. Eksisterende noter fra den tidligere version bevares.
 - **Gem tidspunkt uden markør** opretter et bogmærke med tekst og kortindstillinger.
 - **Redigér** ved en note åbner dens tekst, markør og tegninger. Du kan også klikke
@@ -351,7 +340,7 @@ linjerne sammenlægges; der afrundes ikke.
   panorering og har fast stregbredde på skærmen. De følger annotationernes
   synlighed og vises kun for det aktive event i præsentationen, også når flere
   events har samme tidspunkt. Noter uden markør kan også have tegninger.
-  Synlige tegninger følger med på PNG-billedet og i noteeksporten.
+  Synlige tegninger følger med i noteeksporten.
 - **Billede til event** vedhæfter et JPEG-, PNG-, WebP- eller GIF-billede til en
   ny eller eksisterende note. Tekst er valgfri, så et billede kan være et selvstændigt
   event. Klik **Gem event** eller **Gem ændringer** for at gemme eventet.
@@ -398,11 +387,10 @@ linjerne sammenlægges; der afrundes ikke.
   Kortets udsnit, tid og lag ændres ikke af at åbne eller lukke billedet.
   Langsomme billedsvar kan ikke genåbne et tidligere event efter et skift.
   **Redigér** ved selve noten lukker billedet, så kortet kan bruges til markører
-  og tegninger. Kortets PNG gemmer fortsat selve kortet med markører og tegninger;
-  billedvisningen og eventpanelet er separate.
+  og tegninger. Billedvisningen og eventpanelet er separate.
 
 Billeder uploades via `POST /api/event-images` og gemmes på serverens disk i
-`../data/event-images/`. De servergenererede adresser `/event-images/<uuid>.webp`
+`./event-images/`. De servergenererede adresser `/event-images/<uuid>.webp`
 gemmes sammen med noten og virker fra andre browsere med adgang til serveren.
 Selve noterne gemmes fortsat i den browser, hvor de oprettes.
 YouTube-videoer gemmes som links sammen med noterne; selve videoen afspilles fra
@@ -428,7 +416,7 @@ Noterne opdateres først, når billed-upload og gemning er lykkedes.
   starttid i sekunder (`start`) og et normaliseret YouTube-link (`url`).
   Disse felter følger med i JSON-eksporten.
 
-Redigering, tegneværktøjer, annullering, genindlæsning, præsentation samt PNG- og
+Redigering, tegneværktøjer, annullering, genindlæsning, præsentation samt
 JSON-eksport er afprøvet i Chromium og Firefox. Testen kan gentages mod den lokale
 server med `node scripts/test_viewer_notes.cjs` fra projektroden; den kræver
 Playwright, som også kan angives med `PLAYWRIGHT_MODULE`.
@@ -503,7 +491,7 @@ med grænser ved 0, 10, 20, 30, 40, 50 og 60 dBZ. Farverne er egne farver,
 ikke DMI’s regnskala. De præcise farver ligger i `weather.js` og
 `../scripts/prepare_radar.py`; farveskemaet versionsgemmes i radarens metadata,
 så billedcachen bliver genfarvet efter en ændring. Radarens gennemsigtighed
-styres separat i siden og følger med i PNG-billedet.
+styres separat i siden.
 
 Ekkoer under 0 dBZ og kildens `undetect` er gennemsigtige. Manglende radardata
 vises gråt. Hele manglende billeder skjules og markeres; et tidligere billede
@@ -571,26 +559,25 @@ Genskab fartdata med `node scripts/collect_track_speeds.mjs` og derefter
 `worker_node.mjs` og de to løbsmetadatafiler til at hente replayet igen.
 `node scripts/test_viewer_speed.cjs` kontrollerer alle kildekonverteringer.
 `node scripts/test_viewer_webgl_tracks.cjs` kontrollerer renderede fartfarver,
-kurvegeometri, trackhuller og PNG i lokal Firefox på PC (kræver Playwright).
+kurvegeometri og trackhuller i lokal Firefox på PC (kræver Playwright).
 
 Trackhuller over fem minutter forbindes ikke med en linje; bådmarkører skjules,
 når sidste position er mere end fem minutter gammel. Trackstart/-slut er ikke
 nødvendigvis løbsstart/målgang.
 
-Kystlinjen bruger nu **OpenStreetMap** i fuld kildeopløsning: 3.114 kyststrækninger
-med 343.655 koordinater. Der er ingen geometrisk forenkling. Det tidligere
-Natural Earth 1:10m var et generaliseret oversigtskort. OSM-udtrækket viser også
-små kystdetaljer og havnebassiner, som manglede i oversigtskortet. Kortlaget fokuserer på kyster og havnebassiner.
+Kystlinjen bruger **OpenStreetMap** i fuld kildeopløsning: 3.114 kyststrækninger
+med 343.655 koordinater. Der er ingen geometrisk forenkling. Kortlaget viser
+kyster, små kystdetaljer og havnebassiner.
 
 Landmasserne fyldes med lys grå `#bdc7cb`; kyststregen bevarer `#365766`.
 De 997 landpolygoner er dannet fra samme detaljerede OSM-kystlinje. Lagrækkefølgen
 er vindfarver nederst, derefter landfyld, radar og kystomrids. Vindpile og spor
-ligger over disse lag. Rækkefølgen gælder også ved PNG-eksport.
+ligger over disse lag.
 Kystlinjerne samles til flader
 inden for udtrækkets geografiske grænse, og land/hav bestemmes af OSM-linjernes
 retning (land til venstre). Der lukkes ikke med vilkårlige streger gennem havet.
 Datagrundlaget forenkles ikke; øer og havnebassiner følger den eksisterende kyst.
-Landlaget følger med i PNG. Det afledte datasæt er `../data/land-osm.geojson`.
+Det afledte datasæt er `../data/land-osm.geojson`.
 Genskab med `.venv/bin/python scripts/prepare_land.py` og derefter
 `python3 scripts/prepare_viewer.py`. Shapely står i `scripts/requirements-geography.txt`.
 
@@ -598,11 +585,11 @@ Kilden er OSM’s `natural=coastline`, hentet 7. november 2026 med Overpass.
 Det regionale udtræk dækker 9,3–14,2 E / 53,8–57,2 N. Hele de udvalgte kystvejes
 geometrier er bevaret. Råsvaret ligger i `../data/geography/osm-coastline.json`,
 og GeoJSON med kilde-/licensmetadata i `../data/coastline-osm.geojson`.
-Data gemmes lokalt; kort og PNG fungerer uden netforbindelse.
+Data gemmes lokalt; kortet fungerer uden netforbindelse.
 
 Visningen opdeler kysten i bidder med fælles endepunkter og tegner kun dem,
-der rammer det synlige udsnit. Det holder tæt zoom og PNG-eksport hurtige uden
-at fjerne kildens detaljer. Kreditering følger med på kortet og i PNG-billedet:
+der rammer det synlige udsnit. Det holder tæt zoom hurtigt uden
+at fjerne kildens detaljer. Kreditering følger med på kortet:
 © OpenStreetMap contributors · https://www.openstreetmap.org/copyright .
 Det afledte kystdatasæt er tilgængeligt under ODbL-1.0:
 https://opendatacommons.org/licenses/odbl/1-0/ .
@@ -620,7 +607,7 @@ gemt som strenge.
 Koordinaterne omregnes til decimalgrader uden afrunding og i samme rækkefølge.
 `10° 60.000′ E` normaliseres til `11° 00.000′ E`. Første hjørne gentages som
 ottende koordinat for at lukke polygonen. Grænsen tegnes med sort streg og
-skravering, og følger med i PNG samt noter med gemte lagindstillinger.
+skravering og følger med i noter med gemte lagindstillinger.
 
 Den genererede GeoJSON med kildekoordinater og metadata ligger i
 `../data/military-areas.geojson`. Kilden er brugerens koordinater; ingen officiel
@@ -651,7 +638,7 @@ historisk tidspunkt og licensmetadata ligger i `../data/traffic-separation.geojs
 Genskab med `python3 scripts/prepare_tss.py` og derefter
 `python3 scripts/prepare_viewer.py`. Et eksisterende Overpass-svar kan indlæses
 med `--source <fil>`. Også TSS-data er lokale, under ODbL-1.0, og krediteringen
-følger kortet og PNG-billederne.
+følger kortet.
 
 Fra projektroden: `python3 scripts/prepare_viewer.py` (kræver `requests`).
 Udtræk cachelagres. Manglende radartider findes i `radar/manifest.json` og vises som
@@ -683,7 +670,7 @@ Ikoner følger bevægelsesretningen langs tracket. Minimumsskalaen er fælles:
 vises derfor større også ved oversigtszoom. Ved tæt zoom følger målene
 kortets fysiske skala under hensyn til projektionen og
 bådens breddegrad. Kortet kan zoomes tæt nok på til at vise denne forskel.
-Navne har fortsat fast skriftstørrelse; farver, klik, præsentation og PNG bevares.
+Navne har fortsat fast skriftstørrelse; farver, klik og præsentation bevares.
 
 ## Lag pr. event
 
@@ -705,13 +692,12 @@ den seneste tilstand. En fuld gentegning har forrang over en opdatering af
 kortudsnittet; zoom alene genbruger de eksisterende bådmarkører. Tidsændringer,
 eventvalg og lagring sker stadig synkront, så mellemtrin ikke tabes i logikken.
 Den synkrone `render()` bevares til gendannelse af scener og programmatisk brug,
-og `flushRender()` udfører ventende arbejde før fx PNG-eksport. Eksport afventer
-derefter også de aktuelle vejrbufferes billeder. Fartmærker tegnes én gang pr.
+og `flushRender()` udfører ventende arbejde. Fartmærker tegnes én gang pr.
 fuld gentegning. Opløsning, sporpræcision og afspilningshastigheder er uændrede.
 
 `node scripts/test_viewer_render_scheduler.cjs` kontrollerer samling af input,
-seneste tilstand, prioritet, synkron tegning, ventende arbejde under en tegning,
-genbrug ved panorering og eksport af den seneste scene.
+seneste tilstand, prioritet, synkron tegning, ventende arbejde under en tegning og
+genbrug ved panorering.
 
 Sporlaget bruger WebGL 2 i `track-renderer.js`. Hvert kildeinterval gemmes én
 gang i en fast GPU-buffer med den oprindelige PCHIP-kurves koefficienter,
@@ -740,7 +726,6 @@ Overgangen mellem fartfarve og mørk kant udjævnes med `fwidth` og `smoothstep`
 over cirka én rasterpixel. Sporlaget tegnes med 2× rasteropløsning i begge retninger
 ud over WebGL-kontekstens multisample-antialiasing. Nedskaleringen udjævner også
 den mørke yderkant mod kortet uden at ændre sporbredde eller tidsbaseret dybde.
-Samme shader og supersampling bruges i PNG-eksporten.
 Sammenhængende kildeintervaller deler en kant uden runde afslutninger imellem;
 ellers ville et nyere stykkes mørke rand stribe det foregående stykke.
 Runde afslutninger bruges ved sporets ender, reelle huller og tidsvinduets klip.
@@ -759,21 +744,19 @@ Klik søger i de oprindelige kurver ved selve klikket; der vedligeholdes ingen
 usynlige SVG-klikstier under WebGL-afspilning. Ved overlap vælges den øverste
 bådpassage ud fra tidspunktet ved klikpunktet. Hover i pause viser bådnavn og SOG og
 ændrer markøren; Pin/Fjern pin, tastaturbetjening og lagring er uændret.
-PNG-eksport gentegner sporene med supersampling af eksportens fulde 2×-opløsning og samme
-tidsbaserede dybde og indsætter resultatet i kortets SVG. Øvrige kortlag og
-ikoner eksporteres fortsat som vektorer før dannelsen af den endelige PNG.
 
-Der er kun én renderingsvej: WebGL 2 til både baggrund og spor samt deres
-PNG-eksport. Ingen CPU- eller SVG-reserve vælges på andre PC'er. Hvis WebGL
+Der er kun én renderingsvej: WebGL 2 til både baggrund og spor samt SVG til
+ikoner og annotationer som en del af den nominelle komposition.
+Ingen CPU- eller SVG-reserve vælges på andre PC'er. Hvis WebGL
 mangler eller en kontekst mistes, skjules kortet, afspilning stoppes, og årsagen
 vises tydeligt. En gendannet kontekst genopbygger den samme WebGL-renderer.
 Det generelle princip om én nominel implementering er beskrevet i
 [projektprincipperne](../AGENTS.md).
 `node scripts/test_viewer_track_time_layers.cjs` tester lokalt i Firefox på PC:
 modsatrettede krydsninger, selvkrydsning, millisekunder, pauser, tidsvindue,
-tilbagespoling, klik, genbrug af GPU-buffere og PNG med den nominelle renderer.
+tilbagespoling, klik og genbrug af GPU-buffere med den nominelle renderer.
 `node scripts/test_viewer_track_joins.cjs` kontrollerer tætte lige og buede spor
-ved flere zoomniveauer, samlinger uden striber, kantudjævning, runde ender og PNG i lokal Firefox.
+ved flere zoomniveauer, samlinger uden striber, kantudjævning og runde ender i lokal Firefox.
 
 Baggrunden bruger én WebGL 2-flade i `background-renderer.js`, med fast
 lagrækkefølge: vindfarvefelt, land, radar og kyst. Landpolygoner, inklusive
@@ -786,17 +769,16 @@ bevarer deres eksisterende lag.
 
 Baggrunden og sporene deler `mapViewport()` og `positionMapCanvas()`, så både
 klipning og placering bygger på kortets faktiske skærmrektangel, også i fuld
-skærm og ved HiDPI. PNG-eksport gentegner også baggrunden med samme WebGL-renderer
-i eksportens fulde 2×-opløsning, inklusive land, kyst og vejr.
+skærm og ved HiDPI.
 
 `node scripts/test_viewer_background.cjs` kontrollerer landhuller, lagrækkefølge,
-genbrug af geometri og teksturer, vejrskift, PNG og tab/gendannelse af konteksten.
+genbrug af geometri og teksturer, vejrskift og tab/gendannelse af konteksten.
 `node scripts/test_viewer_nominal_rendering.cjs` kontrollerer i lokal Firefox
-på PC både normal visning/PNG og tydelige fejl ved manglende WebGL eller tab af
+på PC både normal visning og tydelige fejl ved manglende WebGL eller tab af
 en af de to kontekster. Den kontrollerer også, at video kræver fuld skærm.
 
 `node scripts/test_viewer_webgl_tracks.cjs` kontrollerer faktiske GPU-pixels,
-huller, fartdata, genbrug af buffere, eksport og tab/gendannelse af konteksten.
+huller, fartdata, genbrug af buffere og tab/gendannelse af konteksten.
 `node scripts/test_viewer_fullscreen_tracks.cjs` gennemgår den udgivne
 præsentation før, under og efter fuld skærm og kontrollerer tekststørrelser og
 faktiske sporpixels ved de gemte zoomniveauer. Testen bruger grafikkort og en
@@ -809,17 +791,16 @@ synlig browser som standard (`SR_HEADLESS=1` vælger headless).
 
 Radar og vindfarvefelt har hver to billedbuffere til indlæsning og
 to teksturer pr. lag i WebGL-baggrunden. De skjulte billednoder bruges kun til
-indlæsning og lagtilstand; de tegnes ikke selv på kortet eller i PNG. Det næste radartidspunkt
+indlæsning og lagtilstand; de tegnes ikke selv på kortet. Det næste radartidspunkt
 og næste vindtime indlæses, afkodes og uploades på forhånd. Indlæsningen må
 aldrig overskrive teksturen til det viste billede. Den færdige buffer vises ved
 tidsskiftet. Den gamle buffer beholdes gennem den første tegnecyklus, før
 den skjules og må genbruges, så skiftet ikke efterlader et tomt billede. Et uventet tidsspring beholder det aktuelle billede, indtil det
 nye er klart; forældede indlæsninger kan ikke overtage visningen. Manglende
-radardata skjules fortsat og markeres som manglende. PNG-eksport afventer
-det valgte radar- og vindbillede og medtager kun de synlige buffere.
+radardata skjules fortsat og markeres som manglende.
 
 Bådikoner og navne tegnes i det fælles `boatMarkers`-lag over alle bådspor.
-Det gælder også ved afspilning og PNG-eksport.
+Det gælder også ved afspilning.
 
 ## Kilder til bådmål
 
@@ -878,7 +859,7 @@ Positiv værdi betyder indhentet tid (rød), negativ tabt tid (blå).
 værdi. Hvis en af de projicerede farter er nul eller negativ, kan en endelig
 sejltid fremad over 100 meter ikke beregnes, og sporet vises gråt.
 Det er en lokal tidsforskel pr. distance, ikke det samlede tidsmæssige forspring.
-Valget gemmes ligesom de øvrige sporvalg og bruges også i PNG-eksport.
+Valget gemmes ligesom de øvrige sporvalg.
 
 De projicerede kildeprøver og passageprofiler for alle både bygges offline af
 [`prepare_track_profiles.cjs`](../scripts/prepare_track_profiles.cjs) før opstart.
@@ -918,8 +899,8 @@ kanal bruger cirka 2,79 MiB GPU-lager for det aktuelle felt, men øger hverken
 serverfilerne eller CPU-profilerne og opretter ingen cache for bådpar. Kildebufferen
 indeholder det heltallige stationsindeks, progression i sømil og egen VMG; indekset
 beregnes før Float32-konvertering, så GPU'en ikke afrunder til en anden station.
-Forskellene interpoleres langs sporet i den fælles WebGL 2-renderer, som også
-bruges til PNG. Et grundlagsskift ændrer kun shaderens valg af de allerede
+Forskellene interpoleres langs sporet i den fælles WebGL 2-renderer.
+Et grundlagsskift ændrer kun shaderens valg af de allerede
 forberedte værdier. Referencevalg genberegner ingen CPU-profiler og uploader
 ingen sporgeometri; afspilning laver ingen referenceopslag pr. frame.
 Geometribufferne og sammenligningsbufferen bevares ved afspilning. CPU-data
@@ -938,4 +919,4 @@ tegneværktøj udgives ikke med Pages. Projektfilen følger med Pages-bygget.
 Sportype, sporlængde og referencebåd er lokale visningspræferencer under
 `sr2026-track-comparison`, `sr2026-track-length` og `sr2026-reference-boat`;
 de gemmes ikke i præsentationsdokumenter og ændrer ikke events. Målelinjen
-er midlertidig og gemmes kun i et eventuelt PNG-billede.
+er midlertidig.

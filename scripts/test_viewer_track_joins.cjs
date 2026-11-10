@@ -72,21 +72,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
      }
     }
    }
-   // The same geometry must stay seamless when rasterized at PNG resolution.
-   boat.points=curved;boat.speeds=curved.map(()=>7.5);
-   const png=renderer.snapshot(D.start+301,[boat],2),image=new Image();image.src=png;await image.decode();
-   const canvas=document.createElement('canvas');canvas.width=Math.round(mapViewport().rect.width*2);canvas.height=Math.round(mapViewport().rect.height*2);
-   const context=canvas.getContext('2d');context.drawImage(image,0,0,canvas.width,canvas.height);
-   check(antialiasedPixels(context.getImageData(0,0,canvas.width,canvas.height).data)>20,'PNG must use the same antialiased colour/outline boundary');
-   check(edgeLevels(context.getImageData(0,0,canvas.width,canvas.height).data)>3,'PNG must preserve the supersampled outer edge');
-   const v=mapViewport();
-   for(let i=5;i<195;i++){
-    const p=new DOMPoint(...xy(trackValue(curved,i,curved[i][2]+.5,getTrackModel(curved)).point)).matrixTransform(v.matrix);
-    const actual=context.getImageData(Math.floor((p.x-v.rect.left)*canvas.width/v.rect.width),Math.floor((p.y-v.rect.top)*canvas.height/v.rect.height),1,1).data;
-    check(actual[3]>240&&expected.every((n,j)=>Math.abs(actual[j]-n)<20),'Outline crosses PNG track at '+i);
-   }
-   return {samples,caps,png:true};
+   return {samples,caps};
   });
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',checks:'dense straight and curved joins, antialiased colour/outline boundary, supersampled outer edge, zoom, round caps at gaps and clipped ends, same nominal antialiased PNG renderer',...result,errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',checks:'dense straight and curved joins, antialiased colour/outline boundary, supersampled outer edge, zoom, round caps at gaps and clipped ends',...result,errors}));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1)});

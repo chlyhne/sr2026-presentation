@@ -1,44 +1,11 @@
 let notes=[];
 function chronologicalNotes(list){return [...list].sort((a,b)=>a.time-b.time);}
-try {
- const saved=JSON.parse(SRStorage.getItem('sr2026-notes')||'[]');
- if(Array.isArray(saved)){
-  notes=chronologicalNotes(saved.filter(n=>n && Number.isFinite(n.time) && typeof n.text==='string'));
-  if(notes.length===saved.length&&notes.some((n,i)=>n!==saved[i]))SRStorage.setItem('sr2026-notes',JSON.stringify(notes));
- }
-} catch {}
-const EVENT_BOATS_INITIALIZED_KEY='sr2026-event-boats-initialized-v1';
-try{
- if(window.SR_CONFIG?.local && SRStorage.getItem(EVENT_BOATS_INITIALIZED_KEY)!=='1'){
-  const initialized=notes.map(n=>({...n,settings:{...n.settings,boats:[...featured]}}));
-  if(!notes.length||persistNotes(initialized)){
-   notes=initialized;SRStorage.setItem(EVENT_BOATS_INITIALIZED_KEY,'1');
-  }
- }
-}catch{}
-const ROSA_LUX_ADDED_KEY='sr2026-event-boats-rosa-lux-v1';
-try{
- if(window.SR_CONFIG?.local && SRStorage.getItem(ROSA_LUX_ADDED_KEY)!=='1'){
-  const updated=notes.map(n=>({...n,settings:{...n.settings,
-   boats:[...new Set([...(Array.isArray(n.settings?.boats)?n.settings.boats:featured),'Rosa-Lux'])]}}));
-  if(!notes.length||persistNotes(updated)){
-   notes=updated;SRStorage.setItem(ROSA_LUX_ADDED_KEY,'1');
-  }
- }
-}catch{}
-const EVENT_BOAT_NAMES_SHOWN_KEY='sr2026-event-boat-names-shown-v1';
-try{
- if(window.SR_CONFIG?.local && SRStorage.getItem(EVENT_BOAT_NAMES_SHOWN_KEY)!=='1'){
-  const updated=notes.map(n=>{
-   const active=new Set(Array.isArray(n.settings?.boats)?n.settings.boats:featured);
-   const names=boats.filter(b=>active.has(b.name)).map(b=>b.id);
-   return {...n,settings:{...n.settings,boatNames:[...new Set([...(Array.isArray(n.settings?.boatNames)?n.settings.boatNames:[]),...names])]}};
-  });
-  if(!notes.length||persistNotes(updated)){
-   notes=updated;SRStorage.setItem(EVENT_BOAT_NAMES_SHOWN_KEY,'1');
-  }
- }
-}catch{}
+{
+ const saved=JSON.parse(SRStorage.getItem('sr2026-notes')??'[]');
+ if(!Array.isArray(saved)||saved.some(n=>!n||!Number.isFinite(n.time)||typeof n.text!=='string'))throw Error('De gemte noter er ugyldige.');
+ notes=chronologicalNotes(saved);
+ if(notes.some((n,i)=>n!==saved[i]))SRStorage.setItem('sr2026-notes',JSON.stringify(notes));
+}
 let activePresentationNote=null,presentationOwnsFullscreen=false;
 let editingNote=null,noteDraft=null;
 let placingNote=false;
@@ -72,11 +39,6 @@ function persistNotes(next){
  if(window.SR_READONLY)return false;
  try {SRStorage.setItem('sr2026-notes',JSON.stringify(chronologicalNotes(next)));return true;}
  catch {$('annotationStatus').textContent='Browseren kan ikke gemme noter. Eksportér dem før du lukker.';return false;}
-}
-function saveNotes() {
- if(!persistNotes(notes))return false;
- showNotes();updateTimeline();renderAnnotations();
- return true;
 }
 function sceneSettings() {
  return {wind:$('wind').checked,windModel:$('windModel').value,windNumbers:$('windNumbers').checked,
@@ -401,71 +363,6 @@ function download(blob,filename) {
 }
 $('export').onclick=exportEventNotes;
 
-const embeddedImages=new Map();
-async function embedImage(href) {
- if(href.startsWith('data:'))return href;
- if(embeddedImages.has(href))return embeddedImages.get(href);
- let blob;
- try {
-  const response=await fetch(href);if(!response.ok)throw new Error('Billedet kunne ikke hentes.');blob=await response.blob();
- } catch {
-  throw new Error(location.protocol==='file:'
-   ? 'Åbn siden via den lokale server: python3 scripts/serve_viewer.py'
-   : 'Radaren kunne ikke indlæses til billedet. Prøv igen.');
- }
- const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
- if(embeddedImages.size>=8)embeddedImages.delete(embeddedImages.keys().next().value);
- embeddedImages.set(href,data);return data;
-}
-async function captureMap() {
- stopPlayback();const button=$('capture');button.disabled=true;$('captureStatus').textContent='Gør kortbilledet klar …';
- let svgURL;
- try {
-  await waitForMapReady();
-  const map=$('map'),rect=map.getBoundingClientRect(),inverse=map.getScreenCTM().inverse();
-  const topLeft=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
-  const bottomRight=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
-  // Expand viewBox to include the exact visible area, including SVG's side gutters.
-  const bounds=[topLeft.x,topLeft.y,bottomRight.x-topLeft.x,bottomRight.y-topLeft.y];
-  const clone=map.cloneNode(true),width=Math.round(rect.width),height=Math.round(rect.height);
-  const backgroundImage=webglBackground.snapshot(2);
-  const backgroundHost=clone.querySelector('[data-webgl-background]');
-  const backgroundLayer=el('image',{'data-render-layer':'background',x:bounds[0],y:bounds[1],width:bounds[2],height:bounds[3],preserveAspectRatio:'none',href:backgroundImage});
-  backgroundHost.replaceWith(backgroundLayer);
-  for(const id of ['windField','land','precipitation','coast'])clone.querySelector('#'+id)?.remove();
-  // Re-render tracks at the final PNG resolution with the same local-time depth rule.
-  const routes=clone.querySelector('#routes');routes.replaceChildren();
-  const order=boats.filter(boatIsDisplayed).sort((a,b)=>(referenceBoat()?.id===a.id)-(referenceBoat()?.id===b.id));
-  const trackImage=webglTracks.snapshot(currentTime(),order,2);
-  el('image',{'data-render-layer':'tracks',x:bounds[0],y:bounds[1],width:bounds[2],height:bounds[3],preserveAspectRatio:'none',href:trackImage},routes);
-  for(const host of clone.querySelectorAll('[data-webgl-tracks],[data-webgl-background]'))host.remove();
-  for(const control of clone.querySelectorAll('[data-speed-action],.track-hit-targets'))control.remove();
-  const time=currentTime(),model=$('windModel').value,radarMissing=$('rain').checked&&radarStatus==='mangler';
-  clone.setAttribute('width',width);clone.setAttribute('height',height);clone.setAttribute('viewBox',bounds.join(' '));
-  clone.removeAttribute('id');clone.removeAttribute('class');clone.setAttribute('style','font-family:system-ui,sans-serif');
-  const background=el('rect',{x:bounds[0],y:bounds[1],width:bounds[2],height:bounds[3],fill:getComputedStyle(map).backgroundColor});
-  clone.insertBefore(background,clone.firstChild);
-  for(const img of clone.querySelectorAll('image')) {
-   const href=img.getAttribute('href');
-   if(!href||img.getAttribute('visibility')==='hidden'){img.remove();continue;}
-   img.setAttribute('href',await embedImage(href));
-  }
-  const description=el('desc',{},clone);
-  description.textContent=`Sjælland Rundt 2026 · ${fmt(time)} CEST · Vind: ${windLabels[model]}, ${fmt(Math.floor(time/3600)*3600)} · Radar: DMI dBZ · Tracks: TracTrac · Kyst: ${D.coast_metadata?.source||'Natural Earth'}${$('traffic').checked?' · TSS: OpenSeaMap / OpenStreetMap, '+D.traffic_separation?.metadata.snapshot:''}${$('military').checked?' · Skydeområde: '+D.military_areas?.features[0]?.properties.name:''}`;
-  svgURL=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml;charset=utf-8'}));
-  const image=new Image();
-  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error('Kortbilledet kunne ikke tegnes. Prøv igen.'));image.src=svgURL;});
-  const canvas=document.createElement('canvas');canvas.width=width*2;canvas.height=height*2;
-  canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
-  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
-  if(!blob)throw new Error('Browseren kunne ikke danne PNG-billedet.');
-  const stamp=new Date(time*1000+7200000).toISOString().slice(0,19).replace(/[-:]/g,'').replace('T','-');
-  download(blob,`sr2026-kort-${stamp}.png`);
-  $('captureStatus').textContent=`PNG klar · ${canvas.width} × ${canvas.height} px · kun kortet${radarMissing?' · radar mangler ved dette tidspunkt':''}`;
- } catch(error) {$('captureStatus').textContent=error.message||'Billedet kunne ikke gemmes.';}
- finally {if(svgURL)URL.revokeObjectURL(svgURL);button.disabled=false;}
-}
-$('capture').onclick=captureMap;
 $('note').addEventListener('input',()=>{if(editingNote)renderAnnotations();else if(pendingEventImage||hasPendingEventVideo())updatePresentationControls();});
 updateTimeline();showNotes();render();
 new ResizeObserver(()=>requestRender({viewportOnly:!updateTimeline()})).observe($('map'));

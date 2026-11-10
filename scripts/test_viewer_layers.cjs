@@ -39,9 +39,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     const saved=JSON.parse(await stored());
     assert.equal(saved[0].settings.wind,true);assert.equal(saved[0].settings.rain,false);
     assert.deepEqual(saved[1],JSON.parse(before)[1],'Only the active event changes');
-    const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());
-    assert.match((await download).suggestedFilename(),/\.png$/);
-    assert.doesNotMatch(await page.locator('#captureStatus').textContent(),/kunne ikke|fejl/i);
    }
    await page.keyboard.press('Escape');
    assert.equal(await panel.isVisible(),false);

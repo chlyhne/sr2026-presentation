@@ -6,10 +6,11 @@ const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve(
 async function check(type){
  const browser=await type.launch({headless:true});
  try{
-  const page=await browser.newPage({viewport:{width:1500,height:1000},acceptDownloads:true}),errors=[];
+  const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>typeof nearestTrackSpeed==='function'&&typeof stopPlayback==='function'&&typeof captureMap==='function');
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
+  await page.waitForFunction(()=>typeof nearestTrackSpeed==='function'&&typeof stopPlayback==='function');
   const target=await page.evaluate(()=>{
    const boat=boats.find(b=>b.name==='Mercutio');
    const index=boat.points.findIndex((p,i)=>p[2]>D.start+26*3600&&boat.points[i+1]?.[2]-p[2]<300&&boat.speeds[i]>4);
@@ -69,13 +70,6 @@ async function check(type){
   await page.locator('[data-speed-action="pin"]').click();pins=await page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-speed-pins')));
   assert.equal(pins.length,1);
   const labelBefore=await page.locator('.track-speed-label').textContent();
-  await page.evaluate(()=>{const serialize=XMLSerializer.prototype.serializeToString;XMLSerializer.prototype.serializeToString=function(node){const xml=serialize.call(this,node);window.speedPinSVG=xml;return xml;};});
-  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());
-  await(await download).saveAs('/tmp/sr2026-speed-pins-'+type.name()+'-map.png');
-  const exported=await page.evaluate(()=>{
-   const doc=new DOMParser().parseFromString(speedPinSVG,'image/svg+xml');
-   return {pins:doc.querySelectorAll('#speedMarkers [data-pinned="true"]').length,buttons:doc.querySelectorAll('[data-speed-action]').length,hits:doc.querySelectorAll('.track-hit-targets').length};
-  });assert.deepEqual(exported,{pins:1,buttons:0,hits:0});
   await page.reload();await page.waitForFunction(()=>typeof speedPins!=='undefined'&&speedPins.length===1);
   await page.locator('.note-jump').click();assert.equal(await page.locator('.track-speed-label').textContent(),labelBefore);
   await page.locator('#startPresentation').click();assert.equal(await page.locator('#speedMarkers [data-pinned="true"]').count(),1);
@@ -106,7 +100,7 @@ async function check(type){
   assert.match(await page.locator('#speedPinStatus').textContent(),/kunne ikke gemmes/);
   await page.evaluate(()=>{Storage.prototype.setItem=originalPinStorage;});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),renderer,checks:'exact curve picking, hover, native speed interpolation, click preview, pin/unpin/keyboard, persistence, selected boats, tail and viewport visibility, no gaps, panning, presentation, zoom, PNG, failed save',errors}));
+  console.log(JSON.stringify({browser:type.name(),renderer,checks:'exact curve picking, hover, native speed interpolation, click preview, pin/unpin/keyboard, persistence, selected boats, tail and viewport visibility, no gaps, panning, presentation, zoom, failed save',errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

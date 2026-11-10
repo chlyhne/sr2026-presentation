@@ -74,11 +74,19 @@ Præsentationen gemmes kun i `presentation/presentation.json` med formatet
 `{version:1,notes:[],speedPins:[]}`. Rhumbline er et fast projektaktiv i
 `viewer/rhumbline.json` og indgår ikke i præsentationen. Billeder får
 servergenererede UUID-navne under
-`viewer/event-images/`. Relative billedadresser er `event-images/<uuid>.<ext>`.
+`viewer/event-images/`, som er det eneste billedlager for både lokale uploads og
+online-redigering. Relative billedadresser er `event-images/<uuid>.<ext>`;
+eksisterende UUID'er og billedadresser bevares ved samlingen af lageret.
 Andre repository-stier kan ikke angives af klienten. Billeder må højst fylde
 16 MiB, JSON højst 4 MiB. Indholdstyper, billedsignaturer og centrale eventfelter
 valideres på serveren. Ved udgivelse kontrolleres også, at refererede billeder
-findes i repositoryet. Backendens validering accepterer ingen eksterne billed-URL'er.
+findes som filer under `viewer/event-images/` i repositoryet. Beskyttet billedlæsning
+bruger samme mappe; manglende billeder giver en tydelig fejl uden opslag i gamle
+mapper eller på Pages. Backendens validering accepterer ingen eksterne billed-URL'er.
+
+Pages-pakningen kræver en eksisterende `presentation/presentation.json` med
+`version: 1` og listerne `notes` og `speedPins`. Et manglende eller ugyldigt dokument
+stopper pakningen med en fejl. Billeder pakkes direkte fra `viewer/event-images/`.
 
 Udgivelse kræver den SHA, som dokumentet blev indlæst med. Hvis en anden redaktør
 har udgivet en nyere version, svarer serveren `409`; klienten skal bevare kladden
@@ -96,7 +104,8 @@ node --test backend/worker.test.mjs
 
 Testene kontrollerer manglende/udløbet/manipuleret session, read-only adgang,
 identitetsskift, CSRF, OAuth state/PKCE, skjulte tokens, versionskonflikter,
-validering, genererede billedstier og proxyens fravær af videresendte credentials.
+validering, genererede billedstier, bevaring af billedbytes, afvisning af gamle
+billedstier og proxyens fravær af videresendte credentials.
 
 Dokumentation:
 - [GitHub App-login](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app)

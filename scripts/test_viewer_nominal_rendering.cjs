@@ -1,14 +1,18 @@
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const assert=require('node:assert/strict'),path=require('node:path');
 const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
 (async()=>{
  const browser=await firefox.launch({headless:true});
  try{
-  const page=await browser.newPage({viewport:{width:1200,height:850},acceptDownloads:true}),errors=[];
+  const page=await browser.newPage({viewport:{width:1200,height:850}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
-  await page.goto(base);await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
+  await page.goto(base);await page.waitForSelector('main:not([inert])',{timeout:120000});
   assert.equal(await page.evaluate(()=>webglTracks.active&&webglBackground.active&&!hasRenderingFailure()),true);
-  // PNG must contain the nominal GPU background, not a separately drawn SVG map.
+  assert.equal(await page.locator('#capture').count(),0);
+  assert.equal(await page.locator('#captureStatus').count(),0);
+  assert.equal(await page.evaluate(()=>typeof captureMap),'undefined');
+  assert.equal(await page.evaluate(()=>typeof webglTracks.snapshot),'undefined');
+  assert.equal(await page.evaluate(()=>typeof webglBackground.snapshot),'undefined');
   const sample=await page.evaluate(()=>{
    chosen.clear();$('wind').checked=$('rain').checked=false;
    for(const id of ['winds','trafficSeparation','militaryAreas','routeT','courseLines','boatMarkers','places','seamarks','speedMarkers','noteDrawings','drawingPreview','annotations','mapCredit','trackSpeedLegend'])$(id).setAttribute('visibility','hidden');
@@ -18,22 +22,9 @@ const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
    const land=(x,y)=>{const n=(y*canvas.width+x)*4;return raw[n]===189&&raw[n+1]===199&&raw[n+2]===203&&raw[n+3]===255;};
    let sample;
    for(let y=20;!sample&&y<canvas.height-20;y+=5)for(let x=20;x<canvas.width-20;x+=5)if(land(x,y)&&land(x-3,y)&&land(x+3,y)&&land(x,y-3)&&land(x,y+3)){sample={x,y,width:canvas.width,height:canvas.height};break;}
-   const serialize=XMLSerializer.prototype.serializeToString;
-   XMLSerializer.prototype.serializeToString=function(node){const xml=serialize.call(this,node);window.nominalExportSVG=xml;return xml;};
    return sample;
   });
   assert.ok(sample,'Nominal background draws the land');
-  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());
-  const png=fs.readFileSync(await(await download).path()).toString('base64');
-  const exported=await page.evaluate(async({png,sample})=>{
-   const image=new Image();image.src='data:image/png;base64,'+png;await image.decode();
-   const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
-   const context=canvas.getContext('2d');context.drawImage(image,0,0);
-   const x=Math.floor((sample.x+.5)*canvas.width/sample.width),y=Math.floor((sample.height-sample.y-.5)*canvas.height/sample.height);
-   const doc=new DOMParser().parseFromString(nominalExportSVG,'image/svg+xml');
-   return {pixel:[...context.getImageData(x,y,1,1).data],layers:[...doc.querySelectorAll('[data-render-layer]')].map(node=>node.getAttribute('data-render-layer')),svgLand:doc.querySelectorAll('#land path,#coast path').length};
-  },{png,sample});
-  assert.deepEqual(exported.pixel,[189,199,203,255]);assert.deepEqual(exported.layers,['background','tracks']);assert.equal(exported.svgLand,0);
   // Losing either context must hide the whole map and show its cause, with no substitution.
   for(const name of ['webglTracks','webglBackground']){
    const available=await page.evaluate(name=>{
@@ -62,7 +53,6 @@ const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
   await page.waitForFunction(()=>$('eventVideoStatus').textContent.includes('Afvist i test'));
   assert.equal(await page.locator('#eventVideoOverlay').isVisible(),false);assert.equal(await page.locator('#eventVideoPlayer iframe').count(),0);
   assert.deepEqual(errors,[]);await page.close();
-  // Initialization failures on either layer are explicit and block export.
   for(const blocked of ['background','tracks','all']){
    const failed=await browser.newPage({viewport:{width:1200,height:850}}),failErrors=[];
    failed.on('pageerror',error=>failErrors.push(error.message));
@@ -73,17 +63,18 @@ const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
      return get.call(this,kind,...args);
     };
    },blocked);
-   await failed.goto(base);await failed.waitForFunction(()=>document.querySelector('#onlineStatus'));
-   assert.equal(await failed.locator('#renderingError').isVisible(),true);
+   await failed.goto(base);await failed.locator('#viewerLoadingError').waitFor({state:'visible',timeout:120000});
+   assert.equal(await failed.locator('#viewerLoadingError').isVisible(),true);
+   assert.match(await failed.locator('#viewerLoadingError').textContent(),/WebGL 2/);
+   assert.equal(await failed.locator('main').evaluate(node=>node.inert),true);
    assert.match(await failed.locator('#renderingErrorDetails').textContent(),/WebGL 2/);
    assert.equal(await failed.locator('#map').isVisible(),false);
    await failed.evaluate(()=>updateTimeline());
    assert.equal(await failed.locator('#play').isEnabled(),false);
    await failed.evaluate(()=>startPlayback());assert.equal(await failed.evaluate(()=>!!interval),false);
    assert.equal(await failed.locator('#land path,#coast path,[data-software-tracks]').count(),0);
-   await failed.evaluate(()=>captureMap());assert.match(await failed.locator('#captureStatus').textContent(),/WebGL 2/);
    assert.deepEqual(failErrors,[]);await failed.close();
   }
-  console.log(JSON.stringify({browser:'firefox',checks:'nominal WebGL for background/tracks/PNG, missing WebGL on either layer, explicit errors, blocked export/playback, context loss and same-path recovery, no alternate video rendering',errors}));
+  console.log(JSON.stringify({browser:'firefox',checks:'nominal WebGL for background/tracks, removed PNG export controls and APIs, missing WebGL on either layer, explicit errors, blocked playback, context loss and same-path recovery, no alternate video rendering',errors}));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1)});

@@ -1,7 +1,7 @@
 const trafficKinds={separation_zone:'Skillezone',separation_line:'Skillelinje',
  separation_boundary:'Trafiksepareringens grænse',separation_lane:'Trafikretning',
  separation_roundabout:'Trafikrundkørsel',separation_crossing:'Trafikkrydsning'};
-const trafficFeatures=(D.traffic_separation?.features||[]).map(feature=>{
+const trafficFeatures=D.traffic_separation.features.map(feature=>{
  const geometry=feature.geometry,lines=geometry.type==='Polygon'?geometry.coordinates:[geometry.coordinates];
  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
  for(const line of lines)for(const [lon,lat] of line){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}

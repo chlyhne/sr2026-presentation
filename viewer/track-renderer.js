@@ -272,12 +272,12 @@ void main(){colour=vec4(0.0);}`);
    record.comparisonFirst=first;
   }
  }
- render(time,order,force=false,viewportOverride=null){
+ render(time,order,force=false){
   this.time=time;this.order=order;
   if(!this.active)return false;
   try{
    if(this.gl.isContextLost())throw Error('WebGL-konteksten er mistet.');
-   const baseViewport=viewportOverride||mapViewport();if(!baseViewport)return true;
+   const baseViewport=mapViewport();if(!baseViewport)return true;
    const viewport={...baseViewport,pixelWidth:baseViewport.pixelWidth*2,pixelHeight:baseViewport.pixelHeight*2};
    const {rect,matrix,topLeft:top,pixelWidth:width,pixelHeight:height}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
@@ -333,14 +333,5 @@ void main(){colour=vec4(0.0);}`);
   }catch(error){this.fail(error);return false;}
  }
  redraw(){if(this.order)this.render(this.time,this.order);}
- snapshot(time,order,scale=2){
-  if(!this.active)throw Error(this.error||'Sporenes WebGL-rendering er ikke tilgængelig.');
-  const viewport=mapViewport();
-  try{
-   this.render(time,order,true,{...viewport,pixelWidth:Math.round(viewport.rect.width*scale),pixelHeight:Math.round(viewport.rect.height*scale)});
-   if(!this.active)throw Error(this.error||'Sporene kunne ikke eksporteres.');
-   return this.canvas.toDataURL('image/png');
-  }finally{if(this.active)this.render(time,order,true);}
- }
 }
 const webglTracks=new WebGLTrackRenderer($('routes'));

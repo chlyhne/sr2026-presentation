@@ -30,7 +30,6 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   await page.setViewportSize({width:1200,height:850});
   await page.waitForFunction(()=>$('winds').firstChild!==window.arrowsBeforeResize);
   assert.notEqual(await page.locator('#map').evaluate(e=>e.getBoundingClientRect().width),resized);
-  const download=page.waitForEvent('download');await page.evaluate(()=>captureMap());await(await download).saveAs('/tmp/sr2026-cached-render-export.png');
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({...result,resize:true,png:true,errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({...result,resize:true,errors}));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
