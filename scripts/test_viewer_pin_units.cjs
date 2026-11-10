@@ -32,7 +32,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
      if(sample.speed===null)continue;
      const expected=pinExpected(boat,i);
      if(!target&&expected.every(v=>v!==null)&&Math.abs(expected[0]-expected[1])>.05&&Math.abs(expected[2])>.5)target={boatId:boat.id,time,index:i,expected,sog:sample.speed};
-     if(!missing&&expected.every(v=>v===null))missing={boatId:boat.id,time};
+     if(!missing&&sample.speed>3&&Math.hypot(b[0]-a[0],b[1]-a[1])>.0002&&expected.every(v=>v===null))missing={boatId:boat.id,time};
      if(target&&missing)break;
     }
     if(target&&missing)break;
@@ -48,14 +48,35 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    return {...target,missing};
   });
   const label=page.locator('.track-speed-label'),format=(value,digits)=>value.toLocaleString('da-DK',{minimumFractionDigits:digits,maximumFractionDigits:digits});
-  await page.locator('[data-speed-action="pin"]').click();
-  const pins=await page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-speed-pins')));
-  assert.equal(pins.length,1);assert.deepEqual(Object.keys(pins[0]).sort(),['boatId','id','time']);
-  assert.equal(await label.textContent(),format(target.sog,1)+' kn');
   const setStyle=async style=>{
    await page.locator('#mapTracksToggle').click();await page.locator('#trackStyle').selectOption(style);
    await page.locator('#mapTracksToggle').click();
   };
+  // Create pins with actual pointer input after selecting each track style.
+  for(const style of ['speed','boat','absolute','handicap','time']){
+   await setStyle(style);
+   const point=await page.evaluate(async target=>{
+    pickedTrackSpeed=null;render();
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    flushRender();
+    const boat=boats.find(b=>b.id===target.boatId),sample=trackSpeedSample(boat,target.time);
+    const point=new DOMPoint(...xy(sample.point)).matrixTransform($('map').getScreenCTM());
+    return {x:point.x,y:point.y};
+   },target);
+   await page.mouse.click(point.x,point.y);
+   assert.equal(await page.locator('[data-speed-action="pin"]').count(),1,style+' must allow a new pin');
+   await page.locator('[data-speed-action="pin"]').click();
+   await page.waitForSelector('[data-pinned="true"]');
+   assert.equal(await page.evaluate(()=>speedPins.length),1,style+' pin click must save');
+   assert.match(await label.textContent(),style==='time'?/s\/100 m$/:/ kn$/);
+   await page.locator('[data-speed-action="unpin"]').click();
+   assert.equal(await page.evaluate(()=>speedPins.length),0);
+  }
+  await setStyle('speed');await page.evaluate(()=>showPinFixture(pinTarget));
+  await page.locator('[data-speed-action="pin"]').click();
+  const pins=await page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-speed-pins')));
+  assert.equal(pins.length,1);assert.deepEqual(Object.keys(pins[0]).sort(),['boatId','id','time']);
+  assert.equal(await label.textContent(),format(target.sog,1)+' kn');
   await setStyle('absolute');
   await page.evaluate(()=>{
    const forbidden=()=>{throw Error('Style switch recalculated or reread prepared comparisons');};
@@ -73,6 +94,11 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   }
   for(const style of ['boat','speed']){await setStyle(style);assert.equal(await label.textContent(),format(target.sog,1)+' kn');}
   await setStyle('time');
+  const scale=await page.evaluate(()=>({
+   labels:[...$('trackSpeedLegend').querySelectorAll('text')].filter(text=>text.getAttribute('y')==='54').map(text=>text.textContent),
+   limit:webglTracks.gl.getUniform(webglTracks.program,webglTracks.uniforms.gainLimit)
+  }));
+  assert.deepEqual(scale.labels,['−120','0','+120']);assert.equal(scale.limit,120);
   await page.locator('#startPresentation').click();
   assert.match(await label.textContent(),/s\/100 m$/);
   assert.equal(await page.locator('[data-speed-action]').count(),0);
@@ -94,16 +120,22 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await label.textContent(),(target.expected[2]>0?'+':'')+format(target.expected[2],2)+' s/100 m');
   // Use a real interval whose prepared comparisons are missing but SOG exists.
   const missing=target.missing;
-  await page.evaluate(missing=>{
-   const boat=boats.find(b=>b.id===missing.boatId),[x,y]=xy(trackSpeedSample(boat,missing.time).point);
-   chosen.clear();chosen.add(boat.name);view=[x-4,y-4,8,8];selectedTime=missing.time+60;
-   speedPins=[];pickedTrackSpeed=missing;setview();render();
-  },missing);
-  assert.equal(await label.textContent(),'Sammenligning mangler');assert.equal(await page.locator('[data-speed-action="pin"]').count(),0);
-  assert.equal(await page.evaluate(()=>{toggleSpeedPin();return speedPins.length;}),0);
-  await page.evaluate(missing=>{speedPins=[{id:'missing-data-pin',...missing}];renderSpeedPins();},missing);
-  assert.equal(await label.textContent(),'Sammenligning mangler');
-  await page.locator('[data-speed-action="unpin"]').click();assert.equal(await page.evaluate(()=>speedPins.length),0);
+  for(const style of ['absolute','handicap','time']){
+   await setStyle(style);
+   const point=await page.evaluate(async missing=>{
+    const boat=boats.find(b=>b.id===missing.boatId),[x,y]=xy(trackSpeedSample(boat,missing.time).point);
+    chosen.clear();chosen.add(boat.name);view=[x-4,y-4,8,8];selectedTime=missing.time+60;
+    speedPins=[];pickedTrackSpeed=null;setview();render();
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));flushRender();
+    const point=new DOMPoint(x,y).matrixTransform($('map').getScreenCTM());return {x:point.x,y:point.y};
+   },missing);
+   await page.mouse.click(point.x,point.y);
+   assert.equal(await label.textContent(),'Sammenligning mangler');assert.equal(await page.locator('[data-speed-action="pin"]').count(),1);
+   await page.locator('[data-speed-action="pin"]').click();
+   await page.waitForSelector('[data-pinned="true"]');assert.equal(await page.evaluate(()=>speedPins.length),1);
+   assert.equal(await label.textContent(),'Sammenligning mangler');
+   await page.locator('[data-speed-action="unpin"]').click();assert.equal(await page.evaluate(()=>speedPins.length),0);
+  }
   assert.deepEqual(errors,[]);
   console.log('Firefox PC: pin values and units match prepared track comparisons; style switches reuse all three bases; SOG, reference changes, persistence, presentation and missing data checked.');
  }finally{await browser.close();}
