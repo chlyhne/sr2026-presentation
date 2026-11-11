@@ -84,7 +84,7 @@ body.rhumbline-setup #rhumblineSaveStatus:empty{display:none}
 #boatFavouritesOnly[aria-pressed=true] svg{fill:currentColor}
 #boatClearFavourites:disabled{cursor:default}
 #visibleBoatsList{margin:0;padding:0;list-style:none}
-.visible-boat{height:72px;padding:9px 10px;border-left:4px solid var(--boat-colour);border-bottom:1px solid #d5e1e7;overflow-wrap:anywhere;outline:none;cursor:default;scroll-margin-top:86px}
+.visible-boat{height:72px;padding:9px 10px;border-left:4px solid var(--boat-colour);border-bottom:1px solid #d5e1e7;overflow-wrap:anywhere;outline:none;cursor:pointer;scroll-margin-top:86px}
 .visible-boat:last-child{border-bottom-color:transparent}
 .visible-boat:hover,.visible-boat:focus,.visible-boat.highlighted{background:#dcecf0;box-shadow:inset 0 0 0 1px #173d4c}
 .visible-boat:focus-visible{outline:2px solid #173d4c;outline-offset:-2px}
@@ -115,7 +115,7 @@ select,textarea{width:100%}input[type=range]{width:100%;accent-color:#ffce5c}
 #map image{pointer-events:none;-webkit-user-drag:none}
 #places{pointer-events:none}
 #map:active,#map.panning{cursor:grabbing}#map.placing,#map.placing:active{cursor:crosshair}
-#map .boat-marker{cursor:pointer;outline:none}
+#map .boat-marker{outline:none}#map .boat-marker[role=button]{cursor:pointer}
 #map .track-hit-target,#map .speed-marker{cursor:pointer;outline:none}
 #map.track-hover{cursor:pointer}
 #trackHover{position:fixed;z-index:30;pointer-events:none;max-width:calc(100vw - 8px);padding:5px 8px;border:1px solid #365766;border-radius:4px;background:#f4fafb;color:#14212a;font:12px system-ui,sans-serif;box-shadow:0 2px 8px #0003}

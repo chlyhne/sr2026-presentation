@@ -8,16 +8,20 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.route('**/presentation.json',route=>route.fulfill({json:{version:1,notes:[],speedPins:[]}}));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18172/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
-  assert.equal(await page.evaluate(()=>boats.every(boat=>shownBoatNames.has(boat.id))),true,'All boat names are visible by default');
+  assert.equal(await page.evaluate(()=>[...$('boatMarkers').querySelectorAll('.boat-marker')].every(marker=>marker.querySelector('.boat-name'))),true,'All rendered boats have names');
   await page.evaluate(()=>{
-   const boat=boats.find(candidate=>chosen.has(candidate.name));
-   setBoatSelected(boat,false);shownBoatNames.delete(boat.id);
-   notes=[{time:currentTime(),text:'Names',view:[...view],settings:sceneSettings()}];activePresentationNote=notes[0];
+   const boat=boats.find(candidate=>candidate.name==='Mercutio');
+   notes=[{time:D.start+3600,text:'Names',view:[...view],settings:{...sceneSettings(),boatNames:[]}}];
+   restoreNote(notes[0]);flushRender();
+   if([...$('boatMarkers').querySelectorAll('.boat-marker')].some(marker=>!marker.querySelector('.boat-name')))throw Error('Old events cannot hide names');
    setBoatSelected(boat,true);flushRender();
-   if(!shownBoatNames.has(boat.id)||!notes[0].settings.boatNames.includes(boat.id))throw Error('Selecting a boat must show and save its name');
-   setAllBoatsSelected(false);shownBoatNames.clear();setAllBoatsSelected(true);flushRender();
-   if(!boats.every(candidate=>shownBoatNames.has(candidate.id)))throw Error('Selecting all boats must show their names');
+   setAllBoatsSelected(false);flushRender();
+   if([...$('boatMarkers').querySelectorAll('.boat-marker')].some(marker=>!marker.querySelector('.boat-name')))throw Error('Removing hearts cannot hide names');
   });
+  // The reference boat is drawn last, above overlapping fleet markers.
+  const marker=page.locator('.boat-marker').last();
+  await marker.locator('.boat-hull').click();
+  assert.equal(await marker.locator('.boat-name').count(),1,'Clicking a boat cannot hide its name');
   const levels=await page.evaluate(()=>{
    stopPlayback();$('wind').checked=$('rain').checked=false;
    const center=xy([12,55]);

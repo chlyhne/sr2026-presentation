@@ -16,6 +16,18 @@ async function check(readonly){
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   assert.equal(await page.evaluate(()=>window.SR_READONLY),readonly);
+  assert.deepEqual(await page.evaluate(()=>[...chosen]),[],'No default favourites');
+  assert.equal(await page.locator('#boatFavouritesOnly').getAttribute('aria-pressed'),'false');
+  assert.equal(await page.locator('#grid').isChecked(),true);
+  assert.equal(await page.locator('#wind').isChecked(),false);
+  assert.equal(await page.locator('#rain').isChecked(),false);
+  assert.equal(await page.locator('#eventPanel').isVisible(),false);
+  assert.equal(await page.locator('#eventPanelToggle').getAttribute('aria-expanded'),'false');
+  const toolIds=['eventPanelToggle','mapLayersToggle','mapTracksToggle','mapMeasureToggle',readonly?'loginLink':'endPresentation','presentationFullscreen'];
+  assert.deepEqual(await page.locator('#mapTools > *').evaluateAll(nodes=>nodes.map(node=>node.id)),
+   ['presentationFullscreen','loginLink','endPresentation','mapMeasure','rhumblineTools','mapTracks','mapLayers','eventPanelToggle','comparisonStatus']);
+  const toolPositions=await page.evaluate(ids=>ids.map(id=>$(id).getBoundingClientRect()).filter(rect=>rect.width).map(rect=>rect.x),toolIds);
+  assert.deepEqual(toolPositions,[...toolPositions].sort((a,b)=>b-a),'Toolbar reads from right to left');
   await page.evaluate(()=>{
    stopPlayback();$('wind').checked=$('rain').checked=false;selectedTime=D.start+3600;
    const time=selectedTime,metadata=boatMetadata('Mercutio');
@@ -70,14 +82,20 @@ async function check(readonly){
   if(readonly)assert.deepEqual(await page.evaluate(()=>({notes:JSON.stringify(notes),stored:SRStorage.getItem('sr2026-notes')})),{notes:scene.notes,stored:scene.stored});
   else assert.deepEqual(await page.evaluate(()=>({query:notes[0].settings.boatSearchQuery,favourites:notes[0].settings.boatFavouritesOnly})),{query:'x-99',favourites:false},'Editor filters autosave to the current event');
   await search.fill('match');await settle();
-  await heart('name').check();await settle();
+  const nameRow=page.locator('.visible-boat[data-boat-id="name"]');
+  for(const target of ['.visible-boat-skipper','.visible-boat-type','.visible-boat-name','.visible-boat-speed']){
+   await nameRow.locator(target).click();await settle();assert.equal(await heart('name').isChecked(),true,'Entire boat row toggles once: '+target);
+   await nameRow.locator(target).click();await settle();assert.equal(await heart('name').isChecked(),false);
+  }
+  await nameRow.click({position:{x:2,y:68}});await settle();
+  assert.equal(await heart('name').isChecked(),true,'Row padding toggles the heart');
   assert.deepEqual(await chosenNames(),['Borealis','MATCH Sejler','Mercutio']);
   assert.equal(await heart('name').evaluate(input=>getComputedStyle(input.nextElementSibling).fill),'rgb(188, 49, 84)');
   await heart('skipper').uncheck();await settle();
   assert.deepEqual(await rows(),['future','name','outside','skipper','type'],'Empty hearts remain in the all-boats filter');
   await page.locator('[data-boat-marker="type"] .boat-hull').click();await settle();assert.equal(await heart('type').isChecked(),true);
   await favourites.click();await settle();assert.deepEqual(await rows(),['name','type']);
-  await heart('name').uncheck();await settle();assert.deepEqual(await rows(),['type'],'A removed favourite disappears immediately from favourite-only results');
+  await nameRow.locator('.visible-boat-skipper').click();await settle();assert.deepEqual(await rows(),['type'],'A removed favourite disappears immediately from favourite-only results');
   await page.locator('.visible-boat[data-boat-id="type"]').focus();await page.keyboard.press('Space');await settle();
   assert.deepEqual(await rows(),[]);assert.deepEqual(await chosenNames(),['Mercutio']);
   assert.equal(await page.locator('#boatSearchInput').evaluate(node=>node===document.activeElement),true,'Focus returns to the filter if its active row disappears');
@@ -115,7 +133,7 @@ async function check(readonly){
   assert.equal(await page.evaluate(()=>!hasRenderingFailure()),true);
   await page.screenshot({path:path.join(os.tmpdir(),`sr2026-boat-filter-${readonly?'public':'editor'}.png`)});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:'firefox',readonly,checks:'all boats with empty filter, funnel and heart icons, live favourites and metadata filters, global broken-heart clear, Enter and keyboard hearts, collapsed filter, camera/time, event autosave and rollback',errors}));
+  console.log(JSON.stringify({browser:'firefox',readonly,checks:'all boats with empty filter, funnel and heart icons, live favourites and metadata filters, global broken-heart clear, row clicks, Enter and keyboard hearts, collapsed filter, camera/time, event autosave and rollback',errors}));
  }finally{await browser.close();}
 }
 (async()=>{await check(false);await check(true);})().catch(error=>{console.error(error);process.exit(1);});

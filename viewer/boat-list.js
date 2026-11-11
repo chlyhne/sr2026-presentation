@@ -33,6 +33,11 @@ function createVisibleBoatRow(boat){
  const skipper=document.createElement('span');skipper.className='visible-boat-skipper';
  const type=document.createElement('span');type.className='visible-boat-type';
  heading.append(choice,heart,name,speed);node.append(heading,skipper,type);
+ node.onclick=event=>{
+  // The heading label already activates its checkbox, including keyboard clicks.
+  if(event.target.closest('label,input'))return;
+  choice.click();
+ };
  node.onpointerenter=()=>{hoveredVisibleBoatId=boat.id;refreshVisibleBoatHighlight();};
  node.onpointerleave=()=>{if(hoveredVisibleBoatId===boat.id)hoveredVisibleBoatId=null;refreshVisibleBoatHighlight();};
  node.addEventListener('focusin',refreshVisibleBoatHighlight);node.addEventListener('focusout',refreshVisibleBoatHighlight);

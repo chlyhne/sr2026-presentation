@@ -9,6 +9,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
+  assert.equal(await page.locator('#eventPanel').isVisible(),false,'Event panel starts collapsed');
+  await page.locator('#eventPanelToggle').click();
   await page.evaluate(()=>{
    $('wind').checked=$('rain').checked=false;
    notes=[{time:D.start+7200,text:'Paneltest',view:[230,250,620,760],settings:sceneSettings()},
@@ -158,8 +160,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await page.locator('aside').isVisible(),false);
   assert.equal(await page.locator('#endPresentation').isVisible(),false);
   assert.equal(await page.locator('#presentationFullscreen svg').count(),2);
-  await page.locator('#eventPanelToggle').click();await settle();
-  assert.equal(await page.locator('#eventPanel').isVisible(),false);
+  assert.equal(await page.locator('#eventPanel').isVisible(),false,'Public presentation also starts with the panel collapsed');
   await page.locator('#nextEvent').click();await settle();
   assert.equal(await page.locator('#eventPanel').isVisible(),true);
   await page.screenshot({path:'/tmp/sr2026-map-toolbar-public-firefox.png'});

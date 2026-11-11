@@ -43,14 +43,14 @@ function persistNotes(next){
 }
 function sceneSettings() {
  return {wind:$('wind').checked,windModel:$('windModel').value,windNumbers:$('windNumbers').checked,
-  rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,grid:$('grid').checked,traffic:$('traffic').checked,military:$('military').checked,annotationsVisible:$('annotationsVisible').checked,boats:[...chosen],boatNames:[...shownBoatNames],
+  rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,grid:$('grid').checked,traffic:$('traffic').checked,military:$('military').checked,annotationsVisible:$('annotationsVisible').checked,boats:[...chosen],boatNames:boats.map(boat=>boat.id),
   mapVersion:1,comparison:{...comparison},referenceBoatId,trackLengthSeconds,handicapTracksEnabled,boatSearchQuery,boatFavouritesOnly};
 }
 function eventSettings(settings={}){
  if(!settings||typeof settings!=='object'||Array.isArray(settings))throw Error('Eventets kortkonfiguration er ugyldig.');
  if(settings.mapVersion!==undefined&&settings.mapVersion!==1)throw Error('Eventets kortkonfiguration har en ukendt version.');
- const next=settings.mapVersion===1?settings:{wind:true,windModel:'dmi_harmonie_arome_europe',windNumbers:false,rain:true,rainOpacity:.75,
-  grid:true,traffic:true,military:true,annotationsVisible:true,boats:[...featured],boatNames:boats.map(boat=>boat.id),
+ const next=settings.mapVersion===1?settings:{wind:false,windModel:'dmi_harmonie_arome_europe',windNumbers:false,rain:false,rainOpacity:.75,
+  grid:true,traffic:true,military:true,annotationsVisible:true,boats:[],boatNames:boats.map(boat=>boat.id),
   comparison:{enabled:false,basis:'absolute',boatColour:false},referenceBoatId:boats.find(boat=>boat.name==='Mercutio').id,
   trackLengthSeconds:7200,handicapTracksEnabled:false,boatSearchQuery:'',boatFavouritesOnly:Array.isArray(settings.boats),...settings,mapVersion:1};
  if(!validComparison(next.comparison)||!TRACK_LENGTHS.has(next.trackLengthSeconds)||!boats.some(boat=>boat.id===next.referenceBoatId)
@@ -58,13 +58,13 @@ function eventSettings(settings={}){
   ||!['boats','boatNames'].every(key=>Array.isArray(next[key])&&next[key].every(value=>typeof value==='string'))
   ||!['wind','windNumbers','rain','grid','traffic','military','annotationsVisible'].every(key=>typeof next[key]==='boolean')
   ||!D.wind_models[next.windModel]||!Number.isFinite(next.rainOpacity)||next.rainOpacity<0||next.rainOpacity>1)throw Error('Eventets kortkonfiguration er ugyldig.');
- return next;
+ // Keep the legacy boatNames field in documents; names are always shown.
+ return {...next,boatNames:boats.map(boat=>boat.id)};
 }
 function applySceneSettings(settings){
  const next=eventSettings(settings);
  applyLayerSettings(next);
  chosen.clear();next.boats.forEach(name=>chosen.add(name));
- shownBoatNames.clear();next.boatNames.forEach(id=>shownBoatNames.add(id));
  boatSearchQuery=next.boatSearchQuery;boatFavouritesOnly=next.boatFavouritesOnly;
  $('boatSearchInput').value=boatSearchQuery;$('boatFavouritesOnly').setAttribute('aria-pressed',String(boatFavouritesOnly));
  comparison={...next.comparison};trackLengthSeconds=next.trackLengthSeconds;handicapTracksEnabled=next.handicapTracksEnabled;
@@ -128,12 +128,10 @@ for(const id of EVENT_LAYER_KEYS)$(id).onchange=changeEventLayers;
 function changeBoatSelection(change){
  if(!finishInlineTextEditing()){syncBoatChoices();return;}
  stopPlayback();
- const before=[...chosen],beforeNames=[...shownBoatNames],time=currentTime();
+ const before=[...chosen],time=currentTime();
  const target=editableSettingsEvent();
  change();
- for(const boat of boats)if(chosen.has(boat.name)&&!before.includes(boat.name))shownBoatNames.add(boat.id);
- if(!persistEventSettings(target,{boats:[...chosen],boatNames:[...shownBoatNames]})){
-  shownBoatNames.clear();beforeNames.forEach(id=>shownBoatNames.add(id));
+ if(!persistEventSettings(target,{boats:[...chosen]})){
   chosen.clear();before.forEach(name=>chosen.add(name));syncBoatChoices();
   $('eventBoatStatus').textContent='Bådvalget kunne ikke gemmes til eventet.';return;
  }

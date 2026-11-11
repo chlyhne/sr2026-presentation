@@ -96,7 +96,7 @@ function renderMapCredit(){
 }
 const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff84'};
 const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
-const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set(featured);
+const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set();
 const boats=D.boats.map(b=>({...b,...boatDetails[b.id],metadata:boatMetadata(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
 const REFERENCE_BOAT_KEY='sr2026-reference-boat';
 let referenceBoatId=boats.find(boat=>boat.name==='Mercutio').id,referencePreferenceError='';
@@ -125,7 +125,6 @@ $('referenceBoat').onchange=async()=>{
  try{if(!await saveReferenceBoat($('referenceBoat').value))syncReferenceBoatControls();}
  catch(error){comparisonMessage('Referencebåden kunne ikke ændres: '+error.message);syncReferenceBoatControls();}
 };
-const shownBoatNames=new Set(boats.map(b=>b.id));
 let boatSearchQuery='',boatFavouritesOnly=false;
 function isBoatSearchActive(){return boatSearchQuery.length>0;}
 function isBoatFilterActive(){return boatFavouritesOnly||isBoatSearchActive();}
@@ -153,18 +152,10 @@ function setAllBoatsSelected(selected){
  changeBoatSelection(()=>{for(const boat of boats){if(selected)chosen.add(boat.name);else chosen.delete(boat.name);}});
 }
 function activateBoatMarker(id,focus=false){
- if(!isBoatSearchActive()){toggleBoatName(id,focus);return;}
+ if(!isBoatFilterActive())return;
  const boat=boats.find(boat=>boat.id===id);if(!boat)return;
  setBoatSelected(boat,!chosen.has(boat.name));flushRender();
  if(focus)$('boatMarkers').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
-}
-function toggleBoatName(id,focus=false){
- return changeEventConfiguration(()=>{
-  flushRender();
-  shownBoatNames.has(id)?shownBoatNames.delete(id):shownBoatNames.add(id);
-  renderTracks();
-  if(focus)$('boatMarkers').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
- });
 }
 // Assign the complete field once, so toggling boats never changes their colours.
 for(const [i,name] of [...new Set(boats.map(b=>b.name))].sort().entries()){
@@ -322,7 +313,6 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
   if(!record){
    const wrapper=el('g',{class:'boat-markers'}),group=screenGroup(x,y,wrapper);
    group.setAttribute('class','boat-marker');group.dataset.boatMarker=b.id;
-   group.setAttribute('role','button');group.setAttribute('tabindex','0');
    const title=el('title',{},group);
    group.boatHitTarget=el('circle',{cx:0,cy:0,r:0,fill:'transparent','pointer-events':'all'},group);
    const symbols=screenGroup(0,0,group);
@@ -333,18 +323,19 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
   setAttr(group,'data-screen-x',x);setAttr(group,'data-screen-y',y);setAttr(group,'data-source-time',position.replayTime);
   if(handicapTracksEnabled)setAttr(group,'data-handicap-compensated','true');else group.removeAttribute('data-handicap-compensated');
   if(position.finished)setAttr(group,'data-handicap-finished','true');else group.removeAttribute('data-handicap-finished');
-  setAttr(group,'aria-label',`${isBoatSearchActive()?'Tilføj/fjern favorit':'Vis/skjul navn'}: ${b.name}`);
-  setAttr(group,'aria-pressed',String(isBoatSearchActive()?chosen.has(b.name):shownBoatNames.has(b.id)));
+  const selectable=isBoatFilterActive();
+  setAttr(group,'role',selectable?'button':'img');
+  setAttr(group,'aria-label',selectable?`Tilføj/fjern favorit: ${b.name}`:b.name);
+  if(selectable){setAttr(group,'tabindex','0');setAttr(group,'aria-pressed',String(chosen.has(b.name)));}
+  else{group.removeAttribute('tabindex');group.removeAttribute('aria-pressed');}
   const description=`${b.name} · ${handicapTracksEnabled?'handicapkompenseret position · oprindeligt spor ved '+fmt(position.replayTime):position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
   if(title.textContent!==description)title.textContent=description;
   setAttr(icon,'data-lat',position.point[1]);setAttr(icon,'data-course',boatCourse(b.points,position.replayTime));
-  if(shownBoatNames.has(b.id)){
-   if(!record.name){
-    record.name=el('text',{class:'boat-name','pointer-events':'none',x:7,y:({Mercutio:-12,Vera:15,My:-4,'THE HULK':27}[b.name]||3),fill:color,
-     'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},record.symbols);
-    record.name.textContent=b.name;
-   }
-  }else if(record.name){record.name.remove();record.name=null;}
+  if(!record.name){
+   record.name=el('text',{class:'boat-name','pointer-events':'none',x:7,y:({Mercutio:-12,Vera:15,My:-4,'THE HULK':27}[b.name]||3),fill:color,
+    'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},record.symbols);
+   record.name.textContent=b.name;
+  }
   const next=previous?previous.nextElementSibling:markerLayer.firstElementChild;
   if(next!==wrapper)markerLayer.insertBefore(wrapper,next);previous=wrapper;
  }
@@ -377,7 +368,7 @@ document.addEventListener('keydown',event=>{
 },true);
 for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
-let playbackTickTime=0,playbackRate=1,eventPlaybackTarget=null;
+let playbackTickTime=0,playbackRate=+$('playbackSpeed').value,eventPlaybackTarget=null;
 function syncPlaybackControls(){
  const playing=interval!==null,label=playing?'Pause':'Afspil',speed=$('playbackSpeed'),index=speed.selectedIndex;
  $('play').setAttribute('aria-label',label);$('play').title=label;
@@ -393,7 +384,7 @@ function updatePlaybackSpeed(){
 function changePlaybackSpeed(direction){
  const speed=$('playbackSpeed'),index=Math.max(0,Math.min(speed.options.length-1,speed.selectedIndex+direction));
  if(index===speed.selectedIndex)return;
- speed.selectedIndex=index;updatePlaybackSpeed();
+ speed.selectedIndex=index;updatePlaybackSpeed();startPlayback();
 }
 $('back').onclick=()=>changePlaybackSpeed(-1);$('next').onclick=()=>changePlaybackSpeed(1);
 syncPlaybackControls();

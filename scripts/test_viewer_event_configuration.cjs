@@ -29,17 +29,19 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    persistNotes(notes);showNotes();restoreNote(notes[0]);
    return JSON.parse(JSON.stringify(notes));
   });
+  const allNames=await page.evaluate(()=>boats.map(boat=>boat.id));
+  const withNames=settings=>({...settings,boatNames:allNames});
   const snapshot=()=>page.evaluate(()=>sceneSettings());
   const saved=()=>page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-notes')));
-  assert.deepEqual(await snapshot(),fixtures[0].settings);
+  assert.deepEqual(await snapshot(),withNames(fixtures[0].settings));
   const soft=await page.evaluate(()=>{const before=[...view];restoreNote(notes[1],{restoreView:false});return {before,after:[...view]};});
-  assert.deepEqual(soft.after,soft.before);assert.deepEqual(await snapshot(),fixtures[1].settings);
+  assert.deepEqual(soft.after,soft.before);assert.deepEqual(await snapshot(),withNames(fixtures[1].settings));
   await page.evaluate(()=>restoreNote(notes[1]));assert.deepEqual(await page.evaluate(()=>view),fixtures[1].view);
   await page.evaluate(()=>restoreNote(notes[2]));
   const legacy=await snapshot();assert.equal(legacy.mapVersion,1);assert.equal(legacy.trackLengthSeconds,7200);
   assert.equal(legacy.referenceBoatId,fixtures[1].settings.referenceBoatId);assert.equal(legacy.comparison.enabled,false);
   assert.equal(legacy.handicapTracksEnabled,false);assert.equal(legacy.boatFavouritesOnly,true);assert.equal(legacy.boatSearchQuery,'');
-  assert.deepEqual(legacy.boats,[]);assert.deepEqual(legacy.boatNames,[]);assert.equal(legacy.wind,false);assert.equal(legacy.annotationsVisible,false);
+  assert.deepEqual(legacy.boats,[]);assert.deepEqual(legacy.boatNames,allNames);assert.equal(legacy.wind,false);assert.equal(legacy.annotationsVisible,false);
   assert.deepEqual(await page.evaluate(()=>boats.filter(boatIsDisplayed).map(boat=>boat.id)),[]);
   assert.deepEqual(await saved(),fixtures);
   const rejected=await page.evaluate(()=>{
@@ -48,7 +50,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   });
   assert.deepEqual(rejected,[true,true,true]);
   await page.evaluate(()=>restoreNote(notes[3]));
-  assert.deepEqual((await snapshot()).boats,await page.evaluate(()=>[...featured]));
+  assert.deepEqual((await snapshot()).boats,[]);
+  assert.equal((await snapshot()).wind,false);assert.equal((await snapshot()).rain,false);
+  assert.equal((await snapshot()).boatFavouritesOnly,false);
   await page.evaluate(()=>restoreNote(notes[0]));
   await page.evaluate(()=>{
    saveReferenceBoat(boats.find(boat=>boat.name==='My').id);
@@ -56,7 +60,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    $('trackLength').value='3600';$('trackLength').dispatchEvent(new Event('change'));
    setBoatFavouritesOnly(false);setBoatSearch('vera');
    setBoatSelected(boats.find(boat=>boat.name==='Vera'),true);
-   toggleBoatName(boats.find(boat=>boat.name==='Vera').id);
   });
   assert.deepEqual((await saved())[0].settings,await snapshot());
   assert.deepEqual((await saved()).slice(1),fixtures.slice(1));
@@ -78,7 +81,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.evaluate(()=>saveReferenceBoat(boats.find(boat=>boat.id!==referenceBoatId).id));
   assert.deepEqual(await snapshot(),beforeFailure);
   assert.equal(await page.evaluate(()=>localStorage.getItem(REFERENCE_BOAT_KEY)),referenceBeforeFailure);
-  await page.evaluate(()=>{setBoatSearch('bad');setBoatFavouritesOnly(true);toggleBoatName(boats[0].id);});
+  await page.evaluate(()=>{setBoatSearch('bad');setBoatFavouritesOnly(true);});
   assert.deepEqual(await snapshot(),beforeFailure);
   await page.evaluate(()=>window.SRStorage=window.originalEventStorage);assert.deepEqual(await saved(),storedBeforeFailure);
   await page.evaluate(()=>{setCurrentTime(notes[0].time+100);setBoatSearch('free');setHandicapTracks(true);});

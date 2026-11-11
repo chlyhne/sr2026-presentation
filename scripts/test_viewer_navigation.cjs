@@ -64,7 +64,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     webglTracks.prepare(boat);
    }
    webglTracks.prepareComparison();
-   for(const boat of boats){colours[boat.name]=boat.id==='rival'?'#ff4dac':'#ffdc42';shownBoatNames.add(boat.id);}
+   for(const boat of boats){colours[boat.name]=boat.id==='rival'?'#ff4dac':'#ffdc42';}
    chosen.clear();chosen.add('Mercutio');chosen.add('Rival');chosen.add('Hurtig rating');
    selectedTime=time+1680;
    const [x,y]=xy([12.04,55.6]);view=[x-18,y-15,36,30];$('map').setAttribute('viewBox',view.join(' '));
