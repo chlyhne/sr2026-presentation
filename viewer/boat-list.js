@@ -104,16 +104,20 @@ function setVisibleBoatsExpanded(expanded){
  updateVisibleBoats();
 }
 function setBoatSearch(value){
- const query=value.trim().toLocaleLowerCase('da');
- if(query===boatSearchQuery)return;
- boatSearchQuery=query;
- $('visibleBoatsPanel').scrollTop=0;
- updateTimeline({preserveTime:true});requestRender();
+ return changeEventConfiguration(()=>{
+  const query=value.trim().toLocaleLowerCase('da');
+  if(query===boatSearchQuery)return;
+  boatSearchQuery=query;
+  $('visibleBoatsPanel').scrollTop=0;
+  updateTimeline({preserveTime:true});requestRender();
+ });
 }
 $('boatSearchInput').oninput=event=>setBoatSearch(event.target.value);
 function setBoatFavouritesOnly(enabled){
- boatFavouritesOnly=enabled;$('boatFavouritesOnly').setAttribute('aria-pressed',String(enabled));
- $('visibleBoatsPanel').scrollTop=0;updateTimeline({preserveTime:true});requestRender();
+ return changeEventConfiguration(()=>{
+  boatFavouritesOnly=enabled;$('boatFavouritesOnly').setAttribute('aria-pressed',String(enabled));
+  $('visibleBoatsPanel').scrollTop=0;updateTimeline({preserveTime:true});requestRender();
+ });
 }
 $('boatFavouritesOnly').onclick=()=>setBoatFavouritesOnly(!boatFavouritesOnly);
 $('boatClearFavourites').onclick=()=>setAllBoatsSelected(false);

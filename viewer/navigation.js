@@ -63,15 +63,17 @@ function trackGainSample(boat,time){
  return gain===null?null:{...sample,gain};
 }
 function saveReferenceBoat(id){
- if(!boats.some(boat=>boat.id===id)){comparisonMessage('Ugyldig referencebåd.');return false;}
- if(id===referenceBoatId)return true;
- try{localStorage.setItem(REFERENCE_BOAT_KEY,id);}
- catch{comparisonMessage('Referencebåden kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
- referenceBoatId=id;comparisonRevision++;
- clearTrackHover();
- try{webglTracks.prepareComparison();}
- catch(error){webglTracks.fail(error);comparisonMessage(error.message);return false;}
- comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
+ return changeEventConfiguration(()=>{
+  if(!boats.some(boat=>boat.id===id)){comparisonMessage('Ugyldig referencebåd.');return false;}
+  if(id===referenceBoatId)return true;
+  try{localStorage.setItem(REFERENCE_BOAT_KEY,id);}
+  catch{comparisonMessage('Referencebåden kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
+  referenceBoatId=id;comparisonRevision++;
+  clearTrackHover();
+  try{webglTracks.prepareComparison();}
+  catch(error){webglTracks.fail(error);comparisonMessage(error.message);return false;}
+  comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
+ });
 }
 function trackGainColour(value,limit=TRACK_GAIN_LIMIT){
  if(!Number.isFinite(value))return TRACK_SPEED_MISSING;
@@ -82,13 +84,15 @@ function trackGainColour(value,limit=TRACK_GAIN_LIMIT){
 }
 const TRACK_GAIN_COLOURS=Array.from({length:TRACK_SPEED_BINS},(_,i)=>trackGainColour(-TRACK_GAIN_LIMIT+2*TRACK_GAIN_LIMIT*i/(TRACK_SPEED_BINS-1)));
 function saveComparison(next){
- if(handicapTracksEnabled){comparisonMessage('Handicapkompenseret spor bruger bådfarver.');syncNavigationControls();return false;}
- if(!validComparison(next)){comparisonMessage('Ugyldigt sammenligningsvalg.');return false;}
- if(next.enabled&&!rhumbRoute.legs.length){comparisonMessage('Den permanente rhumbline er endnu ikke defineret.');return false;}
- try{localStorage.setItem(TRACK_COMPARISON_KEY,JSON.stringify(next));}
- catch{comparisonMessage('Sammenligningsvalget kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
- comparison=next;
- comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
+ return changeEventConfiguration(()=>{
+  if(handicapTracksEnabled){comparisonMessage('Handicapkompenseret spor bruger bådfarver.');syncNavigationControls();return false;}
+  if(!validComparison(next)){comparisonMessage('Ugyldigt sammenligningsvalg.');return false;}
+  if(next.enabled&&!rhumbRoute.legs.length){comparisonMessage('Den permanente rhumbline er endnu ikke defineret.');return false;}
+  try{localStorage.setItem(TRACK_COMPARISON_KEY,JSON.stringify(next));}
+  catch{comparisonMessage('Sammenligningsvalget kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
+  comparison=next;
+  comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
+ });
 }
 function syncNavigationControls(){
  syncReferenceBoatControls();
@@ -162,10 +166,12 @@ $('trackStyle').onchange=()=>{
  if(!saveComparison({enabled:!plain,basis:plain?comparison.basis:style,boatColour:style==='boat'}))syncNavigationControls();
 };
 $('trackLength').onchange=()=>{
- const length=+$('trackLength').value;
- try{if(!TRACK_LENGTHS.has(length))throw Error('Ugyldig sporlængde.');localStorage.setItem(TRACK_LENGTH_KEY,JSON.stringify(length));}
- catch{comparisonMessage('Sporlængden kunne ikke gemmes.');syncNavigationControls();return;}
- trackLengthSeconds=length;comparisonMessage('');syncNavigationControls();requestRender();
+ changeEventConfiguration(()=>{
+  const length=+$('trackLength').value;
+  try{if(!TRACK_LENGTHS.has(length))throw Error('Ugyldig sporlængde.');localStorage.setItem(TRACK_LENGTH_KEY,JSON.stringify(length));}
+  catch{comparisonMessage('Sporlængden kunne ikke gemmes.');syncNavigationControls();return;}
+  trackLengthSeconds=length;comparisonMessage('');syncNavigationControls();requestRender();
+ });
 };
 $('mapTracksToggle').addEventListener('click',()=>{if(!$('mapTracksPanel').hidden)setMapLayersExpanded(false);});
 document.addEventListener('keydown',event=>{

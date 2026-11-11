@@ -139,10 +139,12 @@ function activateBoatMarker(id,focus=false){
  if(focus)$('boatMarkers').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
 }
 function toggleBoatName(id,focus=false){
- flushRender();
- shownBoatNames.has(id)?shownBoatNames.delete(id):shownBoatNames.add(id);
- renderTracks();
- if(focus)$('boatMarkers').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
+ return changeEventConfiguration(()=>{
+  flushRender();
+  shownBoatNames.has(id)?shownBoatNames.delete(id):shownBoatNames.add(id);
+  renderTracks();
+  if(focus)$('boatMarkers').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
+ });
 }
 // Assign the complete field once, so toggling boats never changes their colours.
 for(const [i,name] of [...new Set(boats.map(b=>b.name))].sort().entries()){

@@ -14,6 +14,16 @@ test('route definitions do not belong to presentation documents',()=>{
  assert.equal(validateDocument(document),document);
  assert.throws(()=>validateDocument({...document,comparison:{route:[[12,55],[12.1,55]],enabled:true,basis:'absolute'}}),/præsentationsfelter/);
 });
+test('event map settings survive validation while legacy documents remain valid',()=>{
+ const doc=structuredClone(document);
+ Object.assign(doc.notes[0].settings,{mapVersion:1,grid:true,referenceBoatId:'reference',trackLengthSeconds:900,
+  handicapTracksEnabled:false,boatSearchQuery:'vera',boatFavouritesOnly:true,comparison:{enabled:true,basis:'time',boatColour:false}});
+ assert.equal(validateDocument(doc),doc);assert.equal(validateDocument(document),document);
+ for(const change of [{mapVersion:2},{grid:1},{referenceBoatId:7},{trackLengthSeconds:1},{handicapTracksEnabled:1},
+  {boatSearchQuery:[]},{boatFavouritesOnly:1},{comparison:{enabled:true,basis:'unknown'}},{comparison:{enabled:true,basis:'time',boatColour:true}}]){
+  const invalid=structuredClone(doc);Object.assign(invalid.notes[0].settings,change);assert.throws(()=>validateDocument(invalid));
+ }
+});
 async function request(path, options={}, session={id:7, token:'user-secret', exp:Math.floor(Date.now()/1000)+600}) {
  const headers = new Headers(options.headers);
  if(session) headers.set('Cookie', '__Host-sr-session='+await seal(session,env,'session'));

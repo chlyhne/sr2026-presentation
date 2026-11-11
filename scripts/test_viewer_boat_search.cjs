@@ -66,7 +66,9 @@ async function check(readonly){
   await search.fill('kÅrE');await settle();assert.deepEqual(await rows(),['kept'],'Danish skipper search works within favourites');
   await search.fill('x-99');await settle();assert.deepEqual(await rows(),[],'Unstarred boats never leak into a favourite-only text filter');
   await favourites.click();await settle();assert.deepEqual(await rows(),['future','name','outside']);
-  assert.deepEqual(await page.evaluate(()=>({time:currentTime(),view:[...view],notes:JSON.stringify(notes),stored:SRStorage.getItem('sr2026-notes')})),scene,'Filtering changes neither camera/time nor saved events');
+  assert.deepEqual(await page.evaluate(()=>({time:currentTime(),view:[...view]})),{time:scene.time,view:scene.view},'Filtering changes neither camera nor time');
+  if(readonly)assert.deepEqual(await page.evaluate(()=>({notes:JSON.stringify(notes),stored:SRStorage.getItem('sr2026-notes')})),{notes:scene.notes,stored:scene.stored});
+  else assert.deepEqual(await page.evaluate(()=>({query:notes[0].settings.boatSearchQuery,favourites:notes[0].settings.boatFavouritesOnly})),{query:'x-99',favourites:false},'Editor filters autosave to the current event');
   await search.fill('match');await settle();
   await heart('name').check();await settle();
   assert.deepEqual(await chosenNames(),['Borealis','MATCH Sejler','Mercutio']);
