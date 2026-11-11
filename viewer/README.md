@@ -818,8 +818,8 @@ Fire MSAA-samples og den eksisterende dobbelte renderopløsning bevares; først
 resolves til en enkelt-sample framebuffer ved samme koordinater, derefter kopieres
 farve og dybde til atlas. Ingen pixels læses tilbage til CPU'en.
 
-Ved næste frame tegnes de færdige blokke som instancerede teksturquads. Kun de
-ufuldstændige blokke ved sporets ender bruger den kubiske geometrishader igen.
+Ved næste frame tegnes de færdige blokke som instancerede teksturquads. Ved samme
+målestok bruger kun de ufuldstændige blokke ved sporets ender den kubiske geometrishader igen.
 Blokkens lokale tidsdybde omregnes til det aktuelle tidsvindue i kompositionen,
 så nyere passager stadig dækker ældre på tværs af både og blokke. Referencebåden
 komponeres først med egen farve og 18 % opacitet; derefter nulstilles dybden for
@@ -828,8 +828,16 @@ Sporenderne bruger fortsat de nøjagtigt klippede, bevægelige kapper.
 
 Cachen afhænger af målestok, sportype, farveskala og bådens farve, men ikke af
 kameraposition eller bådvalg. Panorering, referencefølgning, tilbagespoling og
-fravalg/tilvalg genbruger de eksisterende tiles; nye kortområder og målestokke
-bygges ved behov. Tidligere målestokke og farvevalg beholdes til genbrug.
+fravalg/tilvalg genbruger de eksisterende tiles. Ved skift af målestok bygges ingen
+nye tiles: manglende blokke tegnes med den samme kubiske geometrishader som
+sporenderne. Sammenhængende synlige intervaller pr. båd samles i samme draw-kald.
+Når målestokken har været uændret i mindst 150 ms, kan næste tegning bygge nye
+tiles til genbrug under afspilning. Afspilningsframes mellem wheel-hændelser
+udløser derfor heller ikke nye rasterfelter.
+Allerede cachede tiles kan bruges straks ved tilbagevenden til en tidligere målestok.
+Der startes ingen ekstra tegning for at fylde cachen efter zoom. Blokkenes
+projekterede grænser gemmes kun for den senest brugte målestok. Tidligere
+rasteriserede målestokke og farvevalg beholdes til genbrug.
 Referenceændring frigiver farveatlas, når de forberedte sammenligningsværdier
 opdateres; de faste kildeprofiler ændres ikke. Cachen har ingen automatisk
 eviction eller alternativ renderer. Nye atlas oprettes efter behov, og manglende
@@ -847,6 +855,12 @@ kurver og alle fem farvevalg hen over teksturernes rækkegrænser.
 `node scripts/test_viewer_track_cache.cjs` kontrollerer genbrug af rasterblokke,
 panorering, zoom, sporender, krydsninger, farvevalg og tidsdybde mod den samme
 kubiske rasteriseringsprimitive uden cache i testens oracle.
+`node scripts/test_viewer_zoom.cjs` kontrollerer den virkelige wheel-hændelse i
+Firefox med hele feltet: ingen tilebygning, atlasallokering eller genberegning af
+faste spordata under zoom, efterfulgt af cachegenbrug ved stabil målestok.
+`node scripts/profile_viewer_zoom.cjs` måler hændelsesarbejde, tegning og separat
+GPU-ventetid for 20 zoomtrin med 106 både og vejrlag slået fra. GPU-ventetiden
+bruger kun `gl.finish()` i profilværktøjet, aldrig i selve visningen.
 `node scripts/test_viewer_fleet_preparation.cjs` kontrollerer i lokal Firefox,
 at hele feltet er forberedt før betjening, og at bådvalg, grundlag og tidsskift
 ikke genberegner eller uploader faste spordata.

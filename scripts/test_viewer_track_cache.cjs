@@ -138,8 +138,14 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    test('pan inside retained world tiles',()=>{
     setView([570.5,430.5,100,100]);const frame=draw(2765);reuse(frame,'small pan');compare(frame,'small pan');setView();
    });
-   test('new zoom builds tiles and prior zoom reuses them',()=>{
-    setView([575,435,90,90]);const zoom=draw(2765);check(zoom.delta.builds>0,'New zoom reused wrong-resolution tiles');compare(zoom,'zoom');
+   test('new zoom draws geometry, stable scale builds tiles, prior zoom reuses them',()=>{
+    setView([575,435,90,90]);const zoom=draw(2765);
+    check(zoom.delta.builds===0&&zoom.delta.bytes===0,'New zoom built disposable raster tiles');
+    check(zoom.delta.compositeInstances===0&&zoom.dynamic>0,'New zoom must draw its geometry at the exact scale');compare(zoom,'cold zoom');
+    const moving=draw(2765.1);check(moving.delta.builds===0&&moving.delta.bytes===0,'Playback between zoom events built disposable tiles');
+    cache.buildAfter=0; // Advance the admission deadline without a wall-clock sleep in the pixel fixture.
+    const stable=draw(2765);check(stable.delta.builds>0,'Reused scale did not build raster tiles');compare(stable,'stable zoom');
+    reuse(draw(2765.25),'stable zoom playback');
     setView();const back=draw(2765);reuse(back,'return zoom');compare(back,'return zoom');
    });
    test('style variants and prepared boat-colour updates',()=>{

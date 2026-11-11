@@ -1,7 +1,9 @@
+const TRACK_CACHE_ZOOM_SETTLE_MS=150;
 class WebGLTrackCache {
  constructor(renderer,shader){
-  this.renderer=renderer;this.gl=renderer.gl;this.pages=[];this.entries=new Map();this.projections=new Map();
+  this.renderer=renderer;this.gl=renderer.gl;this.pages=[];this.entries=new Map();this.projections=new WeakMap();
   this.tileSize=512;this.gutter=2;this.pageSize=Math.min(2048,renderer.maxTextureSize);
+  this.camera=null;this.buildAfter=0;
   this.stats={builds:0,hits:0,geometryInstances:0,compositeInstances:0,frames:0,bytes:0};
   const gl=this.gl;
   const vertex=shader(gl.VERTEX_SHADER,`#version 300 es
@@ -92,7 +94,7 @@ void main(){
  reset(){
   const gl=this.gl;
   for(const page of this.pages){gl.deleteTexture(page.colour);gl.deleteTexture(page.depth);this.stats.bytes-=this.pageSize*this.pageSize*8;}
-  this.pages.length=0;this.entries.clear();
+  this.pages.length=0;this.entries.clear();this.camera=null;this.buildAfter=0;
  }
  allocate(width,height){
   const gl=this.gl;
@@ -116,22 +118,30 @@ void main(){
  }
  begin(viewport){
   const {matrix,topLeft}=viewport,ratio=2*(devicePixelRatio||1);
+  const key=[matrix.a,matrix.b,matrix.c,matrix.d,ratio].join(':');
+  // Admit new raster tiles only after zoom settles. Playback can draw another
+  // frame between wheel events; that does not make its scale worth caching.
+  // Existing tiles remain usable immediately. Cold zooms
+  // use the same geometry submission as uncached track boundaries, without
+  // allocating atlases or rasterizing thousands of throwaway tiles first.
+  const now=performance.now();
+  if(this.camera&&this.camera.key!==key)this.buildAfter=now+TRACK_CACHE_ZOOM_SETTLE_MS;
+  this.buildTiles=now>=this.buildAfter;
   this.camera={ratio,matrix,originX:(matrix.a*topLeft.x+matrix.c*topLeft.y)*ratio,
-   originY:(matrix.b*topLeft.x+matrix.d*topLeft.y)*ratio,width:viewport.pixelWidth,height:viewport.pixelHeight};
-  this.camera.key=[matrix.a,matrix.b,matrix.c,matrix.d,ratio].join(':');
+   originY:(matrix.b*topLeft.x+matrix.d*topLeft.y)*ratio,width:viewport.pixelWidth,height:viewport.pixelHeight,key};
   this.groups=[{cached:[],dynamic:[]},{cached:[],dynamic:[]}];
   this.stats.frames++;
  }
  bounds(chunk){
-  let projections=this.projections.get(chunk);if(!projections){projections=new Map();this.projections.set(chunk,projections);}
-  const cached=projections.get(this.camera.key);if(cached)return cached;
+  const cached=this.projections.get(chunk);if(cached?.key===this.camera.key)return cached.bounds;
   const {matrix,ratio}=this.camera;
   const corners=[[chunk.west,chunk.north],[chunk.east,chunk.north],[chunk.west,chunk.south],[chunk.east,chunk.south]];
   const horizontal=corners.map(([x,y])=>(matrix.a*x+matrix.c*y)*ratio),vertical=corners.map(([x,y])=>(matrix.b*x+matrix.d*y)*ratio);
   const margin=Math.ceil(TRACK_OUTLINE_WIDTH/2*ratio)+this.gutter+1;
   const bounds={left:Math.floor(Math.min(...horizontal))-margin,right:Math.ceil(Math.max(...horizontal))+margin,
    top:Math.floor(Math.min(...vertical))-margin,bottom:Math.ceil(Math.max(...vertical))+margin};
-  projections.set(this.camera.key,bounds);return bounds;
+  // Retain only the current projection, not every intermediate wheel scale.
+  this.projections.set(chunk,{key:this.camera.key,bounds});return bounds;
  }
  add(state){
   const {record,window,first,last,isReference,style}=state,group=this.groups[isReference?0:1],camera=this.camera;
@@ -139,14 +149,26 @@ void main(){
   for(let index=start;index<end;index++){
    const chunk=record.chunks[index],bounds=this.bounds(chunk);
    if(bounds.right<camera.originX||bounds.left>camera.originX+camera.width||bounds.bottom<camera.originY||bounds.top>camera.originY+camera.height)continue;
+   const geometry=()=>{
+    const from=Math.max(first,chunk.first),to=Math.min(last,chunk.last),previous=group.dynamic.at(-1);
+    // Adjacent visible chunks share uniforms and can be one geometry draw.
+    if(previous?.boat===state.boat&&previous.window===window&&previous.last===from)previous.last=to;
+    else group.dynamic.push({...state,first:from,last:to});
+   };
    if(chunk.rasterFrom<=window.from||chunk.rasterTo>=window.to||chunk.rasterTo<=chunk.rasterFrom){
-    group.dynamic.push({...state,first:Math.max(first,chunk.first),last:Math.min(last,chunk.last)});continue;
+    geometry();continue;
    }
    const key=camera.key+':'+style;
-   let variants=this.entries.get(chunk);if(!variants){variants=new Map();this.entries.set(chunk,variants);}
-   let tiles=variants.get(key);if(!tiles){tiles=new Map();variants.set(key,tiles);}
+   let variants=this.entries.get(chunk),tiles=variants?.get(key);
    const minX=Math.floor(Math.max(bounds.left,camera.originX)/this.tileSize),maxX=Math.floor(Math.min(bounds.right,camera.originX+camera.width)/this.tileSize);
    const minY=Math.floor(Math.max(bounds.top,camera.originY)/this.tileSize),maxY=Math.floor(Math.min(bounds.bottom,camera.originY+camera.height)/this.tileSize);
+   if(!this.buildTiles){
+    let complete=!!tiles;
+    for(let y=minY;complete&&y<=maxY;y++)for(let x=minX;x<=maxX;x++)if(!tiles.has(x+':'+y)){complete=false;break;}
+    if(!complete){geometry();continue;}
+   }
+   if(!variants){variants=new Map();this.entries.set(chunk,variants);}
+   if(!tiles){tiles=new Map();variants.set(key,tiles);}
    for(let tileY=minY;tileY<=maxY;tileY++)for(let tileX=minX;tileX<=maxX;tileX++){
     const tileKey=tileX+':'+tileY;
     let tile=tiles.get(tileKey);
