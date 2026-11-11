@@ -27,8 +27,13 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    const [x,y]=xy([12.04,55.604]);view=[x-14,y-13,28,26];selectedTime=time+300;setview();render();
    window.overflowUploads=webglTracks.uploads;window.overflowBuffers=[...webglTracks.buffers];
    // Overflow colours are prepared at startup; changing styles must not upload them again.
-   for(const name of ['createBuffer','bufferData','bufferSubData','texImage2D','texSubImage2D'])
+   for(const name of ['createBuffer','bufferData','bufferSubData','texImage2D'])
     webglTracks.gl[name]=()=>{throw Error('Style switch uploaded or rebuilt fixed data: '+name);};
+   const gl=webglTracks.gl,upload=gl.texSubImage2D;
+   gl.texSubImage2D=function(...args){
+    if(gl.getParameter(gl.TEXTURE_BINDING_2D)!==webglTracks.cache.descriptorTexture)throw Error('Style switch uploaded fixed track data');
+    return upload.apply(this,args);
+   };
    window.overflowSample=(id,fraction=.5)=>{
     const boat=boats.find(boat=>boat.id===id),time=boat.points[0][2]+fraction*240,sample=trackSpeedSample(boat,time);
     const point=new DOMPoint(...xy(sample.point)).matrixTransform($('map').getScreenCTM()),rect=$('map').getBoundingClientRect(),rgba=new Uint8Array(4),gl=webglTracks.gl;

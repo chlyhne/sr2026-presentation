@@ -803,16 +803,50 @@ af sporgeometri; bådvalg og grundlagsskift genbruger de eksisterende GPU-data.
 Afspilning ændrer tidsgrænser og de intervaller, der tegnes, uden at bygge SVG-strenge,
 slå referencepassager op pr. frame eller uploade nye spordata. Vertex-shaderen
 adresserer geometri og sammenligninger med `firstInstance + gl_InstanceID`.
-Den fælles mesh-VAO har faste attributbindinger. Når alle bådes 10-sekunders
-samplegrænser passeres samtidigt, ændres kun et indeks pr. båd; der genbindes
-ingen attributområder, og kun intervallerne i den valgte sporlængde tegnes.
+Den fælles mesh-VAO har faste attributbindinger. Rasteriserede spor genbruges af
+`track-cache.js`: hver båds kildeintervaller opdeles i faste blokke på 32.
+Hele blokke inde i tidsvinduet tegnes én gang til kortforankrede tiles på
+512 renderpixel med to pixels gutter. Hvert tile beskæres til blokkens
+forberedte koordinatgrænser inklusive stregbredde, så tomt kort ikke bruger
+en hel tekstur. Tiles pakkes i GPU-atlas med RGBA8-farve og DEPTH_COMPONENT32F-tid.
+Rasteriseringen medtager ét ekstra kildeinterval på hver side af blokken;
+kompositionen accepterer kun blokkens egen tidsdybde. Dermed kan multisample-
+dækning ikke give gennemsigtige samlinger, og overlap mellem cacheblokke kan
+ikke male med deres afskårne rasterender. Hele det udvidede rasterinterval
+skal ligge inde i det synlige tidsvindue, før blokken bruges fra cachen.
+Fire MSAA-samples og den eksisterende dobbelte renderopløsning bevares; først
+resolves til en enkelt-sample framebuffer ved samme koordinater, derefter kopieres
+farve og dybde til atlas. Ingen pixels læses tilbage til CPU'en.
+
+Ved næste frame tegnes de færdige blokke som instancerede teksturquads. Kun de
+ufuldstændige blokke ved sporets ender bruger den kubiske geometrishader igen.
+Blokkens lokale tidsdybde omregnes til det aktuelle tidsvindue i kompositionen,
+så nyere passager stadig dækker ældre på tværs af både og blokke. Referencebåden
+komponeres først med egen farve og 18 % opacitet; derefter nulstilles dybden for
+de øvrige både. De cached blokke får ikke kunstige endekapper ved blokgrænserne.
+Sporenderne bruger fortsat de nøjagtigt klippede, bevægelige kapper.
+
+Cachen afhænger af målestok, sportype, farveskala og bådens farve, men ikke af
+kameraposition eller bådvalg. Panorering, referencefølgning, tilbagespoling og
+fravalg/tilvalg genbruger de eksisterende tiles; nye kortområder og målestokke
+bygges ved behov. Tidligere målestokke og farvevalg beholdes til genbrug.
+Referenceændring frigiver farveatlas, når de forberedte sammenligningsværdier
+opdateres; de faste kildeprofiler ændres ikke. Cachen har ingen automatisk
+eviction eller alternativ renderer. Nye atlas oprettes efter behov, og manglende
+GPU-ressourcer vises som en renderingsfejl. `webglTracks.cache.stats` angiver
+cachebygninger, cachehits, geometri-/kompositionsinstanser og logisk GPU-lager.
+En lille transient RGBA32F-tekstur indeholder de synlige quads og deres
+tidsdybdeomregning; dette er kompositionsdata, ikke en ny upload af spor/profiler.
 Sammenligningsteksturerne kræver cirka 21 MiB ekstra GPU-lager inklusive
 rækkepadding, men ændrer hverken downloadformat eller CPU-profiler. De eksisterende
 sammenligningsbuffere bevares til opslag af værdier ved pins og hover.
 `node scripts/test_viewer_track_bindings.cjs` kontrollerer synkroniserede samplegrænser,
-frem-/tilbagespoling og handicapvisning uden attributændringer, allokeringer,
-uploads eller GPU-tilbagelæsning under afspilning. Pixeltests kontrollerer kubiske
+frem-/tilbagespoling og handicapvisning uden attributændringer, nye kildebuffere,
+uploads af faste spordata eller GPU-tilbagelæsning under afspilning. Pixeltests kontrollerer kubiske
 kurver og alle fem farvevalg hen over teksturernes rækkegrænser.
+`node scripts/test_viewer_track_cache.cjs` kontrollerer genbrug af rasterblokke,
+panorering, zoom, sporender, krydsninger, farvevalg og tidsdybde mod den samme
+kubiske rasteriseringsprimitive uden cache i testens oracle.
 `node scripts/test_viewer_fleet_preparation.cjs` kontrollerer i lokal Firefox,
 at hele feltet er forberedt før betjening, og at bådvalg, grundlag og tidsskift
 ikke genberegner eller uploader faste spordata.

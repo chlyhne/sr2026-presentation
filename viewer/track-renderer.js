@@ -35,6 +35,7 @@ uniform highp sampler2D trackData;
 uniform highp sampler2D comparisonData;
 uniform int firstInstance;
 uniform bool relativeMode;
+uniform bool boundaryCaps;
 uniform vec4 origin;
 uniform mat2 screen;
 uniform vec2 size;
@@ -59,8 +60,8 @@ void main(){
  bool visible=duration>0.0?age+duration>-tail&&age<0.0:timing.w>0.0&&age>=-tail&&age<=0.0;
  // Adjacent cubics share an edge, not overlapping round caps. A newer start
  // cap would otherwise paint its dark rim across the preceding coloured body.
- bool startCap=mod(timing.w,2.0)>0.5||age<=-tail;
- bool endCap=timing.w>=2.0||age+duration>=0.0;
+ bool startCap=mod(timing.w,2.0)>0.5||(boundaryCaps&&age<=-tail);
+ bool endCap=timing.w>=2.0||(boundaryCaps&&age+duration>=0.0);
  if((shape.w<0.0&&!startCap)||(shape.w>0.0&&!endCap))visible=false;
  if(!visible){gl_Position=vec4(2.0,2.0,2.0,1.0);return;}
  vec4 position=texelFetch(trackData,address,0);
@@ -123,7 +124,7 @@ void main(){
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
-   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','boatColourMode','boatColour','opacity','gainComponent','gainLimit','trackData','comparisonData','firstInstance'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
+   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','boatColourMode','boatColour','opacity','gainComponent','gainLimit','trackData','comparisonData','firstInstance','boundaryCaps'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
    this.maxTextureSize=gl.getParameter(gl.MAX_TEXTURE_SIZE);
    if(!window.SR_RHUMBLINE_SETUP&&rhumbRoute.legs.length){
     const evaluationVertex=shader(gl.VERTEX_SHADER,`#version 300 es
@@ -210,6 +211,7 @@ void main(){colour=vec4(0.0);}`);
      this.boatColours.set(colour,new Float32Array(rgb.map(channel=>channel/255)));
     }
    }finally{colourProbe.remove();}
+   this.cache=new WebGLTrackCache(this,shader);
    this.active=true;this.host.removeAttribute('display');this.lastKey=null;this.viewportKey=null;
    clearRenderingFailure('Spor');
   }catch(error){
@@ -249,7 +251,16 @@ void main(){colour=vec4(0.0);}`);
   gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA32F,width,height);
   gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,width,height,gl.RGBA,gl.FLOAT,data);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
-  const record={texture,bytes:data.byteLength};
+  const record={texture,bytes:data.byteLength,chunks:[]};
+  for(let first=0;first<points.length;first+=32){
+   const last=Math.min(points.length,first+32),rasterFirst=Math.max(0,first-1),rasterLast=Math.min(points.length,last+1);
+   const chunk={first,last,from:points[first][2],to:points[Math.min(last,points.length-1)][2],rasterFirst,rasterLast,
+    rasterFrom:points[rasterFirst][2],rasterTo:points[Math.min(rasterLast,points.length-1)][2],west:Infinity,east:-Infinity,north:Infinity,south:-Infinity};
+   for(let index=rasterFirst;index<=Math.min(rasterLast,points.length-1);index++){
+    const [x,y]=xy(points[index]);chunk.west=Math.min(chunk.west,x);chunk.east=Math.max(chunk.east,x);chunk.north=Math.min(chunk.north,y);chunk.south=Math.max(chunk.south,y);
+   }
+   record.chunks.push(chunk);
+  }
   if(this.comparisonProgram){
    const profile=trackProfileCache.get(points);if(!profile)throw Error('Bådens sporprofil er ikke forberedt: '+boat.name);
    record.projectedBuffer=gl.createBuffer();record.comparisonBuffer=gl.createBuffer();
@@ -311,6 +322,7 @@ void main(){colour=vec4(0.0);}`);
   }
   const error=gl.getError();if(error!==gl.NO_ERROR)throw Error('Referencebådens sporfarver kunne ikke klargøres i WebGL ('+error+').');
   this.comparisonReference=reference.points;
+  this.cache.reset();this.lastKey=null;
  }
  comparisonSample(boat,time){
   try{
@@ -339,6 +351,29 @@ void main(){colour=vec4(0.0);}`);
    this.fail(error);throw error;
   }
  }
+ drawRange(state,viewport,boundaryCaps,radiusScale=1){
+  const gl=this.gl,u=this.uniforms,{boat,record,window,first,last,isReference,relative,solidColour}=state;
+  const {matrix,topLeft:top,rect}=viewport,stamp=window.to-D.start,high=Math.fround(stamp);
+  gl.useProgram(this.program);gl.bindVertexArray(this.vao);
+  gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);
+  gl.uniform4f(u.origin,Math.fround(top.x),Math.fround(top.y),top.x-Math.fround(top.x),top.y-Math.fround(top.y));
+  gl.uniformMatrix2fv(u.screen,false,new Float32Array([matrix.a,matrix.b,matrix.c,matrix.d]));gl.uniform2f(u.size,rect.width,rect.height);
+  gl.uniform4f(u.windowTime,Math.max(1e-6,window.to-window.from),high,0,stamp-high);
+  gl.uniform1i(u.boundaryCaps,boundaryCaps?1:0);
+  gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2*radiusScale);gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
+  gl.uniform1i(u.gainComponent,comparison.basis==='time'?2:comparison.basis==='handicap'?1:0);gl.uniform1f(u.gainLimit,trackGainLimit());
+  gl.uniform1i(u.boatColourMode,solidColour?1:0);gl.uniform1f(u.opacity,isReference?0.18:1);
+  if(solidColour){
+   const colour=this.boatColours.get(colours[boat.name]);
+   if(!colour)throw Error('Bådens sporfarve er ikke forberedt: '+boat.name);
+   gl.uniform3fv(u.boatColour,colour);
+  }
+  if(relative&&!record.comparisonTexture)throw Error('Sammenligningsdata er ikke forberedt.');
+  gl.uniform1i(u.relativeMode,relative?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);gl.uniform1i(u.palette,0);
+  gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,record.texture);gl.uniform1i(u.trackData,2);
+  gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,relative?record.comparisonTexture:record.texture);gl.uniform1i(u.comparisonData,3);
+  gl.uniform1i(u.firstInstance,first);gl.drawArraysInstanced(gl.TRIANGLES,0,this.vertexCount,last-first);
+ }
  render(time,order,force=false){
   this.time=time;this.order=order;
   if(!this.active)return false;
@@ -346,65 +381,37 @@ void main(){colour=vec4(0.0);}`);
    if(this.gl.isContextLost())throw Error('WebGL-konteksten er mistet.');
    const baseViewport=mapViewport();if(!baseViewport)return true;
    const viewport={...baseViewport,pixelWidth:baseViewport.pixelWidth*2,pixelHeight:baseViewport.pixelHeight*2};
-   const {rect,matrix,topLeft:top,pixelWidth:width,pixelHeight:height}=viewport;
+   const {rect,matrix,pixelWidth:width,pixelHeight:height}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
    const key=[time,viewportKey,trackLengthSeconds,handicapTracksEnabled,comparison.enabled,comparison.basis,comparison.boatColour,comparisonRevision,...order.map(b=>b.id)].join(':');
    if(!force&&this.lastKey===key)return true;
    this.lastKey=key;
-   const gl=this.gl,u=this.uniforms;
-   gl.useProgram(this.program);
    if(this.viewportKey!==viewportKey){
     // Lay out the embedded HTML in screen pixels. A foreignObject positioned
     // at fractional map coordinates is rounded by the browser's canvas
     // compositor before SVG zoom, shifting the bitmap by many screen pixels.
     // Cancel the map transform here; the shader still uses the shared map camera.
     positionMapCanvas(this.host,this.canvas,viewport);
-    gl.uniform4f(u.origin,Math.fround(top.x),Math.fround(top.y),top.x-Math.fround(top.x),top.y-Math.fround(top.y));
-    gl.uniformMatrix2fv(u.screen,false,new Float32Array([matrix.a,matrix.b,matrix.c,matrix.d]));
-    gl.uniform2f(u.size,rect.width,rect.height);this.viewportKey=viewportKey;
+    this.viewportKey=viewportKey;
    }
-   gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);gl.clearColor(0,0,0,0);gl.clearDepth(1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.useProgram(this.program);
-   gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2);
-   gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
+   this.cache.begin(viewport);
    const boatColourMode=trackUsesBoatColour();
    const comparisonReference=trackUsesComparison()?referenceBoat():null;
    // The faint reference is a guide underneath the other boats' comparison tracks.
    const drawOrder=comparisonReference?[...order.filter(b=>b.id===comparisonReference.id),...order.filter(b=>b.id!==comparisonReference.id)]:order;
-   gl.uniform1i(u.gainComponent,comparison.basis==='time'?2:comparison.basis==='handicap'?1:0);
-   gl.uniform1f(u.gainLimit,trackGainLimit());
-   gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.palette);gl.uniform1i(u.palette,0);
-   gl.uniform1i(u.trackData,2);gl.uniform1i(u.comparisonData,3);
    for(const boat of drawOrder){
     const window=displayTrackWindow(boat,time);if(!window)continue;
     const points=boat.points,first=Math.max(0,timeBoundary(points,window.from)-1),last=timeBoundary(points,window.to,true);
     if(last<=first)continue;
-    const stamp=window.to-D.start,high=Math.fround(stamp);
-    gl.uniform4f(u.windowTime,Math.max(1e-6,window.to-window.from),high,0,stamp-high);
     this.prepare(boat);const record=this.buffers.get(points);
-    gl.bindVertexArray(this.vao);
     const isReference=boat.id===comparisonReference?.id,solidColour=boatColourMode||isReference;
-    gl.uniform1i(u.boatColourMode,solidColour?1:0);
-    gl.uniform1f(u.opacity,isReference?0.18:1);
-    if(solidColour){
-     const colour=this.boatColours.get(colours[boat.name]);
-     if(!colour)throw Error('Bådens sporfarve er ikke forberedt: '+boat.name);
-     gl.uniform3fv(u.boatColour,colour);
-    }
     const relative=!!comparisonReference&&!isReference;
-    if(relative&&!record.comparisonTexture)throw Error('Sammenligningsdata er ikke forberedt.');
-    gl.uniform1i(u.relativeMode,relative?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
-    gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,record.texture);
-    gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,relative?record.comparisonTexture:record.texture);
-    gl.uniform1i(u.firstInstance,first);
-    gl.drawArraysInstanced(gl.TRIANGLES,0,this.vertexCount,last-first);
-    // Preserve the reference's newest passage internally, then let every other
-    // boat cover it, including older passages. Pixels use premultiplied alpha.
-    if(isReference)gl.clear(gl.DEPTH_BUFFER_BIT);
+    const style=[solidColour?colours[boat.name]:relative?'comparison':'speed',relative?comparison.basis:'',relative?trackGainLimit():0,isReference].join(':');
+    this.cache.add({boat,record,window,first,last,isReference,solidColour,relative,style});
    }
-   gl.bindVertexArray(null);gl.activeTexture(gl.TEXTURE0);gl.flush();
+   this.cache.render(viewport);
    return true;
-  }catch(error){this.fail(error);return false;}
+  }catch(error){this.gl.bindFramebuffer(this.gl.FRAMEBUFFER,null);this.gl.disable(this.gl.SCISSOR_TEST);this.fail(error);return false;}
  }
  redraw(){if(this.order)this.render(this.time,this.order);}
 }
