@@ -788,18 +788,31 @@ seneste tilstand, prioritet, synkron tegning, ventende arbejde under en tegning 
 genbrug ved panorering.
 
 Sporlaget bruger WebGL 2 i `track-renderer.js`. Hvert kildeinterval gemmes én
-gang i en fast GPU-buffer med den oprindelige PCHIP-kurves koefficienter,
-tidsstempler og registrerede fartværdier. Bufferne forberedes for hele sejladsen
+gang som fire RGBA32F-texels med PCHIP-kurvens koefficienter,
+tidsstempler og registrerede fartværdier. Teksturerne forberedes for hele sejladsen
 og hele feltet, før kortets betjening åbnes, og beholdes ved fravalg og
 frem-/tilbagespoling. Alle bådes projicerede kildeprøver og passageprofiler
 bygges offline før opstart med den samme fælles nominelle matematik som visningen.
 Ved opstart og derefter én gang pr. referencevalg beregner GPU'ens transform feedback
 absolut- og handicapforskel samt tidsforskel pr. 100 meter i en genbrugt
-sammenligningsbuffer med tre floats pr. kildeprøve. Alle tre grundlag er dermed klar før betjening, også når sammenligningen
+sammenligningsbuffer med tre floats pr. kildeprøve. Resultatet kopieres direkte
+fra GPU-bufferen til en genbrugt RGB32F-tekstur via `PIXEL_UNPACK_BUFFER`, uden
+CPU-tilbagelæsning. Alle tre grundlag er dermed klar før betjening, også når sammenligningen
 er slået fra ved indlæsning. Referencevalg kræver ingen CPU-genberegning eller upload
-af sporgeometri; bådvalg og grundlagsskift genbruger de eksisterende buffere.
+af sporgeometri; bådvalg og grundlagsskift genbruger de eksisterende GPU-data.
 Afspilning ændrer tidsgrænser og de intervaller, der tegnes, uden at bygge SVG-strenge,
-slå referencepassager op pr. frame eller uploade nye sporbuffere.
+slå referencepassager op pr. frame eller uploade nye spordata. Vertex-shaderen
+adresserer geometri og sammenligninger med `firstInstance + gl_InstanceID`.
+Den fælles mesh-VAO har faste attributbindinger. Når alle bådes 10-sekunders
+samplegrænser passeres samtidigt, ændres kun et indeks pr. båd; der genbindes
+ingen attributområder, og kun intervallerne i den valgte sporlængde tegnes.
+Sammenligningsteksturerne kræver cirka 21 MiB ekstra GPU-lager inklusive
+rækkepadding, men ændrer hverken downloadformat eller CPU-profiler. De eksisterende
+sammenligningsbuffere bevares til opslag af værdier ved pins og hover.
+`node scripts/test_viewer_track_bindings.cjs` kontrollerer synkroniserede samplegrænser,
+frem-/tilbagespoling og handicapvisning uden attributændringer, allokeringer,
+uploads eller GPU-tilbagelæsning under afspilning. Pixeltests kontrollerer kubiske
+kurver og alle fem farvevalg hen over teksturernes rækkegrænser.
 `node scripts/test_viewer_fleet_preparation.cjs` kontrollerer i lokal Firefox,
 at hele feltet er forberedt før betjening, og at bådvalg, grundlag og tidsskift
 ikke genberegner eller uploader faste spordata.
@@ -1035,7 +1048,7 @@ Forskellene interpoleres langs sporet i den fælles WebGL 2-renderer.
 Et grundlagsskift ændrer kun shaderens valg af de allerede
 forberedte værdier. Referencevalg genberegner ingen CPU-profiler og uploader
 ingen sporgeometri; afspilning laver ingen referenceopslag pr. frame.
-Geometribufferne og sammenligningsbufferen bevares ved afspilning. CPU-data
+Geometriteksturerne, sammenligningsteksturerne og sammenligningsbufferne bevares ved afspilning. CPU-data
 bevares også ved tab af WebGL-konteksten, så GPU-ressourcer og sammenligningsværdier
 kan genskabes fra de forberedte data.
 Referencebådens spor bruger bådens egen farve med 18 % opacitet i sammenligningsvisningerne
