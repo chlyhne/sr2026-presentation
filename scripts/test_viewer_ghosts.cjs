@@ -10,7 +10,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const fixture=await page.evaluate(()=>{
-   stopPlayback();$('wind').checked=$('rain').checked=false;
+   stopPlayback();$('wind').checked=$('rain').checked=false;boatFavouritesOnly=true;
    const officialLengths={groensund:232,boegestroemmen:216};
    if(boats.some(boat=>boat.courseLengthNm!==officialLengths[boat.course]))throw Error('Official handicap distance must match each boat’s course');
    const starters=boats.filter(boat=>!ghostClocks.get(boat.id).error);

@@ -263,7 +263,7 @@ test('source station indices survive Float32 rounding at a nearest-node boundary
  assert.equal(progress[0],progress[1]);
 });
 
-test('generator VM exposes only the nominal profile API and strict bundled v6 format validation',()=>{
+test('generator VM exposes nominal resampling and strict bundled v7 format validation',()=>{
  const generator=require('./prepare_track_profiles.cjs');
  const math=generator.loadNominalMath();
  assert.ok(math.D&&Array.isArray(math.boats));
@@ -272,9 +272,9 @@ test('generator VM exposes only the nominal profile API and strict bundled v6 fo
  assert.equal(math.packReferenceStations,undefined);
  assert.equal(Object.prototype.toString.call(math.prepareReferenceProfile({points:[],speeds:[]})),'[object Uint16Array]');
  const state={sourceFingerprint:'test'},prefix='track-profiles/test/';
- const manifest={version:6,sourceFingerprint:'test',stationCount:22,stationSpacingMeters:10,profileEncoding:'uint10-packed',speedMaximum:25,speedCodes:1022,missingValue:1023,sampleMissingValue:-1e20,sampleWords:3,samplePositionBytes:8,speedBits:10,sampleEncoding:'uint10-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,timeEncoding:'uint10-block-scaled-seconds-per-meter',timeBits:10,timeBlockSize:256,timeCodes:1021,timeInfinity:1022,timeSampleWords:2,timeStationWords:1,byteOrder:'little-endian',bundleFile:prefix+'fleet.bin',bundleBytes:103,boats:[{id:'one',pointCount:2,stationCount:22,sampleOffset:0,timeSampleOffset:28,profileOffset:43,timeProfileOffset:71}]};
+ const manifest={version:7,sampleSeconds:10,replayOrigin:[9.5,57],replayEncoding:'float32-local-xy-speed',dataFile:prefix+'data.json',sourceFingerprint:'test',stationCount:22,stationSpacingMeters:10,profileEncoding:'uint10-packed',speedMaximum:25,speedCodes:1022,missingValue:1023,sampleMissingValue:-1e20,sampleWords:3,samplePositionBytes:8,speedBits:10,sampleEncoding:'uint10-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,timeEncoding:'uint10-block-scaled-seconds-per-meter',timeBits:10,timeBlockSize:256,timeCodes:1021,timeInfinity:1022,timeSampleWords:2,timeStationWords:1,byteOrder:'little-endian',bundleFile:prefix+'fleet.bin',bundleBytes:127,boats:[{id:'one',pointCount:2,stationCount:22,replayOffset:0,sampleOffset:24,timeSampleOffset:52,profileOffset:67,timeProfileOffset:95}]};
  const saved={existsSync:fs.existsSync,readFileSync:fs.readFileSync,statSync:fs.statSync};
- let current=manifest,bundleSize=103;
+ let current=manifest,bundleSize=127;
  try{
   fs.existsSync=()=>true;
   fs.readFileSync=()=>JSON.stringify(current);
@@ -289,15 +289,15 @@ test('generator VM exposes only the nominal profile API and strict bundled v6 fo
   for(const [key,value] of Object.entries({bundleFile:prefix+'../fleet.bin',bundleBytes:104})){
    current={...manifest,[key]:value};assert.equal(generator.currentManifest(state),null,key);
   }
-  current=manifest;bundleSize=102;
+  current=manifest;bundleSize=126;
   assert.equal(generator.currentManifest(state),null);
-  bundleSize=104;
+  bundleSize=128;
   assert.equal(generator.currentManifest(state),null);
  }finally{Object.assign(fs,saved);}
 });
 
 
-test('bundled loader fetches once, decodes unaligned ranges and rejects corrupt data atomically',async()=>{
+test('profile loader reuses the replay download, decodes unaligned ranges and rejects corrupt data atomically',async()=>{
  const crypto=require('node:crypto'),{packProjectedTrack}=require('./prepare_track_profiles.cjs');
  async function run(mutate=()=>{}){
   const {context,boat}=setup();
@@ -305,16 +305,19 @@ test('bundled loader fetches once, decodes unaligned ranges and rejects corrupt 
   const definition={version:1,points:context.routePoints},fingerprint='a'.repeat(64),chunks=[],entries=[];
   let offset=0;
   for(const source of fleet){
+   const replay=Buffer.alloc(source.points.length*12),replayOffset=offset;
+   offset+=replay.byteLength;
    const samples=packProjectedTrack(context.prepareProjectedTrack(source)),profile=context.prepareReferenceProfile(source);
    const {timeSamples,timeStations}=context.prepareTimeProfiles(source),packedTimes=context.packTimeSamples(timeSamples),packedTimeProfile=context.packTimeValues(timeStations);
    const timeSampleOffset=offset+samples.byteLength,profileOffset=timeSampleOffset+packedTimes.byteLength;
    const packedProfile=context.packSpeedCodes(profile);
-   entries.push({id:source.id,pointCount:source.points.length,stationCount:profile.length,sampleOffset:offset,timeSampleOffset,profileOffset,timeProfileOffset:profileOffset+packedProfile.byteLength});
-   chunks.push(Buffer.from(samples),Buffer.from(packedTimes),Buffer.from(packedProfile),Buffer.from(packedTimeProfile));offset=profileOffset+packedProfile.byteLength+packedTimeProfile.byteLength;
+   entries.push({id:source.id,pointCount:source.points.length,stationCount:profile.length,replayOffset,sampleOffset:offset,timeSampleOffset,profileOffset,timeProfileOffset:profileOffset+packedProfile.byteLength});
+   chunks.push(replay,Buffer.from(samples),Buffer.from(packedTimes),Buffer.from(packedProfile),Buffer.from(packedTimeProfile));offset=profileOffset+packedProfile.byteLength+packedTimeProfile.byteLength;
   }
-  const manifest={version:6,sourceFingerprint:fingerprint,dataDigest:'b'.repeat(64),rhumblineDigest:crypto.createHash('sha256').update(JSON.stringify(definition)).digest('hex'),start,byteOrder:'little-endian',stationCount:context.referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint10-packed',speedMaximum:25,speedCodes:1022,missingValue:1023,sampleMissingValue:-1e20,sampleWords:3,samplePositionBytes:8,speedBits:10,sampleEncoding:'uint10-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,timeEncoding:'uint10-block-scaled-seconds-per-meter',timeBits:10,timeBlockSize:256,timeCodes:1021,timeInfinity:1022,timeSampleWords:2,timeStationWords:1,bundleFile:`track-profiles/${fingerprint}/fleet.bin`,bundleBytes:offset,boats:entries};
+  const manifest={version:7,sampleSeconds:10,sourceFingerprint:fingerprint,dataDigest:'b'.repeat(64),rhumblineDigest:crypto.createHash('sha256').update(JSON.stringify(definition)).digest('hex'),start,byteOrder:'little-endian',stationCount:context.referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint10-packed',speedMaximum:25,speedCodes:1022,missingValue:1023,sampleMissingValue:-1e20,sampleWords:3,samplePositionBytes:8,speedBits:10,sampleEncoding:'uint10-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,timeEncoding:'uint10-block-scaled-seconds-per-meter',timeBits:10,timeBlockSize:256,timeCodes:1021,timeInfinity:1022,timeSampleWords:2,timeStationWords:1,bundleFile:`track-profiles/${fingerprint}/fleet.bin`,bundleBytes:offset,boats:entries};
   const state={manifest,body:Buffer.concat(chunks)},requests=[];
   mutate(state);
+  context.replayResources={manifest:state.manifest,bundle:Uint8Array.from(state.body).buffer};
   Object.assign(context,{boats:fleet,window:{SR_RHUMBLINE:definition},crypto:crypto.webcrypto,TextEncoder,fetch:async name=>{
    requests.push(name);
    return {ok:true,json:async()=>state.manifest,arrayBuffer:async()=>Uint8Array.from(state.body).buffer};
@@ -328,7 +331,7 @@ test('bundled loader fetches once, decodes unaligned ranges and rejects corrupt 
   return {context,fleet,profiles,requests,error};
  }
  const valid=await run();
- assert.equal(valid.error,undefined);assert.equal(valid.requests.length,2);
+ assert.equal(valid.error,undefined);assert.equal(valid.requests.length,0);
  for(const [index,source] of valid.fleet.entries()){
   const profile=valid.profiles[index];
   assert.deepEqual(Array.from(profile.samples),Array.from(valid.context.prepareProjectedTrack(source)));

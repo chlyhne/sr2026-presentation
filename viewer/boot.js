@@ -69,7 +69,7 @@ function validatePresentationDocument(document){
   window.SR_DRAFT_KEY=draftKey;
  }
  updateViewerLoading(5);
- const files=['data','boat-measurements','boat-details','boat-icons','weather','track-time','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','rhumbline-geometry','navigation-math','navigation','track-profiles','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
+ const files=['track-time','replay-data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','rhumbline-geometry','navigation-math','navigation','track-profiles','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
  const preparationWeight=60,totalSteps=files.length+preparationWeight;
  let completed=0;
  for(const file of files){
@@ -85,7 +85,9 @@ function validatePresentationDocument(document){
    script.onerror=()=>finish(Error('Filen '+file+'.js kunne ikke indlæses. Genindlæs for at prøve igen.'));
    document.body.append(script);
   });
-  if(file==='data'){
+  if(file==='replay-data'){
+   await loadReplayData();
+   if(routeSetup)replayResources=null;
    const data=window.DATA;
    if(!data||!Array.isArray(data.coast)||!data.coast_metadata?.attribution||data.coast_metadata.license!=='ODbL-1.0')throw Error('Kortdata mangler den detaljerede OSM-kystlinje.');
    for(const name of ['land','course_lines','route_t','traffic_separation','military_areas']){

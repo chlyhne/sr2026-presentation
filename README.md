@@ -39,8 +39,22 @@ Det indeholder formatversion, kildefingeraftryk, SHA-256 af `JSON.stringify(DATA
 Browseren validerer rhumblinens digest, bådenes ID og punktantal samt binærformatet.
 Det fulde datafingeraftryk beregnes kun offline; browseren serialiserer ikke DATA.
 Filnavnene indeholder kildefingeraftrykket og er relative til viewerens rod.
-Manifestversion 6 bruger et fælles gitter med 10 meters afstand langs rhumblinen.
-Alle både ligger i én `bundleFile`, hvor manifestets `sampleOffset` og
+Manifestversion 7 indeholder både replaydata på et fælles 10-sekunders gitter
+og sammenligningsprofiler på et fælles gitter med 10 meters afstand langs rhumblinen.
+Buildet resampler position og målt SOG med den nominelle kubiske PCHIP-interpolation.
+Præcise første/sidste tidspunkter og kanterne ved datahuller bevares som ekstra
+knuder; huller over fem minutter udfyldes ikke. Renderingen bruger fortsat kubisk
+interpolation mellem de nye knuder, også ved afspilning mellem hele sekunder.
+Browseren henter metadata fra manifestets `dataFile` og alle både i én `bundleFile`.
+Den oprindelige `data.js` bruges kun offline og publiceres ikke med Pages.
+Hver båds `replayOffset` peger på `pointCount` little-endian Float32-tripler
+`[longitude - replayOrigin[0], latitude - replayOrigin[1], measuredSog]`.
+NaN i SOG-feltet betyder manglende måling. Tidsstempler genskabes fra
+`sampleSeconds`, `start` og bådens `trackSegments`; de downloades ikke pr. punkt.
+Et fast 10-sekunders opslagsindeks forberedes for hver båd, så almindelige
+tidsopslag bruger direkte indeksering i stedet for binær søgning. Alle faste
+indeks, kubiske modeller og sammenligningsdata genbruges ved bådvalg og visningsskift.
+Manifestets `sampleOffset` og
 `timeSampleOffset`, `profileOffset` og `timeProfileOffset` angiver hvert dataområde,
 og `bundleBytes` angiver filstørrelsen.
 Kildeområdet indeholder `pointCount + 1` prøver: først alle little-endian
@@ -50,7 +64,7 @@ kun sidste bytes ubrugte høje bits nuludfyldes. Den sidste prøve gentager sids
 Indekset er forberedt før Float32-konvertering, så CPU og GPU vælger samme station.
 Negativ VMG gemmes med indeks `-stationIndex-2`; `-1` og fartkode 1023 betyder
 manglende kildeprøve. Browseren afkoder dette til Float32-tripler
-`[stationIndex, progressNm, vmg]` én gang før betjening. Tidsstempler ændres ikke.
+`[stationIndex, progressNm, vmg]` én gang før betjening.
 Profilområdet indeholder pakkede 10-bit-koder pr. station: koderne 0–1022 repræsenterer
 0–25 knob (`knob = kode * 25 / 1022`), og 1023 betyder manglende passage.
 Hastigheder klippes til intervallet før afrunding til nærmeste kode. Kildeprøvernes
@@ -71,7 +85,7 @@ tidsværdier klippes ikke til et fast interval og kan ikke blive uendelighedskod
 Tidskildeområdet har `pointCount` Float32-stationsindeks, derefter skalaer og
 pakkede tidsfarver. Tidsprofilområdet indeholder skalaer og pakkede værdier pr.
 station. Browseren afkoder begge til Float32 og genskaber sidste dublerede
-kildeprøve. Alle tidsindekserede beregninger bruger samme oprindelige tidsakse
+kildeprøve. Alle tidsindekserede beregninger bruger samme resamplede tidsakse
 fra bådens punkter; binærfilen indeholder ingen ekstra tidsstempler.
 Tidsprøverne bruger finite-difference-retning og målt SOG; tidsforbrug er positivt
 også ved baglæns sejlads. Stationsprofilen summerer alle frem- og tilbagepassager.
