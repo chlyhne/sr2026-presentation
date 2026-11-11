@@ -18,17 +18,12 @@ async function check(type){
   });
   const value=time=>new Date((time+7200)*1000).toISOString().slice(0,19).replace(/:00$/,'');
   const stored=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-notes')));
-  await page.locator('.note-edit').first().click();
-  assert.equal(await page.locator('#noteTimeField').isVisible(),true);
+  assert.equal(await page.locator('#noteTimeField').isVisible(),true,'Time is editable without Edit');
   assert.equal(await page.evaluate(()=>parseEventTimeInput($('noteTime').value)),fixture.notes[0].time);
-  await page.locator('#noteTime').fill(value(fixture.newTime));
-  assert.deepEqual(await stored(),fixture.notes,'Draft time must not change saved events');
-  await page.locator('#cancelEdit').click();assert.deepEqual(await stored(),fixture.notes);
-  assert.equal(await page.locator('#noteTimeField').isVisible(),false);
-  await page.locator('.note-edit').first().click();await page.locator('#noteTime').fill('');await page.locator('#save').click();
+  await page.locator('#noteTime').fill('');await page.locator('#noteTime').dispatchEvent('change');
   assert.deepEqual(await stored(),fixture.notes);assert.match(await page.locator('#annotationStatus').textContent(),/gyldigt tidspunkt/);
-  await page.locator('#noteTime').fill('2027-01-01T12:00');await page.locator('#save').click();assert.deepEqual(await stored(),fixture.notes);
-  await page.locator('#noteTime').fill(value(fixture.newTime));await page.locator('#save').click();
+  await page.locator('#noteTime').fill('2027-01-01T12:00');await page.locator('#noteTime').dispatchEvent('change');assert.deepEqual(await stored(),fixture.notes);
+  await page.locator('#noteTime').fill(value(fixture.newTime));await page.locator('#noteTime').dispatchEvent('change');
   const expected=[fixture.notes[1],{...fixture.notes[0],time:fixture.newTime,utc:new Date(fixture.newTime*1000).toISOString()}];
   assert.deepEqual(await stored(),expected,'Only timestamp/UTC changes; drawings, marker, settings and extra fields survive');
   assert.equal(await page.evaluate(()=>currentTime()),fixture.newTime);
@@ -37,13 +32,13 @@ async function check(type){
   await page.locator('#nextEvent').click();assert.equal(await page.locator('#eventText').textContent(),'Flytbart event');
   assert.deepEqual(await page.evaluate(()=>speedPins),fixture.pins,'Speed pins keep their source times');
   // Storage failure must retain the saved timestamp and keep the edit open.
-  await page.locator('.note-edit').nth(1).click();await page.locator('#noteTime').fill(value(fixture.notes[0].time));
   await page.evaluate(()=>{window.originalTimeStorage=Storage.prototype.setItem;Storage.prototype.setItem=function(key,v){if(key==='sr2026-notes')throw Error('quota');return originalTimeStorage.call(this,key,v);};});
-  await page.locator('#save').click();assert.deepEqual(await stored(),expected);assert.equal(await page.locator('#noteTimeField').isVisible(),true);
-  await page.evaluate(()=>Storage.prototype.setItem=originalTimeStorage);await page.locator('#cancelEdit').click();
+  await page.locator('#noteTime').fill(value(fixture.notes[0].time));
+  await page.locator('#noteTime').dispatchEvent('change');assert.deepEqual(await stored(),expected);assert.equal(await page.locator('#noteTimeField').isVisible(),true);
+  await page.evaluate(()=>Storage.prototype.setItem=originalTimeStorage);await page.locator('#noteTime').fill(value(fixture.newTime));await page.locator('#noteTime').dispatchEvent('change');
   await page.reload();await page.waitForFunction(()=>document.querySelectorAll('.note-edit').length===2);
   assert.deepEqual(await stored(),expected);
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),checks:'Danish wall time in foreign browser zone, draft/cancel, validation, next-day sorting/navigation, data and pins preserved, failed save, reload',errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),checks:'Danish wall time in foreign browser zone, immediate autosave, validation, next-day sorting/navigation, data and pins preserved, failed save, reload',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{for(const type of process.env.SR_FULL_TEST==='1'?[chromium,firefox]:[firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

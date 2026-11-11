@@ -345,7 +345,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  }
  resizeSymbols();if(includeSpeedPins)renderSpeedPins();updateVisibleBoats(t);
 }
-function step(n){syncTimelineViewport();if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
+function step(n){syncTimelineViewport();if(finishEventEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
 function setMapLayersExpanded(expanded){
  $('mapLayersPanel').hidden=!expanded;
  $('mapLayersToggle').setAttribute('aria-expanded',String(expanded));
@@ -413,7 +413,7 @@ function advancePlayback(now){
 }
 function startPlayback({target=null}={}){
  if(interval!==null||hasRenderingFailure())return;
- if((!target&&currentTime()>=viewerEndTime())||!finishInlineTextEditing())return;
+ if((!target&&currentTime()>=viewerEndTime())||!finishEventEditing())return;
  prepareSelectedTracks();
  eventPlaybackTarget=target;
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
@@ -431,9 +431,14 @@ function setview(){
  setAttr($('map'),'viewBox',view.join(' '));
  invalidateTimelineViewport();requestRender({viewportOnly:true});
 }
-$('reset').onclick=()=>{view=[230,250,620,760];setview()};
+function changeMapView(next){
+ const target=editableSettingsEvent();
+ if(target&&!persistEventChanges(target,{view:[...next]}))return false;
+ view=next;setview();return true;
+}
+$('reset').onclick=()=>changeMapView([230,250,620,760]);
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
-$('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture||(!e.deltaY&&!e.deltaX))return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*((e.deltaY||e.deltaX)>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);view=[anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f];setview()},{passive:false});
+$('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture||(!e.deltaY&&!e.deltaX))return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*((e.deltaY||e.deltaX)>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);changeMapView([anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f])},{passive:false});
 let drag=null;
 const map=$('map');
 // The map owns the gesture, including when it starts on SVG text or an image.
@@ -444,7 +449,7 @@ map.onpointerdown=e=>{
  clearTrackHover();
  if(beginDrawingGesture(e))return;
  e.preventDefault();
- drag={pointerId:e.pointerId,x:e.clientX,y:e.clientY,view:[...view],
+ drag={pointerId:e.pointerId,x:e.clientX,y:e.clientY,view:[...view],event:editableSettingsEvent(),
   boatId:e.target.closest('[data-boat-marker]')?.dataset.boatMarker,
   noteIndex:e.target.closest('[data-note-index]')?.dataset.noteIndex,
   trackBoatId:e.target.closest('[data-track-boat-id]')?.dataset.trackBoatId,
@@ -471,6 +476,9 @@ function endPan(e){
  if(endDrawingGesture(e))return;
  if(!drag||e.pointerId!==drag.pointerId)return;
  const click=e.type==='pointerup'&&!drag.moved,{boatId,noteIndex,trackBoatId,speedKey,speedAction}=drag;
+ if(drag.moved&&drag.event&&drag.event===editableSettingsEvent()&&!persistEventChanges(drag.event,{view:[...view]})){
+  view=drag.view;setview();
+ }
  drag=null;map.classList.remove('panning');
  if(map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);
  if(click){

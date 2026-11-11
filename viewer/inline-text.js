@@ -1,8 +1,8 @@
 let inlineTextSession=null;
 function beginInlineTextEditing(){
  if(inlineTextSession||document.body.classList.contains('presenting')||eventImageLoading)return;
- const note=notes.includes(activePresentationNote)?activePresentationNote:notes[0];
- const mode=editingNote?'draft':pendingEventImage||hasPendingEventVideo()?'new':'saved';
+ const note=editableSettingsEvent();
+ const mode=pendingEventImage||hasPendingEventVideo()?'new':'saved';
  if(mode==='saved'&&!note)return;
  const text=mode==='saved'?note.text:$('note').value;
  inlineTextSession={mode,note,originalText:text};stopPlayback();
@@ -23,26 +23,16 @@ function finishInlineTextEditing(cancel=false){
    $('inlineTextStatus').textContent='Skriv en tekst. Escape annullerer redigeringen.';return false;
   }
   if(trimmed!==session.note.text){
-   const updated={...session.note,text:trimmed};
-   if(!persistNotes(notes.map(n=>n===session.note?updated:n))){
+   if(!persistEventChanges(session.note,{text:trimmed})){
     $('inlineTextStatus').textContent='Teksten kunne ikke gemmes. Prøv igen, eller tryk Escape for at annullere.';return false;
    }
-   session.note.text=trimmed;
+   if(editingNote===session.note)$('note').value=trimmed;
   }
  }else if(session.mode!=='saved')$('note').value=cancel?session.originalText:text;
  inlineTextSession=null;$('eventTextEditor').hidden=true;$('eventText').hidden=false;
  $('inlineTextStatus').textContent='';
  // Keep existing navigation buttons in the DOM while a blur-triggering click completes.
- const index=notes.indexOf(session.note);
- if(index>=0){
-  const note=session.note,row=$('notes').children[index];
-  if(row){
-   row.querySelector('.note-jump').textContent=`${index+1}. ${fmt(note.time)} — ${eventNoteLabel(note)}`;
-   row.querySelector('.note-edit').setAttribute('aria-label',`Redigér note: ${note.text}`);
-   row.querySelector('.note-delete').setAttribute('aria-label',`Slet note: ${note.text}`);
-  }
-  if($('eventSelect').options[index])$('eventSelect').options[index].textContent=`${index+1} · ${fmt(note.time)} · ${eventNoteLabel(note).replace(/\s+/g,' ')}`;
- }
+ if(session.note)updateEventLabels(session.note);
  renderAnnotations();return true;
 }
 $('eventText').onclick=beginInlineTextEditing;

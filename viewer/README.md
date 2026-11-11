@@ -46,9 +46,13 @@ python3 scripts/serve_viewer.py
   bådfavoritter, søgefilter, favoritfilter og annotationer samt eventuelt billede.
   Det gemte kortudsnit bruges kun ved direkte hop; afspilning hen til eventet
   beholder det udsnit, der følger referencebåden.
-  I redigering gemmes ændringer af kortindstillinger automatisk til det valgte
-  event på dets præcise tidspunkt, men flytning og zoom ændrer ikke det gemte udsnit.
-  Under fuld redigering gemmes indstillingerne i kladden indtil **Gem ændringer**.
+  I redigering gemmes alle ændringer automatisk, når tiden står på et event:
+  tekst, tidspunkt, billeder, videoer, markør, tegninger, lag, både, filtre,
+  sporindstillinger og kortudsnit ved zoom eller afsluttet panorering.
+  Det kræver hverken **Redigér** eller **Gem ændringer**. Mellem events
+  ændres kun visningen og kladden til et nyt event; et nyt event skal stadig gemmes.
+  `node scripts/test_viewer_event_autosave.cjs` kontrollerer automatisk gemning,
+  eventisolation, nye kladder, gemmefejl og genindlæsning i lokal Firefox på PC.
   Gamle events og importerede historikker bevarer deres eksisterende indstillinger;
   manglende felter får faste standarder, ikke indstillinger fra det forrige event.
   Historiske bådvalg bliver favoritter med favoritfilteret slået til, så samme
@@ -79,9 +83,9 @@ python3 scripts/serve_viewer.py
   tidspunkt, kortudsnit, lag, markør, tegninger og billede bevares.
   Notelisten og eventlisten opdateres med den rettede tekst. Et billede uden
   tekst får et klikbart felt til at tilføje en billedtekst. Præsentationens tekst
-  er ikke redigerbar. Hvis du allerede redigerer hele noten, opdateres den
-  igangværende kladde, som gemmes med **Gem ændringer** eller kasseres med
-  **Annullér redigering**. Ved en gemmefejl bliver rettelsen stående i tekstfeltet.
+  er ikke redigerbar. Eventteksten kan kun ændres, når kortets tid står præcist
+  på eventet. Venstrepanelets tekstfelt gemmer løbende; rettelser i højrepanelet
+  gemmes ved klik udenfor. Ved en gemmefejl bliver rettelsen stående i tekstfeltet.
 - Tidsslider, **Afspil** og sekundknapper vises i både redigering og præsentation.
   Tidslinjen ligger under kortet, og eventnavigationen under højrepanelet,
   side om side på én række. På smalle skærme ligger de under hver deres visning.
@@ -246,8 +250,7 @@ python3 scripts/serve_viewer.py
   eventlisten eller klik på en note genskabes netop dette udvalg, også et tomt udvalg.
   Når du står ved et gemt events tidspunkt i redigering og ændrer bådvalget,
   gemmes valget automatisk til det event. De andre events ændres ikke.
-  Under fuld noteredigering følger bådvalget kladden og gemmes eller annulleres
-  sammen med resten. Et nyt event husker det udvalg, der er aktivt ved oprettelsen.
+  Et nyt event husker det udvalg, der er aktivt ved oprettelsen.
   Når du udforsker et andet tidspunkt eller er ved at oprette en ny note,
   ændrer bådvalget ikke det sidst valgte event.
   Gemte bådvalg bevares ved genindlæsning.
@@ -404,51 +407,47 @@ linjerne sammenlægges; der afrundes ikke.
   **Vis annotationer ved dette tidspunkt** kan skjule dem.
   **Slet** fjerner noten. Eksisterende noter fra den tidligere version bevares.
 - **Gem tidspunkt uden markør** opretter et bogmærke med tekst og kortindstillinger.
-- **Redigér** ved en note åbner dens tekst, markør og tegninger. Du kan også klikke
-  på notens markør på kortet. **Flyt / tilføj markør** ændrer placeringen.
-  **Gem ændringer** opdaterer den eksisterende note, inklusive det aktuelle
-  kortudsnit og lag. Feltet **Tidspunkt (dansk tid)** ændrer eventets dato og
-  klokkeslæt med sekunders præcision inden for sejladsens tidsrum. Når du gemmer,
-  sorteres eventet automatisk efter det nye tidspunkt; markør, tegninger og
-  vedhæftninger bevares. **Annullér redigering** kasserer også ændringer af tiden.
-  **Annullér redigering** kasserer ændringerne og genskaber den gemte note.
-  Tidsstyringen pauses under redigering. Gem eller annullér, før du skifter note
-  eller starter præsentationen.
+- Når tiden står på et event, viser venstrepanelet automatisk dets tekst,
+  vedhæftninger og tegneværktøjer. **Redigér** ved en note eller klik på dens
+  markør vælger blot eventet og sætter fokus i tekstfeltet.
+  **Flyt / tilføj markør** gemmer den nye placering straks. Feltet
+  **Tidspunkt (dansk tid)** flytter eventets tidspunkt og kortets tid sammen;
+  eventlisten sorteres automatisk. Tidslinje, afspilning og eventnavigation
+  kan bruges direkte uden et ekstra gemmetrin.
 - Under redigering kan du vælge **Frihånd**, **Pil**, **Linje** eller **Cirkel**,
   farve og stregbredde. Træk på kortet for at tegne. En cirkel trækkes fra centrum
   til kanten. **Flyt kortet** skifter tilbage til panorering; musehjulet kan stadig
   zoome. Escape stopper værktøjet og kasserer en igangværende streg.
   **Fortryd sidste streg** fjerner seneste tegning; **Ryd tegninger** tømmer notens
-  tegninger. Begge dele kan kasseres med **Annullér redigering**.
-  Tegningerne gemmes først med **Gem ændringer**, følger geografien ved zoom og
+  tegninger. En færdig streg, fortrydelse og rydning gemmes straks på eventet.
+  Tegningerne følger geografien ved zoom og
   panorering og har fast stregbredde på skærmen. De følger annotationernes
   synlighed og vises kun for det aktive event i præsentationen, også når flere
   events har samme tidspunkt. Noter uden markør kan også have tegninger.
   Synlige tegninger følger med i noteeksporten.
 - **Billede til event** vedhæfter et JPEG-, PNG-, WebP- eller GIF-billede til en
   ny eller eksisterende note. Tekst er valgfri, så et billede kan være et selvstændigt
-  event. Klik **Gem event** eller **Gem ændringer** for at gemme eventet.
-  **Fjern billede** fjerner vedhæftningen; ændringer i en eksisterende note kan
-  kasseres med **Annullér redigering**. Billedet vises i højrepanelet og følger
+  event. På et eksisterende event gemmes upload og **Fjern billede** automatisk.
+  Ved et nyt tidspunkt skal du klikke **Gem event**. Billedet vises i højrepanelet og følger
   det valgte event ved navigation.
 - **Beskær billede** åbner billedredigeringen for den vedhæftede fil. På et
-  eksisterende event skal du først vælge **Redigér** ved noten. Træk i rammens
+  eksisterende event er værktøjet tilgængeligt direkte. Træk i rammens
   hjørner for at ændre udsnittet, træk rammen for at flytte det, eller angiv
   venstre kant, top, bredde og højde i pixels. Træk uden for rammen for at vælge
   et nyt udsnit. **Hele billedet** nulstiller rammen, og **Annullér** eller Escape
   lukker uden ændringer. **Brug beskæring** uploader udsnittet som en ny WebP-fil
-  og bruger den i eventets kladde. Klik derefter **Gem event** eller
-  **Gem ændringer**, og online også **Udgiv**. En uploadfejl bevarer billedet og
-  udsnittet, så du kan prøve igen. **Annullér redigering** genskaber det gemte
-  billede. Andre events med samme originalbillede ændres ikke. Beskæringen følger
+  og gemmer den straks på det aktuelle event. Ved et nyt tidspunkt tilføjes den
+  til kladden, som gemmes med **Gem event**. Online kræves stadig **Udgiv**.
+  En uploadfejl bevarer billedet og udsnittet, så du kan prøve igen.
+  Andre events med samme originalbillede ændres ikke. Beskæringen følger
   med ved genindlæsning og i JSON-eksport/import; den oprindelige fil bevares på
   serveren ligesom ved udskiftning af en vedhæftning.
 - **YouTube-video til event** vedhæfter en video via et YouTube-link. Almindelige
   videolinks, `youtu.be`, Shorts, live-links og embed-links accepteres. Et link
   med starttid, fx `?t=1m30s`, starter videoen ved det valgte tidspunkt.
   Videoen kan være et selvstændigt event uden tekst og kan kombineres med et billede.
-  Klik **Gem event** eller **Gem ændringer**; **Fjern video** fjerner vedhæftningen,
-  og **Annullér redigering** genskaber det gemte link.
+  På et event gemmes et gyldigt link og **Fjern video** straks. Ved et nyt
+  tidspunkt skal du klikke **Gem event**.
   Højrepanelet viser et miniaturebillede med en afspilningsknap i begge tilstande.
   Et klik åbner afspilleren i fuld skærm og starter videoen. **Luk video** eller
   Escape lukker afspilleren og stopper lyden. Hvis præsentationen allerede er i
@@ -769,8 +768,7 @@ Navne har fortsat fast skriftstørrelse; farver, klik og præsentation bevares.
 Vind, vindtal, radar, TSS, skydeområde og synligheden af gemte noter tilhører
 hvert event, sammen med vindmodel og radarens gennemsigtighed. I redigering
 gemmes et ændret lag direkte til det valgte event, når tiden står præcist på
-eventets tidspunkt. Ved fuld noteredigering følger lagene kladden og gemmes
-eller annulleres med den. Ved andre tidspunkter ændres kun den aktuelle visning.
+eventets tidspunkt. Ved andre tidspunkter ændres kun den aktuelle visning.
 
 Forrige, Næste og direkte eventvalg genskaber de gemte lag. Snap på tidslinjen
 bevarer de aktuelle lag og skriver ikke til events. Onlineændringer ligger

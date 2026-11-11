@@ -66,7 +66,11 @@ async function uploadEventImageCanvas(canvas,name){
   const saved=await response.json();
   return {id:saved.id,url:saved.url,name,width:canvas.width,height:canvas.height,type:blob.type};
 }
-function currentAttachedImage(){return editingNote?noteDraft.image:pendingEventImage;}
+function setAttachedEventImage(image){
+ if(editingNote)return persistEventChanges(editingNote,{image});
+ pendingEventImage=image;return true;
+}
+function currentAttachedImage(){return editingNote?editingNote.image:pendingEventImage;}
 function updateImageEditor(){
  const image=currentAttachedImage();
  $('removeNoteImage').hidden=!image;
@@ -87,7 +91,7 @@ $('noteImage').onchange=async()=>{
  try{
   const image=await prepareEventImage(file);
   if(token!==imageUploadToken||target!==editingNote)return;
-  if(editingNote)noteDraft.image=image;else pendingEventImage=image;
+  if(!setAttachedEventImage(image))throw Error('Billedet kunne ikke gemmes til eventet.');
  }catch(error){
   if(token===imageUploadToken)$('annotationStatus').textContent=error.message||'Billedet kunne ikke gemmes.';
  }finally{
@@ -96,7 +100,7 @@ $('noteImage').onchange=async()=>{
 };
 $('removeNoteImage').onclick=()=>{
  imageUploadToken++;eventImageLoading=false;
- if(editingNote)noteDraft.image=null;else pendingEventImage=null;
+ if(!setAttachedEventImage(null))return;
  $('noteImage').value='';updateImageEditor();updatePresentationControls();
 };
 async function renderEventImage(image,note){
