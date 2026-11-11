@@ -35,17 +35,17 @@ function validatedEventVideo(video){
  return youtubeVideo(video.id,start);
 }
 function hasPendingEventVideo(){return !editingNote&&!!$('noteVideo').value.trim();}
-function currentAttachedVideo(){return editingNote?editingNote.video:pendingEventVideo;}
+function currentAttachedVideo(){return editingNote?eventDraft.video:pendingEventVideo;}
 function eventNoteLabel(note){return note.text||note.image?.name||(note.video?'YouTube-video':'Billede');}
 function setAttachedEventVideo(video){
- if(editingNote)return JSON.stringify(validatedEventVideo(editingNote.video))===JSON.stringify(video)||persistEventChanges(editingNote,{video});
+ if(editingNote)return JSON.stringify(validatedEventVideo(eventDraft.video))===JSON.stringify(video)||stageEventChanges(editingNote,{video});
  pendingEventVideo=video;return true;
 }
 function updateVideoEditor(){
  const input=$('noteVideo');let video=null,error='';
  try{video=parseYouTubeVideo(input.value);}catch(e){error=e.message;}
  input.setCustomValidity(error);input.setAttribute('aria-invalid',String(!!error));
- $('noteVideoStatus').textContent=error||(video?(editingNote?'Videoen gemmes automatisk.':'Video vedhæftet. Gem eventet for at beholde den.'):'');
+ $('noteVideoStatus').textContent=error||(video?(editingNote?'Videoen er i kladden. Tryk Gem ændringer.':'Video vedhæftet. Gem eventet for at beholde den.'):'');
  $('removeNoteVideo').hidden=!input.value;
  updateImageEditor();return {video,error};
 }

@@ -35,13 +35,13 @@
   <div class="button-row"><button id="reset">Vis Sjælland</button></div>
   <p class="help">Zoom med musehjulet, og træk kortet. Tidslinjen følger udsnittet og de valgte både. Både vises altid med navn. Klik i en bådrække for at skifte hjertet. Piletaster flytter tiden 1 sekund; hold Shift nede for 1 minut. Både med over 5 minutter gamle positioner skjules.</p>
   <div class="annotation-tools">
-    <p id="noteEditorTitle" class="help">Nyt event · på et event gemmes ændringer automatisk.</p>
+    <p id="noteEditorTitle" class="help">På et event: ret felterne, og tryk Gem ændringer.</p>
     <label id="noteTimeField" hidden>Tidspunkt (dansk tid)<input id="noteTime" type="datetime-local" step="1"></label>
     <label for="note">Hvad skete der her?</label>
     <textarea id="note" rows="3" maxlength="900" placeholder="Fx: Vi skifter til Code-0"></textarea>
     <label for="noteImage">Billede til event (valgfrit)</label>
     <input id="noteImage" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-    <p class="help">På et event gemmes billedet automatisk. Ved et nyt tidspunkt skal eventet gemmes. Tekst er valgfri.</p>
+    <p class="help">Vælg et billede, og tryk Gem ændringer på eventet. Tekst er valgfri.</p>
     <div class="button-row"><button id="cropNoteImage" type="button" hidden>Beskær billede</button><button id="removeNoteImage" hidden>Fjern billede</button></div>
     <p id="noteImageStatus" class="help" role="status"></p>
     <label for="noteVideo">YouTube-video til event (valgfri)</label>
@@ -64,7 +64,7 @@
       <p id="drawingCount" class="help" role="status"></p>
     </fieldset>
     <label><input id="annotationsVisible" type="checkbox" checked> Vis annotationer ved dette tidspunkt</label>
-    <div class="button-row"><button id="save">Gem tidspunkt uden markør</button><button id="export">Eksportér noter</button></div>
+    <div class="button-row"><button id="save">Gem tidspunkt uden markør</button><button id="cancelEdit" type="button" hidden>Annullér ændringer</button><button id="export">Eksportér noter</button></div>
     <div id="notes"></div>
   </div>
   <p class="help">DMI og ECMWF er arkiverede prognoser; ERA5 er en efterfølgende reanalyse. Modellerne kan afvige fra den lokale vind og bygepust.</p>

@@ -7,7 +7,7 @@ function chronologicalNotes(list){return [...list].sort((a,b)=>a.time-b.time);}
  if(notes.some((n,i)=>n!==saved[i]))SRStorage.setItem('sr2026-notes',JSON.stringify(notes));
 }
 let activePresentationNote=null,presentationOwnsFullscreen=false;
-let editingNote=null;
+let editingNote=null,eventDraft=null,eventEditorInitialFields=null;
 let placingNote=false;
 const annotationHelp='Skriv en tekst, og placér den på kortet. Noten husker tidspunkt, udsnit og valgte lag.';
 const eventDateFormatter=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Copenhagen',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
@@ -34,7 +34,7 @@ function stopPlayback() {
 function cancelPlacement() {
  placingNote=false;$('map').classList.remove('placing');$('cancelNote').hidden=true;
  $('placeNote').textContent=editingNote?'Flyt / tilføj markør':'Placér på kortet';
- $('annotationStatus').textContent=editingNote?'Ændringer til dette event gemmes automatisk.':annotationHelp;
+ $('annotationStatus').textContent=editingNote?'Tryk Gem ændringer for at gemme rettelser til dette event.':annotationHelp;
 }
 function persistNotes(next){
  if(window.SR_READONLY)return false;
@@ -74,24 +74,19 @@ function applySceneSettings(settings){
  clearTrackHover();syncBoatChoices();syncHandicapTracks();syncNavigationControls();renderTrackSpeedLegend();
  lastLayerSettings=layerSettings();
 }
-function updateEventLabels(note){
- const index=notes.indexOf(note),row=$('notes').children[index];
- if(row){
-  row.querySelector('.note-jump').textContent=`${index+1}. ${fmt(note.time)} — ${eventNoteLabel(note)}`;
-  row.querySelector('.note-edit').setAttribute('aria-label',`Redigér note: ${note.text}`);
-  row.querySelector('.note-delete').setAttribute('aria-label',`Slet note: ${note.text}`);
- }
- if($('eventSelect').options[index])$('eventSelect').options[index].textContent=`${index+1} · ${fmt(note.time)} · ${eventNoteLabel(note).replace(/\s+/g,' ')}`;
+function eventEditorFields(){return {text:$('note').value,time:$('noteTime').value,video:$('noteVideo').value};}
+function hasEventChanges(){
+ return !!editingNote&&(JSON.stringify(eventDraft)!==JSON.stringify(editingNote)||JSON.stringify(eventEditorFields())!==JSON.stringify(eventEditorInitialFields));
 }
-function persistEventChanges(target,changes){
+function stageEventChanges(target,changes){
  if(!target)return true;
- const updated={...target,...changes};
- if(!persistNotes(notes.map(note=>note===target?updated:note)))return false;
- Object.assign(target,updated);
- updateEventLabels(target);return true;
+ if(target!==editingNote)syncEventEditor();
+ if(target!==editingNote)return false;
+ eventDraft={...eventDraft,...changes};return true;
 }
-function persistEventSettings(target,changes){
- return !target||persistEventChanges(target,{settings:{...eventSettings(target.settings),...changes}});
+function stageEventSettings(target,changes){
+ if(target&&target!==editingNote)syncEventEditor();
+ return !target||stageEventChanges(target,{settings:{...eventSettings(eventDraft?.settings||target.settings),...changes}});
 }
 function changeEventConfiguration(change){
  const before=sceneSettings(),time=currentTime(),active=activePresentationNote,target=editableSettingsEvent();
@@ -101,7 +96,7 @@ function changeEventConfiguration(change){
  const result=change();
  const next=sceneSettings(),changes=Object.fromEntries(Object.keys(next).filter(key=>JSON.stringify(next[key])!==JSON.stringify(before[key])).map(key=>[key,next[key]]));
  if(!Object.keys(changes).length)return result;
- if(result===false||!persistEventSettings(target,changes)){
+ if(result===false||!stageEventSettings(target,changes)){
   applySceneSettings(before);
   keys.forEach((key,index)=>{if(preferences[index]===null)localStorage.removeItem(key);else localStorage.setItem(key,preferences[index]);});
   updateTimeline();selectedTime=time;$('time').value=offsetAtTime(time);activePresentationNote=active;
@@ -130,35 +125,36 @@ function editableSettingsEvent(){
 function syncEventEditor(){
  const target=editableSettingsEvent();
  if(target===editingNote){
-  if(target)$('noteEditorTitle').textContent=`Event ${notes.indexOf(target)+1} · ændringer gemmes automatisk`;
+  if(target)$('noteEditorTitle').textContent=`Event ${notes.indexOf(target)+1} · tryk Gem ændringer for at gemme`;
   return;
  }
  finishNoteEditing();
  if(!target)return;
- editingNote=target;activePresentationNote=target;
+ editingNote=target;eventDraft=JSON.parse(JSON.stringify(target));activePresentationNote=target;
  $('noteTimeField').hidden=false;$('noteTime').min=eventTimeInputValue(D.start);$('noteTime').max=eventTimeInputValue(VIEWER_DATA_END);$('noteTime').value=eventTimeInputValue(target.time);
  $('note').value=target.text;$('noteVideo').value=validatedEventVideo(target.video)?.url||'';
- $('drawingTools').hidden=false;$('save').hidden=true;
- $('noteEditorTitle').textContent=`Event ${notes.indexOf(target)+1} · ændringer gemmes automatisk`;
+ $('drawingTools').hidden=false;$('save').hidden=false;$('cancelEdit').hidden=false;
+ eventEditorInitialFields=eventEditorFields();
+ $('noteEditorTitle').textContent=`Event ${notes.indexOf(target)+1} · tryk Gem ændringer for at gemme`;
  updateVideoEditor();updateImageEditor();updateDrawingControls();cancelPlacement();
 }
-function saveEventText(){
+function stageEventText(){
  const target=editableSettingsEvent();if(!target||target!==editingNote)return true;
  const value=$('note').value;
- if(value===target.text)return true;
+ if(value===eventDraft.text)return true;
  const text=value.trim();
- if(text===target.text)return true;
- if(!text&&!target.image&&!validatedEventVideo(target.video)){
+ if(text===eventDraft.text)return true;
+ if(!text&&!eventDraft.image&&!validatedEventVideo(eventDraft.video)){
   $('annotationStatus').textContent='Skriv en tekst, eller tilføj et billede eller en video.';return false;
  }
- if(!persistEventChanges(target,{text}))return false;
- $('annotationStatus').textContent='Ændringen er gemt automatisk.';return true;
+ if(!stageEventChanges(target,{text}))return false;
+ $('annotationStatus').textContent='Ændringen er i kladden. Tryk Gem ændringer.';return true;
 }
 let lastLayerSettings=layerSettings();
 function changeEventLayers(event){
  const next=layerSettings(),key=event.currentTarget.id,changes={[key]:next[key]};
  if(!finishInlineTextEditing()){applyLayerSettings(lastLayerSettings);requestRender();return;}
- if(!persistEventSettings(editableSettingsEvent(),changes)){
+ if(!stageEventSettings(editableSettingsEvent(),changes)){
   applyLayerSettings(lastLayerSettings);requestRender();return;
  }
  lastLayerSettings=next;requestRender();
@@ -170,7 +166,7 @@ function changeBoatSelection(change){
  const before=[...chosen],time=currentTime();
  const target=editableSettingsEvent();
  change();
- if(!persistEventSettings(target,{boats:[...chosen]})){
+ if(!stageEventSettings(target,{boats:[...chosen]})){
   chosen.clear();before.forEach(name=>chosen.add(name));syncBoatChoices();
   $('eventBoatStatus').textContent='Bådvalget kunne ikke gemmes til eventet.';return;
  }
@@ -187,9 +183,18 @@ function saveAnnotation(point) {
  if(!text&&!currentAttachedImage()&&!currentAttachedVideo()){$('annotationStatus').textContent='Skriv en tekst, vælg et billede, eller indsæt et YouTube-link til eventet.';$('note').focus();return;}
  if(editingNote){
   if(point){
-   if(persistEventChanges(editingNote,{point,lon:9.5+point[0]*4.5/1000,lat:57-point[1]*3/1180})){cancelPlacement();renderAnnotations();}
-  }else if(saveEventText())renderAnnotations();
-  return;
+   if(stageEventChanges(editingNote,{point,lon:9.5+point[0]*4.5/1000,lat:57-point[1]*3/1180})){cancelPlacement();renderAnnotations();}
+   return;
+  }
+  const time=parseEventTimeInput($('noteTime').value);
+  if(!$('noteTime').validity.valid||time===null||time<D.start||time>VIEWER_DATA_END){$('annotationStatus').textContent='Vælg et gyldigt tidspunkt inden for sejladsens tidsrum.';return;}
+  const target=editingNote,updated={...eventDraft,text};
+  if(time!==Math.floor(target.time)){updated.time=time;updated.utc=new Date(time*1000).toISOString();}
+  if(!persistNotes(notes.map(note=>note===target?updated:note)))return;
+  Object.assign(target,updated);eventDraft=JSON.parse(JSON.stringify(target));
+  selectedTime=target.time;$('note').value=target.text;eventEditorInitialFields=eventEditorFields();
+  cancelDrawingGesture();showNotes();updateTimeline();render();
+  $('annotationStatus').textContent='Eventet er gemt.';return;
  }
  const time=currentTime();
  const note={time,utc:new Date(time*1000).toISOString(),text,view:[...view],settings:sceneSettings()};
@@ -215,9 +220,12 @@ function placeAnnotation(e) {
 $('save').onclick=()=>saveAnnotation();
 
 function finishEventEditing(){
- if(!finishInlineTextEditing()||!saveEventText())return false;
- if(editingNote&&eventImageLoading){$('annotationStatus').textContent='Vent, mens billedet gemmes.';return false;}
- return !editingNote||validateEventVideoInput();
+ if(!finishInlineTextEditing())return false;
+ if(editingNote&&(eventImageLoading||hasEventChanges())){
+  $('annotationStatus').textContent=eventImageLoading?'Vent, mens billedet klargøres.':'Tryk Gem ændringer eller Annullér ændringer, før du forlader eventet.';
+  return false;
+ }
+ return true;
 }
 function noteNavigationAllowed(){
  if(!finishEventEditing())return false;
@@ -231,14 +239,19 @@ function beginNoteEditing(n){
 }
 function finishNoteEditing(){
  imageUploadToken++;eventImageLoading=false;$('noteImage').value='';
- cancelDrawingGesture();setDrawingTool('pan');editingNote=null;
+ cancelDrawingGesture();setDrawingTool('pan');editingNote=null;eventDraft=null;eventEditorInitialFields=null;
  clearPendingEventVideo();
- $('note').value='';$('drawingTools').hidden=true;
+ $('note').value='';$('drawingTools').hidden=true;$('cancelEdit').hidden=true;
  $('noteTimeField').hidden=true;$('noteTime').value='';
  $('noteEditorTitle').textContent='Nyt event · vælg et tidspunkt, og gem eventet.';
  $('save').hidden=false;
  updateImageEditor();cancelPlacement();updateTimeline();
 }
+$('cancelEdit').onclick=()=>{
+ if(!editingNote)return;
+ finishInlineTextEditing(true);
+ const target=editingNote;finishNoteEditing();restoreNote(target);
+};
 function restoreNote(n,{showImage=false,restoreView=true}={}) {
  if(!finishInlineTextEditing())return;
  if(!noteNavigationAllowed())return;
@@ -288,7 +301,7 @@ function updatePresentationControls(){
  syncEventEditor();
  const index=Math.max(0,notes.indexOf(activePresentationNote)),note=notes[index];
  const pendingMedia=!!pendingEventImage||hasPendingEventVideo();
- const preview=editingNote?{...editingNote,text:$('note').value}:pendingMedia?{time:currentTime(),text:$('note').value,image:pendingEventImage,video:pendingEventVideo}:note;
+ const preview=editingNote?{...eventDraft,text:$('note').value}:pendingMedia?{time:currentTime(),text:$('note').value,image:pendingEventImage,video:pendingEventVideo}:note;
  const key=JSON.stringify([index,notes.length,preview?.time,preview?.text,preview?.image,preview?.video,!!editingNote,pendingMedia,eventImageLoading,document.body.classList.contains('presenting'),notes.indexOf(nextPresentationNote()),!!eventPlaybackTarget]);
  const source=editingNote||note;
  if(key===presentationControlsKey&&source===presentationControlsNote)return;
@@ -418,7 +431,7 @@ function renderAnnotations() {
  const scale=Math.hypot(matrix.a,matrix.b);
  for(const [i,saved] of notes.entries()) {
   if(!noteIsVisible(saved))continue;
-  const n=saved===editingNote?{...editingNote,text:$('note').value}:saved;
+  const n=saved===editingNote?{...eventDraft,text:$('note').value}:saved;
   if(n.time!==currentTime()||!Array.isArray(n.point)||!n.point.every(Number.isFinite))continue;
   const [x,y]=n.point;
   const group=screenGroup(x,y,$('annotations'));group.dataset.noteIndex=i;
@@ -435,16 +448,16 @@ function download(blob,filename) {
 $('export').onclick=exportEventNotes;
 
 $('note').addEventListener('input',()=>{
- if(editingNote){saveEventText();renderAnnotations();}
+ if(editingNote){stageEventText();renderAnnotations();}
  else if(pendingEventImage||hasPendingEventVideo())updatePresentationControls();
 });
 $('noteTime').onchange=()=>{
  const target=editableSettingsEvent();if(!target)return;
  const time=parseEventTimeInput($('noteTime').value);
  if(!$('noteTime').validity.valid||time===null||time<D.start||time>VIEWER_DATA_END){$('annotationStatus').textContent='Vælg et gyldigt tidspunkt inden for sejladsens tidsrum.';return;}
- if(time===Math.floor(target.time))return;
- if(!persistEventChanges(target,{time,utc:new Date(time*1000).toISOString()}))return;
- selectedTime=time;activePresentationNote=target;showNotes();updateTimeline();renderAnnotations();
+ const changes=time===Math.floor(target.time)?{time:target.time,utc:target.utc}:{time,utc:new Date(time*1000).toISOString()};
+ if(!stageEventChanges(target,changes))return;
+ renderAnnotations();
 };
 updateTimeline();showNotes();render();
 new ResizeObserver(resizeMapViewport).observe($('map'));

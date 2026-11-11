@@ -1,0 +1,103 @@
+const assert=require('node:assert/strict'),path=require('node:path');
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
+(async()=>{
+ const browser=await firefox.launch({headless:true});
+ try{
+  const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
+  const initial=await page.evaluate(()=>{
+   const settings={...sceneSettings(),wind:false,rain:false,boatFavouritesOnly:false,boats:[]};
+   notes=[{time:D.start+3600,text:'Event A',view:[230,250,620,760],settings,custom:{keep:true}},
+    {time:D.start+7200,text:'Event B',view:[230,250,620,760],settings},
+    {time:D.start+7200,text:'Samme tidspunkt',view:[230,250,620,760],settings}];
+   persistNotes(notes);showNotes();restoreNote(notes[0]);setEventPanelExpanded(true);
+   return JSON.parse(JSON.stringify(notes));
+  });
+  const stored=()=>page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-notes')));
+  const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const unchanged=async()=>{
+   assert.deepEqual(await stored(),initial,'Storage changes only with Save');
+   assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify(notes))),initial,'Saved events in memory are untouched too');
+  };
+  assert.equal(await page.locator('#save').isVisible(),true);
+  assert.equal(await page.locator('#save').textContent(),'Gem ændringer');
+  assert.equal(await page.locator('#drawingTools').isVisible(),true,'No Edit click is required');
+  await page.locator('#note').fill('Kladde i venstrepanelet');await unchanged();
+  await page.locator('#eventText').click();await page.locator('#eventTextEditor').fill('Tekst fra højrepanelet');
+  await page.locator('#eventTextEditor').press('Control+Enter');await unchanged();
+  assert.equal(await page.locator('#note').inputValue(),'Tekst fra højrepanelet');
+  await page.locator('#visibleBoatsToggle').click();await page.locator('#boatSearchInput').fill('Mercutio');await settle();
+  await page.locator('.visible-boat-skipper').click();await settle();await page.locator('#boatFavouritesOnly').click();await settle();
+  await page.locator('#mapLayersToggle').click();await page.locator('#grid').uncheck();await page.locator('#mapLayersToggle').click();
+  await page.locator('#mapTracksToggle').click();await page.locator('#trackLength').selectOption('900');await page.locator('#trackStyle').selectOption('boat');await page.locator('#mapTracksToggle').click();
+  await unchanged();
+  const map=await page.locator('#map').boundingBox(),x=map.x+map.width*.65,y=map.y+map.height*.5;
+  await page.mouse.move(x,y);await page.mouse.wheel(0,-100);await settle();
+  await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+50,y+25,{steps:4});await page.mouse.up();await settle();
+  async function stroke(tool){
+   await page.locator('#drawingTool').selectOption(tool);await page.mouse.move(x,y);await page.mouse.down();
+   await page.mouse.move(x+80,y+40,{steps:4});await page.mouse.up();
+  }
+  for(const tool of ['pen','arrow','line','circle'])await stroke(tool);
+  assert.deepEqual(await page.evaluate(()=>eventDraft.drawings.map(d=>d.tool)),['pen','arrow','line','circle']);
+  await page.locator('#undoDrawing').click();assert.equal(await page.evaluate(()=>eventDraft.drawings.length),3);
+  await page.locator('#clearDrawings').click();assert.deepEqual(await page.evaluate(()=>eventDraft.drawings),[]);
+  await stroke('arrow');await page.locator('#drawingTool').selectOption('pan');
+  await page.locator('#placeNote').click();await page.mouse.click(x,y);
+  await page.locator('#noteVideo').fill('https://youtu.be/dQw4w9WgXcQ?t=10');
+  const png=await page.evaluate(()=>{const canvas=document.createElement('canvas');canvas.width=40;canvas.height=20;canvas.getContext('2d').fillRect(0,0,40,20);return canvas.toDataURL('image/png').split(',')[1];});
+  const imageId='11111111-1111-4111-8111-111111111111';
+  await page.route('**/api/event-images',route=>route.fulfill({json:{id:imageId,url:'event-images/'+imageId+'.png'}}));
+  await page.route('**/event-images/'+imageId+'.png',route=>route.fulfill({contentType:'image/png',body:Buffer.from(png,'base64')}));
+  await page.locator('#noteImage').setInputFiles({name:'test.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')});
+  await page.waitForFunction(()=>!eventImageLoading&&eventDraft.image?.id);
+  await page.locator('#cropNoteImage').click();await page.waitForFunction(()=>imageCropState?.bitmap);
+  await page.locator('#imageCropWidth').fill('20');await page.locator('#imageCropWidth').dispatchEvent('change');
+  await page.locator('#applyImageCrop').click();await page.waitForFunction(()=>!$('imageCropDialog').open);
+  const newTime=await page.evaluate(()=>eventTimeInputValue(notes[0].time+5));
+  await page.locator('#noteTime').fill(newTime);await page.locator('#noteTime').dispatchEvent('change');
+  assert.equal(await page.evaluate(()=>currentTime()),initial[0].time,'Draft time does not move the event before Save');
+  await unchanged();
+  await page.locator('#nextEvent').click();assert.equal(await page.evaluate(()=>activePresentationNote===notes[0]),true);
+  assert.match(await page.locator('#annotationStatus').textContent(),/Gem ændringer.*Annullér/);
+  await page.evaluate(()=>seekTimeline(offsetAtTime(currentTime()+60),{snap:false}));
+  await page.locator('#play').click();assert.equal(await page.evaluate(()=>interval),null);await unchanged();
+  await page.locator('#save').click();
+  const saved=await stored(),event=saved[0];
+  assert.equal(event.text,'Tekst fra højrepanelet');assert.equal(event.time,initial[0].time+5);
+  assert.deepEqual(event.settings.boats,['Mercutio']);assert.equal(event.settings.boatFavouritesOnly,true);assert.equal(event.settings.boatSearchQuery,'mercutio');
+  assert.equal(event.settings.grid,false);assert.equal(event.settings.trackLengthSeconds,900);assert.equal(event.settings.comparison.boatColour,true);
+  assert.deepEqual(event.view,await page.evaluate(()=>[...view]));assert.notDeepEqual(event.view,initial[0].view);
+  assert.equal(event.drawings[0].tool,'arrow');assert.equal(event.point.length,2);assert.equal(event.video.start,10);assert.equal(event.image.width,20);
+  assert.deepEqual(event.custom,{keep:true});assert.deepEqual(saved.slice(1),initial.slice(1));
+  assert.equal(await page.evaluate(()=>hasEventChanges()),false);
+  await page.locator('#note').fill('Skal kasseres');await page.locator('#removeNoteImage').click();await page.locator('#removeNoteVideo').click();await page.locator('#clearDrawings').click();
+  await page.locator('#cancelEdit').click();assert.deepEqual(await stored(),saved);
+  assert.equal(await page.locator('#note').inputValue(),event.text);
+  assert.deepEqual(await page.evaluate(()=>eventDraft),event,'Cancel restores text, media, drawings, time and settings');
+  await page.locator('#note').fill('Bevar kladden ved gemmefejl');
+  await page.evaluate(()=>{window.saveStorage=window.SRStorage;window.SRStorage={getItem:key=>saveStorage.getItem(key),setItem(){throw Error('quota');}};});
+  await page.locator('#save').click();assert.deepEqual(await stored(),saved);assert.match(await page.locator('#annotationStatus').textContent(),/kan ikke gemme/);
+  assert.equal(await page.locator('#note').inputValue(),'Bevar kladden ved gemmefejl');
+  await page.evaluate(()=>window.SRStorage=window.saveStorage);await page.locator('#save').click();
+  assert.equal((await stored())[0].text,'Bevar kladden ved gemmefejl');
+  await page.evaluate(()=>{selectedTime=notes[0].time+120;render();});
+  const beforeAway=await stored();await page.locator('#note').fill('Nyt event');
+  await page.mouse.move(x,y);await page.mouse.wheel(0,100);await settle();assert.deepEqual(await stored(),beforeAway);
+  await page.locator('#save').click();assert.equal((await stored()).length,4,'Save away from an event creates a new event');
+  await page.evaluate(()=>restoreNote(notes.find(n=>n.text==='Samme tidspunkt')));
+  await page.locator('#note').fill('Kun det valgte samtidige event');await page.locator('#save').click();
+  assert.equal((await stored()).find(n=>n.text==='Event B').text,'Event B');
+  await page.locator('#note').fill('En ugemt kladde');const beforeReload=await stored();
+  await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});
+  assert.deepEqual(await stored(),beforeReload,'Reload keeps saved events and discards uncommitted changes');
+  await page.evaluate(()=>{restoreNote(notes[0]);setPresentationMode(true);hideMapEventImage();});
+  const beforePresentation=await stored();
+  await page.locator('#mapLayersToggle').click();await page.locator('#grid').check();await page.locator('#mapLayersToggle').click();
+  await page.mouse.move(x,y);await page.mouse.wheel(0,100);await settle();assert.deepEqual(await stored(),beforePresentation);
+  assert.deepEqual(errors,[]);
+  console.log('Firefox PC: event changes remain in a draft until Save, including text/inline text, hearts, filters, layers, tracks, zoom/pan, four drawing tools, marker, video, image/crop and time; Save, Cancel, failed Save/retry, navigation guards, new events, duplicate times, reload and presentation.');
+ }finally{await browser.close();}
+})().catch(error=>{console.error(error);process.exit(1);});
