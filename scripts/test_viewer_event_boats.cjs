@@ -45,7 +45,7 @@ async function check(type){
    return {boats:[...chosen],event:activePresentationNote.text,time:currentTime(),before,after:localStorage.getItem('sr2026-notes')};
   });
   assert.deepEqual(snapped.boats,['Mercutio',extra]);assert.equal(snapped.event,'Event B');assert.equal(snapped.time,fixtures[1].time);assert.equal(snapped.after,snapped.before);
-  await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),['Mercutio',extra],'Missing optional settings preserve the current boat selection');
+  await page.locator('#nextEvent').click();assert.deepEqual(await chosenNames(),await page.evaluate(()=>[...featured]),'Legacy events without settings use fixed defaults rather than the previous event');
   assert.deepEqual((await store())[2],fixtures[2],'Visiting an event without settings must not migrate it');
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),['My','Vera']);
   await page.locator('#previousEvent').click();assert.deepEqual(await chosenNames(),['Mercutio',extra]);

@@ -43,7 +43,61 @@ function persistNotes(next){
 }
 function sceneSettings() {
  return {wind:$('wind').checked,windModel:$('windModel').value,windNumbers:$('windNumbers').checked,
-  rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,grid:$('grid').checked,traffic:$('traffic').checked,military:$('military').checked,annotationsVisible:$('annotationsVisible').checked,boats:[...chosen],boatNames:[...shownBoatNames]};
+  rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,grid:$('grid').checked,traffic:$('traffic').checked,military:$('military').checked,annotationsVisible:$('annotationsVisible').checked,boats:[...chosen],boatNames:[...shownBoatNames],
+  mapVersion:1,comparison:{...comparison},referenceBoatId,trackLengthSeconds,handicapTracksEnabled,boatSearchQuery,boatFavouritesOnly};
+}
+function eventSettings(settings={}){
+ if(!settings||typeof settings!=='object'||Array.isArray(settings))throw Error('Eventets kortkonfiguration er ugyldig.');
+ if(settings.mapVersion!==undefined&&settings.mapVersion!==1)throw Error('Eventets kortkonfiguration har en ukendt version.');
+ const next=settings.mapVersion===1?settings:{wind:true,windModel:'dmi_harmonie_arome_europe',windNumbers:false,rain:true,rainOpacity:.75,
+  grid:true,traffic:true,military:true,annotationsVisible:true,boats:[...featured],boatNames:boats.map(boat=>boat.id),
+  comparison:{enabled:false,basis:'absolute',boatColour:false},referenceBoatId:boats.find(boat=>boat.name==='Mercutio').id,
+  trackLengthSeconds:7200,handicapTracksEnabled:false,boatSearchQuery:'',boatFavouritesOnly:Array.isArray(settings.boats),...settings,mapVersion:1};
+ if(!validComparison(next.comparison)||!TRACK_LENGTHS.has(next.trackLengthSeconds)||!boats.some(boat=>boat.id===next.referenceBoatId)
+  ||typeof next.handicapTracksEnabled!=='boolean'||typeof next.boatFavouritesOnly!=='boolean'||typeof next.boatSearchQuery!=='string'
+  ||!['boats','boatNames'].every(key=>Array.isArray(next[key])&&next[key].every(value=>typeof value==='string'))
+  ||!['wind','windNumbers','rain','grid','traffic','military','annotationsVisible'].every(key=>typeof next[key]==='boolean')
+  ||!D.wind_models[next.windModel]||!Number.isFinite(next.rainOpacity)||next.rainOpacity<0||next.rainOpacity>1)throw Error('Eventets kortkonfiguration er ugyldig.');
+ return next;
+}
+function applySceneSettings(settings){
+ const next=eventSettings(settings);
+ applyLayerSettings(next);
+ chosen.clear();next.boats.forEach(name=>chosen.add(name));
+ shownBoatNames.clear();next.boatNames.forEach(id=>shownBoatNames.add(id));
+ boatSearchQuery=next.boatSearchQuery;boatFavouritesOnly=next.boatFavouritesOnly;
+ $('boatSearchInput').value=boatSearchQuery;$('boatFavouritesOnly').setAttribute('aria-pressed',String(boatFavouritesOnly));
+ comparison={...next.comparison};trackLengthSeconds=next.trackLengthSeconds;handicapTracksEnabled=next.handicapTracksEnabled;
+ if(referenceBoatId!==next.referenceBoatId){
+  referenceBoatId=next.referenceBoatId;comparisonRevision++;webglTracks.prepareComparison();
+ }
+ clearTrackHover();syncBoatChoices();syncHandicapTracks();syncNavigationControls();renderTrackSpeedLegend();
+ lastLayerSettings=layerSettings();
+}
+function persistEventSettings(target,changes){
+ if(target){
+  const updated={...target,settings:{...eventSettings(target.settings),...changes}};
+  if(!persistNotes(notes.map(note=>note===target?updated:note)))return false;
+  target.settings=updated.settings;
+ }else if(editingNote)noteDraft.settings={...eventSettings(noteDraft.settings),...changes};
+ return true;
+}
+function changeEventConfiguration(change){
+ const before=sceneSettings(),time=currentTime(),active=activePresentationNote,target=editableSettingsEvent();
+ if(!finishInlineTextEditing()){applySceneSettings(before);requestRender();return false;}
+ const keys=[REFERENCE_BOAT_KEY,TRACK_COMPARISON_KEY,TRACK_LENGTH_KEY,HANDICAP_TRACKS_KEY];
+ const preferences=keys.map(key=>localStorage.getItem(key));
+ const result=change();
+ const next=sceneSettings(),changes=Object.fromEntries(Object.keys(next).filter(key=>JSON.stringify(next[key])!==JSON.stringify(before[key])).map(key=>[key,next[key]]));
+ if(!Object.keys(changes).length)return result;
+ if(result===false||!persistEventSettings(target,changes)){
+  applySceneSettings(before);
+  keys.forEach((key,index)=>{if(preferences[index]===null)localStorage.removeItem(key);else localStorage.setItem(key,preferences[index]);});
+  updateTimeline({preserveTime:true});selectedTime=time;$('time').value=offsetAtTime(time);activePresentationNote=active;
+  requestRender();return false;
+ }
+ if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
+ requestRender();return result;
 }
 const EVENT_LAYER_KEYS=['wind','windNumbers','rain','grid','traffic','military','annotationsVisible','windModel','rainOpacity'];
 function layerSettings(){
@@ -65,14 +119,9 @@ let lastLayerSettings=layerSettings();
 function changeEventLayers(event){
  const next=layerSettings(),key=event.currentTarget.id,changes={[key]:next[key]};
  if(!finishInlineTextEditing()){applyLayerSettings(lastLayerSettings);requestRender();return;}
- const target=editableSettingsEvent();
- if(target){
-  const updated={...target,settings:{...target.settings,...changes}};
-  if(!persistNotes(notes.map(n=>n===target?updated:n))){
-   applyLayerSettings(lastLayerSettings);requestRender();return;
-  }
-  target.settings=updated.settings;
- }else if(editingNote)noteDraft.settings={...noteDraft.settings,...changes};
+ if(!persistEventSettings(editableSettingsEvent(),changes)){
+  applyLayerSettings(lastLayerSettings);requestRender();return;
+ }
  lastLayerSettings=next;requestRender();
 }
 for(const id of EVENT_LAYER_KEYS)$(id).onchange=changeEventLayers;
@@ -83,15 +132,11 @@ function changeBoatSelection(change){
  const target=editableSettingsEvent();
  change();
  for(const boat of boats)if(chosen.has(boat.name)&&!before.includes(boat.name))shownBoatNames.add(boat.id);
- if(target){
-  const updated={...target,settings:{...target.settings,boats:[...chosen],boatNames:[...shownBoatNames]}};
-  if(!persistNotes(notes.map(n=>n===target?updated:n))){
-   shownBoatNames.clear();beforeNames.forEach(id=>shownBoatNames.add(id));
-   chosen.clear();before.forEach(name=>chosen.add(name));syncBoatChoices();
-   $('eventBoatStatus').textContent='Bådvalget kunne ikke gemmes til eventet.';return;
-  }
-  target.settings=updated.settings;
- }else if(editingNote)noteDraft.settings={...noteDraft.settings,boats:[...chosen],boatNames:[...shownBoatNames]};
+ if(!persistEventSettings(target,{boats:[...chosen],boatNames:[...shownBoatNames]})){
+  shownBoatNames.clear();beforeNames.forEach(id=>shownBoatNames.add(id));
+  chosen.clear();before.forEach(name=>chosen.add(name));syncBoatChoices();
+  $('eventBoatStatus').textContent='Bådvalget kunne ikke gemmes til eventet.';return;
+ }
  prepareSelectedTracks();
  $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline({preserveTime:true});
  if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
@@ -178,23 +223,12 @@ function restoreNote(n,{showImage=false,restoreView=true}={}) {
  hideMapEventImage();hideEventVideo();
  activePresentationNote=n;
  stopPlayback();cancelPlacement();selectedTime=n.time;
- if(n.settings) {
-  const s=n.settings;
-  applyLayerSettings(s);
-  if(Array.isArray(s.boats)) {
-   chosen.clear();s.boats.forEach(name=>chosen.add(name));
-   syncBoatChoices();
-  }
-  if(Array.isArray(s.boatNames)) {
-   shownBoatNames.clear();s.boatNames.forEach(id=>shownBoatNames.add(id));
-  }
- }
+ applySceneSettings(n.settings);
  prepareSelectedTracks();
  if(restoreView&&Array.isArray(n.view)&&n.view.length===4&&n.view.every(Number.isFinite)&&n.view[2]>0&&n.view[3]>0) {view=[...n.view];setview();}
  updateTimeline();selectedTime=n.time;$('time').value=offsetAtTime(n.time);
  $('time').setAttribute('aria-valuetext',fmt(n.time));
- $('annotationsVisible').checked=typeof n.settings?.annotationsVisible==='boolean'?n.settings.annotationsVisible:true;
- lastLayerSettings=layerSettings();render();updatePresentationControls();
+ render();updatePresentationControls();
  if(showImage&&n.image)showMapEventImage(n.image,n);
 }
 function showNotes() {

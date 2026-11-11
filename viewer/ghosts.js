@@ -29,11 +29,13 @@ function syncHandicapTracks(){
  $('ghostStatus').hidden=!message;
 }
 function setHandicapTracks(enabled){
- try{localStorage.setItem(HANDICAP_TRACKS_KEY,JSON.stringify(enabled));}
- catch{handicapPreferenceError='Handicapkompenseret spor kunne ikke gemmes.';syncHandicapTracks();return false;}
- handicapTracksEnabled=enabled;handicapPreferenceError='';syncHandicapTracks();
- clearTrackHover();comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();
- updateTimeline({preserveTime:true});requestRender();return true;
+ return changeEventConfiguration(()=>{
+  try{localStorage.setItem(HANDICAP_TRACKS_KEY,JSON.stringify(enabled));}
+  catch{handicapPreferenceError='Handicapkompenseret spor kunne ikke gemmes.';syncHandicapTracks();return false;}
+  handicapTracksEnabled=enabled;handicapPreferenceError='';syncHandicapTracks();
+  clearTrackHover();comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();
+  updateTimeline({preserveTime:true});requestRender();return true;
+ });
 }
 $('handicapCompensatedTracks').onchange=event=>setHandicapTracks(event.target.checked);
 function handicapBoatPosition(boat,time){

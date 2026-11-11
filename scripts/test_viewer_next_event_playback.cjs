@@ -21,9 +21,9 @@ async function check(type){
   await page.route('**/event-images/'+imageID+'.png',route=>route.fulfill({contentType:'image/png',body:photo}));
   const fixture=await page.evaluate(imageID=>{
    const time=D.start+3600;
-   const a={wind:false,windNumbers:false,rain:false,rainOpacity:.25,grid:true,traffic:false,military:false,
+   const a={...sceneSettings(),wind:false,windNumbers:false,rain:false,rainOpacity:.25,grid:true,traffic:false,military:false,
     annotationsVisible:true,windModel:'dmi_harmonie_arome_europe',boats:['Mercutio','Vera'],boatNames:[]};
-   const b={wind:true,windNumbers:true,rain:true,rainOpacity:.8,grid:true,traffic:true,military:true,
+   const b={...sceneSettings(),wind:true,windNumbers:true,rain:true,rainOpacity:.8,grid:true,traffic:true,military:true,
     annotationsVisible:false,windModel:'era5',boats:['My'],boatNames:[boats.find(boat=>boat.name==='My').id]};
    notes=[
     {time,text:'A',view:[230,250,620,760],settings:a},
@@ -130,7 +130,7 @@ async function check(type){
   await page.locator('#playbackSpeed').selectOption('10');await page.locator('#nextEvent').click();
   const referenceFollowingMatches=actual=>{
    assert.equal(actual.referenceId,alternate.id);assert.equal(actual.referenceSelected,false,'Reference remains unchecked');
-   assert.deepEqual(actual.settings,fixture.notes[0].settings);
+   assert.deepEqual(actual.settings,{...fixture.notes[0].settings,referenceBoatId:alternate.id});
    assert.deepEqual(actual.view.slice(2),fixture.notes[0].view.slice(2));
    assert.ok(Math.abs(actual.view[0]+actual.view[2]/2-actual.reference[0])<1e-6,'Selected reference is centered horizontally');
    assert.ok(Math.abs(actual.view[1]+actual.view[3]/2-actual.reference[1])<1e-6,'Selected reference is centered vertically');
@@ -141,11 +141,13 @@ async function check(type){
   assert.ok(Math.abs(s.time-fixture.time-2)<.001);referenceFollowingMatches(s);
   assert.notDeepEqual(s.view,referenceView,'Timed Next follows the moving selected reference');
   await page.locator('#nextEvent').click();s=await state();
-  assert.equal(s.playing,false);assert.equal(s.target,null);assert.equal(s.referenceId,alternate.id);sceneMatches(s,1);
+  assert.equal(s.playing,false);assert.equal(s.target,null);assert.equal(s.referenceId,fixture.notes[1].settings.referenceBoatId);sceneMatches(s,1);
   await page.locator('#eventSelect').selectOption('0');
+  await page.evaluate(id=>saveReferenceBoat(id),alternate.id);
   await page.locator('#play').click();await page.clock.runFor(200);s=await state();
   assert.equal(s.playing,true);assert.equal(s.target,null);assert.equal(s.referenceId,alternate.id);
-  assert.equal(s.referenceSelected,false);assert.ok(Math.abs(s.time-fixture.time-2)<.001);sceneMatches(s,0);
+  assert.equal(s.referenceSelected,false);assert.ok(Math.abs(s.time-fixture.time-2)<.001);
+  assert.deepEqual(s.settings,{...fixture.notes[0].settings,referenceBoatId:alternate.id});assert.deepEqual(s.view,fixture.notes[0].view);
   await page.locator('#play').click();
   assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify(notes))),fixture.notes,'Navigation never edits the published events');
   assert.equal(await page.evaluate(()=>window.SR_READONLY&&document.body.classList.contains('presenting')),true);

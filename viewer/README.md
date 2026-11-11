@@ -38,8 +38,20 @@ python3 scripts/serve_viewer.py
   **Forrige** og eventlisten hopper direkte. I præsentationsmode afspiller
   **Næste** frem til næste event med den valgte afspilningshastighed og stopper
   præcist ved eventets tidspunkt. Tryk **Næste** igen undervejs for at springe
-  direkte frem. Ved ankomst indlæses hele eventets gemte opsætning: kortudsnit,
-  lag, vindmodel, både, bådnavne, annotationer og eventuelt billede.
+  direkte frem. Ved ankomst indlæses eventets gemte kortindstillinger: lag,
+  vindmodel, sporlængde og sportype, referencebåd, handicapkompenserede spor,
+  bådfavoritter, navne, søgefilter, favoritfilter og annotationer samt eventuelt billede.
+  Det gemte kortudsnit bruges kun ved direkte hop; afspilning hen til eventet
+  beholder det udsnit, der følger referencebåden.
+  I redigering gemmes ændringer af kortindstillinger automatisk til det valgte
+  event på dets præcise tidspunkt, men flytning og zoom ændrer ikke det gemte udsnit.
+  Under fuld redigering gemmes indstillingerne i kladden indtil **Gem ændringer**.
+  Gamle events og importerede historikker bevarer deres eksisterende indstillinger;
+  manglende felter får faste standarder, ikke indstillinger fra det forrige event.
+  Historiske bådvalg bliver favoritter med favoritfilteret slået til, så samme
+  både fortsat vises; et gammelt tomt udvalg viser fortsat ingen både.
+  Historikken omskrives ikke ved åbning. Et ændret event får `settings.mapVersion: 1`;
+  dokumentformatet er fortsat version 1. Ukendte kortversioner afvises.
   Er almindelig **Afspil** allerede i gang mellem events, springer **Næste**
   direkte til det næste kommende event. Events med samme tidspunkt skifter
   direkte. I redigering hopper **Næste** fortsat direkte.

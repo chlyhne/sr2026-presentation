@@ -91,10 +91,20 @@ export function validateDocument(doc) {
     for (const k of ['lon', 'lat']) if (note[k] !== undefined && !Number.isFinite(note[k])) fail(400, 'Ugyldig koordinat.');
     if (note.settings !== undefined) {
       const s = note.settings; if (!object(s)) fail(400, 'Ugyldige indstillinger.');
-      for (const k of ['wind', 'windNumbers', 'rain', 'traffic', 'military', 'annotationsVisible']) if (s[k] !== undefined && typeof s[k] !== 'boolean') fail(400, 'Ugyldige indstillinger.');
+      for (const k of ['wind', 'windNumbers', 'rain', 'grid', 'traffic', 'military', 'annotationsVisible', 'handicapTracksEnabled', 'boatFavouritesOnly']) if (s[k] !== undefined && typeof s[k] !== 'boolean') fail(400, 'Ugyldige indstillinger.');
       for (const k of ['boats', 'boatNames']) if (s[k] !== undefined && (!Array.isArray(s[k]) || s[k].length > 2000 || !s[k].every(v => string(v, 200)))) fail(400, 'Ugyldigt bådvalg.');
       if (s.windModel !== undefined && !['dmi_harmonie_arome_europe', 'ecmwf_ifs', 'era5'].includes(s.windModel)) fail(400, 'Ugyldig vindmodel.');
       if (s.rainOpacity !== undefined && (!Number.isFinite(s.rainOpacity) || s.rainOpacity < 0 || s.rainOpacity > 1)) fail(400, 'Ugyldig gennemsigtighed.');
+      if (s.mapVersion !== undefined && s.mapVersion !== 1) fail(400, 'Ukendt kortkonfiguration.');
+      if (s.referenceBoatId !== undefined && !string(s.referenceBoatId, 200)) fail(400, 'Ugyldig referencebåd.');
+      if (s.boatSearchQuery !== undefined && !string(s.boatSearchQuery, 10000)) fail(400, 'Ugyldigt bådfilter.');
+      if (s.trackLengthSeconds !== undefined && ![0,900,1800,3600,7200,14400,28800].includes(s.trackLengthSeconds)) fail(400, 'Ugyldig sporlængde.');
+      if (s.comparison !== undefined) {
+        const c = s.comparison;
+        if (!object(c) || typeof c.enabled !== 'boolean' || !['absolute','handicap','time'].includes(c.basis)
+          || (c.boatColour !== undefined && typeof c.boatColour !== 'boolean') || (c.enabled && c.boatColour)
+          || Object.keys(c).some(k => !['enabled','basis','boatColour'].includes(k))) fail(400, 'Ugyldig sportype.');
+      }
     }
     if (note.drawings !== undefined && (!Array.isArray(note.drawings) || note.drawings.length > 1000 || !note.drawings.every(d => object(d) && ['pen', 'arrow', 'line', 'circle'].includes(d.tool) && /^#[a-f0-9]{6}$/i.test(d.colour) && Number.isFinite(d.width) && d.width >= 1 && d.width <= 12 && Array.isArray(d.points) && d.points.length >= 2 && d.points.length <= 50000 && d.points.every(p => vector(p, 2))))) fail(400, 'Ugyldig tegning.');
     if (note.image != null && (!object(note.image) || !string(note.image.id, 36) || !string(note.image.name, 500) || !string(note.image.url, 100) || !IMAGE.test(note.image.url?.replace(/^event-images\//, '')) || note.image.url !== `event-images/${note.image.url.split('/').at(-1)}` || !note.image.url.split('/').at(-1).startsWith(note.image.id + '.'))) fail(400, 'Ugyldigt billede.');

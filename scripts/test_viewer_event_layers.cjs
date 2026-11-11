@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),path=require('node:path');
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 (async()=>{
- const browser=await chromium.launch({headless:true});
+ const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
