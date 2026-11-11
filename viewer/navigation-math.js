@@ -45,6 +45,9 @@ function referenceStationIndex(progress){
  if(!Number.isFinite(progress)||progress<0||progress>rhumbRoute.total)return -1;
  return Math.floor(progress*(1852/REFERENCE_STATION_METERS)+0.5);
 }
+function connectedRouteSamples(left,right){
+ return left&&right&&(Math.abs(left.leg-right.leg)<=1||Math.abs(left.progress-right.progress)*1852<=REFERENCE_STATION_METERS);
+}
 function projectedTrackSample(boat,time,index=timeBoundary(boat.points,time,true)-1,evaluation=null){
  const points=boat.points;if(index<0)return null;
  const a=points[index],b=points[index+1],model=getTrackModel(points);
@@ -102,7 +105,7 @@ function prepareReferenceProfile(boat){
   passage=null;
  }
  function fill(a,b){
-  if(!a||!b||b.progress<=a.progress){finish();return;}
+  if(!connectedRouteSamples(a,b)||b.progress<=a.progress){finish();return;}
   if(passage&&(passage.b.time!==a.time||passage.b.progress!==a.progress))finish();
   if(!passage)passage={a,b};else passage.b=b;
   const first=Math.max(0,Math.ceil(a.progress/step)),end=Math.min(last,Math.floor(b.progress/step));
@@ -213,7 +216,7 @@ function prepareTimeProfiles(boat){
   pending=null;
  }
  function fill(left,right,leftTime,rightTime){
-  if(!left||!right){finish();direction=0;return;}
+  if(!connectedRouteSamples(left,right)){finish();direction=0;return;}
   const from=left.progress*1852,to=right.progress*1852,delta=to-from,sign=Math.sign(delta);
   if(!sign){
    add(referenceStationIndex(left.progress),(rightTime-leftTime)/REFERENCE_STATION_METERS);return;

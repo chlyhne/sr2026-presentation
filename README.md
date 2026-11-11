@@ -75,6 +75,8 @@ kildeprøve. Alle tidsindekserede beregninger bruger samme oprindelige tidsakse
 fra bådens punkter; binærfilen indeholder ingen ekstra tidsstempler.
 Tidsprøverne bruger finite-difference-retning og målt SOG; tidsforbrug er positivt
 også ved baglæns sejlads. Stationsprofilen summerer alle frem- og tilbagepassager.
+Spring mellem ikke-naboben på rhumblinen afbryder en passage, medmindre springet
+er højst én 10-meterstation. Nære start-/målben må ikke skabe en falsk helrutepassage.
 Der gennemsnittes efter dækket længde inden for hver passages 10-metercelle,
 ikke efter antal observationer. I de afkodede arrays markeres manglende tidsdata
 med `-1e20`, og præcis nul fremdrift med positiv uendelighed. Tidsdata bruger ikke fartkodernes

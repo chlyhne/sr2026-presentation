@@ -452,6 +452,30 @@ test('time profiles add every forward and reverse passage, without changing spee
  assert.ok(profile.timeStations[0]< -1e19);
 });
 
+test('projection jumps between nearby start and finish legs never fill the intervening route',()=>{
+ const {context}=setup(),latitude=55.6,longitude=meters=>12+meters/(radius*rad*Math.cos(latitude*rad));
+ const point=(east,north)=>[longitude(east),latitude+north/(radius*rad)];
+ context.loopPoints=[[0,0],[1000,0],[1000,1000],[0,1000],[0,20],[1000,20]].map(([east,north])=>point(east,north));
+ vm.runInContext('rhumbRoute=buildRhumbRoute(loopPoints);',context);
+ for(const coordinates of [[[100,8],[110,12]],[[110,12],[100,8]]]){
+  const source={points:coordinates.map(([east,north],index)=>[...point(east,north),start+index*60]),speeds:[4,4]};
+  const before=context.projectOnRhumbRoute(source.points[0]),after=context.projectOnRhumbRoute(source.points[1]);
+  assert.ok(Math.abs(before.leg-after.leg)>1);
+  assert.ok(Math.abs(before.progress-after.progress)*1852>3000);
+  const speed=context.prepareReferenceProfile(source),time=context.prepareTimeProfiles(source);
+  for(let index=20;index<390;index++){
+   assert.equal(speed[index],1023,`phantom speed passage at station ${index}`);
+   assert.ok(time.timeStations[index]<0,`phantom time passage at station ${index}`);
+  }
+  assert.ok(time.timeSamples[0]>=0&&time.timeSamples[2]>=0);
+  assert.ok(time.timeSamples[1]>0&&Number.isFinite(time.timeSamples[1]));
+ }
+ const source={points:[[...point(100,0),start],[...point(900,0),start+60]],speeds:[4,4]};
+ const speed=context.prepareReferenceProfile(source),time=context.prepareTimeProfiles(source);
+ assert.ok(speed[50]<1023);near(time.timeStations[50],3600/(1852*4),1e-6);
+ assert.equal(context.connectedRouteSamples({leg:0,progress:0},{leg:2,progress:5/1852}),true);
+});
+
 test('time projection uses measured SOG and finite difference direction, not positional speed',()=>{
  const {context,boat}=setup();
  const source=boat([20,180],[4,4],[0,1]),slowPositions=boat([20,180],[4,4],[0,300]);
