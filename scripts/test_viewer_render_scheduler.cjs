@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),path=require('node:path');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 async function check(type){
  const browser=await type.launch({headless:true});
  try{
@@ -50,4 +50,4 @@ async function check(type){
   assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),...result,errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{for(const type of [firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

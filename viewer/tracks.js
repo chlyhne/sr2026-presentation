@@ -33,15 +33,19 @@ async function prepareFleetTracks(onProgress=()=>{}){
  return true;
 }
 function trackSpeedLegendLayout(){
- const rect=$('map').getBoundingClientRect();
+ const rect=mapViewport().rect;
  return {left:12,top:50,width:Math.max(110,Math.min(230,rect.width-24)),height:trackUsesComparison()?77:63};
 }
+let trackLegendKey=null;
 function renderTrackSpeedLegend(){
- const layer=$('trackSpeedLegend');layer.replaceChildren();
- if(trackUsesBoatColour()){layer.removeAttribute('aria-label');return;}
- const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();if(!matrix)return;
+ const layer=$('trackSpeedLegend');
+ const map=$('map'),rect=mapViewport().rect,matrix=mapViewport()?.matrix;if(!matrix)return;
  const layout=trackSpeedLegendLayout(),{width}=layout;
  const point=new DOMPoint(rect.left+layout.left,rect.top+layout.top).matrixTransform(matrix.inverse());
+ const key=[width,trackUsesBoatColour(),trackUsesComparison(),comparison.basis,trackGainLimit(),referenceBoat()?.id,referenceBoat()?.name].join(':');
+ if(key===trackLegendKey){if(layer.firstElementChild)positionScreenGroup(layer.firstElementChild,point.x,point.y,1/Math.hypot(matrix.a,matrix.b));return;}
+ trackLegendKey=key;layer.replaceChildren();
+ if(trackUsesBoatColour()){layer.removeAttribute('aria-label');return;}
  const group=screenGroup(point.x,point.y,layer);
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
  el('rect',{width,height:layout.height,rx:5,fill:'#ffffff',opacity:.94},group);

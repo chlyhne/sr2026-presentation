@@ -12,19 +12,16 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    const check=(condition,message)=>{if(!condition)throw Error(message);};
    stopPlayback();$('wind').checked=$('rain').checked=false;
    const renderer=webglTracks,gl=renderer.gl,initial=[...renderer.buffers],uploads=renderer.uploads,originals=new Map();
-   let draws=0,geometryDraws=0,compositeDraws=0,offsets=0,descriptors=0;
+   let draws=0,geometryDraws=0,capDraws=0,offsets=0,capMode=0;
    for(const name of ['vertexAttribPointer','vertexAttribIPointer','vertexAttribDivisor','enableVertexAttribArray','createBuffer','bufferData','bufferSubData','texImage2D','getBufferSubData']){
     originals.set(name,gl[name]);gl[name]=()=>{throw Error('Playback changed fixed GPU data or bindings: '+name);};
    }
    originals.set('drawArraysInstanced',gl.drawArraysInstanced);
-   gl.drawArraysInstanced=(...args)=>{draws++;if(args[2]===renderer.vertexCount)geometryDraws++;else compositeDraws++;return originals.get('drawArraysInstanced').apply(gl,args);};
+   gl.drawArraysInstanced=(...args)=>{draws++;if(capMode===0)geometryDraws++;else capDraws++;return originals.get('drawArraysInstanced').apply(gl,args);};
    originals.set('texSubImage2D',gl.texSubImage2D);
-   gl.texSubImage2D=(...args)=>{
-    check(gl.getParameter(gl.TEXTURE_BINDING_2D)===renderer.cache.descriptorTexture,'Only transient composition descriptors may upload during playback');
-    descriptors++;return originals.get('texSubImage2D').apply(gl,args);
-   };
+   gl.texSubImage2D=()=>{throw Error('Playback uploaded GPU texture data');};
    originals.set('uniform1i',gl.uniform1i);
-   gl.uniform1i=(location,value)=>{if(location===renderer.uniforms.firstInstance)offsets++;return originals.get('uniform1i').call(gl,location,value);};
+   gl.uniform1i=(location,value)=>{if(location===renderer.uniforms.firstInstance)offsets++;if(location===renderer.uniforms.capMode)capMode=value;return originals.get('uniform1i').call(gl,location,value);};
    const modes=['speed','boat','absolute','handicap','time'],times=[43199.95,43200,43200.05,43209.95,43210,43210.05,43199.95];
    try{
     for(const mode of modes){
@@ -39,10 +36,10 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
      }
     }
    }finally{for(const [name,original] of originals)gl[name]=original;handicapTracksEnabled=false;trackLengthSeconds=7200;}
-   check(draws>1000&&geometryDraws===offsets&&compositeDraws>0&&descriptors>0,'Select geometry intervals and batch cached tiles without rebinding attributes');
+   check(draws>1000&&geometryDraws===offsets&&capDraws===geometryDraws,'Draw bodies and sparse caps without rebinding attributes');
    check(renderer.uploads===uploads&&initial.every(([points,record])=>renderer.buffers.get(points)===record),'Keep all GPU resources');
    check(gl.getError()===gl.NO_ERROR,'No WebGL errors at synchronized sample boundaries');
-   return {boats:boats.length,draws,geometryDraws,compositeDraws,offsets,descriptors,attributeChanges:0,fixedDataUploads:0};
+   return {boats:boats.length,draws,geometryDraws,capDraws,offsets,attributeChanges:0,fixedDataUploads:0};
   });
   const pixels=await page.evaluate(()=>{
    const check=(condition,message)=>{if(!condition)throw Error(message);};

@@ -1,11 +1,11 @@
 const assert=require('node:assert/strict'),path=require('node:path');
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 (async()=>{
- const browser=await chromium.launch({headless:true});
+ const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForFunction(()=>typeof stopPlayback==='function');
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('main:not([inert])',{timeout:120000});
   const result=await page.evaluate(()=>{
    const assert=(condition,message)=>{if(!condition)throw Error(message);};
    $('wind').checked=true;setCurrentTime(D.start+7200);render();
@@ -21,9 +21,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
    assert($('winds').firstChild!==hourArrows&&$('winds').querySelector('text'),'Wind numbers not refreshed');
    $('wind').checked=false;renderWindArrows();assert(!$('winds').children.length,'Wind did not hide');
    $('wind').checked=true;renderWindArrows();assert($('winds').children.length,'Wind did not return');
-   const beforeZoom=$('winds').firstChild;view=[view[0]+1,view[1]+1,view[2]*.8,view[3]*.8];setview();flushRender();
+   const legendTransform=legend.getAttribute('transform'),beforeZoom=$('winds').firstChild;view=[view[0]+1,view[1]+1,view[2]*.8,view[3]*.8];setview();flushRender();
    assert($('winds').firstChild!==beforeZoom,'Pan/zoom did not rebuild wind');
-   assert($('trackSpeedLegend').firstChild!==legend,'Pan/zoom did not reposition legend');
+   assert($('trackSpeedLegend').firstChild===legend&&legend.getAttribute('transform')!==legendTransform,'Pan/zoom must reposition the retained legend');
    return {checks:'static DOM reuse, moving boats, hourly wind, layer toggles, numbers, pan and zoom'};
   });
   const resized=await page.evaluate(()=>{window.arrowsBeforeResize=$('winds').firstChild;return $('map').getBoundingClientRect().width;});

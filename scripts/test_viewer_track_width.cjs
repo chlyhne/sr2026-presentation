@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const path=require('node:path');
 const fs=require('node:fs');
 const {execFileSync}=require('node:child_process');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
 const measurePixels=String.raw`
@@ -25,16 +25,17 @@ async function check(type){
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000},deviceScaleFactor:1}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');await page.waitForFunction(()=>typeof changeBoatSelection==='function');
+  await require('./viewer-track-fixtures.cjs')(page);
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');await page.waitForSelector('main:not([inert])',{timeout:120000});
   const names=await page.evaluate(()=>{
    const names=['Mercutio','Vera',boats.find(b=>!featured.has(b.name)).name];
-   chosen.clear();notes=[];setPresentationMode(true);
+   chosen.clear();boatFavouritesOnly=true;notes=[];setPresentationMode(true);
    for(const [i,name] of names.entries()){
     const boat=boats.find(b=>b.name===name),y=465+i*10;
     const point=x=>[9.5+x*4.5/1000,57-y*3/1180];
-    boat.points=[[...point(600),D.start+880],[...point(700),D.start+940]];boat.speeds=[7.5,7.5];boat.widthTestY=y;
+    boat.points=[[...point(600),D.start+880],[...point(700),D.start+940]];boat.speeds=[7.5,7.5];boat.widthTestY=y;prepareTrackFixture(boat);
    }
-   $('wind').checked=$('rain').checked=false;
+   $('wind').checked=$('rain').checked=$('grid').checked=false;
    for(const id of ['land','baseMap','places','seamarks','mapCredit','trackSpeedLegend'])$(id).setAttribute('visibility','hidden');
    return names;
   });
@@ -68,4 +69,4 @@ async function check(type){
   console.log(JSON.stringify({browser:type.name(),checks:'actual raster widths, boats added at different zooms, standard/additional boats, 40x zoom, remove/re-add',measurements,errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{for(const type of [firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

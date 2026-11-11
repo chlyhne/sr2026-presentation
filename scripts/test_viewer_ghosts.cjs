@@ -75,9 +75,14 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await marker.focus();await page.keyboard.press('Enter');assert.equal(await marker.locator('.boat-name').textContent(),'My');
   assert.deepEqual(await page.evaluate(()=>visibleBoatEntries.map(entry=>entry.boat.name)),['My']);
   const pinPoint=await page.evaluate(fixture=>{
-   const boat=boats.find(boat=>boat.id===fixture.id),time=fixture.sourceTime-60;
-   const point=new DOMPoint(...xy(trackSpeedSample(boat,time).point)).matrixTransform($('map').getScreenCTM());
-   return {x:point.x,y:point.y,time};
+   const boat=boats.find(boat=>boat.id===fixture.id),{matrix,rect}=mapViewport();
+   const bow=new DOMPoint(...xy(trackSpeedSample(boat,fixture.sourceTime).point)).matrixTransform(matrix);
+   // Pick a visible track point outside the marker's own click target.
+   for(const age of [60,120,180,240,300,600]){
+    const time=fixture.sourceTime-age,point=new DOMPoint(...xy(trackSpeedSample(boat,time).point)).matrixTransform(matrix);
+    if(Math.hypot(point.x-bow.x,point.y-bow.y)>30&&point.x>rect.left+10&&point.x<rect.right-10&&point.y>rect.top+10&&point.y<rect.bottom-10)return {x:point.x,y:point.y,time};
+   }
+   throw Error('No visible track point outside the boat marker');
   },fixture);
   await page.mouse.click(pinPoint.x,pinPoint.y);await page.locator('[data-speed-action="pin"]').click();
   assert.equal(await page.locator('[data-pinned="true"]').count(),1);assert.match(await page.locator('.track-speed-label').textContent(),/ kn$/);

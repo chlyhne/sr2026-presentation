@@ -122,7 +122,7 @@ async function check(type){
    showNotes();restoreNote(notes[0]);
    const check=(ok,message)=>{if(!ok)throw new Error(message);};
    for(const presenting of [false,true]){
-    setPresentationMode(presenting);view=[...mapView];setview();
+    setPresentationMode(presenting);view=[...mapView];setview();syncTimelineViewport();
     check(boatTimeRanges.length===2,'Exactly two boat visits');
     check(visibleTimeRanges.length===2,'Events must not insert singleton ranges in the gap');
     check(snappableTimelineNotes().length===2,'Only events within boat visits may snap');
@@ -146,7 +146,7 @@ async function check(type){
      movePresentationEvent(1);if(eventPlaybackTarget)movePresentationEvent(1);
      check(currentTime()===notes[2].time,'Next event can enter the gap with a second press');
      movePresentationEvent(-1);check(currentTime()===notes[1].time,'Previous event can enter the gap');
-     view=[...mapView];setview();check(currentTime()===notes[1].time,'Gap event survives view updates');
+     view=[...mapView];setview();syncTimelineViewport();check(currentTime()===notes[1].time,'Gap event survives view updates');
     }
     check(snappableTimelineNotes().length===2,'Manually selected gap event never becomes a snap target');
     check(visibleTimeRanges.length===2,'Manual gap navigation never adds gap times to slider');
@@ -167,7 +167,7 @@ async function check(type){
    for(const presenting of [false,true]){
     setPresentationMode(presenting);
     for(const width of [1240,620,310,62,6.2]){
-     view=[x-width/2,y-width/2,width,width];setview();
+     view=[x-width/2,y-width/2,width,width];setview();syncTimelineViewport();
      const limit=(timelineLength-1)*.01;
      check(Math.abs(eventSnapWindowSeconds()-limit)<1e-6,'Snap window is one percent of the slider at every map zoom');
      check(limit>60,'Long timelines snap beyond the old fixed time cap');
@@ -183,7 +183,7 @@ async function check(type){
     // Adjacent offsets across a compressed gap must not snap backwards in time.
     boat.points=[[11,55,D.start+1000],[11,55,D.start+1060],[11,55,D.end-1060],[11,55,D.end-1000]];
     prepareTrackFixture(boat);
-    view=[x-310,y-310,620,620];setview();
+    view=[x-310,y-310,620,620];setview();syncTimelineViewport();
     notes[0].time=boatTimeRanges[0].end;renderTimelineEvents();
     const afterGap=offsetAtTime(boatTimeRanges[1].start);seekTimeline(afterGap);
     check(currentTime()===boatTimeRanges[1].start,'No snap across a hidden time gap even one slider second away');
@@ -200,7 +200,7 @@ async function check(type){
     const t=notes[0].time;
     boats[0].points=[-60,0,60].map(delta=>[11,55,t+delta]);
     prepareTrackFixture(boats[0]);
-    view=[...notes[0].view];setview();
+    view=[...notes[0].view];setview();syncTimelineViewport();
    },presenting);
    await page.waitForTimeout(100);
    const rect=await page.locator('#time').boundingBox();

@@ -181,7 +181,7 @@ $('placeNote').onclick=()=>{
 };
 $('cancelNote').onclick=cancelPlacement;
 function placeAnnotation(e) {
- const p=new DOMPoint(e.clientX,e.clientY).matrixTransform($('map').getScreenCTM().inverse());
+ const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);
  saveAnnotation([p.x,p.y]);
 }
 $('save').onclick=()=>saveAnnotation();
@@ -261,10 +261,15 @@ function refreshPresentationEvents(){
  }
  updatePresentationControls();
 }
+let presentationControlsKey=null,presentationControlsNote=null;
 function updatePresentationControls(){
  const index=Math.max(0,notes.indexOf(activePresentationNote)),note=notes[index];
  const pendingMedia=!!pendingEventImage||hasPendingEventVideo();
  const preview=editingNote?{...noteDraft,text:$('note').value}:pendingMedia?{time:currentTime(),text:$('note').value,image:pendingEventImage,video:pendingEventVideo}:note;
+ const key=JSON.stringify([index,notes.length,preview?.time,preview?.text,preview?.image,preview?.video,!!editingNote,pendingMedia,eventImageLoading,document.body.classList.contains('presenting'),notes.indexOf(nextPresentationNote()),!!eventPlaybackTarget]);
+ const source=editingNote||note;
+ if(key===presentationControlsKey&&source===presentationControlsNote)return;
+ presentationControlsKey=key;presentationControlsNote=source;
  $('previousEvent').disabled=!note||index===0;
  $('nextEvent').disabled=document.body.classList.contains('presenting')?!nextPresentationNote():!note||index===notes.length-1;
  $('nextEvent').title=eventPlaybackTarget?'Spring direkte til næste event':document.body.classList.contains('presenting')?'Afspil frem til næste event':'Næste event';
@@ -385,14 +390,13 @@ function renderAnnotations() {
  renderNoteDrawings();
  updatePresentationControls();
  if(!$('annotationsVisible').checked) return;
- const map=$('map'), matrix=map.getScreenCTM();if(!matrix)return;
- const rect=map.getBoundingClientRect(),scale=Math.hypot(matrix.a,matrix.b);
+ const matrix=mapViewport()?.matrix;if(!matrix)return;
+ const scale=Math.hypot(matrix.a,matrix.b);
  for(const [i,saved] of notes.entries()) {
   if(!noteIsVisible(saved))continue;
   const n=saved===editingNote?{...noteDraft,text:$('note').value}:saved;
   if(n.time!==currentTime()||!Array.isArray(n.point)||!n.point.every(Number.isFinite))continue;
-  const [x,y]=n.point,screen=new DOMPoint(x,y).matrixTransform(matrix);
-  if(screen.x<rect.left||screen.x>rect.right||screen.y<rect.top||screen.y>rect.bottom)continue;
+  const [x,y]=n.point;
   const group=screenGroup(x,y,$('annotations'));group.dataset.noteIndex=i;
   group.setAttribute('transform',`translate(${x} ${y}) scale(${1/scale})`);
   el('title',{},group).textContent=eventNoteLabel(n);

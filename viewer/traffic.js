@@ -60,31 +60,39 @@ function trafficLaneArrows(points,matrix,rect){
 
 function renderTraffic(){
  const layer=$('trafficSeparation'),enabled=$('traffic').checked;
- layer.setAttribute('display',enabled?'inline':'none');
+ setAttr(layer,'display',enabled?'inline':'none');
  if(!enabled)return;
- const bounds=visibleMapBounds(),matrix=$('map').getScreenCTM();if(!bounds||!matrix)return;
- const rect=$('map').getBoundingClientRect();
+ const bounds=visibleMapBounds(),matrix=mapViewport()?.matrix;if(!bounds||!matrix)return;
+ const rect=mapViewport().rect;
  const key=[bounds.west,bounds.east,bounds.south,bounds.north,rect.width,rect.height].join(':');
  if(key===trafficKey)return;
- trafficKey=key;layer.replaceChildren();
+ trafficKey=key;
  const scale=1/Math.hypot(matrix.a,matrix.b),inverse=matrix.inverse();
- trafficHatch.setAttribute('patternTransform',`scale(${scale})`);
+ setAttr(trafficHatch,'patternTransform',`scale(${scale})`);
  for(const feature of trafficFeatures){
-  const b=feature.bounds;if(b.east<bounds.west||b.west>bounds.east||b.north<bounds.south||b.south>bounds.north)continue;
-  const kind=feature.properties.kind,group=el('g',{'data-tss-id':feature.id,'data-tss-kind':kind},layer);
+  const b=feature.bounds;if(b.east<bounds.west||b.west>bounds.east||b.north<bounds.south||b.south>bounds.north){feature.node?.remove();continue;}
+  const kind=feature.properties.kind,fresh=!feature.node;
+  const group=feature.node||(feature.node=el('g',{'data-tss-id':feature.id,'data-tss-kind':kind}));
+  if(!group.parentNode)layer.append(group);
   const label=(feature.properties.name?feature.properties.name+' · ':'')+trafficKinds[kind];
-  el('title',{},group).textContent=label;
+  if(fresh)el('title',{},group).textContent=label;
   if(kind==='separation_lane'){
+   const pool=feature.arrowNodes||(feature.arrowNodes=[]);let used=0;
    for(const arrow of trafficLaneArrows(feature.lines[0],matrix,rect)){
     const point=new DOMPoint(arrow.x,arrow.y).matrixTransform(inverse);
-    const anchor=screenGroup(point.x,point.y,group);anchor.dataset.tssArrow='true';
-    anchor.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${scale})`);
-    const symbol=el('g',{transform:`rotate(${arrow.angle})`},anchor);
-    const shape={d:'M -9 -5 L 7 0 L -9 5 M -11 0 L 7 0',fill:'none','stroke-linejoin':'round','stroke-linecap':'round'};
-    el('path',{...shape,stroke:'#ffffff','stroke-width':4.5,opacity:.9},symbol);
-    el('path',{...shape,stroke:'#922987','stroke-width':2.2},symbol);
+    let record=pool[used++];
+    if(!record){
+     const anchor=screenGroup(point.x,point.y,group);anchor.dataset.tssArrow='true';
+     const symbol=el('g',{},anchor),shape={d:'M -9 -5 L 7 0 L -9 5 M -11 0 L 7 0',fill:'none','stroke-linejoin':'round','stroke-linecap':'round'};
+     el('path',{...shape,stroke:'#ffffff','stroke-width':4.5,opacity:.9},symbol);
+     el('path',{...shape,stroke:'#922987','stroke-width':2.2},symbol);
+     record={anchor,symbol};pool.push(record);
+    }
+    if(!record.anchor.parentNode)group.append(record.anchor);
+    positionScreenGroup(record.anchor,point.x,point.y,scale);setAttr(record.symbol,'transform',`rotate(${arrow.angle})`);
    }
-  }else{
+   for(let i=used;i<pool.length;i++)pool[i].anchor.remove();
+  }else if(fresh){
    const zone=kind==='separation_zone';
    if(zone)el('path',{d:feature.d,fill:'#b044a6','fill-opacity':.1,stroke:'none','fill-rule':'evenodd'},group);
    el('path',{d:feature.d,fill:zone?'url(#trafficHatch)':'none','fill-rule':'evenodd',stroke:'#922987',

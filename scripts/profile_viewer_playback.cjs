@@ -7,15 +7,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
-  const meshSteps=process.env.SR_PROFILE_MESH_STEPS;
-  if(meshSteps){
-   if(!/^(1|2|4|8|16|32)$/.test(meshSteps))throw Error('Invalid diagnostic mesh steps');
-   await page.route('**/track-renderer.js',async route=>{
-    const response=await route.fetch(),source=await response.text();
-    if(!source.includes('const steps=32;'))throw Error('Diagnostic mesh target changed');
-    await route.fulfill({response,body:source.replace('const steps=32;',`const steps=${meshSteps};`)});
-   });
-  }
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18453/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const environment=await page.evaluate(()=>{
@@ -59,8 +50,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     const sorted=[...values].sort((a,b)=>a-b),sum=sorted.reduce((total,value)=>total+value,0);
     return {count:sorted.length,mean:sum/(sorted.length||1),p50:sorted[Math.floor(sorted.length*.5)]||0,p95:sorted[Math.floor(sorted.length*.95)]||0,p99:sorted[Math.floor(sorted.length*.99)]||0,max:sorted.at(-1)||0,over75ms:sorted.filter(value=>value>75).length};
    };
-   let cacheStart;
-   window.playbackProfiler={wrap,begin(){records.clear();intervals.length=frames.length=0;lastRaf=lastDraw=0;mutations.added=mutations.removed=mutations.attributes=0;cacheStart=webglTracks.cache?{...webglTracks.cache.stats}:null;active=true;},end(){active=false;return {functions:[...records].map(([name,value])=>({name,calls:value.calls,total:value.total,self:value.self,max:value.max,p95:summary(value.samples).p95})).sort((a,b)=>b.self-a.self),raf:summary(intervals),frames:summary(frames),mutations:{...mutations},cache:cacheStart?Object.fromEntries(Object.entries(webglTracks.cache.stats).map(([name,value])=>[name,value-cacheStart[name]])):null};}};
+   let trackStart;
+   window.playbackProfiler={wrap,begin(){records.clear();intervals.length=frames.length=0;lastRaf=lastDraw=0;mutations.added=mutations.removed=mutations.attributes=0;trackStart={...webglTracks.stats};active=true;},end(){active=false;return {functions:[...records].map(([name,value])=>({name,calls:value.calls,total:value.total,self:value.self,max:value.max,p95:summary(value.samples).p95})).sort((a,b)=>b.self-a.self),raf:summary(intervals),frames:summary(frames),mutations:{...mutations},tracks:Object.fromEntries(Object.entries(webglTracks.stats).map(([name,value])=>[name,value-trackStart[name]]))};}};
   },process.env.SR_PROFILE_INSTRUMENT!=='0');
   const duration=Number(process.env.SR_PROFILE_MS||8000),cases=[];
   for(const name of (process.env.SR_PROFILE_CASES||'normal,no-weather,no-markers,no-tracks,gpu-finish,follow-reference').split(',')){
@@ -135,7 +126,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    }
    return results;
   });
-  const report={environment,instrumented:process.env.SR_PROFILE_INSTRUMENT!=='0',diagnosticMeshSteps:meshSteps?Number(meshSteps):null,cases,gpu,errors};
+  const report={environment,instrumented:process.env.SR_PROFILE_INSTRUMENT!=='0',cases,gpu,errors};
   if(process.env.SR_PROFILE_OUTPUT)fs.writeFileSync(process.env.SR_PROFILE_OUTPUT,JSON.stringify(report,null,2));
   console.log(JSON.stringify({environment,gpu,errors}));
   if(errors.length||cases.some(result=>result.renderingErrors.length||!result.playing))throw Error('Playback profiling encountered an application error');

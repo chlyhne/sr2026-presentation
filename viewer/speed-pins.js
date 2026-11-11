@@ -10,7 +10,7 @@ function trackSpeedSample(boat,time){
  return {boatId:boat.id,time,point:trackValue(points,i,time).point,speed};
 }
 function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
- const matrix=$('map').getScreenCTM();if(!matrix)return null;
+ const matrix=mapViewport()?.matrix;if(!matrix)return null;
  const limit=topmost?8*8:12*12;
  let best=null,bestDistance=limit,bestPainted=false,bestTime=-Infinity;
  const paintedRadius2=(TRACK_OUTLINE_WIDTH/2+.5)**2;
@@ -136,8 +136,8 @@ function handleSpeedPinClick(action,key){
 }
 function renderSpeedPins(){
  const layer=$('speedMarkers');layer.replaceChildren();
- const map=$('map'),matrix=map.getScreenCTM();if(!matrix)return;
- const rect=map.getBoundingClientRect(),scale=1/Math.hypot(matrix.a,matrix.b),now=currentTime();
+ const map=$('map'),matrix=mapViewport()?.matrix;if(!matrix)return;
+ const rect=mapViewport().rect,scale=1/Math.hypot(matrix.a,matrix.b),now=currentTime();
  const presenting=document.body.classList.contains('presenting');
  const entries=speedPins.map(pin=>({...pin,pinned:true}));
  if(!presenting&&pickedTrackSpeed&&!matchingSpeedPin(pickedTrackSpeed))entries.push({...pickedTrackSpeed,id:'preview',pinned:false});

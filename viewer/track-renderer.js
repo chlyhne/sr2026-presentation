@@ -1,5 +1,6 @@
-// The GPU evaluates the original Hermite cubics. Source intervals stay in static
-// textures; playback changes time limits and instance ranges, not bindings.
+// One direct GPU path. Source cubics, comparison values and real cap addresses
+// are immutable textures. Camera/time/style change uniforms, never raster atlases.
+const TRACK_CURVE_ERROR_PX=.125;
 class WebGLTrackRenderer {
  constructor(layer){
   this.layer=layer;this.buffers=new Map();this.uploads=0;this.active=false;
@@ -30,12 +31,15 @@ class WebGLTrackRenderer {
    const vertex=shader(gl.VERTEX_SHADER,`#version 300 es
 precision highp float;
 precision highp int;
-layout(location=0) in vec4 shape;
 uniform highp sampler2D trackData;
 uniform highp sampler2D comparisonData;
+uniform highp isampler2D capData;
 uniform int firstInstance;
 uniform bool relativeMode;
-uniform bool boundaryCaps;
+uniform int subdivisions;
+uniform int capMode;
+uniform int sourceCaps;
+uniform ivec2 boundarySamples;
 uniform vec4 origin;
 uniform mat2 screen;
 uniform vec2 size;
@@ -48,6 +52,27 @@ flat out vec3 gainsStart;
 flat out vec3 gainsEnd;
 void main(){
  int sampleIndex=firstInstance+gl_InstanceID;
+ vec4 shape;
+ bool sourceCap=false;
+ if(capMode==0){
+  int step=gl_VertexID/6,corner=gl_VertexID%6;
+  float u=float(step+(corner==2||corner==3||corner==5?1:0))/float(subdivisions);
+  shape=vec4(u,corner==0||corner==2||corner==3?-1.0:1.0,0.0,0.0);
+ }else{
+  sourceCap=gl_InstanceID<sourceCaps;
+  int kind;
+  if(sourceCap){
+   int address=gl_InstanceID,width=textureSize(capData,0).x;
+   ivec2 cap=texelFetch(capData,ivec2(address%width,address/width),0).rg;
+   sampleIndex=cap.x;kind=cap.y;
+  }else{
+   int boundary=gl_InstanceID-sourceCaps;
+   sampleIndex=boundary==0?boundarySamples.x:boundarySamples.y;kind=boundary==0?-1:1;
+  }
+  int triangle=gl_VertexID/3,corner=gl_VertexID%3;
+  float angle=-1.57079632679+float(triangle+(corner==2?1:0))*3.14159265359/12.0;
+  shape=vec4(kind<0?0.0:1.0,corner==0?0.0:sin(angle),corner==0?0.0:float(kind)*cos(angle),float(kind));
+ }
  int trackWidth=textureSize(trackData,0).x;
  int texel=sampleIndex*4;
  ivec2 address=ivec2(texel%trackWidth,texel/trackWidth);
@@ -60,9 +85,12 @@ void main(){
  bool visible=duration>0.0?age+duration>-tail&&age<0.0:timing.w>0.0&&age>=-tail&&age<=0.0;
  // Adjacent cubics share an edge, not overlapping round caps. A newer start
  // cap would otherwise paint its dark rim across the preceding coloured body.
- bool startCap=mod(timing.w,2.0)>0.5||(boundaryCaps&&age<=-tail);
- bool endCap=timing.w>=2.0||(boundaryCaps&&age+duration>=0.0);
- if((shape.w<0.0&&!startCap)||(shape.w>0.0&&!endCap))visible=false;
+ bool startCap=mod(timing.w,2.0)>0.5,endCap=timing.w>=2.0;
+ if(capMode!=0){
+  if(sourceCap)visible=visible&&(shape.w<0.0?(startCap&&from==0.0):(endCap&&to==1.0));
+  else visible=visible&&duration>0.0&&(shape.w<0.0
+   ?(age<=-tail&&!(startCap&&from==0.0)):(age+duration>=0.0&&!(endCap&&to==1.0)));
+ }
  if(!visible){gl_Position=vec4(2.0,2.0,2.0,1.0);return;}
  vec4 position=texelFetch(trackData,address,0);
  vec4 curve=texelFetch(trackData,address+ivec2(1,0),0);
@@ -124,7 +152,7 @@ void main(){
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
-   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','boatColourMode','boatColour','opacity','gainComponent','gainLimit','trackData','comparisonData','firstInstance','boundaryCaps'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
+   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','boatColourMode','boatColour','opacity','gainComponent','gainLimit','trackData','comparisonData','firstInstance','subdivisions','capMode','capData','sourceCaps','boundarySamples'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
    this.maxTextureSize=gl.getParameter(gl.MAX_TEXTURE_SIZE);
    if(!window.SR_RHUMBLINE_SETUP&&rhumbRoute.legs.length){
     const evaluationVertex=shader(gl.VERTEX_SHADER,`#version 300 es
@@ -172,25 +200,8 @@ void main(){colour=vec4(0.0);}`);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
     this.feedback=gl.createTransformFeedback();this.comparisonReference=null;
    }
-   // Fixed mesh used for every interval. shape.w marks optional outer caps.
-   // Subdivision evaluates the cubic without discarding source points.
-   const mesh=[];
-   const put=(u,n,t,cap=0)=>mesh.push(u,n,t,cap);
-   const steps=32;
-   for(let i=0;i<steps;i++){
-    const a=i/steps,b=(i+1)/steps;
-    put(a,-1,0);put(a,1,0);put(b,-1,0);
-    put(b,-1,0);put(a,1,0);put(b,1,0);
-   }
-   for(const u of [0,1])for(let i=0;i<12;i++){
-    const a=-Math.PI/2+i*Math.PI/12,b=-Math.PI/2+(i+1)*Math.PI/12;
-    const cap=u?1:-1;
-    put(u,0,0,cap);put(u,Math.sin(a),cap*Math.cos(a),cap);put(u,Math.sin(b),cap*Math.cos(b),cap);
-   }
-   this.vertexCount=mesh.length/4;
-   this.mesh=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.mesh);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(mesh),gl.STATIC_DRAW);
+   // Procedural vertices require no mesh buffer or changing attribute bindings.
    this.vao=gl.createVertexArray();gl.bindVertexArray(this.vao);
-   gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,4,gl.FLOAT,false,16,0);
    gl.bindVertexArray(null);
    for(const [name,scale] of [['palette',TRACK_SPEED_COLOURS],['gainPalette',TRACK_GAIN_COLOURS]]){
     this[name]=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this[name]);
@@ -211,8 +222,8 @@ void main(){colour=vec4(0.0);}`);
      this.boatColours.set(colour,new Float32Array(rgb.map(channel=>channel/255)));
     }
    }finally{colourProbe.remove();}
-   this.cache=new WebGLTrackCache(this,shader);
-   this.active=true;this.host.removeAttribute('display');this.lastKey=null;this.viewportKey=null;
+   this.stats={frames:0,draws:0,vertices:0,intervals:0,caps:0};
+   this.active=true;this.host.removeAttribute('display');this.lastKey=null;this.viewportKey=null;this.sceneKey=null;
    clearRenderingFailure('Spor');
   }catch(error){
    this.fail(error);
@@ -229,7 +240,8 @@ void main(){colour=vec4(0.0);}`);
   // One compact record per observation, not per colour fragment or frame.
   const width=Math.min(1024,Math.max(4,points.length*4)),height=Math.max(1,Math.ceil(points.length*4/width));
   if(height>this.maxTextureSize)throw Error('Bådens spor overstiger GPU-teksturens maksimale størrelse: '+boat.name);
-  const data=new Float32Array(width*height*4);
+  const data=new Float32Array(width*height*4),caps=[];
+  let curvature=0;
   for(let i=0;i<points.length;i++){
    const a=points[i],b=points[i+1],valid=connects(a,b),previous=connects(points[i-1],a);
    const dt=valid?b[2]-a[2]:0,[x,y]=xy(a),hiX=Math.fround(x),hiY=Math.fround(y),offset=i*16;
@@ -238,6 +250,10 @@ void main(){colour=vec4(0.0);}`);
     data[offset+4]=(b[0]-a[0])*1000/4.5;data[offset+5]=-(b[1]-a[1])*1180/3;
     data[offset+6]=model.slopes[0][i]*dt*1000/4.5;data[offset+7]=-model.slopes[1][i]*dt*1180/3;
     data[offset+8]=model.slopes[0][i+1]*dt*1000/4.5;data[offset+9]=-model.slopes[1][i+1]*dt*1180/3;
+    // For p(u)=a*u^3+b*u^2+c*u+d, max |p''| is bounded by its
+    // endpoint norms. Linear chord error <= max |p''|/(8*N*N).
+    const dx=data[offset+4],dy=data[offset+5],mx=data[offset+6],my=data[offset+7],nx=data[offset+8],ny=data[offset+9];
+    curvature=Math.max(curvature,Math.hypot(6*dx-4*mx-2*nx,6*dy-4*my-2*ny),Math.hypot(-6*dx+2*mx+4*nx,-6*dy+2*my+4*ny));
    }
    const s0=speeds?.[i],s1=valid?speeds?.[i+1]:s0;
    data[offset+10]=Number.isFinite(s0)&&s0>=0?s0:-1;data[offset+11]=Number.isFinite(s1)&&s1>=0?s1:-1;
@@ -246,21 +262,20 @@ void main(){colour=vec4(0.0);}`);
    // Reuse the spare float: bits 1/2 mark real start/end caps. An endpoint
    // already covered by its preceding cubic must not draw a duplicate dot.
    data[offset+15]=valid?(previous?0:1)+(connects(b,points[i+2])?0:2):previous?0:3;
+   if(data[offset+15]&1)caps.push(i,-1);
+   if(data[offset+15]&2)caps.push(i,1);
   }
   const texture=gl.createTexture();gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,texture);
   gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA32F,width,height);
   gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,width,height,gl.RGBA,gl.FLOAT,data);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
-  const record={texture,bytes:data.byteLength,chunks:[]};
-  for(let first=0;first<points.length;first+=32){
-   const last=Math.min(points.length,first+32),rasterFirst=Math.max(0,first-1),rasterLast=Math.min(points.length,last+1);
-   const chunk={first,last,from:points[first][2],to:points[Math.min(last,points.length-1)][2],rasterFirst,rasterLast,
-    rasterFrom:points[rasterFirst][2],rasterTo:points[Math.min(rasterLast,points.length-1)][2],west:Infinity,east:-Infinity,north:Infinity,south:-Infinity};
-   for(let index=rasterFirst;index<=Math.min(rasterLast,points.length-1);index++){
-    const [x,y]=xy(points[index]);chunk.west=Math.min(chunk.west,x);chunk.east=Math.max(chunk.east,x);chunk.north=Math.min(chunk.north,y);chunk.south=Math.max(chunk.south,y);
-   }
-   record.chunks.push(chunk);
-  }
+  const capWidth=Math.max(1,Math.min(1024,caps.length/2)),capHeight=Math.max(1,Math.ceil(caps.length/2/capWidth));
+  const capPixels=new Int32Array(capWidth*capHeight*2);capPixels.set(caps);
+  const capTexture=gl.createTexture();gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_2D,capTexture);
+  gl.texStorage2D(gl.TEXTURE_2D,1,gl.RG32I,capWidth,capHeight);
+  gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,capWidth,capHeight,gl.RG_INTEGER,gl.INT,capPixels);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+  const record={texture,capTexture,capCount:caps.length/2,curvature,bytes:data.byteLength+capPixels.byteLength};
   if(this.comparisonProgram){
    const profile=trackProfileCache.get(points);if(!profile)throw Error('Bådens sporprofil er ikke forberedt: '+boat.name);
    record.projectedBuffer=gl.createBuffer();record.comparisonBuffer=gl.createBuffer();
@@ -322,7 +337,7 @@ void main(){colour=vec4(0.0);}`);
   }
   const error=gl.getError();if(error!==gl.NO_ERROR)throw Error('Referencebådens sporfarver kunne ikke klargøres i WebGL ('+error+').');
   this.comparisonReference=reference.points;
-  this.cache.reset();this.lastKey=null;
+  this.lastKey=null;
  }
  comparisonSample(boat,time){
   try{
@@ -351,17 +366,26 @@ void main(){colour=vec4(0.0);}`);
    this.fail(error);throw error;
   }
  }
- drawRange(state,viewport,boundaryCaps,radiusScale=1){
-  const gl=this.gl,u=this.uniforms,{boat,record,window,first,last,isReference,relative,solidColour}=state;
-  const {matrix,topLeft:top,rect}=viewport,stamp=window.to-D.start,high=Math.fround(stamp);
+ subdivisions(record,viewport){
+  const m=viewport.matrix,scale=Math.hypot(m.a,m.b,m.c,m.d);
+  return Math.max(1,Math.ceil(Math.sqrt(record.curvature*scale/(8*TRACK_CURVE_ERROR_PX))));
+ }
+ begin(viewport){
+  const gl=this.gl,u=this.uniforms,{matrix,topLeft:top,rect}=viewport;
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);
+  gl.clearColor(0,0,0,0);gl.clearDepth(1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   gl.useProgram(this.program);gl.bindVertexArray(this.vao);
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);
   gl.uniform4f(u.origin,Math.fround(top.x),Math.fround(top.y),top.x-Math.fround(top.x),top.y-Math.fround(top.y));
   gl.uniformMatrix2fv(u.screen,false,new Float32Array([matrix.a,matrix.b,matrix.c,matrix.d]));gl.uniform2f(u.size,rect.width,rect.height);
-  gl.uniform4f(u.windowTime,Math.max(1e-6,window.to-window.from),high,0,stamp-high);
-  gl.uniform1i(u.boundaryCaps,boundaryCaps?1:0);
-  gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2*radiusScale);gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
+  gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2);gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
   gl.uniform1i(u.gainComponent,comparison.basis==='time'?2:comparison.basis==='handicap'?1:0);gl.uniform1f(u.gainLimit,trackGainLimit());
+  gl.uniform1i(u.palette,0);gl.uniform1i(u.trackData,2);gl.uniform1i(u.comparisonData,3);gl.uniform1i(u.capData,4);
+ }
+ drawRange(state,viewport){
+  const gl=this.gl,u=this.uniforms,{boat,record,window,first,last,boundaryFirst,isReference,relative,solidColour}=state;
+  const stamp=window.to-D.start,high=Math.fround(stamp),subdivisions=this.subdivisions(record,viewport);
+  gl.uniform4f(u.windowTime,Math.max(1e-6,window.to-window.from),high,0,stamp-high);
   gl.uniform1i(u.boatColourMode,solidColour?1:0);gl.uniform1f(u.opacity,isReference?0.18:1);
   if(solidColour){
    const colour=this.boatColours.get(colours[boat.name]);
@@ -369,10 +393,16 @@ void main(){colour=vec4(0.0);}`);
    gl.uniform3fv(u.boatColour,colour);
   }
   if(relative&&!record.comparisonTexture)throw Error('Sammenligningsdata er ikke forberedt.');
-  gl.uniform1i(u.relativeMode,relative?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);gl.uniform1i(u.palette,0);
-  gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,record.texture);gl.uniform1i(u.trackData,2);
-  gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,relative?record.comparisonTexture:record.texture);gl.uniform1i(u.comparisonData,3);
-  gl.uniform1i(u.firstInstance,first);gl.drawArraysInstanced(gl.TRIANGLES,0,this.vertexCount,last-first);
+  gl.uniform1i(u.relativeMode,relative?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
+  gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,record.texture);
+  gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,relative?record.comparisonTexture:record.texture);
+  gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_2D,record.capTexture);
+  gl.uniform1i(u.firstInstance,first);gl.uniform1i(u.subdivisions,subdivisions);gl.uniform1i(u.capMode,0);
+  gl.drawArraysInstanced(gl.TRIANGLES,0,subdivisions*6,last-first);
+  gl.uniform2i(u.boundarySamples,boundaryFirst,last-1);gl.uniform1i(u.sourceCaps,record.capCount);gl.uniform1i(u.capMode,1);
+  gl.drawArraysInstanced(gl.TRIANGLES,0,36,record.capCount+2);
+  this.stats.draws+=2;this.stats.intervals+=last-first;this.stats.caps+=record.capCount+2;
+  this.stats.vertices+=subdivisions*6*(last-first)+36*(record.capCount+2);
  }
  render(time,order,force=false){
   this.time=time;this.order=order;
@@ -383,8 +413,10 @@ void main(){colour=vec4(0.0);}`);
    const viewport={...baseViewport,pixelWidth:baseViewport.pixelWidth*2,pixelHeight:baseViewport.pixelHeight*2};
    const {rect,matrix,pixelWidth:width,pixelHeight:height}=viewport;
    const viewportKey=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.left,rect.top,rect.width,rect.height,width,height].join(':');
-   const key=[time,viewportKey,trackLengthSeconds,handicapTracksEnabled,comparison.enabled,comparison.basis,comparison.boatColour,comparisonRevision,...order.map(b=>b.id)].join(':');
-   if(!force&&this.lastKey===key)return true;
+   const sceneKey=[time,trackLengthSeconds,handicapTracksEnabled,comparison.enabled,comparison.basis,comparison.boatColour,comparisonRevision,referenceBoatId,...order.map(b=>b.id)].join(':');
+   const sceneChanged=force||this.sceneKey!==sceneKey||order.some((boat,i)=>this.scenePoints?.[i]!==boat.points);
+   const key=sceneKey+':'+viewportKey;
+   if(!sceneChanged&&this.lastKey===key)return true;
    this.lastKey=key;
    if(this.viewportKey!==viewportKey){
     // Lay out the embedded HTML in screen pixels. A foreignObject positioned
@@ -394,22 +426,29 @@ void main(){colour=vec4(0.0);}`);
     positionMapCanvas(this.host,this.canvas,viewport);
     this.viewportKey=viewportKey;
    }
-   this.cache.begin(viewport);
-   const boatColourMode=trackUsesBoatColour();
-   const comparisonReference=trackUsesComparison()?referenceBoat():null;
-   // The faint reference is a guide underneath the other boats' comparison tracks.
-   const drawOrder=comparisonReference?[...order.filter(b=>b.id===comparisonReference.id),...order.filter(b=>b.id!==comparisonReference.id)]:order;
-   for(const boat of drawOrder){
-    const window=displayTrackWindow(boat,time);if(!window)continue;
-    const points=boat.points,first=Math.max(0,timeBoundary(points,window.from)-1),last=timeBoundary(points,window.to,true);
-    if(last<=first)continue;
-    this.prepare(boat);const record=this.buffers.get(points);
-    const isReference=boat.id===comparisonReference?.id,solidColour=boatColourMode||isReference;
-    const relative=!!comparisonReference&&!isReference;
-    const style=[solidColour?colours[boat.name]:relative?'comparison':'speed',relative?comparison.basis:'',relative?trackGainLimit():0,isReference].join(':');
-    this.cache.add({boat,record,window,first,last,isReference,solidColour,relative,style});
+   if(sceneChanged){
+    this.sceneKey=sceneKey;this.scenePoints=order.map(boat=>boat.points);this.states=[];
+    const boatColourMode=trackUsesBoatColour(),comparisonReference=trackUsesComparison()?referenceBoat():null;
+    // The faint reference is a guide underneath the comparison tracks.
+    const drawOrder=comparisonReference?[...order.filter(b=>b.id===comparisonReference.id),...order.filter(b=>b.id!==comparisonReference.id)]:order;
+    for(const boat of drawOrder){
+     const window=displayTrackWindow(boat,time);if(!window)continue;
+     const points=boat.points,first=Math.max(0,timeBoundary(points,window.from)-1),last=timeBoundary(points,window.to,true);
+     if(last<=first)continue;
+     this.prepare(boat);const record=this.buffers.get(points);
+     const boundaryFirst=Math.max(0,Math.min(points.length-1,timeBoundary(points,window.from,true)-1));
+     const isReference=boat.id===comparisonReference?.id,solidColour=boatColourMode||isReference,relative=!!comparisonReference&&!isReference;
+     this.states.push({boat,record,window,first,last,boundaryFirst,isReference,solidColour,relative});
+    }
    }
-   this.cache.render(viewport);
+   this.begin(viewport);this.stats.frames++;
+   let referenceDrawn=false;
+   for(const state of this.states){
+    if(referenceDrawn&&!state.isReference){this.gl.clear(this.gl.DEPTH_BUFFER_BIT);referenceDrawn=false;}
+    this.drawRange(state,viewport);
+    if(state.isReference)referenceDrawn=true;
+   }
+   this.gl.bindVertexArray(null);this.gl.activeTexture(this.gl.TEXTURE0);
    return true;
   }catch(error){this.gl.bindFramebuffer(this.gl.FRAMEBUFFER,null);this.gl.disable(this.gl.SCISSOR_TEST);this.fail(error);return false;}
  }

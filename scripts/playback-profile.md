@@ -1,5 +1,9 @@
 # Afspilningsprofilering, 11. november 2026
 
+De tidligere afsnit dokumenterer forløbet frem til rastercachen. Den gældende
+implementering bruger direkte GPU-tegning uden rastercache; review og plan
+findes i [GPU-arkitekturen](../docs/gpu-architecture.md).
+
 ## Opsætning og metode
 
 - Commit `5c7efe6`, lokal headless Firefox 137 på Windows, ANGLE/Intel HD Graphics.
@@ -99,7 +103,6 @@ Profilværktøjet bruger kun headless Firefox og ændrer kun den isolerede brows
 - `SR_PROFILE_CASES`: kommasepareret udvalg af `normal,no-weather,no-markers,no-tracks,gpu-finish,follow-reference`. `normal` har vind, men ikke radar; de øvrige isolerer uden vejr. Hvert scenarie bruger alle både og 100× afspilning.
 - `SR_PROFILE_INSTRUMENT=0`: fravælg funktionsinstrumentering og DOM-observer; behold frame-/rAF-måling.
 - `SR_PROFILE_SKIP_GPU=1`: spring den isolerede GPU-prøvematrix over.
-- `SR_PROFILE_MESH_STEPS`: eksplicit diagnostisk mesh med 1, 2, 4, 8, 16 eller 32 underopdelinger. Kun browserens hentede svar ændres; ingen filer overskrives.
 - `SR_PROFILE_OUTPUT`: gem rå målinger og browser-/GPU-oplysninger som JSON. Gem rå kørsler separat; deres oplysninger om miljø og instrumentering er nødvendige for korrekt fortolkning.
 
 ## Zoom efter ændret cacheoptagelse
@@ -134,7 +137,7 @@ kubiske geometriprimitiv, og sammenhængende intervaller samles. Der startes ing
 ekstra tegning efter zoom; næste almindelige tegning kan fylde cachen. Eksisterende
 felter kan stadig bruges straks, og projektionsgrænser gemmes kun for seneste målestok.
 
-Valideret med [cachetestene](./test_viewer_track_cache.cjs): 14 scenarier med
+Valideret dengang med de tidligere cachetests: 14 scenarier med
 pixelkontrol af kold zoom, stabil målestok, tilbagevenden til cachede målestokke,
 kurver, samlinger, tidsdybde og farvevalg. [Wheel-testen](./test_viewer_zoom.cjs)
 zoomer omkring referencebåden, så spor forbliver synlige: 12 zoomtrin med 24
@@ -145,3 +148,27 @@ og udskiftning af de forberedte sporbuffere.
 
 Gentag zoommålingen med `node scripts/profile_viewer_zoom.cjs` og den samme
 `PLAYWRIGHT_MODULE`/lokale server som ovenfor.
+
+## Direkte GPU-rendering efter arkitekturreview
+
+Rastercachen, atlas og kompositionsshader er nu fjernet. Kurver tegnes direkte
+med procedurelle vertices og et centerlinjebudget på 0,125 CSS-pixel, og kapper
+tegnes særskilt. Kameraet genbruger scenens GPU-kommandooplysninger og fælles
+layoutmåling. SVG-markører og signaturer bevares; kameraet flytter ikke tiden.
+
+Samme lokale Firefox/Intel-opsætning som ovenfor: 20 zoomtrin med hele feltet,
+vejrlag slået fra. Inputarbejdet faldt fra 6,35 til 0,45 ms i gennemsnit og
+tegnekaldet fra 18,05 til 5,20 ms. Separat GPU/driver-ventetid var 24,95 ms mod
+28,20 ms. Den nye kamerakontrakt bevarer tiden; før skete der tidsspring i seks
+trin, så forløbene har samme input/kamera, men ikke helt samme tidsindhold.
+
+Uinstrumenteret afspilning, to sekunders opvarmning og tre sekunders måling pr.
+scenarie: gennemsnitligt rAF-interval uden vejr 16,76 ms (før 17,96), med vind
+16,67 ms (før 18,06), ved referencefølgning 17,65 ms (før 25,86). Scenetegningens
+interval er fortsat cirka 60–62 ms med den uændrede 50 ms timer.
+Den direkte renderer bruger cirka 475.716 vertices og 212 draw-kald pr. frame
+med 106 både og to timers spor, uden uploads af spor- eller kompositionsdata.
+
+Review, gennemført plan, detaljerede testresultater og begrænsninger står i
+[GPU-arkitekturen](../docs/gpu-architecture.md). Det tidligere diagnostiske
+mesh-skift er fjernet fra profilværktøjet sammen med rastercachen.

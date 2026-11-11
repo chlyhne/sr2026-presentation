@@ -118,7 +118,7 @@ function finishMapLine(){
  cancelMapLine();
 }
 function addNavigationPoint(event){
- const point=new DOMPoint(event.clientX,event.clientY).matrixTransform($('map').getScreenCTM().inverse());
+ const point=new DOMPoint(event.clientX,event.clientY).matrixTransform(mapViewport().inverse);
  const geographic=[9.5+point.x*4.5/1000,57-point.y*3/1180];
  if(Math.abs(geographic[0])>180||Math.abs(geographic[1])>=85){comparisonMessage('Punktet ligger uden for kortets måleområde.');return;}
  if(navigationDraft.length&&rhumbLeg(navigationDraft.at(-1),geographic).distance<1e-6)return;

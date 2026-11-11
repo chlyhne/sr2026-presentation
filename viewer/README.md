@@ -803,67 +803,53 @@ af sporgeometri; bådvalg og grundlagsskift genbruger de eksisterende GPU-data.
 Afspilning ændrer tidsgrænser og de intervaller, der tegnes, uden at bygge SVG-strenge,
 slå referencepassager op pr. frame eller uploade nye spordata. Vertex-shaderen
 adresserer geometri og sammenligninger med `firstInstance + gl_InstanceID`.
-Den fælles mesh-VAO har faste attributbindinger. Rasteriserede spor genbruges af
-`track-cache.js`: hver båds kildeintervaller opdeles i faste blokke på 32.
-Hele blokke inde i tidsvinduet tegnes én gang til kortforankrede tiles på
-512 renderpixel med to pixels gutter. Hvert tile beskæres til blokkens
-forberedte koordinatgrænser inklusive stregbredde, så tomt kort ikke bruger
-en hel tekstur. Tiles pakkes i GPU-atlas med RGBA8-farve og DEPTH_COMPONENT32F-tid.
-Rasteriseringen medtager ét ekstra kildeinterval på hver side af blokken;
-kompositionen accepterer kun blokkens egen tidsdybde. Dermed kan multisample-
-dækning ikke give gennemsigtige samlinger, og overlap mellem cacheblokke kan
-ikke male med deres afskårne rasterender. Hele det udvidede rasterinterval
-skal ligge inde i det synlige tidsvindue, før blokken bruges fra cachen.
-Fire MSAA-samples og den eksisterende dobbelte renderopløsning bevares; først
-resolves til en enkelt-sample framebuffer ved samme koordinater, derefter kopieres
-farve og dybde til atlas. Ingen pixels læses tilbage til CPU'en.
+Der er ingen rastercache, atlas, kompositionsshader eller cacheopvarmning. Hvert
+synligt tidsinterval tegnes direkte fra sine forberedte koefficienter. GPU'en
+danner trekantsstrimler procedurelt fra `gl_VertexID`; der uploades ingen mesh
+eller beskrivelser af skærmfelter under betjening.
 
-Ved næste frame tegnes de færdige blokke som instancerede teksturquads. Ved samme
-målestok bruger kun de ufuldstændige blokke ved sporets ender den kubiske geometrishader igen.
-Blokkens lokale tidsdybde omregnes til det aktuelle tidsvindue i kompositionen,
-så nyere passager stadig dækker ældre på tværs af både og blokke. Referencebåden
-komponeres først med egen farve og 18 % opacitet; derefter nulstilles dybden for
-de øvrige både. De cached blokke får ikke kunstige endekapper ved blokgrænserne.
-Sporenderne bruger fortsat de nøjagtigt klippede, bevægelige kapper.
+Underopdelingen vælges ud fra en fast grænse på 0,125 CSS-pixel for kurvens
+centerlinje. For en kubik `p(u)` ligger `p''(u)` på et linjestykke, så maksimum
+af endepunkternes normer begrænser dens anden afledte. Før betjening gemmes
+hver båds maksimale grænse `M`. Kameraets skærmskala giver antallet
+`N = ceil(sqrt(M * scale / (8 * 0.125)))`, mindst én underopdeling.
+Det følger interpolationsgrænsen `error <= max(|p''|) / (8*N*N)`.
+Der er intet fast loft på 32 underopdelinger ved nærzoom. Kameraet vælger kun
+et antal fra allerede forberedte data; kildepunkter og kurver genberegnes ikke.
 
-Cachen afhænger af målestok, sportype, farveskala og bådens farve, men ikke af
-kameraposition eller bådvalg. Panorering, referencefølgning, tilbagespoling og
-fravalg/tilvalg genbruger de eksisterende tiles. Ved skift af målestok bygges ingen
-nye tiles: manglende blokke tegnes med den samme kubiske geometrishader som
-sporenderne. Sammenhængende synlige intervaller pr. båd samles i samme draw-kald.
-Når målestokken har været uændret i mindst 150 ms, kan næste tegning bygge nye
-tiles til genbrug under afspilning. Afspilningsframes mellem wheel-hændelser
-udløser derfor heller ikke nye rasterfelter.
-Allerede cachede tiles kan bruges straks ved tilbagevenden til en tidligere målestok.
-Der startes ingen ekstra tegning for at fylde cachen efter zoom. Blokkenes
-projekterede grænser gemmes kun for den senest brugte målestok. Tidligere
-rasteriserede målestokke og farvevalg beholdes til genbrug.
-Referenceændring frigiver farveatlas, når de forberedte sammenligningsværdier
-opdateres; de faste kildeprofiler ændres ikke. Cachen har ingen automatisk
-eviction eller alternativ renderer. Nye atlas oprettes efter behov, og manglende
-GPU-ressourcer vises som en renderingsfejl. `webglTracks.cache.stats` angiver
-cachebygninger, cachehits, geometri-/kompositionsinstanser og logisk GPU-lager.
-En lille transient RGBA32F-tekstur indeholder de synlige quads og deres
-tidsdybdeomregning; dette er kompositionsdata, ikke en ny upload af spor/profiler.
-Sammenligningsteksturerne kræver cirka 21 MiB ekstra GPU-lager inklusive
-rækkepadding, men ændrer hverken downloadformat eller CPU-profiler. De eksisterende
-sammenligningsbuffere bevares til opslag af værdier ved pins og hover.
-`node scripts/test_viewer_track_bindings.cjs` kontrollerer synkroniserede samplegrænser,
-frem-/tilbagespoling og handicapvisning uden attributændringer, nye kildebuffere,
-uploads af faste spordata eller GPU-tilbagelæsning under afspilning. Pixeltests kontrollerer kubiske
-kurver og alle fem farvevalg hen over teksturernes rækkegrænser.
-`node scripts/test_viewer_track_cache.cjs` kontrollerer genbrug af rasterblokke,
-panorering, zoom, sporender, krydsninger, farvevalg og tidsdybde mod den samme
-kubiske rasteriseringsprimitive uden cache i testens oracle.
-`node scripts/test_viewer_zoom.cjs` kontrollerer den virkelige wheel-hændelse i
-Firefox med hele feltet: ingen tilebygning, atlasallokering eller genberegning af
-faste spordata under zoom, efterfulgt af cachegenbrug ved stabil målestok.
-`node scripts/profile_viewer_zoom.cjs` måler hændelsesarbejde, tegning og separat
-GPU-ventetid for 20 zoomtrin med 106 både og vejrlag slået fra. GPU-ventetiden
-bruger kun `gl.finish()` i profilværktøjet, aldrig i selve visningen.
-`node scripts/test_viewer_fleet_preparation.cjs` kontrollerer i lokal Firefox,
-at hele feltet er forberedt før betjening, og at bådvalg, grundlag og tidsskift
-ikke genberegner eller uploader faste spordata.
+Virkelige kapper ved sporender og huller adresseres af en lille statisk RG32I-
+tekstur. Tidsvinduets to klippede ender tilføjes som to instanser. Kroppen og
+kapperne bruger samme shader og samme tidsdybde, med to draw-kald pr. båd.
+Interne kildeintervaller får ingen kappevertices. Referencebåden tegnes først
+med egen farve og 18 % opacitet; dybden nulstilles derefter for de øvrige både.
+`webglTracks.stats` tæller frames, draw-kald, vertices, kildeintervaller og kapper.
+
+`mapViewport()` er det fælles kamera for WebGL og SVG. Det afleder projektionen
+fra kortets viewBox og én gemt CSS-layoutmåling med SVG's `xMidYMid meet`.
+Layout genmåles ved resize, panelskift og sidescroll. Zoom/panorering læser
+hverken `getScreenCTM()` eller `getBoundingClientRect()` og uploader kun
+shaderparametre. Bådmarkører, skrog, navne, signatur, målestok og geografisk
+faste SVG-figurer genbruges; kameraet genberegner ikke bådlistens indhold.
+Vindpile og fartmærkers kantplacering har fortsat kameraafhængig SVG-logik.
+
+Kameraændringer bevarer tidspunktet og udløser kun en viewport-tegning.
+Tidslinjens geografiske passageindeks opdateres samlet 150 ms efter sidste
+kameraændring. Det er afledt slider-UI og udløser ingen scenetegning eller
+tidsændring. Ved betjening af slider, step eller Afspil synkroniseres et ventende
+indeks først. Almindelig afspilning fastholder sine passageperioder fra start,
+så flytning af kameraet hverken springer i tiden eller stopper afspilningen.
+En ny afspilning bruger det aktuelle udsnits perioder.
+
+`node scripts/test_viewer_track_geometry.cjs` sammenligner alle fem farvevalg
+med en tæt 128-delt GPU-reference og efterprøver centerlinjens fejlgrænse ned
+til mindste kortbredde. `node scripts/test_viewer_track_bindings.cjs` kontrollerer
+frem-/tilbagespoling, handicap og teksturrækkegrænser uden attributændringer,
+uploads eller tilbagelæsning af faste GPU-data under afspilning.
+`node scripts/test_viewer_zoom.cjs` kontrollerer wheel-ankring, bevaret tid,
+genbrug af SVG og nul layoutmålinger, GPU-uploads eller scene-/listeopdateringer
+under zoom. `node scripts/profile_viewer_zoom.cjs` måler input, tegning og separat
+GPU/driver-ventetid; `gl.finish()` bruges kun i profilværktøjet.
+Arkitekturreview, plan og resultater findes i [GPU-arkitekturen](../docs/gpu-architecture.md).
 
 GPU'en evaluerer kubiske kurver, klipper dem til den valgte sporlængde og slår
 fartfarver op i den faste 128-trins palet. Dybden interpoleres fra det lokale
