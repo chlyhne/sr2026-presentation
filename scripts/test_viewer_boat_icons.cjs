@@ -75,9 +75,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   // Screen resizing must also refresh the geographic size without changing time.
   await page.setViewportSize({width:1200,height:850});await page.waitForTimeout(100);
   const resized=await zoom(.1);assert.ok(Math.abs(resized.beam-resized.expectedBeam)<.001);
-  const marker=page.locator('.boat-marker');await marker.focus();const pressed=await marker.getAttribute('aria-pressed');await page.keyboard.press('Enter');assert.notEqual(await page.locator('.boat-marker').getAttribute('aria-pressed'),pressed);
+  const marker=page.locator('.boat-marker');assert.equal(await marker.locator('.boat-name').textContent(),'Mercutio');
   await page.evaluate(()=>setPresentationMode(true));assert.equal(await page.locator('.boat-icon').count(),1);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({checks:'all boat dimensions, shared 8px per 2.54m minimum, physical beam and length, viewport resize, name toggle, presentation',wide,close,resized,errors}));
+  console.log(JSON.stringify({checks:'all boat dimensions, shared 8px per 2.54m minimum, physical beam and length, viewport resize, permanent names, presentation',wide,close,resized,errors}));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

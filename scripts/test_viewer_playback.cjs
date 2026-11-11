@@ -17,15 +17,20 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await page.locator('#playIcon').isVisible(),true);assert.equal(await page.locator('#pauseIcon').isVisible(),false);
   assert.equal(await page.getByRole('button',{name:'Stop',exact:true}).count(),0);
   const beforeSpeedChange=await page.evaluate(()=>currentTime());
+  assert.equal(await page.locator('#playbackSpeed').inputValue(),'100');
+  assert.equal(await page.evaluate(()=>playbackRate),100);
+  await page.locator('#playbackSpeed').selectOption('1');
   assert.equal(await page.locator('#back').isDisabled(),true);
   for(const rate of rates.slice(1)){
    await page.locator('#next').click();assert.equal(await page.locator('#playbackSpeed').inputValue(),String(rate));
-   assert.equal(await page.evaluate(()=>currentTime()),beforeSpeedChange);assert.equal(await page.evaluate(()=>!!interval),false);
+   assert.equal(await page.evaluate(()=>currentTime()),beforeSpeedChange);assert.equal(await page.evaluate(()=>!!interval),true);
+   await page.locator('#play').click();
   }
   assert.equal(await page.locator('#next').isDisabled(),true);
   for(const rate of rates.slice(0,-1).reverse()){
    await page.locator('#back').click();assert.equal(await page.locator('#playbackSpeed').inputValue(),String(rate));
-   assert.equal(await page.evaluate(()=>currentTime()),beforeSpeedChange);assert.equal(await page.evaluate(()=>!!interval),false);
+   assert.equal(await page.evaluate(()=>currentTime()),beforeSpeedChange);assert.equal(await page.evaluate(()=>!!interval),true);
+   await page.locator('#play').click();
   }
   assert.equal(await page.locator('#back').isDisabled(),true);
   assert.equal(await page.evaluate(()=>playbackRate),1);
@@ -72,6 +77,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#nextEvent').click();assert.equal(await page.evaluate(()=>activePresentationNote.text),'C');assert.equal(await page.locator('#nextEvent').isDisabled(),true);
   await page.locator('#eventSelect').selectOption('1');await page.locator('#playbackSpeed').selectOption('5');
   await page.screenshot({path:'/tmp/sr2026-playbar.png'});
-  assert.deepEqual(errors,[]);console.log('Firefox PC: conventional transport order and icons, play/pause, all speed steps and bounds, no reverse playback, unchanged paused time, live speed changes, 20 FPS, fractional playback, keyboard steps, event navigation, continuous playback across slider gaps and visit ends.');
+  assert.deepEqual(errors,[]);console.log('Firefox PC: conventional transport order and icons, play/pause, all speed steps and bounds, no reverse playback, speed buttons start playback without seeking, live speed changes, 20 FPS, fractional playback, keyboard steps, event navigation, continuous playback across slider gaps and visit ends.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

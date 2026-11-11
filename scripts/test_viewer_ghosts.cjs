@@ -70,9 +70,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(pixels.ahead[3],0,'The track must not continue ahead of the compensated boat');
   assert.equal(pixels.original[3],0,'The track must not extend to the original position');
   assert.ok(Math.abs(pixels.to-fixture.sourceTime)<1e-6);assert.ok(Math.abs(pixels.fromClock-(fixture.time-7200))<1e-6);assert.equal(pixels.solid,true);
-  // Existing name interaction and the visible boat list use the same marker.
-  await marker.focus();await page.keyboard.press('Enter');assert.equal(await marker.locator('.boat-name').count(),0);
-  await marker.focus();await page.keyboard.press('Enter');assert.equal(await marker.locator('.boat-name').textContent(),'My');
+  // Old name settings cannot hide the compensated marker's name.
+  await page.evaluate(()=>{applySceneSettings({...sceneSettings(),boatNames:[]});render();});
+  assert.equal(await marker.locator('.boat-name').textContent(),'My');
   assert.deepEqual(await page.evaluate(()=>visibleBoatEntries.map(entry=>entry.boat.name)),['My']);
   const pinPoint=await page.evaluate(fixture=>{
    const boat=boats.find(boat=>boat.id===fixture.id),{matrix,rect}=mapViewport();

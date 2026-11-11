@@ -14,9 +14,12 @@ python3 scripts/serve_viewer.py
   Den offentlige side åbner direkte i præsentationsvisning uden at vise redigeringen først.
   Bjælken vises ikke igen ved bådvalg, afspilning eller navigation på siden.
   Hvis indlæsningen fejler, vises fejlen og en knap til at genindlæse.
-- Bådnavne vises som standard; klik på båden for at skjule eller vise navnet.
-  Når en båd får et fyldt hjerte, vises dens navn også.
-  Et events gemte valg af bådnavne bruges fortsat ved navigation til eventet.
+- Både vises altid med navn, også ved navigation til events med gamle navnevalg.
+  Ingen både har hjerte som standard, og favoritfilteret starter slået fra.
+  Klik hvor som helst i en bådrække for at skifte dens hjerte.
+- Grid starter slået til; vind, radar og eventpanelet starter slået fra.
+  Kortværktøjerne står fra højre mod venstre: eventpanel, lag, spor, mål,
+  redigér og fuld skærm.
 - **Lag → Grid** viser et antialiaseret afstandsgrid oven på kortbaggrunden,
   under sporene. Afstanden skifter automatisk mellem **15 sømil, 5 sømil,
   2 sømil, 1 sømil, 400 m og 100 m**, så cellerne normalt er mindst 80 skærmpixel brede.
@@ -40,7 +43,7 @@ python3 scripts/serve_viewer.py
   præcist ved eventets tidspunkt. Tryk **Næste** igen undervejs for at springe
   direkte frem. Ved ankomst indlæses eventets gemte kortindstillinger: lag,
   vindmodel, sporlængde og sportype, referencebåd, handicapkompenserede spor,
-  bådfavoritter, navne, søgefilter, favoritfilter og annotationer samt eventuelt billede.
+  bådfavoritter, søgefilter, favoritfilter og annotationer samt eventuelt billede.
   Det gemte kortudsnit bruges kun ved direkte hop; afspilning hen til eventet
   beholder det udsnit, der følger referencebåden.
   I redigering gemmes ændringer af kortindstillinger automatisk til det valgte
@@ -56,7 +59,7 @@ python3 scripts/serve_viewer.py
   direkte til det næste kommende event. Events med samme tidspunkt skifter
   direkte. I redigering hopper **Næste** fortsat direkte.
   Eventets tekst og tidspunkt vises i eventpanelet, også for noter uden markør.
-  Gemte kortudsnit, vejrlag, vindmodel, både og bådnavne genskabes ved hvert hop.
+  Gemte kortudsnit, vejrlag, vindmodel, både genskabes ved hvert hop.
   Tidspunktet fastholdes, også når ingen valgte både er synlige i udsnittet og
   ved zoom, panorering, ændret vinduesstørrelse eller fuld skærm. Ved flere
   noter med samme tidspunkt vises kun det valgte events annotation på kortet.
@@ -128,8 +131,8 @@ python3 scripts/serve_viewer.py
 - Playbaren har den klassiske rækkefølge `|<` · `<<` · `>`/`||` · `>>` · `>|`:
   Forrige event, lavere hastighed, afspil/pause, højere hastighed og næste event.
   `<<` og `>>` vælger ét niveau ad gangen blandt 1×, 2×, 5×, 10×, 20×, 100×,
-  200× og 400×. De ændrer ikke tidspunktet, mens der er pause, og afspiller altid
-  fremad. Knapperne deaktiveres ved laveste/højeste niveau. Hastighedsvælgeren
+  200× og 400×. Standardhastigheden er 100×. Begge knapper starter også
+  afspilningen, hvis den er pauset; der afspilles altid fremad. Knapperne deaktiveres ved laveste/højeste niveau. Hastighedsvælgeren
   viser det aktuelle niveau. Eventlisten ligger fortsat under eventpanelet.
 - Den samlede tidsperiode udledes af hele spordatasættet med margen før start
   og efter sidste position.
@@ -301,12 +304,8 @@ python3 scripts/serve_viewer.py
   afspilning, eventskift, rulning og browserens faktiske fuldskærmsvisning i
   Firefox. Testens events er simulerede; den gemmer ikke på serveren.
   `SR_FULL_TEST=1` aktiverer den bredere browser- og mobiltest ved en endelig udgivelse.
-- Klik på en båds bådikon for at vise eller skjule navnet. Det gælder alle
-  både. Tab og Enter/mellemrum kan også bruges. Navnevalget bevares ved zoom,
-  tidsskift og til-/fravalg af både og gemmes med noter.
-  Alle bådes navne er vist som standard, også når flere både vælges eller findes
-  med søgning. At trække fra et bådikon flytter kortet.
-  Gemte bådudvalg og manuelle navneskjul bevares ved genindlæsning.
+- Bådenes navne vises altid. Klik på en båds ikon, mens et filter er aktivt,
+  skifter dens hjerte. Gamle events med skjulte navne viser også alle navne.
 - Klik på et sted på et spor i redigering for at vise farten i knob
   som et mærke ved punktet, uden bådnavn. Mærket har bådens farve.
   Der klikkes på den glatte PCHIP-kurve, også mellem

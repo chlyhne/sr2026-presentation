@@ -22,9 +22,9 @@ async function check(type){
   const fixture=await page.evaluate(imageID=>{
    const time=D.start+3600;
    const a={...sceneSettings(),wind:false,windNumbers:false,rain:false,rainOpacity:.25,grid:true,traffic:false,military:false,
-    annotationsVisible:true,windModel:'dmi_harmonie_arome_europe',boats:['Mercutio','Vera'],boatNames:[]};
+    annotationsVisible:true,windModel:'dmi_harmonie_arome_europe',boats:['Mercutio','Vera'],boatNames:boats.map(boat=>boat.id)};
    const b={...sceneSettings(),wind:true,windNumbers:true,rain:true,rainOpacity:.8,grid:true,traffic:true,military:true,
-    annotationsVisible:false,windModel:'era5',boats:['My'],boatNames:[boats.find(boat=>boat.name==='My').id]};
+    annotationsVisible:false,windModel:'era5',boats:['My'],boatNames:boats.map(boat=>boat.id)};
    notes=[
     {time,text:'A',view:[230,250,620,760],settings:a},
     {time:time+10.05,text:'B',view:[400,300,330,420],settings:b},
