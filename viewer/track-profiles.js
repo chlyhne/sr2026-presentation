@@ -5,10 +5,9 @@ async function loadTrackProfiles(){
  if(!validRhumbline(window.SR_RHUMBLINE))fail('ugyldig permanent rhumbline.');
  if(!globalThis.crypto?.subtle)fail('SHA-256 kræver localhost eller HTTPS.');
  if(new Uint8Array(new Uint32Array([1]).buffer)[0]!==1)fail('Denne platform understøtter ikke little-endian Float32.');
- const response=await fetch('track-profiles/manifest.json',{cache:'no-store'});
- if(!response.ok)fail('manifest ('+response.status+').');
- const manifest=await response.json(),hex=/^[a-f0-9]{64}$/;
- if(!manifest||manifest.version!==6||!hex.test(manifest.sourceFingerprint)||!hex.test(manifest.dataDigest)||!hex.test(manifest.rhumblineDigest)
+ if(!replayResources)fail('de fælles spordata er ikke indlæst.');
+ const {manifest,bundle:buffer}=replayResources,hex=/^[a-f0-9]{64}$/;
+ if(!manifest||manifest.version!==7||manifest.sampleSeconds!==TRACK_SAMPLE_SECONDS||!hex.test(manifest.sourceFingerprint)||!hex.test(manifest.dataDigest)||!hex.test(manifest.rhumblineDigest)
   ||manifest.start!==D.start||manifest.byteOrder!=='little-endian'||manifest.sampleWords!==3||manifest.stationWords!==1
   ||manifest.stationSpacingMeters!==REFERENCE_STATION_METERS||manifest.profileEncoding!=='uint10-packed'
   ||manifest.stationCount!==referenceStationCount()
@@ -29,6 +28,8 @@ async function loadTrackProfiles(){
   const boat=byId.get(entry?.id);
   if(!boat||seen.has(entry.id)||entry.pointCount!==boat.points.length||entry.stationCount!==referenceStationCount())fail('ugyldig båd eller antal i manifestet.');
   seen.add(entry.id);
+  if(entry.replayOffset!==offset)fail('ugyldig sporposition i manifestet.');
+  offset+=entry.pointCount*12;
   if(entry.sampleOffset!==offset)fail('ugyldig kildeposition i manifestet.');
   offset+=(entry.pointCount+1)*8+packedSpeedBytes(entry.pointCount+1);
   if(!Number.isSafeInteger(offset)||entry.timeSampleOffset!==offset)fail('ugyldig tidsprøveposition i manifestet.');
@@ -40,15 +41,9 @@ async function loadTrackProfiles(){
   if(!Number.isSafeInteger(offset)||offset>manifest.bundleBytes)fail('ugyldig profilstørrelse i manifestet.');
   pending.push({boat,entry});
  }
- async function load(name,byteLength){
-  const response=await fetch(name);
-  if(!response.ok)fail(name+' ('+response.status+').');
-  const buffer=await response.arrayBuffer();
-  if(buffer.byteLength!==byteLength)fail('forkert filstørrelse: '+name+'.');
-  return new Uint8Array(buffer);
- }
  if(offset!==manifest.bundleBytes)fail('forkert samlet profilstørrelse i manifestet.');
- const bundle=await load(manifest.bundleFile,manifest.bundleBytes);
+ if(buffer.byteLength!==manifest.bundleBytes)fail('forkert samlet sporfilstørrelse.');
+ const bundle=new Uint8Array(buffer);
  let maximum=0;
  const prepared=new Map();
  for(const {boat,entry} of pending){
@@ -70,4 +65,5 @@ async function loadTrackProfiles(){
  }
  for(const [points,profile] of prepared)trackProfileCache.set(points,profile);
  maxReferenceStations=maximum;
+ replayResources=null;
 }

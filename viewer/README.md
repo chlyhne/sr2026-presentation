@@ -596,13 +596,15 @@ genhentet og valideret mod de officielle klassestarter og registrerede måltider
 download. Den tidligere faste visningsgrænse 13. juni kl. 04 dansk tid er fjernet:
 visningsperioden udledes nu af hele datasættet og omfatter alle startskud og
 slutpositioner med fem minutters margen. Den fulde udgave er
-bevaret i `../data/tractrac/combined_tracks.json`. Visningen indeholder alle 730.370
-trackpunkter fra dette datasæt med uændrede koordinater og tidspræcision. Der er
-ingen decimering eller forenkling af sporene. Tidsstempler omregnes fra millisekunder
-til sekunder uden afrunding. Visningen interpolerer længde- og breddegrad hver
-for sig med formbevarende kubisk Hermite-interpolation (PCHIP) i kildens tid.
-Kurven går gennem alle målepunkter og holder sig inden for hvert nabopars
-koordinatgrænser. Den samme kurve bruges til spor, positionsprik og beregning af,
+bevaret i `../data/tractrac/combined_tracks.json`. De 730.370 oprindelige
+trackpunkter er offlinegrundlaget. Buildet resampler alle både med formbevarende
+kubisk Hermite-interpolation (PCHIP) på det fælles gitter `DATA.start + n * 10`
+sekunder. Præcise første/sidste tidspunkter og begge sider af datahuller bevares
+som ekstra knuder. Huller over fem minutter interpoleres ikke. Det nuværende
+datasæt giver 1.800.766 knuder, fordi mange oprindelige intervaller er 60 eller
+120 sekunder. Position og målt SOG resamples før alle sammenligningsberegninger.
+Renderingen interpolerer fortsat kubisk mellem de nye knuder, ikke lineært.
+Den samme kurve bruges til spor, positionsprik og beregning af,
 hvornår båden er inde i kortudsnittet. Også passager mellem to målepunkter tæller
 med på tidslinjen, selv når ingen af de to målepunkter ligger i udsnittet.
 
@@ -620,7 +622,7 @@ gemte kortudsnit og kontrollerer genbrug af de forberedte intervaller.
 Kurverne tegnes i den aktuelle skærmopløsning ved alle zoomniveauer; der
 bruges ingen fast opløsning af ekstra punkter. Begge ender af to-timerssporet
 afskæres ved de præcise tidspunkter på kurven. Interpolationen ændrer ikke
-kildedata eller tilføjer observationer. Metode:
+kildedata; de resamplede knuder er interpolerede værdier, ikke nye observationer. Metode:
 https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.PchipInterpolator.html .
 
 Farten kommer fra MTB-positionernes oprindelige `speed`-felt, genudtrukket med
@@ -633,9 +635,9 @@ TracTracs `formatSpeed`/`Kts`-kode:
 https://live.tractrac.com/viewer/app.CuZgOaCm.js .
 
 Fartværdierne ligger i hver båds `speeds`-array, parallelt med `points`.
-Der bruges ingen finite differences eller afledte af den interpolerede position
-til farvelægningen. Kildens fart interpoleres lineært mellem kildetidspunkterne;
-den oprindelige PCHIP-kurve opdeles ved jet-skalaens 128 farvetrin uden at ændre
+Absolut fart bruger målt SOG, ikke fart beregnet af koordinatforskelle.
+Kildens fart resamples kubisk under buildet; mellem replayknuderne interpoleres
+fartfarven lineært. Replayets PCHIP-kurve opdeles ved jet-skalaens 128 farvetrin uden at ændre
 geometrien. Der farves ikke hen over trackhuller på mere end fem minutter.
 Manglende eller negative fartværdier vises gråt og erstattes ikke med nul.
 Farver over 15 knob mættes uden at ændre eller afskære selve fartdataene.
@@ -985,18 +987,22 @@ Profilerne bruger pakkede 10 bit pr. 10-meterstation: 0–1022 koder for 0–25 
 1023 for manglende data. Højere hastigheder klippes til 25; negative til 0.
 Afrunding til nærmeste kode giver højst cirka 0,0123 knobs kvantiseringsfejl
 inden for intervallet. Ruten på cirka 417 km giver 41.709 stationer pr. båd.
-Fart ved hvert oprindeligt tidsindekseret kildepunkt gemmes også med pakkede 10 bit.
+Fart ved hvert resamplet tidsindekseret punkt gemmes også med pakkede 10 bit.
 På serveren fylder kildepositionen otte bytes: Float32-indeks og -progression;
 dertil kommer fartkoderne, fire værdier i fem bytes. Kun sidste bytes ubrugte
 høje bits nuludfyldes. Negativ egen VMG bevares i indeksfeltets fortegn uden ekstra bytes;
 positioner og tidsstempler kvantiseres ikke til 10 bit.
 Alle både pakkes i én fingerprint-navngivet `fleet.bin`, som hentes med ét request.
-Manifest v6 angiver hver båds byte-offsets og den samlede filstørrelse; indlæsningen
+Manifest v7 angiver hver båds byte-offsets og den samlede filstørrelse; indlæsningen
 afviser ugyldige områder, overlap og afkortede filer uden at offentliggøre delvise data.
-Pages publicerer kun det aktuelle manifest og den tilhørende samlede fil.
-Fartdata fylder cirka 11,71 MiB: 6,44 MiB kildeprøver og
+Pages publicerer det aktuelle manifest, metadata og den tilhørende samlede fil;
+den oprindelige `data.js` bruges kun offline. [`replay-data.js`](./replay-data.js)
+henter metadata og binærfil parallelt og genskaber tidsaksen fra segmentgrænser
+og det fælles 10-sekunders gitter. Replayposition og målt SOG fylder 12 bytes pr.
+punkt som lokale Float32-koordinater og fart; farvegrundlag forbliver pakkede 10 bit.
+Fartdata fylder cirka 21,16 MiB: 15,89 MiB kildeprøver og
 5,27 MiB referenceprofiler. Browseren afkoder kildeprøverne én gang til GPU'ens
-Float32-format (8,36 MiB), mens alle referenceprofiler beholdes som Uint16-koder (8,43 MiB).
+Float32-format (20,61 MiB), mens alle referenceprofiler beholdes som Uint16-koder (8,43 MiB).
 Profilerne pakkes ud af downloadbufferen, så denne kan frigives efter indlæsning;
 der beholdes ingen views, som fastholder de allerede afkodede kildeprøver.
 Også tidsfarver gemmes som pakkede 10-bit-heltal, først efter at projektioner og
@@ -1006,20 +1012,21 @@ så store endelige tidsforbrug bevares uden et fast maksimum. Koderne 0–1021 e
 cirka 0,049 % af blokkens største endelige værdi. Skalaerne fylder cirka 0,016 byte
 pr. værdi ud over de 1,25 byte for selve 10-bit-koderne. Stationsindeks bevarer
 deres Float32-præcision, og alle tidsindekserede farvearrays bruger bådens ene
-oprindelige tidsakse; der gemmes ingen nye tidsstempler. Slutprøvens dublet
-genskabes ved afkodning. Samlet download er cirka 20,72 MiB før HTTP-komprimering.
+resamplede tidsakse; der gemmes ingen ekstra tidsstempler. Slutprøvens dublet
+genskabes ved afkodning. Den samlede binærfil er cirka 56,14 MiB før HTTP-komprimering,
+inklusive 20,61 MiB replaykoordinater og SOG, 9,04 MiB tidsprøver og 5,34 MiB tidsprofiler.
 Det samlede CPU-lager for afkodede fart- og tidsprofiler
-er fortsat cirka 39,23 MiB. Lageret vokser lineært med
+er cirka 59,64 MiB. Lageret vokser lineært med
 kildeprøver og antal både; der opbygges ingen cache for alle bådpar.
 Profilerne gemmer hverken stationspositioner eller tider. Hoverens omtrentlige
 referencetid findes ved opslag og interpolation mellem de allerede forberedte
-kildepositioner og deres oprindelige tidsstempler.
+kildepositioner og deres resamplede tidsstempler.
 
 Kun den valgte references fart- og tidsprofiler uploades til en genbrugt RG32F
 GPU-tekstur, cirka 0,320 MiB i den aktuelle opsætning. Transform feedback slår dens stationer op én gang pr.
-referencevalg og skriver absolut-, handicap- og tidsforskel ved de oprindelige
+referencevalg og skriver absolut-, handicap- og tidsforskel ved de resamplede
 kildepunkter til en genbrugt GPU-buffer med tre floats pr. kildeprøve. Den ekstra
-kanal bruger cirka 2,79 MiB GPU-lager for det aktuelle felt og opretter ingen
+kanal bruger cirka 6,87 MiB GPU-lager for det aktuelle felt og opretter ingen
 cache for bådpar. Kildebufferen
 indeholder det heltallige stationsindeks, progression i sømil og egen VMG; indekset
 beregnes før Float32-konvertering, så GPU'en ikke afrunder til en anden station.

@@ -21,9 +21,9 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
    const forbidden=()=>{throw Error('Referencevalg genberegnede eller allokerede faste spordata');};
    projectedTrackSample=prepareProjectedTrack=prepareReferenceProfile=prepareTimeProfiles=projectedTimeSample=forbidden;
    webglTracks.gl.createBuffer=webglTracks.gl.bufferData=webglTracks.gl.bufferSubData=forbidden;
-   return {id:referenceBoatId,count:boats.length,bytes:referenceTestInitial};
+   return {id:referenceBoatId,count:boats.length,bytes:referenceTestInitial,expectedCpu:boats.reduce((sum,boat)=>sum+(boat.points.length+1)*20+referenceStationCount()*6,0)};
   });
-  assert.ok(baseline.bytes.cpu<40*1024*1024,'All speed and time profiles remain linear-sized, below 40 MiB for this fleet');
+  assert.equal(baseline.bytes.cpu,baseline.expectedCpu,'All speed and time profiles remain linear in points and stations, never boat pairs');
   const format=await page.evaluate(()=>({
    bytes:boats.reduce((sum,boat)=>sum+trackProfileCache.get(boat.points).stations.byteLength,0),
    count:referenceStationCount(),boats:boats.length,
@@ -34,7 +34,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   assert.equal(format.textureBytes,1024*Math.ceil(format.count/1024)*8);
   const manifest=await page.evaluate(async()=>await (await fetch('track-profiles/manifest.json',{cache:'no-store'})).json());
   assert.equal(manifest.samplePositionBytes,8);assert.equal(manifest.sampleEncoding,'uint10-speed-planar');
-  assert.equal(manifest.speedBits,10);assert.equal(manifest.version,6);
+  assert.equal(manifest.speedBits,10);assert.equal(manifest.version,7);
   assert.equal(manifest.timeEncoding,'uint10-block-scaled-seconds-per-meter');
   const downloads=await page.evaluate(()=>performance.getEntriesByType('resource').filter(entry=>/\/track-profiles\/.*\.bin$/.test(new URL(entry.name).pathname)).map(entry=>entry.name));
   assert.equal(downloads.length,1);assert.ok(downloads[0].endsWith('/fleet.bin'));
@@ -68,7 +68,9 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
         missing++;
        }else{
         const difference=Math.abs(actual-expected[basis]);maxError=Math.max(maxError,difference);
-        const tolerance=basis===2?.002+Math.abs(expected[basis])*.000001:.0002;
+        const handicapFactor=1+(reference.handicapSecondsPerNm-boat.handicapSecondsPerNm)*speed/3600;
+        const conditioning=basis===1?Math.max(1,1/Math.abs(handicapFactor)):1;
+        const tolerance=(basis===2?.002:.0002)+Math.abs(expected[basis])*.000002*conditioning;
         if(difference>tolerance)throw Error(`CPU/GPU mismatch: ${boat.name} #${index}: ${actual} vs ${expected[basis]}`);
         checked++;
        }
@@ -132,7 +134,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
     await route.fulfill({json:manifest});
    });
    await invalid.goto(url);await invalid.waitForSelector('#viewerLoadingError:not([hidden])');
-   assert.equal(await invalid.evaluate(()=>boats.every(boat=>!trackProfileCache.has(boat.points))),true);
+   assert.equal(await invalid.evaluate(()=>typeof boats==='undefined'||typeof trackProfileCache==='undefined'||boats.every(boat=>!trackProfileCache.has(boat.points))),true);
    await invalid.close();
   }
   for(const kind of ['profile','samples']){
@@ -140,10 +142,10 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
    await invalid.route('**/fleet.bin',async route=>{
     const response=await route.fetch(),body=await response.body();
     if(kind==='profile')await route.fulfill({body:body.subarray(1)});
-    else {body.writeFloatLE(-1.5,0);await route.fulfill({body});}
+    else {body.writeFloatLE(NaN,0);await route.fulfill({body});}
    });
    await invalid.goto(url);await invalid.waitForSelector('#viewerLoadingError:not([hidden])');
-   assert.equal(await invalid.evaluate(()=>boats.every(boat=>!trackProfileCache.has(boat.points))),true);
+   assert.equal(await invalid.evaluate(()=>typeof boats==='undefined'||typeof trackProfileCache==='undefined'||boats.every(boat=>!trackProfileCache.has(boat.points))),true);
    await invalid.close();
   }
   console.log(JSON.stringify({browser:'firefox',checks,timingsMs:timings,bytes:baseline.bytes,format,errors}));

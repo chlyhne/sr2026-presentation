@@ -33,12 +33,12 @@ def build():
         stage = Path(temporary) / 'public'
         stage.mkdir()
         profile_manifest = json.loads((ROOT / 'viewer' / 'track-profiles' / 'manifest.json').read_text(encoding='utf-8'))
-        profile_files = {'track-profiles/manifest.json', profile_manifest['bundleFile']}
+        profile_files = {'track-profiles/manifest.json', profile_manifest['bundleFile'], profile_manifest['dataFile']}
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
             if relative.parts[0] == 'track-profiles' and relative.as_posix() not in profile_files:
                 continue
-            if any(part.startswith('.') for part in relative.parts) or path.name == 'rhumbline-editor.js':
+            if any(part.startswith('.') for part in relative.parts) or path.name in {'rhumbline-editor.js', 'data.js'}:
                 continue
             if path.is_symlink():
                 raise ValueError(f'Symbolic links cannot be published: {relative}')

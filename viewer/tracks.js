@@ -91,13 +91,15 @@ function endpointSlope(h0,h1,d0,d1){
 function getTrackModel(points){
  if(trackModelCache.has(points))return trackModelCache.get(points);
  const slopes=[new Float64Array(points.length),new Float64Array(points.length)];
+ for(let axis=0;axis<2;axis++){
  let start=0;
  while(start<points.length){
+  if(!Number.isFinite(points[start][axis])){start++;continue;}
   let end=start;
-  while(end+1<points.length&&points[end+1][2]>points[end][2]&&points[end+1][2]-points[end][2]<=TRACK_MAX_GAP)end++;
-  if(end>start)for(let axis=0;axis<2;axis++){
+  while(end+1<points.length&&Number.isFinite(points[end+1][axis])&&points[end+1][2]>points[end][2]&&points[end+1][2]-points[end][2]<=TRACK_MAX_GAP)end++;
+  if(end>start){
    const slope=slopes[axis],h=i=>points[i+1][2]-points[i][2],d=i=>(points[i+1][axis]-points[i][axis])/h(i);
-   if(end===start+1){slope[start]=slope[end]=d(start);continue;}
+   if(end===start+1){slope[start]=slope[end]=d(start);start=end+1;continue;}
    slope[start]=endpointSlope(h(start),h(start+1),d(start),d(start+1));
    slope[end]=endpointSlope(h(end-1),h(end-2),d(end-1),d(end-2));
    for(let i=start+1;i<end;i++){
@@ -108,6 +110,7 @@ function getTrackModel(points){
    }
   }
   start=end+1;
+ }
  }
  const model={slopes};trackModelCache.set(points,model);return model;
 }
