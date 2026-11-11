@@ -13,7 +13,9 @@ function clearRenderingFailure(layer){
  renderingErrors.delete(layer);
  if(renderingErrors.size){$('renderingErrorDetails').textContent=[...renderingErrors].map(([name,message])=>`${name}: ${message}`).join('\n');return;}
  document.body.classList.remove('rendering-failed');$('renderingError').hidden=true;
- $('renderingErrorDetails').textContent='';$('play').disabled=$('time').disabled;
+ $('renderingErrorDetails').textContent='';
+ // The timeline is loaded after WebGL initialization during boot.
+ if(typeof syncPlaybackAvailability==='function')syncPlaybackAvailability();
 }
 function assertRenderingReady(){
  if(hasRenderingFailure())throw Error([...renderingErrors].map(([name,message])=>`${name}: ${message}`).join('\n'));

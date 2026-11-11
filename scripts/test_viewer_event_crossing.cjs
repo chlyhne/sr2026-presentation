@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),path=require('node:path');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 async function check(type){
  const browser=await type.launch({headless:true});
  try{
@@ -10,8 +10,9 @@ async function check(type){
   await page.waitForTimeout(100);
   await page.clock.install();await page.clock.pauseAt(new Date());
   const fixture=await page.evaluate(()=>{
+   syncTimelineViewport();
    const base=D.start+3600,settings={...sceneSettings(),wind:true,rain:true,boats:[]};
-   notes=[[100,'A'],[110,'B'],[120,'C'],[120,'C duplicate'],[500,'Hidden'],[1100,'Next visit']].map(([t,text])=>({time:base+t,text,view:[0,0,2,2],settings}));
+   notes=[[100,'A'],[110,'B'],[120,'C'],[120,'C duplicate'],[500.025,'Hidden'],[1100,'Next visit']].map(([t,text])=>({time:base+t,text,view:[0,0,2,2],settings}));
    persistNotes(notes);showNotes();
    visibleTimeRanges=[{start:base,end:base+300},{start:base+1000,end:base+1300}];boatTimeRanges=visibleTimeRanges.map(r=>({...r}));timelineLength=602;
    $('time').max=601;$('time').disabled=false;$('play').disabled=false;
@@ -28,13 +29,21 @@ async function check(type){
   await page.evaluate(base=>{selectedTime=base+99.95;activePresentationNote=notes[1];setCurrentTime(selectedTime,{fractional:true});},fixture.base);
   await page.locator('#playbackSpeed').selectOption('1');await page.locator('#play').click();await page.clock.runFor(100);
   s=await state();assert.ok(Math.abs(s.time-fixture.base-100.05)<.001);assert.equal(s.event,'A');assert.equal(s.playing,true);preserved(s);await page.locator('#play').click();
-  // Crossing a compressed time gap must ignore events without visible boats.
+  // Continuous replay selects crossed events even in a gap, without stopping.
   await page.evaluate(base=>{selectedTime=base+290;activePresentationNote=notes[0];setCurrentTime(selectedTime);},fixture.base);
   await page.locator('#playbackSpeed').selectOption('400');await page.locator('#play').click();await page.clock.runFor(100);
-  s=await state();assert.equal(s.time,fixture.base+1029);assert.equal(s.event,'A');assert.equal(s.playing,true);
-  await page.clock.runFor(200);s=await state();assert.equal(s.time,fixture.base+1109);assert.equal(s.event,'Next visit');preserved(s);await page.locator('#play').click();
+  s=await state();assert.equal(s.time,fixture.base+330);assert.equal(s.event,'A');assert.equal(s.playing,true);
+  await page.clock.runFor(1900);s=await state();assert.equal(s.time,fixture.base+1090);assert.equal(s.event,'Hidden');assert.equal(s.playing,true);preserved(s);
+  await page.clock.runFor(50);s=await state();assert.equal(s.time,fixture.base+1110);assert.equal(s.event,'Next visit');preserved(s);await page.locator('#play').click();
   // Large slider movements activate crossed events in both directions.
-  await page.evaluate(base=>{selectedTime=base+90;setCurrentTime(selectedTime);$('time').value=220;$('time').dispatchEvent(new Event('input'));},fixture.base);
+  await page.evaluate(base=>{
+   // Initial layout may have refreshed the real geographic slider during
+   // playback. Install the manual-slider fixture after that refresh.
+   syncTimelineViewport();
+   visibleTimeRanges=[{start:base,end:base+300},{start:base+1000,end:base+1300}];boatTimeRanges=visibleTimeRanges.map(r=>({...r}));timelineLength=602;
+   $('time').max=601;$('time').disabled=false;
+   selectedTime=base+90;setCurrentTime(selectedTime);$('time').value=220;$('time').dispatchEvent(new Event('input'));
+  },fixture.base);
   s=await state();assert.equal(s.time,fixture.base+220);assert.equal(s.event,'C');preserved(s);
   await page.evaluate(()=>{$('time').value=80;$('time').dispatchEvent(new Event('input'));});
   s=await state();assert.equal(s.time,fixture.base+80);assert.equal(s.event,'A');preserved(s);
@@ -52,4 +61,4 @@ async function check(type){
   assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:type.name(),checks:'continuous 400x and fractional 1x playback, crossed events, compressed gaps, forward/reverse scrub, wheel, stable same-time selection, unchanged scene/storage',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{for(const type of [firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

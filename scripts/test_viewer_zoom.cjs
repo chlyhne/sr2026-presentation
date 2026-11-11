@@ -13,7 +13,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    stopPlayback();consumeRenderRequest();$('wind').checked=$('rain').checked=false;
    setCurrentTime(D.start+43200);
    const position=displayBoatPosition(referenceBoat(),currentTime());check(position,'Reference boat is missing');
-   const [x,y]=xy(position.point);view=[x-view[2]/2,y-view[3]/2,view[2],view[3]];setview();updateTimeline({preserveTime:true});render();
+   const [x,y]=xy(position.point);view=[x-view[2]/2,y-view[3]/2,view[2],view[3]];setview();updateTimeline();render();
    const renderer=webglTracks,gl=renderer.gl,uploads=renderer.uploads,marker=$('boatMarkers').firstElementChild,legend=$('trackSpeedLegend').firstElementChild;
    const buffers=[...renderer.buffers],originals=new Map(),functions=new Map(),map=$('map'),time=currentTime();
    check(typeof renderer.cache==='undefined'&&typeof WebGLTrackCache==='undefined','Raster cache must be removed');

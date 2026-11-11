@@ -82,9 +82,22 @@ samme nominelle SVG-markør uden en ekstra hit-testimplementering.
 
 Tidslinjens viewportindeks samles med en 150 ms opgave efter sidste
 kameraændring. Den opdaterer kun sliderens afledte UI. Ved faktisk betjening af
-slider/step/Afspil synkroniseres indekset først. En startet afspilning fastholder
-sine oprindelige passageperioder, så et nyt udsnit ikke flytter tiden eller
-stopper afspilningen. Nye afspilninger bruger det nye udsnit.
+slider/step synkroniseres indekset først. Afspilning bruger den valgte tid som
+eneste klokke og lægger forløbet vægtid gange hastigheden til. Passageperioderne
+bruges kun til manuel søgning og kan hverken flytte eller afslutte afspilningen.
+Almindelig afspilning stopper ved datasættets globale slutning; handicapvisning
+bruger hele feltets forberedte sluttid inklusive målophold. Et udtrykkeligt
+eventmål stopper fortsat præcist ved eventet og bevarer referencefølgning.
+
+En efterfølgende gennemgang fandt, at den oprindelige kopi af passageperioder
+lod afspilningen følge en anden tidslinje end slideren efter zoom. Det kunne
+give timer lange spring eller stop ved det gamle udsnits slutgrænse. Kopien og
+afspilningsoffsettet er fjernet. Slideropdateringer bevarer altid tiden og
+ticktidspunktet. Afspil/Pause afhænger af klokken og ikke af sliderens tilstand.
+Regressionstesten `scripts/test_viewer_playback_camera.cjs` reproducerer
+tidsspringet på den tidligere kode og krydser nu de faktiske passagegrænser med
+wheel-zoom, afprøver start i et tidshul og kontrollerer stop ved begge globale
+slutgrænser uden afhængighed af kortudsnit eller bådfilter.
 
 ## Målinger og validering
 

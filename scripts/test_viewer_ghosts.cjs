@@ -104,7 +104,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    const beyond=boats.find(boat=>!ghostClocks.get(boat.id).error&&ghostClocks.get(boat.id).end>D.end);
    if(!beyond)throw Error('Expected a compensated finish after the complete source-data window');
    chosen.add(beyond.name);
-   view=[230,250,620,760];setview();updateTimeline({preserveTime:true});
+   view=[230,250,620,760];setview();updateTimeline();
    const selected=boats.filter(boatIsDisplayed).map(boat=>({boat,clock:ghostClocks.get(boat.id)})).sort((a,b)=>a.clock.end-b.clock.end);
    const winner=selected[0],last=selected.at(-1);setCurrentTime(last.clock.end+1,{fractional:true});render();
    return {winner:winner.boat.id,winnerTime:winner.clock.end,last:last.boat.id,lastTime:last.clock.end,time:currentTime(),dataEnd:D.end,rangesEnd:visibleTimeRanges.at(-1).end};

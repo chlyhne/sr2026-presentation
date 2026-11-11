@@ -122,14 +122,14 @@ function setBoatSearch(value){
   if(query===boatSearchQuery)return;
   boatSearchQuery=query;
   $('visibleBoatsPanel').scrollTop=0;
-  updateTimeline({preserveTime:true});requestRender();
+  updateTimeline();requestRender();
  });
 }
 $('boatSearchInput').oninput=event=>setBoatSearch(event.target.value);
 function setBoatFavouritesOnly(enabled){
  return changeEventConfiguration(()=>{
   boatFavouritesOnly=enabled;$('boatFavouritesOnly').setAttribute('aria-pressed',String(enabled));
-  $('visibleBoatsPanel').scrollTop=0;updateTimeline({preserveTime:true});requestRender();
+  $('visibleBoatsPanel').scrollTop=0;updateTimeline();requestRender();
  });
 }
 $('boatFavouritesOnly').onclick=()=>setBoatFavouritesOnly(!boatFavouritesOnly);

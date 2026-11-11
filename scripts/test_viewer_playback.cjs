@@ -56,10 +56,11 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await page.locator('#play').isEnabled(),true,'Pause remains available outside the visible timeline');
   await page.evaluate(()=>{view=[230,250,620,760];setview();});await page.clock.runFor(200);
   await page.locator('#time').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.evaluate(()=>!!interval),false,'Manual keyboard step pauses');
-  // Crossing hidden periods and stopping at the end must work with fractional frames.
+  // Slider gaps and its last visit are never playback clock boundaries.
   await page.evaluate(()=>{visibleTimeRanges=[{start:D.start,end:D.start+2},{start:D.start+100,end:D.start+103}];timelineLength=7;selectedTime=D.start;$('time').disabled=false;$('time').max=6;$('playbackSpeed').value='10';});
-  await page.locator('#play').click();await page.clock.runFor(300);assert.equal(await page.evaluate(()=>currentTime()),await page.evaluate(()=>D.start+100));
-  await page.clock.runFor(300);assert.equal(await page.evaluate(()=>currentTime()),await page.evaluate(()=>D.start+103));assert.equal(await page.evaluate(()=>!!interval),false);
+  await page.locator('#play').click();await page.clock.runFor(300);assert.ok(Math.abs(await page.evaluate(()=>currentTime()-D.start)-3)<.001);
+  await page.clock.runFor(11000);assert.ok(Math.abs(await page.evaluate(()=>currentTime()-D.start)-113)<.001);assert.equal(await page.evaluate(()=>!!interval),true);
+  await page.locator('#play').click();
   assert.equal(await page.locator('#playIcon').isVisible(),true);assert.equal(await page.locator('#pauseIcon').isVisible(),false);
   await page.evaluate(()=>{
    const settings={...sceneSettings(),wind:false,rain:false},time=D.start+3600;
@@ -71,6 +72,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#nextEvent').click();assert.equal(await page.evaluate(()=>activePresentationNote.text),'C');assert.equal(await page.locator('#nextEvent').isDisabled(),true);
   await page.locator('#eventSelect').selectOption('1');await page.locator('#playbackSpeed').selectOption('5');
   await page.screenshot({path:'/tmp/sr2026-playbar.png'});
-  assert.deepEqual(errors,[]);console.log('Firefox PC: conventional transport order and icons, play/pause, all speed steps and bounds, no reverse playback, unchanged paused time, live speed changes, 20 FPS, fractional playback, keyboard steps, event navigation, hidden periods and end pause.');
+  assert.deepEqual(errors,[]);console.log('Firefox PC: conventional transport order and icons, play/pause, all speed steps and bounds, no reverse playback, unchanged paused time, live speed changes, 20 FPS, fractional playback, keyboard steps, event navigation, continuous playback across slider gaps and visit ends.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

@@ -377,7 +377,7 @@ document.addEventListener('keydown',event=>{
 },true);
 for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
-let playbackTickTime=0,playbackRate=1,playbackOffset=0,eventPlaybackTarget=null,playbackRanges=[],playbackLength=0;
+let playbackTickTime=0,playbackRate=1,eventPlaybackTarget=null;
 function syncPlaybackControls(){
  const playing=interval!==null,label=playing?'Pause':'Afspil',speed=$('playbackSpeed'),index=speed.selectedIndex;
  $('play').setAttribute('aria-label',label);$('play').title=label;
@@ -406,28 +406,24 @@ function centerPlaybackOnReferenceBoat(){
 }
 function advancePlayback(now){
  if(hasRenderingFailure()){stopPlayback();return;}
- if(eventPlaybackTarget){
-  const target=eventPlaybackTarget;
-  if(!notes.includes(target)){stopPlayback();return;}
-  const nextTime=currentTime()+Math.max(0,now-playbackTickTime)/1000*playbackRate;
-  playbackTickTime=now;
-  if(nextTime>=target.time-1e-6)restoreNote(target,{showImage:true,restoreView:false});
-  else{setCurrentTime(nextTime,{fractional:true,allowOutsideVisibleRanges:true});centerPlaybackOnReferenceBoat();requestRender();}
-  return;
- }
- playbackOffset=Math.min(playbackLength-1,playbackOffset+(now-playbackTickTime)/1000*playbackRate);
+ const target=eventPlaybackTarget;
+ if(target&&!notes.includes(target)){stopPlayback();return;}
+ // Replay time is the clock. Viewport visits only describe the manual slider;
+ // they must never seek, pause or terminate an already running clock.
+ const end=target?target.time:viewerEndTime();
+ const nextTime=currentTime()+Math.max(0,now-playbackTickTime)/1000*playbackRate;
  playbackTickTime=now;
- setCurrentTime(timeAtOffset(playbackOffset,{fractional:true,ranges:playbackRanges,length:playbackLength}),{fractional:true,crossedEvents:true,allowOutsideVisibleRanges:true});requestRender();
- if(playbackOffset>=playbackLength-1)stopPlayback();
+ if(target&&nextTime>=end-1e-6){restoreNote(target,{showImage:true,restoreView:false});return;}
+ if(currentTime()>=end){stopPlayback();return;}
+ setCurrentTime(Math.min(end,nextTime),{fractional:true,crossedEvents:!target,allowOutsideVisibleRanges:true});
+ if(target)centerPlaybackOnReferenceBoat();
+ requestRender();
+ if(nextTime>=end)stopPlayback();
 }
 function startPlayback({target=null}={}){
- syncTimelineViewport();
- if(hasRenderingFailure())return;
- if((!target&&$('time').disabled)||!finishInlineTextEditing())return;
+ if(interval!==null||hasRenderingFailure())return;
+ if((!target&&currentTime()>=viewerEndTime())||!finishInlineTextEditing())return;
  prepareSelectedTracks();
- playbackOffset=offsetAtTime(currentTime());
- playbackRanges=visibleTimeRanges;playbackLength=timelineLength;
- if(!target&&playbackOffset>=timelineLength-1)return;
  eventPlaybackTarget=target;
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
  $('play').disabled=false;interval=setInterval(()=>advancePlayback(performance.now()),50);syncPlaybackControls();

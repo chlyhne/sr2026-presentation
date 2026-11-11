@@ -29,7 +29,7 @@ function stopPlayback() {
  syncPlaybackControls();
  if(eventPlaybackTarget){$('presentationMessage').textContent='';$('nextEvent').title='Afspil frem til næste event';}
  eventPlaybackTarget=null;
- $('play').disabled=$('time').disabled;
+ syncPlaybackAvailability();
 }
 function cancelPlacement() {
  placingNote=false;$('map').classList.remove('placing');$('cancelNote').hidden=true;
@@ -93,7 +93,7 @@ function changeEventConfiguration(change){
  if(result===false||!persistEventSettings(target,changes)){
   applySceneSettings(before);
   keys.forEach((key,index)=>{if(preferences[index]===null)localStorage.removeItem(key);else localStorage.setItem(key,preferences[index]);});
-  updateTimeline({preserveTime:true});selectedTime=time;$('time').value=offsetAtTime(time);activePresentationNote=active;
+  updateTimeline();selectedTime=time;$('time').value=offsetAtTime(time);activePresentationNote=active;
   requestRender();return false;
  }
  if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
@@ -138,7 +138,7 @@ function changeBoatSelection(change){
   $('eventBoatStatus').textContent='Bådvalget kunne ikke gemmes til eventet.';return;
  }
  prepareSelectedTracks();
- $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline({preserveTime:true});
+ $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline();
  if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
  requestRender();
 }
