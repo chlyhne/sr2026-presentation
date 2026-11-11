@@ -34,7 +34,7 @@ function renderNoteDrawings(){
  const layer=$('noteDrawings');layer.replaceChildren();
  for(const [i,saved] of notes.entries()){
   if(!noteIsVisible(saved))continue;
-  const note=saved===editingNote?noteDraft:saved;
+  const note=saved;
   if(!Array.isArray(note.drawings)||!note.drawings.length)continue;
   const group=el('g',{'data-drawing-note-index':i},layer);
   for(const shape of note.drawings)drawNoteShape(shape,group);
@@ -46,7 +46,7 @@ function renderDrawingPreview(){
  if(drawingGesture&&$('annotationsVisible').checked)drawNoteShape(drawingGesture.shape,$('drawingPreview'));
 }
 function updateDrawingControls(){
- const count=Array.isArray(noteDraft?.drawings)?noteDraft.drawings.length:0;
+ const count=Array.isArray(editingNote?.drawings)?editingNote.drawings.length:0;
  $('undoDrawing').disabled=$('clearDrawings').disabled=count===0;
  $('drawingCount').textContent=`${count} ${count===1?'tegning':'tegninger'} til denne note`;
 }
@@ -60,7 +60,9 @@ function mapDrawingPoint(e,inverse){
 function beginDrawingGesture(e){
  if(drawingGesture){e.preventDefault();return true;}
  if(!editingNote||drawingTool==='pan'||placingNote||document.body.classList.contains('presenting'))return false;
- e.preventDefault();stopPlayback();$('annotationsVisible').checked=true;
+ e.preventDefault();stopPlayback();
+ if(!persistEventSettings(editingNote,{annotationsVisible:true}))return true;
+ $('annotationsVisible').checked=true;
  const inverse=mapViewport().inverse,point=mapDrawingPoint(e,inverse);
  drawingGesture={pointerId:e.pointerId,inverse,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false,
   shape:{tool:drawingTool,colour:$('drawingColour').value,width:+$('drawingWidth').value,points:[point,point]}};
@@ -88,8 +90,7 @@ function endDrawingGesture(e){
   if(gesture.moved){
    const point=mapDrawingPoint(e,gesture.inverse);
    if(gesture.shape.tool==='pen')gesture.shape.points.push(point);else gesture.shape.points[1]=point;
-   if(!Array.isArray(noteDraft.drawings))noteDraft.drawings=[];
-   noteDraft.drawings.push(gesture.shape);
+   persistEventChanges(editingNote,{drawings:[...(editingNote.drawings||[]),gesture.shape]});
   }
  }
  cancelDrawingGesture();updateDrawingControls();renderAnnotations();return true;
@@ -102,8 +103,8 @@ function cancelDrawingGesture(){
 }
 $('drawingTool').onchange=()=>{cancelPlacement();setDrawingTool($('drawingTool').value);};
 $('undoDrawing').onclick=()=>{
- if(!noteDraft)return;cancelDrawingGesture();noteDraft.drawings?.pop();updateDrawingControls();renderAnnotations();
+ if(!editingNote)return;cancelDrawingGesture();persistEventChanges(editingNote,{drawings:(editingNote.drawings||[]).slice(0,-1)});updateDrawingControls();renderAnnotations();
 };
 $('clearDrawings').onclick=()=>{
- if(!noteDraft)return;cancelDrawingGesture();noteDraft.drawings=[];updateDrawingControls();renderAnnotations();
+ if(!editingNote)return;cancelDrawingGesture();persistEventChanges(editingNote,{drawings:[]});updateDrawingControls();renderAnnotations();
 };

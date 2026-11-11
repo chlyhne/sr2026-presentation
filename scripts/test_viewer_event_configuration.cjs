@@ -65,14 +65,14 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.deepEqual((await saved()).slice(1),fixtures.slice(1));
   await page.evaluate(()=>setHandicapTracks(true));
   assert.equal((await saved())[0].settings.handicapTracksEnabled,true);
-  const changed=await saved();
   await page.evaluate(()=>beginNoteEditing(notes[0]));
   await page.evaluate(()=>{setHandicapTracks(false);setBoatSearch('rosa');saveReferenceBoat(boats[0].id);});
-  assert.deepEqual(await saved(),changed);
-  await page.locator('#cancelEdit').click();assert.deepEqual(await snapshot(),changed[0].settings);
+  assert.deepEqual((await saved())[0].settings,await snapshot(),'Editing an event saves immediately');
+  const changed=await saved();
+  await page.evaluate(()=>{restoreNote(notes[1]);restoreNote(notes[0]);});
+  assert.deepEqual(await snapshot(),changed[0].settings,'Navigation needs no Save or Cancel step');
   await page.evaluate(()=>{
-   beginNoteEditing(notes[0]);setHandicapTracks(false);setBoatSearch('my');
-   saveComparison({enabled:false,basis:'absolute',boatColour:true});saveAnnotation();
+   setHandicapTracks(false);setBoatSearch('my');saveComparison({enabled:false,basis:'absolute',boatColour:true});
   });
   assert.deepEqual((await saved())[0].settings,await snapshot());
   const beforeFailure=await snapshot(),storedBeforeFailure=await saved();
@@ -99,6 +99,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   const imported=(await saved())[0];assert.deepEqual(imported.customMetadata,fixtures[2].customMetadata);
   assert.deepEqual(imported.point,fixtures[2].point);assert.deepEqual(imported.view,fixtures[2].view);assert.equal(imported.settings.mapVersion,1);
   assert.deepEqual(errors,[]);
-  console.log('Event configuration verified: complete restoration, legacy/import compatibility, autosave, draft save/cancel, rollback, read-only, unchanged profiles and camera behavior.');
+  console.log('Event configuration verified: complete restoration, legacy/import compatibility, autosave, direct editing and navigation, rollback, read-only, unchanged profiles and camera behavior.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

@@ -12,7 +12,7 @@ function invalidateTimelineViewport(){
 function syncTimelineViewport(){if(timelineViewportTask!==null)updateTimeline();}
 const currentTime=()=>selectedTime;
 function syncPlaybackAvailability(){
- $('play').disabled=hasRenderingFailure()||!!editingNote||(interval===null&&currentTime()>=viewerEndTime());
+ $('play').disabled=hasRenderingFailure()||(interval===null&&currentTime()>=viewerEndTime());
 }
 const timelineTrackCache=new WeakMap(),TIMELINE_LEAF_SIZE=16;
 const EVENT_SNAP_FRACTION=.01;
@@ -53,7 +53,7 @@ function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false,includ
 }
 function seekTimeline(offset,{snap=true}={}){
  syncTimelineViewport();
- if(!finishInlineTextEditing()){$('time').value=offsetAtTime(currentTime());return;}
+ if(!finishEventEditing()){$('time').value=offsetAtTime(currentTime());return;}
  hideMapEventImage();
  hideEventVideo();
  stopPlayback();
@@ -191,7 +191,6 @@ function setCurrentTime(time,{fractional=false,crossedEvents=false,allowOutsideV
 
 function updateTimeline(){
  if(timelineViewportTask!==null)clearTimeout(timelineViewportTask);timelineViewportTask=null;
- if(editingNote)return false;
  const presenting=document.body.classList.contains('presenting');
  const bounds=visibleMapBounds();if(!bounds)return false;
  const ranges=[];

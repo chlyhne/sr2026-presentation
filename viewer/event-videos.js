@@ -35,32 +35,32 @@ function validatedEventVideo(video){
  return youtubeVideo(video.id,start);
 }
 function hasPendingEventVideo(){return !editingNote&&!!$('noteVideo').value.trim();}
-function currentAttachedVideo(){return editingNote?noteDraft.video:pendingEventVideo;}
+function currentAttachedVideo(){return editingNote?editingNote.video:pendingEventVideo;}
 function eventNoteLabel(note){return note.text||note.image?.name||(note.video?'YouTube-video':'Billede');}
 function setAttachedEventVideo(video){
- if(editingNote){if(video||Object.hasOwn(noteDraft,'video'))noteDraft.video=video;}
- else pendingEventVideo=video;
+ if(editingNote)return JSON.stringify(validatedEventVideo(editingNote.video))===JSON.stringify(video)||persistEventChanges(editingNote,{video});
+ pendingEventVideo=video;return true;
 }
 function updateVideoEditor(){
  const input=$('noteVideo');let video=null,error='';
  try{video=parseYouTubeVideo(input.value);}catch(e){error=e.message;}
  input.setCustomValidity(error);input.setAttribute('aria-invalid',String(!!error));
- $('noteVideoStatus').textContent=error||(video?'Video vedhæftet. Gem eventet for at beholde den.':'');
+ $('noteVideoStatus').textContent=error||(video?(editingNote?'Videoen gemmes automatisk.':'Video vedhæftet. Gem eventet for at beholde den.'):'');
  $('removeNoteVideo').hidden=!input.value;
  updateImageEditor();return {video,error};
 }
 function validateEventVideoInput(){
  const result=updateVideoEditor();
  if(result.error){$('noteVideo').focus();$('noteVideo').reportValidity();return false;}
- setAttachedEventVideo(result.video);
+ if(!setAttachedEventVideo(result.video)){$('noteVideoStatus').textContent='Videoen kunne ikke gemmes til eventet.';return false;}
  return true;
 }
 function clearPendingEventVideo(){
  pendingEventVideo=null;$('noteVideo').value='';updateVideoEditor();
 }
 $('noteVideo').oninput=()=>{
- const {video}=updateVideoEditor();
- setAttachedEventVideo(video);
+ const {video,error}=updateVideoEditor();
+ if(!error&&!setAttachedEventVideo(video))$('noteVideoStatus').textContent='Videoen kunne ikke gemmes til eventet.';
  updatePresentationControls();
 };
 $('removeNoteVideo').onclick=()=>{

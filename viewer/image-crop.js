@@ -1,4 +1,4 @@
-// Cropping creates a new attachment; saving/cancelling the note keeps its usual semantics.
+// Cropping creates a new attachment and saves it to the current event.
 let imageCropState=null;
 const cropClamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 function renderImageCrop(){
@@ -96,7 +96,7 @@ $('applyImageCrop').onclick=async()=>{
   canvas.getContext('2d').drawImage(state.bitmap,x,y,width,height,0,0,canvas.width,canvas.height);
   const image=await uploadEventImageCanvas(canvas,state.image.name);
   if(imageCropState!==state||token!==imageUploadToken||state.target!==editingNote||currentAttachedImage()!==state.image)return;
-  if(editingNote)noteDraft.image=image;else pendingEventImage=image;
+  if(!setAttachedEventImage(image))throw Error('Beskæringen kunne ikke gemmes til eventet.');
   closeImageCrop();
  }catch(error){if(imageCropState===state)$('imageCropStatus').textContent=error.message||'Beskæringen kunne ikke gemmes. Prøv igen.';}
  finally{
