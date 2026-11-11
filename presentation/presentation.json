@@ -2942,7 +2942,7 @@
     {
       "time": 1781179623,
       "utc": "2026-06-11T12:07:03.000Z",
-      "text": "Vindkortet passer ikke her.\n\nBygens vind modstrider nu den gennemsnitlige vind.  Vinden kommer fra bygen.\n\nVi henter meget af det tabte.",
+      "text": "Bygens vind modstrider nu den gennemsnitlige vind.  Vinden kommer fra bygen.\n\nVi henter meget af det tabte.",
       "view": [
         675.3732644176602,
         436.3913177802852,
@@ -2950,7 +2950,7 @@
         40.12441425367437
       ],
       "settings": {
-        "wind": true,
+        "wind": false,
         "windModel": "dmi_harmonie_arome_europe",
         "windNumbers": false,
         "rain": true,
