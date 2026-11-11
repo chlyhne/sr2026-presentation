@@ -4,9 +4,10 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1300,height:850}}),errors=[];
+  await require('./viewer-track-fixtures.cjs')(page);
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
-  await page.waitForFunction(()=>document.querySelector('#onlineStatus'));
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
   const result=await page.evaluate(async()=>{
    const check=(ok,message)=>{if(!ok)throw Error(message);};
    const point=(x,y,t)=>[9.5+x*4.5/1000,57-y*3/1180,D.start+t];
@@ -33,7 +34,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    let samples=0;
    for(const points of [straight,curved])for(const width of [100,60,45]){
     boat.points=points;view=[600-width/2,480-width/2,width,width];$('map').setAttribute('viewBox',view.join(' '));
-    const time=D.start+301;renderer.render(time,[boat],true);
+    prepareTrackFixture(boat);
+    const time=D.start+301;check(renderer.render(time,[boat],true),renderer.error);
     const viewport=mapViewport(),pixels=new Uint8Array(renderer.canvas.width*renderer.canvas.height*4);
     gl.readPixels(0,0,renderer.canvas.width,renderer.canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
     check(antialiasedPixels(pixels)>20,'Missing antialiasing between the speed colour and outline at zoom '+width);
@@ -57,6 +59,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    }
    // Window clipping and real gap boundaries must keep round outer caps.
    boat.points=[point(590,480,100),point(610,480,200),point(620,480,1000),point(630,480,1100)];boat.speeds=[7.5,7.5,7.5,7.5];
+   prepareTrackFixture(boat);
    view=[570,450,80,60];$('map').setAttribute('viewBox',view.join(' '));
    let caps=0;
    for(const time of [150,1101,7350]){

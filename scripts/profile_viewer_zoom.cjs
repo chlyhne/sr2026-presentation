@@ -28,8 +28,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    };
    for(const name of ['setview','updateTimeline','drawMap','drawViewport','renderWindArrows','renderTraffic','renderMilitary','resizeSymbols','renderAnnotations','renderMapCredit','updateVisibleBoats','mapViewport'])wrap(window,name);
    wrap(webglTracks,'render','tracks.render');wrap(webglBackground,'render','background.render');
-   wrap(webglTracks.cache,'build','cache.build');
-   const frame=()=>new Promise(requestAnimationFrame),samples=[],before={...webglTracks.cache.stats};
+   const frame=()=>new Promise(requestAnimationFrame),samples=[],before={...webglTracks.stats};
    const gl=webglTracks.gl;gl.finish();
    try{
     for(let index=0;index<20;index++){
@@ -41,7 +40,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
      samples.push({event,paint,gpuWait:performance.now()-waitStart});
     }
     const summary=key=>{const sorted=samples.map(s=>s[key]).sort((a,b)=>a-b);return {mean:sorted.reduce((a,b)=>a+b,0)/sorted.length,p95:sorted[Math.floor(sorted.length*.95)],max:sorted.at(-1)};};
-    return {browser:'firefox',userAgent:navigator.userAgent,gpu:webglTracks.renderer,boats:boats.filter(boatIsDisplayed).length,steps:samples.length,event:summary('event'),paint:summary('paint'),gpuWait:summary('gpuWait'),functions:[...functions].map(([name,value])=>({name,...value})).sort((a,b)=>b.self-a.self),cache:Object.fromEntries(Object.entries(webglTracks.cache.stats).map(([name,value])=>[name,value-before[name]])),renderingErrors:[...renderingErrors]};
+    return {browser:'firefox',userAgent:navigator.userAgent,gpu:webglTracks.renderer,boats:boats.filter(boatIsDisplayed).length,steps:samples.length,event:summary('event'),paint:summary('paint'),gpuWait:summary('gpuWait'),functions:[...functions].map(([name,value])=>({name,...value})).sort((a,b)=>b.self-a.self),tracks:Object.fromEntries(Object.entries(webglTracks.stats).map(([name,value])=>[name,value-before[name]])),renderingErrors:[...renderingErrors]};
    }finally{for(const restore of restores.reverse())restore();}
   });
   console.log(JSON.stringify({...result,errors}));

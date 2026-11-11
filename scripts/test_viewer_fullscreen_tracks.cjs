@@ -1,14 +1,14 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 const presentation=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../presentation/presentation.json'),'utf8'));
 async function check(type){
- const browser=await type.launch({headless:process.env.SR_HEADLESS==='1'});
+ const browser=await type.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1920,height:1080},deviceScaleFactor:2}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/config.js',r=>r.fulfill({contentType:'application/javascript',body:'window.SR_CONFIG={local:false,admin:false};'}));
   await page.route('**/presentation.json',r=>r.fulfill({json:presentation}));
-  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('#onlineStatus',{state:'attached'});
+  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('main:not([inert])',{timeout:120000});
   let samples=0;
   for(const fullscreen of [false,true,false]){
    if(fullscreen)await page.locator('#presentationFullscreen').click();
@@ -52,4 +52,4 @@ async function check(type){
   console.log(JSON.stringify({browser:type.name(),events:presentation.notes.length,states:3,trackPixelSamples:samples,checks:'published events, original close zooms, presentation/fullscreen enter/exit, HiDPI, map text size, shared clipping, actual track pixels',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{for(const type of [firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

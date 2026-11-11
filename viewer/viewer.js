@@ -3,38 +3,51 @@ const xy=([lon,lat])=>[(lon-9.5)/4.5*1000,(57-lat)/3*1180];
 const timeFormatter=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Copenhagen',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
 const fmt=t=>timeFormatter.format(new Date(t*1000));
 function el(tag,attrs={},parent){const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(parent)parent.append(n);return n;}
+function setAttr(node,name,value){value=String(value);if(node.getAttribute(name)!==value)node.setAttribute(name,value);}
 // Geographic anchors move with the map; symbols use CSS pixel dimensions.
 function screenGroup(x,y,parent){
  return el('g',{'data-screen-x':x,'data-screen-y':y,transform:`translate(${x} ${y})`},parent);
 }
 function resizeSymbols(){
- const matrix=$('map').getScreenCTM();
+ const matrix=mapViewport()?.matrix;
  if(!matrix)return;
  const inverseScale=1/Math.hypot(matrix.a,matrix.b);
  for(const group of $('map').querySelectorAll('[data-screen-x]')){
-  const transform=`translate(${group.dataset.screenX} ${group.dataset.screenY}) scale(${inverseScale})`;
+  // Keep the interactive circle in map coordinates. Firefox cannot reliably
+  // hit-test a marker beneath a tiny inverse-scale transform at close zoom.
+  const marker=group.classList.contains('boat-marker');
+  const transform=`translate(${group.dataset.screenX} ${group.dataset.screenY})${marker?'':` scale(${inverseScale})`}`;
   if(group.getAttribute('transform')!==transform)group.setAttribute('transform',transform);
+  if(marker)setAttr(group.boatHitTarget,'r',10*inverseScale);
  }
  resizeBoatIcons(matrix);
 }
 function path(points){return points.map((p,i)=>(i?'L':'M')+xy(p).join(',')).join(' ')}
+let mapLayout=null,mapCamera=null;
+function invalidateMapLayout(){mapLayout=null;mapCamera=null;}
 function mapViewport(){
- const map=$('map'),matrix=map.getScreenCTM();if(!matrix)return null;
- const rect=map.getBoundingClientRect();if(!rect.width||!rect.height)return null;
- if(![matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f].every(Number.isFinite)||Math.abs(matrix.a*matrix.d-matrix.b*matrix.c)<1e-12)return null;
+ // The root SVG uses xMidYMid/meet. Derive its projection from the camera and
+ // cached CSS layout; never ask SVG to resolve layout for every layer/input.
+ const rect=mapLayout||(mapLayout=$('map').getBoundingClientRect());
+ const box=$('map').viewBox.baseVal,{x,y,width,height}=box,ratio=devicePixelRatio||1;
+ if(!rect.width||!rect.height||!width||!height)return null;
+ const key=[x,y,width,height,rect.left,rect.top,rect.width,rect.height,ratio].join(':');
+ if(mapCamera?.key===key)return mapCamera;
+ const scale=Math.min(rect.width/width,rect.height/height);
+ const matrix=new DOMMatrix([scale,0,0,scale,rect.left+(rect.width-width*scale)/2-x*scale,rect.top+(rect.height-height*scale)/2-y*scale]);
  const inverse=matrix.inverse();
  const a=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
  const b=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
- return {rect,matrix,inverse,topLeft:a,viewBox:[a.x,a.y,b.x-a.x,b.y-a.y],
+ return mapCamera={key,rect,matrix,inverse,topLeft:a,viewBox:[a.x,a.y,b.x-a.x,b.y-a.y],
   pixelWidth:Math.max(1,Math.round(rect.width*(devicePixelRatio||1))),pixelHeight:Math.max(1,Math.round(rect.height*(devicePixelRatio||1))),
   bounds:{west:9.5+a.x*4.5/1000,east:9.5+b.x*4.5/1000,south:57-b.y*3/1180,north:57-a.y*3/1180}};
 }
 function visibleMapBounds(){return mapViewport()?.bounds||null;}
 function positionMapCanvas(host,canvas,viewport){
  const {rect,inverse,topLeft,pixelWidth,pixelHeight}=viewport;
- host.setAttribute('x',0);host.setAttribute('y',0);
- host.setAttribute('width',rect.width);host.setAttribute('height',rect.height);
- host.setAttribute('transform',`matrix(${inverse.a} ${inverse.b} ${inverse.c} ${inverse.d} ${topLeft.x} ${topLeft.y})`);
+ setAttr(host,'x',0);setAttr(host,'y',0);
+ setAttr(host,'width',rect.width);setAttr(host,'height',rect.height);
+ setAttr(host,'transform',`matrix(${inverse.a} ${inverse.b} ${inverse.c} ${inverse.d} ${topLeft.x} ${topLeft.y})`);
  if(canvas.width!==pixelWidth)canvas.width=pixelWidth;if(canvas.height!==pixelHeight)canvas.height=pixelHeight;
 }
 function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>=b.south&&a.south<=b.north;}
@@ -54,25 +67,32 @@ for(const line of D.coast)for(let start=0;start<line.length-1;start+=256){
  for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
  coastChunks.push({west,east,south,north,points,before:line[start-1],after:line[start+257]});
 }
-let mapCreditKey=null;
+function positionScreenGroup(group,x,y,scale){
+ setAttr(group,'data-screen-x',x);setAttr(group,'data-screen-y',y);
+ setAttr(group,'transform',`translate(${x} ${y}) scale(${scale})`);
+}
+let mapCreditKey=null,mapCreditNodes=null;
 function renderMapCredit(){
- const map=$('map'),rect=map.getBoundingClientRect(),matrix=map.getScreenCTM();if(!matrix)return;
- const key=[matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.width,rect.height].join(':');
- if(key===mapCreditKey)return;
- mapCreditKey=key;renderTrackSpeedLegend();
- const layer=$('mapCredit');layer.replaceChildren();
- const point=new DOMPoint(rect.right-8,rect.bottom-8).matrixTransform(matrix.inverse());
- const group=screenGroup(point.x,point.y,layer);
- group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
- const {meters,label}=mapGridLevel({matrix});
- const width=meters*MAP_GRID_UNITS_PER_METER[0]*Math.hypot(matrix.a,matrix.b),panelWidth=Math.max(185,width+16);
- el('rect',{x:-panelWidth,y:-64,width:panelWidth,height:70,rx:3,fill:'#ffffff',opacity:.88},group);
- const scale=el('g',{'data-map-scale':'','data-meters':meters,'data-pixel-width':width,role:'img','aria-label':`Målestok: ${label}`},group);
- el('path',{d:`M${-8-width},-45v7H-8v-7`,fill:'none',stroke:'#173d4c','stroke-width':1.5},scale);
- el('text',{x:-8-width/2,y:-49,'text-anchor':'middle','font-size':11,fill:'#173d4c'},scale).textContent=label;
- const text=el('text',{x:-5,y:-12,'text-anchor':'end','font-size':10,fill:'#173d4c'},group);
- text.textContent=D.coast_metadata.attribution;
- el('text',{x:-5,y:1,'text-anchor':'end','font-size':10,fill:'#173d4c'},group).textContent='openstreetmap.org/copyright';
+ const viewport=mapViewport();if(!viewport||mapCreditKey===viewport.key)return;
+ mapCreditKey=viewport.key;renderTrackSpeedLegend();
+ const {rect,matrix,inverse}=viewport,point=new DOMPoint(rect.right-8,rect.bottom-8).matrixTransform(inverse);
+ const {meters,label}=mapGridLevel(viewport),width=meters*MAP_GRID_UNITS_PER_METER[0]*Math.hypot(matrix.a,matrix.b),panelWidth=Math.max(185,width+16);
+ if(!mapCreditNodes){
+  const group=screenGroup(point.x,point.y,$('mapCredit'));
+  const panel=el('rect',{y:-64,height:70,rx:3,fill:'#ffffff',opacity:.88},group);
+  const scale=el('g',{'data-map-scale':'',role:'img'},group);
+  const line=el('path',{fill:'none',stroke:'#173d4c','stroke-width':1.5},scale);
+  const text=el('text',{y:-49,'text-anchor':'middle','font-size':11,fill:'#173d4c'},scale);
+  el('text',{x:-5,y:-12,'text-anchor':'end','font-size':10,fill:'#173d4c'},group).textContent=D.coast_metadata.attribution;
+  el('text',{x:-5,y:1,'text-anchor':'end','font-size':10,fill:'#173d4c'},group).textContent='openstreetmap.org/copyright';
+  mapCreditNodes={group,panel,scale,line,text};
+ }
+ const {group,panel,scale,line,text}=mapCreditNodes;
+ positionScreenGroup(group,point.x,point.y,1/Math.hypot(matrix.a,matrix.b));
+ setAttr(panel,'x',-panelWidth);setAttr(panel,'width',panelWidth);
+ setAttr(scale,'data-meters',meters);setAttr(scale,'data-pixel-width',width);setAttr(scale,'aria-label',`Målestok: ${label}`);
+ setAttr(line,'d',`M${-8-width},-45v7H-8v-7`);setAttr(text,'x',-8-width/2);
+ if(text.textContent!==label)text.textContent=label;
 }
 const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff84'};
 const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
@@ -228,8 +248,8 @@ function renderWindArrows(t=currentTime()) {
   if(windArrowKey!==false)layer.replaceChildren();
   windArrowKey=false;return;
  }
- const map=$('map'),matrix=map.getScreenCTM();if(!matrix)return;
- const inverse=matrix.inverse(),scale=1/Math.hypot(matrix.a,matrix.b),rect=map.getBoundingClientRect();
+ const map=$('map'),matrix=mapViewport()?.matrix;if(!matrix)return;
+ const inverse=matrix.inverse(),scale=1/Math.hypot(matrix.a,matrix.b),rect=mapViewport().rect;
  const model=$('windModel').value,showNumbers=$('windNumbers').checked;
  const key=[Math.floor(t/3600),model,showNumbers,matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.width,rect.height].join(':');
  if(key===windArrowKey)return;
@@ -282,41 +302,59 @@ function drawMap(){if(hasRenderingFailure())return;const t=currentTime();$('cloc
  renderMapCredit();
 }
 function drawViewport(){
- if(hasRenderingFailure())return;webglBackground.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderAnnotations();renderMapCredit();
- updateVisibleBoats();
+ if(hasRenderingFailure())return;webglBackground.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderSpeedPins();renderNoteDrawings();renderMapCredit();
+ layoutVisibleBoats();
 }
+const boatMarkerNodes=new Map();
 function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  clearTrackHover();
  const markerLayer=$('boatMarkers');
- markerLayer.replaceChildren();
- const drawingOrder=boats.filter(boatIsDisplayed).sort((a,b)=>(referenceBoat()?.id===a.id)-(referenceBoat()?.id===b.id));
+ const drawingOrder=boats.filter(boatIsDisplayed).sort((a,b)=>(referenceBoatId===a.id)-(referenceBoatId===b.id));
  if(!webglTracks.render(t,drawingOrder))return;
  syncHandicapTracks();
+ const active=new Set();let previous=null;
  for(const b of drawingOrder){
-  const markers=el('g',{class:'boat-markers'},markerLayer),color=colours[b.name];
-  const position=displayBoatPosition(b,t);
-  if(!position)continue;
-  const [x,y]=xy(position.point),group=screenGroup(x,y,markers);
-  group.setAttribute('class','boat-marker');group.dataset.boatMarker=b.id;
-  group.dataset.sourceTime=position.replayTime;
-  if(handicapTracksEnabled)group.dataset.handicapCompensated='true';
-  if(position.finished)group.dataset.handicapFinished='true';
-  group.setAttribute('role','button');group.setAttribute('tabindex','0');
-  group.setAttribute('aria-label',`${isBoatSearchActive()?'Tilføj/fjern favorit':'Vis/skjul navn'}: ${b.name}`);
-  group.setAttribute('aria-pressed',String(isBoatSearchActive()?chosen.has(b.name):shownBoatNames.has(b.id)));
-  el('title',{},group).textContent=`${b.name} · ${handicapTracksEnabled?'handicapkompenseret position · oprindeligt spor ved '+fmt(position.replayTime):position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
-  el('circle',{cx:0,cy:0,r:10,fill:'transparent','pointer-events':'all'},group);
-  renderBoatIcon(group,b,position,position.replayTime,color);
-  if(shownBoatNames.has(b.id)){
-   const text=el('text',{class:'boat-name','pointer-events':'none',x:7,y:({Mercutio:-12,Vera:15,My:-4,'THE HULK':27}[b.name]||3),fill:color,
-    'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},group);
-   text.textContent=b.name;
+  const position=displayBoatPosition(b,t);if(!position)continue;
+  active.add(b.id);
+  const [x,y]=xy(position.point),color=colours[b.name];
+  let record=boatMarkerNodes.get(b.id);
+  if(record&&record.boat!==b){record.wrapper.remove();boatMarkerNodes.delete(b.id);record=null;}
+  if(!record){
+   const wrapper=el('g',{class:'boat-markers'}),group=screenGroup(x,y,wrapper);
+   group.setAttribute('class','boat-marker');group.dataset.boatMarker=b.id;
+   group.setAttribute('role','button');group.setAttribute('tabindex','0');
+   const title=el('title',{},group);
+   group.boatHitTarget=el('circle',{cx:0,cy:0,r:0,fill:'transparent','pointer-events':'all'},group);
+   const symbols=screenGroup(0,0,group);
+   renderBoatIcon(symbols,b,position,position.replayTime,color);
+   record={boat:b,wrapper,group,symbols,title,icon:group.querySelector('.boat-icon'),name:null};boatMarkerNodes.set(b.id,record);
   }
+  const {wrapper,group,title,icon}=record;
+  setAttr(group,'data-screen-x',x);setAttr(group,'data-screen-y',y);setAttr(group,'data-source-time',position.replayTime);
+  if(handicapTracksEnabled)setAttr(group,'data-handicap-compensated','true');else group.removeAttribute('data-handicap-compensated');
+  if(position.finished)setAttr(group,'data-handicap-finished','true');else group.removeAttribute('data-handicap-finished');
+  setAttr(group,'aria-label',`${isBoatSearchActive()?'Tilføj/fjern favorit':'Vis/skjul navn'}: ${b.name}`);
+  setAttr(group,'aria-pressed',String(isBoatSearchActive()?chosen.has(b.name):shownBoatNames.has(b.id)));
+  const description=`${b.name} · ${handicapTracksEnabled?'handicapkompenseret position · oprindeligt spor ved '+fmt(position.replayTime):position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
+  if(title.textContent!==description)title.textContent=description;
+  setAttr(icon,'data-lat',position.point[1]);setAttr(icon,'data-course',boatCourse(b.points,position.replayTime));
+  if(shownBoatNames.has(b.id)){
+   if(!record.name){
+    record.name=el('text',{class:'boat-name','pointer-events':'none',x:7,y:({Mercutio:-12,Vera:15,My:-4,'THE HULK':27}[b.name]||3),fill:color,
+     'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},record.symbols);
+    record.name.textContent=b.name;
+   }
+  }else if(record.name){record.name.remove();record.name=null;}
+  const next=previous?previous.nextElementSibling:markerLayer.firstElementChild;
+  if(next!==wrapper)markerLayer.insertBefore(wrapper,next);previous=wrapper;
  }
- resizeSymbols();if(includeSpeedPins)renderSpeedPins();
- updateVisibleBoats(t);
+ for(const [id,record] of boatMarkerNodes)if(!active.has(id)){
+  record.wrapper.remove();
+  if(!boats.includes(record.boat))boatMarkerNodes.delete(id);
+ }
+ resizeSymbols();if(includeSpeedPins)renderSpeedPins();updateVisibleBoats(t);
 }
-function step(n){if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
+function step(n){syncTimelineViewport();if(finishInlineTextEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
 function setMapLayersExpanded(expanded){
  $('mapLayersPanel').hidden=!expanded;
  $('mapLayersToggle').setAttribute('aria-expanded',String(expanded));
@@ -339,7 +377,7 @@ document.addEventListener('keydown',event=>{
 },true);
 for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
-let playbackTickTime=0,playbackRate=1,playbackOffset=0,eventPlaybackTarget=null;
+let playbackTickTime=0,playbackRate=1,playbackOffset=0,eventPlaybackTarget=null,playbackRanges=[],playbackLength=0;
 function syncPlaybackControls(){
  const playing=interval!==null,label=playing?'Pause':'Afspil',speed=$('playbackSpeed'),index=speed.selectedIndex;
  $('play').setAttribute('aria-label',label);$('play').title=label;
@@ -377,17 +415,18 @@ function advancePlayback(now){
   else{setCurrentTime(nextTime,{fractional:true,allowOutsideVisibleRanges:true});centerPlaybackOnReferenceBoat();requestRender();}
   return;
  }
- if($('time').disabled){stopPlayback();return;}
- playbackOffset=Math.min(timelineLength-1,playbackOffset+(now-playbackTickTime)/1000*playbackRate);
+ playbackOffset=Math.min(playbackLength-1,playbackOffset+(now-playbackTickTime)/1000*playbackRate);
  playbackTickTime=now;
- setCurrentTime(timeAtOffset(playbackOffset,{fractional:true}),{fractional:true,crossedEvents:true});requestRender();
- if(playbackOffset>=timelineLength-1)stopPlayback();
+ setCurrentTime(timeAtOffset(playbackOffset,{fractional:true,ranges:playbackRanges,length:playbackLength}),{fractional:true,crossedEvents:true,allowOutsideVisibleRanges:true});requestRender();
+ if(playbackOffset>=playbackLength-1)stopPlayback();
 }
 function startPlayback({target=null}={}){
+ syncTimelineViewport();
  if(hasRenderingFailure())return;
  if((!target&&$('time').disabled)||!finishInlineTextEditing())return;
  prepareSelectedTracks();
  playbackOffset=offsetAtTime(currentTime());
+ playbackRanges=visibleTimeRanges;playbackLength=timelineLength;
  if(!target&&playbackOffset>=timelineLength-1)return;
  eventPlaybackTarget=target;
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
@@ -400,9 +439,14 @@ $('play').onclick=()=>{
 };
 $('playbackSpeed').onchange=updatePlaybackSpeed;
 document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
-let view=[230,250,620,760];function setview(){ $('map').setAttribute('viewBox',view.join(' '));requestRender({viewportOnly:!updateTimeline()}); }$('reset').onclick=()=>{view=[230,250,620,760];setview()};
+let view=[230,250,620,760];
+function setview(){
+ setAttr($('map'),'viewBox',view.join(' '));
+ invalidateTimelineViewport();requestRender({viewportOnly:true});
+}
+$('reset').onclick=()=>{view=[230,250,620,760];setview()};
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
-$('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture)return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*(e.deltaY>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform($('map').getScreenCTM().inverse());view=[anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f];setview()},{passive:false});
+$('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture||(!e.deltaY&&!e.deltaX))return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*((e.deltaY||e.deltaX)>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);view=[anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f];setview()},{passive:false});
 let drag=null;
 const map=$('map');
 // The map owns the gesture, including when it starts on SVG text or an image.
@@ -419,7 +463,7 @@ map.onpointerdown=e=>{
   trackBoatId:e.target.closest('[data-track-boat-id]')?.dataset.trackBoatId,
   speedKey:e.target.closest('[data-speed-key]')?.dataset.speedKey,
   speedAction:e.target.closest('[data-speed-action]')?.dataset.speedAction,
-  inverse:map.getScreenCTM().inverse(),moved:false};
+  inverse:mapViewport().inverse,moved:false};
  map.setPointerCapture(e.pointerId);
  map.classList.add('panning');
 };
@@ -458,6 +502,7 @@ map.onpointerup=endPan;
 map.onpointercancel=endPan;
 map.onlostpointercapture=endPan;
 map.onpointerleave=()=>clearTrackHover();
+window.addEventListener('scroll',event=>{if(event.target!==document)return;invalidateMapLayout();requestRender({viewportOnly:true});},true);
 map.addEventListener('keydown',e=>{
  const speedMarker=e.target.closest('[data-speed-key]');
  if(speedMarker&&(e.key==='Enter'||e.key===' ')){

@@ -23,7 +23,7 @@ function drawNoteShape(d,parent){
   const points=d.tool==='pen'?d.points:[first,last];
   el('path',{...attrs,d:points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' ')},parent);
   if(d.tool==='arrow'){
-   const matrix=$('map').getScreenCTM();if(!matrix)return;
+   const matrix=mapViewport()?.matrix;if(!matrix)return;
    const size=(10+d.width)/Math.hypot(matrix.a,matrix.b),angle=Math.atan2(last[1]-first[1],last[0]-first[0]);
    const head=[-.5,.5].map(offset=>[last[0]-size*Math.cos(angle+offset),last[1]-size*Math.sin(angle+offset)]);
    el('path',{...attrs,d:`M ${head[0].join(' ')} L ${last.join(' ')} L ${head[1].join(' ')}`},parent);
@@ -61,7 +61,7 @@ function beginDrawingGesture(e){
  if(drawingGesture){e.preventDefault();return true;}
  if(!editingNote||drawingTool==='pan'||placingNote||document.body.classList.contains('presenting'))return false;
  e.preventDefault();stopPlayback();$('annotationsVisible').checked=true;
- const inverse=$('map').getScreenCTM().inverse(),point=mapDrawingPoint(e,inverse);
+ const inverse=mapViewport().inverse,point=mapDrawingPoint(e,inverse);
  drawingGesture={pointerId:e.pointerId,inverse,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false,
   shape:{tool:drawingTool,colour:$('drawingColour').value,width:+$('drawingWidth').value,points:[point,point]}};
  $('map').setPointerCapture(e.pointerId);renderAnnotations();return true;

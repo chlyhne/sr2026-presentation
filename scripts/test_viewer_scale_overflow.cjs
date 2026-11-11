@@ -31,7 +31,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     webglTracks.gl[name]=()=>{throw Error('Style switch uploaded or rebuilt fixed data: '+name);};
    const gl=webglTracks.gl,upload=gl.texSubImage2D;
    gl.texSubImage2D=function(...args){
-    if(gl.getParameter(gl.TEXTURE_BINDING_2D)!==webglTracks.cache.descriptorTexture)throw Error('Style switch uploaded fixed track data');
+    throw Error('Style switch uploaded GPU texture data');
     return upload.apply(this,args);
    };
    window.overflowSample=(id,fraction=.5)=>{

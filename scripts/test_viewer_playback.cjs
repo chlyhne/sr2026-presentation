@@ -48,6 +48,13 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#next').click();before=await page.evaluate(()=>currentTime());
   assert.equal(await page.locator('#playbackSpeed').inputValue(),'5');assert.equal(await page.evaluate(()=>!!interval),true);
   await page.clock.runFor(1000);assert.ok(Math.abs(await page.evaluate(()=>currentTime())-before-5)<.001,'Faster changes one speed level without pausing');
+  const cameraTime=await page.evaluate(()=>currentTime());
+  await page.evaluate(()=>{view=[9000,9000,20,20];setview();});
+  await page.clock.runFor(250);
+  assert.equal(await page.evaluate(()=>!!interval),true,'Camera with no boat visits must not stop active playback');
+  assert.ok(Math.abs(await page.evaluate(()=>currentTime())-cameraTime-1.25)<.001,'Camera must not seek playback after the slider index settles');
+  assert.equal(await page.locator('#play').isEnabled(),true,'Pause remains available outside the visible timeline');
+  await page.evaluate(()=>{view=[230,250,620,760];setview();});await page.clock.runFor(200);
   await page.locator('#time').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.evaluate(()=>!!interval),false,'Manual keyboard step pauses');
   // Crossing hidden periods and stopping at the end must work with fractional frames.
   await page.evaluate(()=>{visibleTimeRanges=[{start:D.start,end:D.start+2},{start:D.start+100,end:D.start+103}];timelineLength=7;selectedTime=D.start;$('time').disabled=false;$('time').max=6;$('playbackSpeed').value='10';});

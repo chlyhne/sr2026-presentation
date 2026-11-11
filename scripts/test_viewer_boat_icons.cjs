@@ -2,14 +2,15 @@ const assert=require('node:assert/strict');
 const path=require('node:path');
 const resolved=JSON.parse(require('node:fs').readFileSync(path.resolve(__dirname,'../data/boat-dimensions/resolved.json'),'utf8'));
 const expectedSourced=Object.fromEntries(resolved.boats.map(b=>[b.trackName.toLowerCase(),b.metadata]));
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 (async()=>{
- const browser=await chromium.launch({headless:true});
+ const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
-  await page.waitForFunction(()=>typeof notes!=='undefined'&&!!document.querySelector('.boat-icon'));
+  await page.waitForSelector('main:not([inert])',{timeout:120000});
+  await page.evaluate(()=>{boatFavouritesOnly=true;});
   const metadata=await page.evaluate(()=>boats.map(b=>({name:b.name,...b.metadata})));
   for(const boat of metadata){
    const expected={mercutio:[8,2.54],vera:[8,2.54],my:[8,2.54],saltamalin:[8,2.54],
@@ -60,14 +61,15 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwri
   assert.ok(Math.abs(wide.length-8*8/2.54)<.001);
   await page.screenshot({path:'/tmp/sr2026-boats-wide.png'});
   const close=await zoom(.1);assert.ok(close.beam>8);assert.ok(Math.abs(close.beam-close.expectedBeam)<.001);assert.ok(Math.abs(close.length-close.expectedLength)<.001);
-  const iconOnTop=await page.evaluate(()=>{
+  const iconOnTop=await page.evaluate(async()=>{
    const marker=$('boatMarkers').querySelector('.boat-marker'),matrix=marker.getScreenCTM();
    const mapPoint=new DOMPoint(matrix.e,matrix.f).matrixTransform($('map').getScreenCTM().inverse());
    const crossing=el('path',{d:`M ${mapPoint.x-1} ${mapPoint.y} L ${mapPoint.x+1} ${mapPoint.y}`,stroke:'red','stroke-width':20,'vector-effect':'non-scaling-stroke'},$('routes'));
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
    const top=document.elementFromPoint(matrix.e,matrix.f),result=top.closest('.boat-marker')===marker;
-   crossing.remove();return result;
+   crossing.remove();return {result,point:{x:matrix.e,y:matrix.f},top:top?.outerHTML.slice(0,250),marker:marker.outerHTML.slice(0,350),markerBounds:marker.getBoundingClientRect().toJSON(),circleBounds:marker.querySelector('circle').getBoundingClientRect().toJSON(),visible:getComputedStyle(marker).visibility,rect:{...mapViewport().rect.toJSON()}};
   });
-  assert.equal(iconOnTop,true,'Boat icon must be above every track, including its hit targets');
+  assert.equal(iconOnTop.result,true,'Boat icon must be above every track, including its hit targets: '+JSON.stringify(iconOnTop));
   assert.equal(await page.locator('#routes .boat-marker').count(),0);
   await page.screenshot({path:'/tmp/sr2026-boats-close.png'});
   // Screen resizing must also refresh the geographic size without changing time.

@@ -9,16 +9,18 @@ el('path',{d:'M -2 2 L 2 -2 M 0 8 L 8 0 M 6 10 L 10 6',stroke:'#000000','stroke-
 let militaryKey=null;
 function renderMilitary(){
  const layer=$('militaryAreas'),enabled=$('military').checked;
- layer.setAttribute('display',enabled?'inline':'none');
+ setAttr(layer,'display',enabled?'inline':'none');
  if(!enabled)return;
- const bounds=visibleMapBounds(),matrix=$('map').getScreenCTM();if(!bounds||!matrix)return;
+ const bounds=visibleMapBounds(),matrix=mapViewport()?.matrix;if(!bounds||!matrix)return;
  const scale=1/Math.hypot(matrix.a,matrix.b);
- militaryHatch.setAttribute('patternTransform',`scale(${scale})`);
+ setAttr(militaryHatch,'patternTransform',`scale(${scale})`);
  const key=[bounds.west,bounds.east,bounds.south,bounds.north].join(':');if(key===militaryKey)return;
- militaryKey=key;layer.replaceChildren();
+ militaryKey=key;
  for(const feature of militaryFeatures){
-  const b=feature.bounds;if(b.east<bounds.west||b.west>bounds.east||b.north<bounds.south||b.south>bounds.north)continue;
+  const b=feature.bounds;if(b.east<bounds.west||b.west>bounds.east||b.north<bounds.south||b.south>bounds.north){feature.node?.remove();continue;}
+  if(feature.node){if(!feature.node.parentNode)layer.append(feature.node);continue;}
   const group=el('g',{'data-military-id':feature.id,'aria-label':feature.properties.name},layer);
+  feature.node=group;
   el('title',{},group).textContent=feature.properties.name+' · skydeområdets afgrænsning';
   el('path',{d:feature.d,fill:'#000000','fill-opacity':.035,stroke:'none','fill-rule':'evenodd'},group);
   el('path',{d:feature.d,fill:'url(#militaryHatch)','fill-rule':'evenodd',stroke:'#000000',

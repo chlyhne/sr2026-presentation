@@ -1,6 +1,14 @@
 let visibleBoatEntries=[],hoveredVisibleBoatId=null,hoveredMapBoatId=null;
 const visibleBoatRows=new Map();
 const boatListSpeedFormat=new Intl.NumberFormat('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1});
+let boatListSource=[],boatListOrder=[];
+function orderedListBoats(){
+ if(boats.length!==boatListSource.length||boats.some((boat,i)=>boat!==boatListSource[i])){
+  boatListSource=boats.slice();boatListOrder=boats.slice().sort((a,b)=>a.name.localeCompare(b.name,'da'));
+ }
+ return boatListOrder;
+}
+orderedListBoats();
 function highlightVisibleBoat(id){
  for(const marker of $('boatMarkers').querySelectorAll('.boat-marker')){
   const active=marker.dataset.boatMarker===id;
@@ -31,9 +39,12 @@ function createVisibleBoatRow(boat){
  return {node,choice,name,speed,skipper,type};
 }
 function setBoatListText(node,text){if(node.textContent!==text)node.textContent=text;}
-function updateVisibleBoats(time=currentTime()){
+let visibleBoatLayoutKey=null;
+function layoutVisibleBoats(){
  const viewport=mapViewport();if(!viewport)return;
  const {rect}=viewport,layout=trackSpeedLegendLayout();
+ const key=[rect.width,rect.height,layout.width,layout.height,$('visibleBoatsPanel').hidden].join(':');
+ if(key===visibleBoatLayoutKey)return;visibleBoatLayoutKey=key;
  $('mapHeading').style.width=layout.width+'px';
  $('visibleBoats').style.width=layout.width+'px';
  $('visibleBoats').style.marginLeft=layout.left+'px';
@@ -41,14 +52,16 @@ function updateVisibleBoats(time=currentTime()){
  const availableHeight=Math.max(32,rect.height-layout.top-layout.height-8);
  $('visibleBoats').style.maxHeight=availableHeight+'px';
  $('visibleBoats').style.height=$('visibleBoatsPanel').hidden?'auto':availableHeight+'px';
+}
+function updateVisibleBoats(time=currentTime()){
+ layoutVisibleBoats();
  const entries=[];
- for(const boat of boats){
+ for(const boat of orderedListBoats()){
   if(!boatIsDisplayed(boat))continue;
-  const position=displayBoatPosition(boat,time);
+  const position=$('visibleBoatsPanel').hidden?null:displayBoatPosition(boat,time);
   const sample=position?trackSpeedSample(boat,position.interpolated?position.replayTime:position.sourceTime):null;
   entries.push({boat,speed:sample?.speed});
  }
- entries.sort((a,b)=>a.boat.name.localeCompare(b.boat.name,'da'));
  visibleBoatEntries=entries;
  $('boatFavouritesOnly').setAttribute('aria-pressed',String(boatFavouritesOnly));
  $('boatClearFavourites').disabled=!chosen.size;
