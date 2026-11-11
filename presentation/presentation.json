@@ -9427,8 +9427,8 @@
       "lat": 55.31686535421443
     },
     {
-      "time": 1781265426,
-      "utc": "2026-06-12T11:57:06.000Z",
+      "time": 1781265720,
+      "utc": "2026-06-12T12:02:00.000Z",
       "text": "Der er mere vind end der vises på kortet. Nok 10 m/s.\n\nHulk sejler lidt højt med sin Asy, og Rosa-Lux kan sejle lige på med sin Sym. Vera ånder os i nakken med sin A2. Vi har stadig kun A5 oppe. Vi ønsker os en A4.",
       "view": [
         316.8259807416123,
@@ -9467,7 +9467,15 @@
         634.077124632895
       ],
       "lon": 11.101846788734198,
-      "lat": 55.38793951364518
+      "lat": 55.38793951364518,
+      "image": {
+        "id": "4740b0fd-3f5f-49e9-a0af-0193f08e3f6b",
+        "url": "event-images/4740b0fd-3f5f-49e9-a0af-0193f08e3f6b.webp",
+        "name": "kåre og casper.jpeg",
+        "width": 899,
+        "height": 1395,
+        "type": "image/webp"
+      }
     },
     {
       "time": 1781269207,
