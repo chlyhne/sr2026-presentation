@@ -10,6 +10,22 @@ const near=(actual,expected,tolerance=.001)=>assert.ok(Math.abs(actual-expected)
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
+  const fleet=await page.evaluate(()=>{
+   const reference=boats.find(boat=>boat.name==='Mercutio'),profile=trackProfileCache.get(reference.points);
+   referenceBoatId=reference.id;webglTracks.comparisonReference=null;webglTracks.prepareComparison();
+   const densities=Array.from(profile.timeStations).filter(value=>value>=0&&Number.isFinite(value)).sort((left,right)=>left-right);
+   let sailing=0,saturated=0;
+   for(let index=0;index<reference.points.length;index++){
+    const station=profile.timeSamples[index*2];
+    if(!(reference.speeds[index]>2)||station<1000||station>=profile.timeStations.length-1000)continue;
+    const gain=webglTracks.comparisonSample(reference,reference.points[index][2])?.timeGain;
+    if(gain===null||gain===undefined)continue;
+    sailing++;if(Math.abs(gain)>TRACK_TIME_GAIN_LIMIT)saturated++;
+   }
+   return {median:densities[Math.floor(densities.length/2)],sailing,saturated};
+  });
+  assert.ok(fleet.median>.05&&fleet.median<1,JSON.stringify(fleet));
+  assert.ok(fleet.sailing>1000&&fleet.saturated/fleet.sailing<.1,JSON.stringify(fleet));
   const result=await page.evaluate(()=>{
    stopPlayback();$('wind').checked=$('rain').checked=false;
    const latitude=55.6,longitude=meters=>12+meters/(NAV_RADIUS_NM*1852*NAV_RAD*Math.cos(latitude*NAV_RAD));
@@ -71,6 +87,6 @@ const near=(actual,expected,tolerance=.001)=>assert.ok(Math.abs(actual-expected)
   assert.deepEqual(result.yellow,[255,196,61,255]);
   assert.ok(result.white[0]>230&&result.white[1]>230&&result.white[2]>230,JSON.stringify(result));
   assert.equal(result.glError,0);assert.deepEqual(errors,[]);
-  console.log('Firefox: summed reverse passages, finite-difference turnarounds, GPU colours, missing data, zero-progress overflow and allocation-free interaction passed.');
+  console.log('Firefox: real-fleet start/finish projection regression '+JSON.stringify(fleet)+'; summed reverse passages, finite-difference turnarounds, GPU colours, missing data, zero-progress overflow and allocation-free interaction passed.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});
