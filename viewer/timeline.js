@@ -7,10 +7,13 @@ function invalidateTimelineViewport(){
  if(timelineViewportTask!==null)clearTimeout(timelineViewportTask);
  // Only derived slider UI is delayed/coalesced. Camera painting never waits
  // for a fleet visibility query and never seeks the selected replay time.
- timelineViewportTask=setTimeout(()=>updateTimeline({preserveTime:true}),150);
+ timelineViewportTask=setTimeout(()=>updateTimeline(),150);
 }
-function syncTimelineViewport(){if(timelineViewportTask!==null)updateTimeline({preserveTime:true});}
+function syncTimelineViewport(){if(timelineViewportTask!==null)updateTimeline();}
 const currentTime=()=>selectedTime;
+function syncPlaybackAvailability(){
+ $('play').disabled=hasRenderingFailure()||!!editingNote||(interval===null&&currentTime()>=viewerEndTime());
+}
 const timelineTrackCache=new WeakMap(),TIMELINE_LEAF_SIZE=16;
 const EVENT_SNAP_FRACTION=.01;
 function eventSnapWindowSeconds(){
@@ -32,11 +35,11 @@ function renderTimelineEvents(){
   mark.style.left=`calc(${ratio*100}% + ${8-16*ratio}px)`;marks.append(mark);
  }
 }
-function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false}={}){
+function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false,includeHiddenEvents=false}={}){
  let matches=timelineNotes().filter(n=>n.time===selectedTime);
  if(crossedEvents&&previousTime!==selectedTime){
   const forward=selectedTime>previousTime;
-  const crossed=snappableTimelineNotes().filter(n=>forward
+  const crossed=(includeHiddenEvents?timelineNotes():snappableTimelineNotes()).filter(n=>forward
    ?n.time>previousTime&&n.time<=selectedTime
    :n.time<previousTime&&n.time>=selectedTime);
   if(crossed.length){
@@ -147,15 +150,16 @@ for(const boat of boats){
  const clock=ghostClocks.get(boat.id);if(clock&&!clock.error)prepareTimelineTrack(boat.points,clock);
 }
 
-function timeAtOffset(offset,{fractional=false,ranges=visibleTimeRanges,length=timelineLength}={}){
- if(!length)return selectedTime;
- offset=Math.max(0,Math.min(length-1,fractional?offset:Math.round(offset)));
- for(const range of ranges){
+// Discrete addressing is exclusively for manual slider/step navigation.
+function timeAtOffset(offset){
+ if(!timelineLength)return selectedTime;
+ offset=Math.max(0,Math.min(timelineLength-1,Math.round(offset)));
+ for(const range of visibleTimeRanges){
   const rangeLength=range.end-range.start+1;
   if(offset<rangeLength)return Math.min(range.end,range.start+offset);
   offset-=rangeLength;
  }
- return ranges.at(-1).end;
+ return visibleTimeRanges.at(-1).end;
 }
 
 function offsetAtTime(time){
@@ -179,10 +183,13 @@ function setCurrentTime(time,{fractional=false,crossedEvents=false,allowOutsideV
  selectedTime=nearest;
  $('time').value=offsetAtTime(selectedTime);
  $('time').setAttribute('aria-valuetext',fmt(selectedTime));
- syncTimelineEvent(previousTime,{crossedEvents});
+ syncPlaybackAvailability();
+ // Continuous replay crosses every event; manual slider navigation only
+ // crosses the visible visits represented by that slider.
+ syncTimelineEvent(previousTime,{crossedEvents,includeHiddenEvents:allowOutsideVisibleRanges});
 }
 
-function updateTimeline({preserveTime=false}={}){
+function updateTimeline(){
  if(timelineViewportTask!==null)clearTimeout(timelineViewportTask);timelineViewportTask=null;
  if(editingNote)return false;
  const presenting=document.body.classList.contains('presenting');
@@ -212,20 +219,13 @@ function updateTimeline({preserveTime=false}={}){
  visibleTimeRanges=boatTimeRanges.length?boatTimeRanges:presenting?[{start:D.start,end:viewerEndTime()}]:[];
  timelineLength=visibleTimeRanges.reduce((sum,r)=>sum+r.end-r.start+1,0);
  const slider=$('time');slider.min=0;slider.max=Math.max(0,timelineLength-1);slider.step=1;slider.disabled=timelineLength<2;
- $('play').disabled=hasRenderingFailure()||(timelineLength<2&&!eventPlaybackTarget&&!interval);
- if(slider.disabled&&interval&&!eventPlaybackTarget&&!preserveTime)stopPlayback();
- const before=selectedTime;
- if(presenting||preserveTime){$('time').value=offsetAtTime(selectedTime);$('time').setAttribute('aria-valuetext',fmt(selectedTime));}
- else setCurrentTime(selectedTime);
+ // Derived UI never writes replay time or the playback tick timestamp.
+ $('time').value=offsetAtTime(selectedTime);$('time').setAttribute('aria-valuetext',fmt(selectedTime));
+ syncPlaybackAvailability();
  renderTimelineEvents();
  $('timeWindow').textContent=timelineLength
-  ? `I udsnittet: ${fmt(visibleTimeRanges[0].start)} – ${fmt(visibleTimeRanges.at(-1).end)} · ${visibleTimeRanges.length} ${visibleTimeRanges.length===1?'periode':'perioder'} · trin: 1 sekund · pauser uden både springes over`
+  ? `I udsnittet: ${fmt(visibleTimeRanges[0].start)} – ${fmt(visibleTimeRanges.at(-1).end)} · ${visibleTimeRanges.length} ${visibleTimeRanges.length===1?'periode':'perioder'} · skydertrin: 1 sekund · afspilning følger tiden sammenhængende`
   : isBoatFilterActive()?'Ingen både i filteret passerer dette udsnit. Ret filteret eller zoom ud.':'Ingen både passerer dette udsnit. Zoom ud eller flyt kortet.';
- if(interval&&!eventPlaybackTarget&&!preserveTime){
-  playbackRanges=visibleTimeRanges;playbackLength=timelineLength;
-  playbackOffset=offsetAtTime(selectedTime);playbackTickTime=performance.now();
- }
- return selectedTime!==before;
 }
 
 $('time').oninput=()=>seekTimeline(+$('time').value);

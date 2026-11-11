@@ -139,6 +139,12 @@ python3 scripts/serve_viewer.py
   I præsentationen bruges hele tidsrummet, hvis ingen valgte både passerer
   udsnittet; der er ingen snapmål i denne situation. Uden synlige passager er
   skyderen deaktiveret i redigering, mens noterne stadig kan åbnes direkte.
+- **Afspil** følger den valgte tid sammenhængende, også mellem skyderens
+  passageperioder og i udsnit uden både. Zoom, panorering, resize og filtrering
+  flytter ikke tiden og ændrer ikke afspilningens slutgrænse. Afspil/Pause kan
+  bruges, selv om skyderen er deaktiveret. Almindelig afspilning stopper ved
+  datasættets slutning; handicapvisning bruger hele feltets forberedte sluttid
+  inklusive målophold, uafhængigt af bådfilteret.
 - Tiden kan flyttes i **1-sekunds trin** med skyderen eller piletasterne.
   Shift+piletast flytter 1 minut. Afspilning opdaterer 20 gange pr. sekund og kan køre med 1×, 2×, 5×, 10×,
   20×, 100×, 200× eller 400×. Ved 1× svarer ét sekund til ét sekund i sejladsen.
@@ -147,10 +153,9 @@ python3 scripts/serve_viewer.py
   tiden væk fra et event i små trin. Piletaster uden for skyderen skifter events
   i præsentationen. Et træk i skyderen pauser afspilningen.
   Musehjulet over skyderen flytter ét sekund; Shift+musehjul flytter ét minut.
-  Klokken indeholder sekunder. Ved et nyt udsnit eller bådvalg
-  flyttes en tid uden for de synlige perioder til nærmeste synlige tidspunkt.
-  I præsentationen bevares den valgte tid ved zoom, panorering og ændret
-  skærmstørrelse. Navigation og snap ændrer ikke de gemte noter.
+  Klokken indeholder sekunder. Tiden bevares ved nyt udsnit, bådvalg og ændret
+  skærmstørrelse i både redigering og præsentation. Navigation og snap ændrer
+  ikke de gemte noter.
 - Mercutio, Vera, My, The Hulk og Rosa-Lux er valgt fra start; begge baners øvrige tracks kan vælges.
 - **Lag** øverst til højre på kortet åbner valgene **Vind** og **Byger**.
   De kan slås til og fra hver for sig, også i præsentation og fuld skærm.
@@ -835,10 +840,14 @@ Vindpile og fartmærkers kantplacering har fortsat kameraafhængig SVG-logik.
 Kameraændringer bevarer tidspunktet og udløser kun en viewport-tegning.
 Tidslinjens geografiske passageindeks opdateres samlet 150 ms efter sidste
 kameraændring. Det er afledt slider-UI og udløser ingen scenetegning eller
-tidsændring. Ved betjening af slider, step eller Afspil synkroniseres et ventende
-indeks først. Almindelig afspilning fastholder sine passageperioder fra start,
-så flytning af kameraet hverken springer i tiden eller stopper afspilningen.
-En ny afspilning bruger det aktuelle udsnits perioder.
+tidsændring. Ved betjening af slider eller step synkroniseres et ventende
+indeks først. Afspilning bruger kun den valgte tid, forløbet vægtid, hastighed og
+en global slutgrænse eller et udtrykkeligt eventmål. Der gemmes intet separat
+afspilningsoffset eller kopi af passageperioder. Opdatering af slideren kan
+hverken flytte afspilningsklokken, nulstille dens ticktid eller stoppe den.
+`node scripts/test_viewer_playback_camera.cjs` kontrollerer faktisk wheel-zoom
+hen over gamle passagegrænser, opstart i et tidshul, brøkdele uden stilstand,
+Afspil/Pause uden synlige passager og begge globale slutgrænser.
 
 `node scripts/test_viewer_track_geometry.cjs` sammenligner alle fem farvevalg
 med en tæt 128-delt GPU-reference og efterprøver centerlinjens fejlgrænse ned

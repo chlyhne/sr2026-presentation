@@ -25,6 +25,9 @@ const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
    return sample;
   });
   assert.ok(sample,'Nominal background draws the land');
+  await page.evaluate(()=>{setPresentationMode(false);view=[9000,9000,20,20];setview();syncTimelineViewport();});
+  assert.equal(await page.locator('#time').isDisabled(),true);
+  assert.equal(await page.locator('#play').isEnabled(),true,'Playback availability is independent of visible visits');
   // Losing either context must hide the whole map and show its cause, with no substitution.
   for(const name of ['webglTracks','webglBackground']){
    const available=await page.evaluate(name=>{
@@ -39,6 +42,7 @@ const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
    await page.evaluate(()=>nominalContext.restoreContext());
    await page.waitForFunction(()=>webglTracks.active&&webglBackground.active&&!hasRenderingFailure());
    assert.equal(await page.locator('#map').isVisible(),true);
+   assert.equal(await page.locator('#play').isEnabled(),true,'Context recovery restores playback availability with a disabled slider');
   }
   // No full-viewport video substitution when the nominated fullscreen path is unavailable.
   await page.route('https://www.youtube-nocookie.com/embed/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Video test</title>'}));

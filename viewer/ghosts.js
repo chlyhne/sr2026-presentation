@@ -34,7 +34,7 @@ function setHandicapTracks(enabled){
   catch{handicapPreferenceError='Handicapkompenseret spor kunne ikke gemmes.';syncHandicapTracks();return false;}
   handicapTracksEnabled=enabled;handicapPreferenceError='';syncHandicapTracks();
   clearTrackHover();comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();
-  updateTimeline({preserveTime:true});requestRender();return true;
+  updateTimeline();requestRender();return true;
  });
 }
 $('handicapCompensatedTracks').onchange=event=>setHandicapTracks(event.target.checked);
@@ -61,10 +61,7 @@ function displayedTrackTime(boat,sourceTime){
  const clock=ghostClocks.get(boat.id);return clock&&!clock.error?ghostClockAtSource(clock,sourceTime):null;
 }
 function viewerEndTime(){
- let end=D.end;
- for(const boat of boats)if(handicapTracksEnabled&&boatIsDisplayed(boat)){
-  const clock=ghostClocks.get(boat.id);if(!clock.error)end=Math.max(end,Math.ceil(clock.end+GHOST_FINISH_HOLD));
- }
- return end;
+ // Both global limits are prepared before interaction, independent of filters.
+ return handicapTracksEnabled?VIEWER_DATA_END:D.end;
 }
 syncNavigationControls();
