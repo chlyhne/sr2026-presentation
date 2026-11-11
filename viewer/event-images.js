@@ -67,10 +67,10 @@ async function uploadEventImageCanvas(canvas,name){
   return {id:saved.id,url:saved.url,name,width:canvas.width,height:canvas.height,type:blob.type};
 }
 function setAttachedEventImage(image){
- if(editingNote)return persistEventChanges(editingNote,{image});
+ if(editingNote)return stageEventChanges(editingNote,{image});
  pendingEventImage=image;return true;
 }
-function currentAttachedImage(){return editingNote?editingNote.image:pendingEventImage;}
+function currentAttachedImage(){return editingNote?eventDraft.image:pendingEventImage;}
 function updateImageEditor(){
  const image=currentAttachedImage();
  $('removeNoteImage').hidden=!image;

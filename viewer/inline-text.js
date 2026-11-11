@@ -4,7 +4,7 @@ function beginInlineTextEditing(){
  const note=editableSettingsEvent();
  const mode=pendingEventImage||hasPendingEventVideo()?'new':'saved';
  if(mode==='saved'&&!note)return;
- const text=mode==='saved'?note.text:$('note').value;
+ const text=mode==='saved'?eventDraft.text:$('note').value;
  inlineTextSession={mode,note,originalText:text};stopPlayback();
  $('eventText').hidden=true;$('eventTextEditor').hidden=false;
  $('eventTextEditor').value=text;$('inlineTextStatus').textContent='';
@@ -19,11 +19,11 @@ function finishInlineTextEditing(cancel=false){
  const session=inlineTextSession,text=$('eventTextEditor').value;
  if(session.mode==='saved'&&!cancel){
   const trimmed=text.trim();
-  if(!trimmed&&!session.note.image&&!validatedEventVideo(session.note.video)){
+  if(!trimmed&&!eventDraft.image&&!validatedEventVideo(eventDraft.video)){
    $('inlineTextStatus').textContent='Skriv en tekst. Escape annullerer redigeringen.';return false;
   }
-  if(trimmed!==session.note.text){
-   if(!persistEventChanges(session.note,{text:trimmed})){
+  if(trimmed!==eventDraft.text){
+   if(!stageEventChanges(session.note,{text:trimmed})){
     $('inlineTextStatus').textContent='Teksten kunne ikke gemmes. Prøv igen, eller tryk Escape for at annullere.';return false;
    }
    if(editingNote===session.note)$('note').value=trimmed;
@@ -31,8 +31,6 @@ function finishInlineTextEditing(cancel=false){
  }else if(session.mode!=='saved')$('note').value=cancel?session.originalText:text;
  inlineTextSession=null;$('eventTextEditor').hidden=true;$('eventText').hidden=false;
  $('inlineTextStatus').textContent='';
- // Keep existing navigation buttons in the DOM while a blur-triggering click completes.
- if(session.note)updateEventLabels(session.note);
  renderAnnotations();return true;
 }
 $('eventText').onclick=beginInlineTextEditing;

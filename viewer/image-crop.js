@@ -1,4 +1,4 @@
-// Cropping creates a new attachment and saves it to the current event.
+// Cropping creates a new attachment in the current event draft.
 let imageCropState=null;
 const cropClamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 function renderImageCrop(){

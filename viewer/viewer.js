@@ -433,7 +433,7 @@ function setview(){
 }
 function changeMapView(next){
  const target=editableSettingsEvent();
- if(target&&!persistEventChanges(target,{view:[...next]}))return false;
+ if(target&&!stageEventChanges(target,{view:[...next]}))return false;
  view=next;setview();return true;
 }
 $('reset').onclick=()=>changeMapView([230,250,620,760]);
@@ -476,7 +476,7 @@ function endPan(e){
  if(endDrawingGesture(e))return;
  if(!drag||e.pointerId!==drag.pointerId)return;
  const click=e.type==='pointerup'&&!drag.moved,{boatId,noteIndex,trackBoatId,speedKey,speedAction}=drag;
- if(drag.moved&&drag.event&&drag.event===editableSettingsEvent()&&!persistEventChanges(drag.event,{view:[...view]})){
+ if(drag.moved&&drag.event&&drag.event===editableSettingsEvent()&&!stageEventChanges(drag.event,{view:[...view]})){
   view=drag.view;setview();
  }
  drag=null;map.classList.remove('panning');

@@ -32,8 +32,10 @@ async function check(type){
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-notes'))),fixtures,'Draft is not saved before blur');
   const edited='En rettelse <b>som almindelig tekst</b>\nAnden linje';
   await page.locator('#eventCounter').click();
+  assert.equal(await page.evaluate(()=>notes[0].text),fixtures[0].text,'Blur only updates the draft');
+  await page.locator('#save').click();
   let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-notes')));
-  assert.deepEqual(saved,[{...fixtures[0],text:edited},fixtures[1]],'Autosave updates text only');
+  assert.deepEqual(saved,[{...fixtures[0],text:edited},fixtures[1]],'Save updates text only');
   assert.equal(await page.locator('#eventText').textContent(),edited);assert.equal(await page.locator('#eventText b').count(),0);
   assert.match(await page.locator('.note-jump').first().textContent(),/En rettelse/);
   await page.locator('#eventText').click();await page.locator('#eventTextEditor').fill('Skal kasseres');await page.keyboard.press('Escape');
@@ -41,12 +43,13 @@ async function check(type){
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-notes'))),saved);
   await page.locator('#eventText').focus();await page.keyboard.press('Enter');await page.locator('#eventTextEditor').fill('Gem med tastatur');await page.keyboard.press('Control+Enter');
   assert.equal(await page.locator('#eventTextEditor').isVisible(),false);
+  await page.locator('#save').click();
   assert.equal(await page.evaluate(()=>notes[0].text),'Gem med tastatur');
   // A click on another note must complete even when blur saves and refreshes labels.
   await page.locator('#eventText').click();await page.locator('#eventTextEditor').fill('Gem før skift');
-  await page.locator('.note-jump').nth(1).click();assert.equal(await page.locator('#eventText').textContent(),fixtures[1].text);
+  await page.locator('#save').click();await page.locator('.note-jump').nth(1).click();assert.equal(await page.locator('#eventText').textContent(),fixtures[1].text);
   assert.equal(await page.evaluate(()=>notes[0].text),'Gem før skift');
-  await page.locator('#eventText').click();await page.locator('#eventTextEditor').fill('Anden note rettet');await page.locator('#startPresentation').click();
+  await page.locator('#eventText').click();await page.locator('#eventTextEditor').fill('Anden note rettet');await page.locator('#save').click();await page.locator('#startPresentation').click();
   assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('presenting')),true);
   assert.equal(await page.evaluate(()=>notes[1].text),'Anden note rettet');
   await page.locator('#eventText').click();assert.equal(await page.locator('#eventTextEditor').isVisible(),false,'Presentation text remains read-only');
@@ -55,23 +58,25 @@ async function check(type){
   await page.locator('.note-edit').nth(1).click();await page.locator('#eventText').click();
   await page.locator('#eventTextEditor').fill('Rettet i højrepanelet');await page.locator('#eventCounter').click();
   assert.equal(await page.locator('#note').inputValue(),'Rettet i højrepanelet');
+  assert.equal(await page.evaluate(()=>notes[1].text),'Anden note rettet');
+  await page.locator('#save').click();
   saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-notes')));
   assert.equal(saved[1].text,'Rettet i højrepanelet');
   // A failed autosave keeps the text available for retry/cancel and blocks navigation.
   await page.locator('#eventText').click();await page.locator('#eventTextEditor').fill('Bevar min rettelse ved fejl');
   await page.evaluate(()=>{window.originalInlineStorage=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='sr2026-notes')throw new Error('quota');return originalInlineStorage.call(this,key,value);};});
-  await page.locator('#eventCounter').click();assert.equal(await page.locator('#eventTextEditor').isVisible(),true);
-  assert.match(await page.locator('#inlineTextStatus').textContent(),/kunne ikke gemmes/);
-  assert.equal(await page.locator('#eventTextEditor').inputValue(),'Bevar min rettelse ved fejl');
+  await page.locator('#eventCounter').click();await page.locator('#save').click();
+  assert.match(await page.locator('#annotationStatus').textContent(),/kan ikke gemme/);
+  assert.equal(await page.locator('#note').inputValue(),'Bevar min rettelse ved fejl');
   await page.locator('#previousEvent').click();assert.equal(await page.evaluate(()=>activePresentationNote===notes[1]),true);
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-notes'))),saved);
-  await page.evaluate(()=>{Storage.prototype.setItem=originalInlineStorage;});await page.locator('#eventTextEditor').focus();await page.keyboard.press('Escape');
+  await page.evaluate(()=>{Storage.prototype.setItem=originalInlineStorage;});await page.locator('#cancelEdit').click();
   await page.reload();await page.waitForFunction(()=>document.querySelectorAll('.note-jump').length===2);await page.locator('.note-jump').first().click();await page.locator('#eventPanelToggle').click();
   assert.equal(await page.locator('#eventText').textContent(),'Gem før skift');
   await page.locator('#eventText').click();await page.screenshot({path:'/tmp/sr2026-inline-text-'+type.name()+'.png'});
   await page.keyboard.press('Escape');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:type.name(),checks:'click to edit in right panel, blur autosave, text-only updates, multiline and cursor keys, Escape, Ctrl+Enter, single-click navigation, read-only presentation, direct event autosave, failed save, reload',errors}));
+  console.log(JSON.stringify({browser:type.name(),checks:'click to edit in right panel, blur updates draft, explicit Save, text-only updates, multiline and cursor keys, Escape, Ctrl+Enter, single-click navigation, read-only presentation, event draft, failed save, reload',errors}));
  }finally{await browser.close();}
 }
 (async()=>{for(const type of process.env.SR_FULL_TEST==='1'?[chromium,firefox]:[firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
