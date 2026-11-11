@@ -7,6 +7,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
  const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
+  await require('./viewer-track-fixtures.cjs')(page);
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
@@ -59,7 +60,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     boat('later','Senere passage',1800,55.606,Array(9).fill(6)));
    referenceBoatId='reference';
    for(const boat of boats){
-    trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat)});
+    prepareTrackFixture(boat);
     webglTracks.prepare(boat);
    }
    webglTracks.prepareComparison();
@@ -84,21 +85,20 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   near(numeric.handicap,6/(1+80.6*6/3600));assert.equal(numeric.missingRating,null);
   near(numeric.north.bearing,0);near(numeric.east.bearing,90);
   near(numeric.north.distance,1.00067567,.00001);
-  const timeMath=await page.evaluate(()=>({
-   slow:timeGainPer100ReferenceMeters(3,4),fast:timeGainPer100ReferenceMeters(13,14),
-   gain:timeGainPer100ReferenceMeters(4,3),equal:timeGainPer100ReferenceMeters(6,6),
-   stopped:timeGainPer100ReferenceMeters(0,5),backwards:timeGainPer100ReferenceMeters(-5,5),
-   missing:[[4,0],[0,0],[4,-1],[NaN,4],[Infinity,4],[4,Infinity],[4,NaN]].map(([speed,reference])=>timeGainPer100ReferenceMeters(speed,reference))
-  }));
-  near(timeMath.slow,-360000/1852/16);near(timeMath.fast,-360000/1852/196);
-  near(timeMath.gain,360000/1852/9);near(timeMath.equal,0);
-  near(timeMath.stopped,-360000/1852/5);near(timeMath.backwards,2*timeMath.stopped);
-  assert.ok(Math.abs(timeMath.slow)>12*Math.abs(timeMath.fast));
-  assert.deepEqual(timeMath.missing,Array(7).fill(null));
+  const timeMath=await page.evaluate(()=>{
+   const rate=speed=>3600/(1852*Math.abs(speed)),gain=(speed,reference)=>timeGainPer100Meters(rate(speed),rate(reference));
+   return {slow:gain(3,4),fast:gain(13,14),gain:gain(4,3),equal:gain(6,6),stopped:gain(0,5),backwards:gain(-5,5),
+    missing:[[-1,4],[NaN,4],[4,NaN],[Infinity,Infinity]].map(([own,reference])=>timeGainPer100Meters(own,reference))};
+  });
+  near(timeMath.slow,-360000/1852/12);near(timeMath.fast,-360000/1852/182);
+  near(timeMath.gain,360000/1852/12);near(timeMath.equal,0);
+  assert.ok(timeMath.stopped< -1e16);near(timeMath.backwards,0);
+  assert.ok(Math.abs(timeMath.slow)>15*Math.abs(timeMath.fast));
+  assert.deepEqual(timeMath.missing,Array(4).fill(null));
   const projectionChecks=await page.evaluate(()=>{
    const time=boats[1].points[4][2],northbound={...boats[1],points:[[12.04,55.59,time-60],[12.04,55.61,time+60]],speeds:[6,6]};
    const noPassage={...boats[1],points:[[12.085,55.6,time],[12.086,55.6,time+60]],speeds:[6,6]};
-   const result={crosswind:trackGainSample(northbound,time),noPassage:trackGainSample(noPassage,time),
+   const result={crosswind:trackGainSample(prepareTrackFixture(northbound),time),noPassage:trackGainSample(prepareTrackFixture(noPassage),time),
     nextLeg:projectOnRhumbRoute([12.11,55.05],buildRhumbRoute([[12,55],[12.1,55],[12.1,55.1]]))};
    chosen.delete('Mercutio');result.hiddenReference=trackGainSample(boats[1],time);chosen.add('Mercutio');return result;
   });
@@ -156,7 +156,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     return [0,4,8].map(index=>trackGainSample(boats[1],boats[1].points[index][2]));
    }finally{for(const [name,method] of originals)gl[name]=method;}
   });
-  for(const sample of timeMode)near(sample.gain,360000/1852*(sample.vmg-sample.referenceVmg)/(sample.referenceVmg**2));
+  for(const sample of timeMode)near(sample.gain,sample.timeGain);
   assert.match(await page.locator('#trackSpeedLegend').getAttribute('aria-label'),/sekunder pr\. 100 meter/);
   assert.match(await page.locator('#trackSpeedLegend').textContent(),/−120.*\+120/);
   const timePixels=await pixels();
@@ -173,7 +173,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
    ];
    for(const boat of fixtures){
     colours[boat.name]='#ffdc42';boats.push(boat);chosen.add(boat.name);
-    trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat)});webglTracks.prepare(boat);
+    prepareTrackFixture(boat);webglTracks.prepare(boat);
    }
    webglTracks.comparisonReference=null;webglTracks.prepareComparison();render();
    const gl=webglTracks.gl;
@@ -184,18 +184,17 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
     return {value:pin.value,label:pin.label,pixel:[...pixel]};
    }
    const result={reverse:sample(fixtures[0],4),stopped:sample(fixtures[1],4),turn:[3,4,5].map(index=>sample(fixtures[2],index)),missing:sample(fixtures[3],4)};
-   const reverseSample=projectedTrackSample(fixtures[0],time+240),station=referenceAtProgress(reverseSample.progress);
-   result.expected={reverse:timeGainPer100ReferenceMeters(quantizeProjectedSpeed(-6),station.vmg),stopped:timeGainPer100ReferenceMeters(0,station.vmg)};
+   result.expected=Object.fromEntries(['reverse','stopped'].map((name,index)=>[name,preparedTimeGain(fixtures[index],time+240,trackProfileCache.get(fixtures[index].points),trackProfileCache.get(reference.points))]));
    boats.splice(initialLength);for(const boat of fixtures)chosen.delete(boat.name);render();
    return result;
   });
   for(const key of ['reverse','stopped']){
-   near(nonForward[key].value,nonForward.expected[key],.001);
-   assert.ok(nonForward[key].pixel[0]>nonForward[key].pixel[2]+20,JSON.stringify(nonForward[key]));
+   near(nonForward[key].value,nonForward.expected[key],.001+Math.abs(nonForward.expected[key])*1e-6);
    assert.equal(nonForward[key].pixel[3],255);
-   assert.match(nonForward[key].label,/^-.*s\/100 m ref\.$/);
+   assert.match(nonForward[key].label,/s\/100 m$/);
   }
-  assert.ok(nonForward.reverse.value<nonForward.stopped.value,'Reverse progress loses more time than standing still');
+  assert.ok(nonForward.stopped.value< -1e16,'Zero progress uses overflow rather than grey');
+  assert.deepEqual(nonForward.stopped.pixel,[255,196,61,255]);
   assert.ok(nonForward.turn.every(sample=>Number.isFinite(sample.value)),'GPU values remain valid through a turnaround at zero VMG');
   assert.equal(nonForward.missing.value,null);assert.equal(nonForward.missing.label,'Sammenligning mangler');
   assert.deepEqual(nonForward.missing.pixel,[138,148,155,255],'Genuinely missing SOG stays grey');
@@ -203,7 +202,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.equal(saturatedBlue.colour,'rgb(0,60,255)');assert.equal(saturatedBlue.loss,'rgb(215,25,28)');assert.equal(saturatedBlue.stop,saturatedBlue.colour,'Legend uses the saturated blue from the track palette');
   const overlap=await page.evaluate(()=>{
    const laterReference={...boats[0],points:boats[0].points.map(p=>[p[0],55.602,p[2]+1200])};
-   trackProfileCache.set(laterReference.points,{samples:prepareProjectedTrack(laterReference),stations:prepareReferenceProfile(laterReference)});
+   prepareTrackFixture(laterReference);
    webglTracks.prepare(laterReference);
    // Submit the newer reference last: it must still stay below the older rival.
    webglTracks.render(currentTime(),[boats[1],laterReference],true);
@@ -221,7 +220,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
    const point=new DOMPoint(...xy([12.005,55.602])).matrixTransform($('map').getScreenCTM());return {x:point.x,y:point.y};
   });
   await page.mouse.move(hoverPoint.x,hoverPoint.y);
-  await page.waitForFunction(()=>document.querySelector('#trackHover')?.textContent.includes('s/100 m ref.'));
+  await page.waitForFunction(()=>document.querySelector('#trackHover')?.textContent.includes('s/100 m'));
   await page.locator('#trackLength').selectOption('900');
   const short=await pixels();assert.equal(short.reference[3],0);assert.equal(short.fast[3],0);assert.equal(short.slow[3],255);
   const oldReferenceHit=await page.evaluate(()=>{
@@ -237,7 +236,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.equal(await page.evaluate(()=>webglTracks.uploads),uploads,'Playback retains geometry buffers');
   await page.evaluate(()=>{
    const missing={...boats[1],points:[[12.2,55.6,selectedTime],[12.21,55.6,selectedTime+60]],speeds:[6,6]};
-   window.navigationMissingChecks={outside:trackGainSample(missing,selectedTime),
+   window.navigationMissingChecks={outside:trackGainSample(prepareTrackFixture(missing),selectedTime),
     gap:projectedTrackSample({...boats[1],points:[[12,55.6,0],[12.01,55.6,600]],speeds:[6,6]},300),
     missingSog:projectedTrackSample({...boats[1],speeds:Array(9).fill(null)},boats[1].points[4][2])};
   });
@@ -246,7 +245,7 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
    const boat={...boats[0],id:'missing-speed',name:'Missing speed',
     points:boats[0].points.map(point=>[point[0],55.608,point[2]]),speeds:Array(9).fill(null)};
    colours[boat.name]='#6cffff';boats.push(boat);chosen.add(boat.name);
-   trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat)});
+   prepareTrackFixture(boat);
    webglTracks.prepare(boat);
    window.boatModeOriginals=new Map();
    for(const name of ['bufferData','bufferSubData','createBuffer','texSubImage2D','beginTransformFeedback']){

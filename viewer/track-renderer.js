@@ -115,6 +115,7 @@ void main(){
 precision highp float;
 precision highp int;
 layout(location=0) in vec3 projected;
+layout(location=1) in vec2 projectedTime;
 uniform highp sampler2D referenceProfile;
 uniform int stationCount;
 uniform vec2 handicaps;
@@ -122,15 +123,21 @@ out vec3 evaluatedGains;
 void main(){
  evaluatedGains=vec3(-1e20);
  gl_Position=vec4(0.0,0.0,0.0,1.0);
- if(projected.z<-1e19||projected.x<0.0)return;
- int index=int(projected.x);
- if(index>=stationCount)return;
- float referenceSpeed=texelFetch(referenceProfile,ivec2(index%1024,index/1024),0).r;
- if(referenceSpeed<-1e19)return;
- evaluatedGains.x=projected.z-referenceSpeed;
- float factor=1.0+(handicaps.y-handicaps.x)*projected.z/3600.0;
- if(handicaps.x>0.0&&handicaps.y>0.0&&factor>0.0)evaluatedGains.y=projected.z/factor-referenceSpeed;
- if(referenceSpeed>0.0)evaluatedGains.z=${TRACK_SECONDS_PER_100_REFERENCE_METERS}*(projected.z-referenceSpeed)/(referenceSpeed*referenceSpeed);
+ if(projectedTime.x>=0.0&&projectedTime.x<float(stationCount)){
+  int index=int(projectedTime.x);
+  float referenceTime=texelFetch(referenceProfile,ivec2(index%1024,index/1024),0).g;
+  if(projectedTime.y>=0.0&&referenceTime>=0.0&&!(projectedTime.y>=${TRACK_TIME_OVERFLOW}.0&&referenceTime>=${TRACK_TIME_OVERFLOW}.0))
+   evaluatedGains.z=100.0*(referenceTime-projectedTime.y);
+ }
+ if(projected.z>=-1e19&&projected.x>=0.0&&projected.x<float(stationCount)){
+  int index=int(projected.x);
+  float referenceSpeed=texelFetch(referenceProfile,ivec2(index%1024,index/1024),0).r;
+  if(referenceSpeed>=0.0){
+   evaluatedGains.x=projected.z-referenceSpeed;
+   float factor=1.0+(handicaps.y-handicaps.x)*projected.z/3600.0;
+   if(handicaps.x>0.0&&handicaps.y>0.0&&factor>0.0)evaluatedGains.y=projected.z/factor-referenceSpeed;
+  }
+ }
 }`);
     const evaluationFragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
 precision highp float;
@@ -144,8 +151,8 @@ void main(){colour=vec4(0.0);}`);
     this.comparisonUniforms=Object.fromEntries(['referenceProfile','stationCount','handicaps'].map(name=>[name,gl.getUniformLocation(this.comparisonProgram,name)]));
     this.referenceTexture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this.referenceTexture);
     this.referenceHeight=Math.max(1,Math.ceil(maxReferenceStations/1024));
-    this.referenceUpload=new Float32Array(1024*this.referenceHeight);
-    gl.texStorage2D(gl.TEXTURE_2D,1,gl.R32F,1024,this.referenceHeight);
+    this.referenceUpload=new Float32Array(1024*this.referenceHeight*2);
+    gl.texStorage2D(gl.TEXTURE_2D,1,gl.RG32F,1024,this.referenceHeight);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
     this.feedback=gl.createTransformFeedback();this.comparisonReference=null;
    }
@@ -230,8 +237,12 @@ void main(){colour=vec4(0.0);}`);
    record.comparisonVao=gl.createVertexArray();gl.bindVertexArray(record.comparisonVao);
    gl.bindBuffer(gl.ARRAY_BUFFER,record.projectedBuffer);gl.bufferData(gl.ARRAY_BUFFER,profile.samples,gl.STATIC_DRAW);
    gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,12,0);
+   record.timeBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,record.timeBuffer);
+   const timeValues=Float32Array.from(profile.timeSamples,value=>Math.min(value,TRACK_TIME_OVERFLOW));
+   gl.bufferData(gl.ARRAY_BUFFER,timeValues,gl.STATIC_DRAW);
+   gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,2,gl.FLOAT,false,8,0);
    gl.bindBuffer(gl.ARRAY_BUFFER,record.comparisonBuffer);gl.bufferData(gl.ARRAY_BUFFER,(points.length+1)*12,gl.DYNAMIC_COPY);
-   record.bytes+=profile.samples.byteLength+(points.length+1)*12;
+   record.bytes+=profile.samples.byteLength+timeValues.byteLength+(points.length+1)*12;
   }
   gl.bindVertexArray(null);
   this.buffers.set(points,record);this.uploads++;
@@ -242,14 +253,15 @@ void main(){colour=vec4(0.0);}`);
   if(this.comparisonReference===reference.points)return;
   const profile=trackProfileCache.get(reference.points);if(!profile)throw Error('Referencebådens sporprofil er ikke forberedt.');
   const gl=this.gl,u=this.comparisonUniforms;
-  if(profile.stations.length>this.referenceUpload.length)throw Error('Referenceprofilen overstiger den forberedte GPU-tekstur.');
+  if(profile.stations.length*2>this.referenceUpload.length)throw Error('Referenceprofilen overstiger den forberedte GPU-tekstur.');
   this.referenceUpload.fill(-1e20);
   for(let index=0;index<profile.stations.length;index++){
    const value=profile.stations[index];
-   this.referenceUpload[index]=value===REFERENCE_MISSING?-1e20:value/REFERENCE_SPEED_SCALE;
+   this.referenceUpload[index*2]=value===REFERENCE_MISSING?-1e20:value/REFERENCE_SPEED_SCALE;
+   this.referenceUpload[index*2+1]=Math.min(profile.timeStations[index],TRACK_TIME_OVERFLOW);
   }
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.referenceTexture);
-  gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,1024,this.referenceHeight,gl.RED,gl.FLOAT,this.referenceUpload);
+  gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,1024,this.referenceHeight,gl.RG,gl.FLOAT,this.referenceUpload);
   gl.useProgram(this.comparisonProgram);gl.uniform1i(u.referenceProfile,1);gl.uniform1i(u.stationCount,profile.stations.length);
   gl.bindBuffer(gl.ARRAY_BUFFER,null);
   gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK,this.feedback);gl.enable(gl.RASTERIZER_DISCARD);

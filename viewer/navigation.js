@@ -47,12 +47,15 @@ function correctedProjectedSpeed(speed,handicap,referenceHandicap){
 }
 function trackGainLimit(){return comparison.basis==='time'?TRACK_TIME_GAIN_LIMIT:TRACK_GAIN_LIMIT;}
 function trackComparisonSample(boat,time){
- const sample=projectedTrackSample(boat,time);if(!sample)return null;
- const reference=referenceAtProgress(sample.progress);if(!reference)return null;
- const vmg=quantizeProjectedSpeed(sample.vmg);
- const corrected=correctedProjectedSpeed(vmg,boat.handicapSecondsPerNm,referenceBoat()?.handicapSecondsPerNm);
- return {absoluteGain:vmg-reference.vmg,handicapGain:corrected===null?null:corrected-reference.vmg,timeGain:timeGainPer100ReferenceMeters(vmg,reference.vmg),
-  vmg,referenceVmg:reference.vmg,referenceTime:referenceTimeAtProgress(sample.progress),progress:sample.progress};
+ const ownProfile=trackProfileCache.get(boat.points),referenceProfile=trackProfileCache.get(referenceBoat()?.points);
+ if(!ownProfile||!referenceProfile)throw Error('Sporenes sammenligningsprofiler er ikke forberedt.');
+ const sample=projectedTrackSample(boat,time),reference=sample?referenceAtProgress(sample.progress):null;
+ const timeGain=preparedTimeGain(boat,time,ownProfile,referenceProfile);
+ if(!reference&&timeGain===null)return null;
+ const vmg=sample?quantizeProjectedSpeed(sample.vmg):null;
+ const corrected=vmg===null?null:correctedProjectedSpeed(vmg,boat.handicapSecondsPerNm,referenceBoat()?.handicapSecondsPerNm);
+ return {absoluteGain:reference&&vmg!==null?vmg-reference.vmg:null,handicapGain:reference&&corrected!==null?corrected-reference.vmg:null,timeGain,
+  vmg,referenceVmg:reference?.vmg??null,referenceTime:sample?referenceTimeAtProgress(sample.progress):null,progress:sample?.progress??null};
 }
 function trackGainSample(boat,time){
  const sample=trackComparisonSample(boat,time);if(!sample)return null;

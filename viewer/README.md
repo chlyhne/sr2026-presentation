@@ -298,7 +298,7 @@ python3 scripts/serve_viewer.py
   eller den afrundede jet-farve. Tal over 15 knob vises med deres faktiske værdi.
   Manglende fartdata vises som **Fart mangler**. Punktet kan stadig pinnes.
 - Mærkets værdi følger den synlige sportype: SOG i **kn**, absolut eller
-  handicapkorrigeret fartforskel i **kn**, eller tidsgevinst i **s/100 m referencefremdrift**.
+  handicapkorrigeret fartforskel i **kn**, eller tidsgevinst i **s/100 m**.
   Positive forskelle betyder hurtigere fremdrift end referencebåden ved samme
   sted på ruten. Sammenligningsværdierne læses fra sporets forberedte WebGL-data;
   skift af sportype genberegner dem ikke. Referencebådens mærker viser fortsat SOG.
@@ -903,9 +903,10 @@ geografisk bueafstand, ikke et fast tidsinterval. Fremdriften gemmes ved et fæl
 gitter langs rhumblinen med 10 meters afstand. Den anden båds **samme langs-rute-position**
 slås direkte op ved den nærmeste station,
 uanset klokkeslæt og tværgående afstand fra ruten. Hvis referencebåden passerer samme
-rute-position flere gange, bruges den første fremadgående passage. Sammenligningen
-bruger ét forberedt bytearray pr. båd, så opslag kun kræver et array-indeks.
-Den samme profil bruges af alle tre grundlag. Passagegrænser afrundes til nærmeste
+rute-position flere gange, bruger fartvisningerne den første fremadgående passage.
+Tidsvisningen summerer i stedet alle passager i en separat stationsprofil.
+Begge slags profiler er forberedt for alle både, så opslag kun kræver et array-indeks.
+Passagegrænser afrundes til nærmeste
 station (højst fem meters usikkerhed); en kort passage kan dække én station.
 Den sidste station repræsenterer rutens præcise slutpunkt.
 Sammenligningen kan bruge referencebådens senere passage, også når den ligger efter kortets aktuelle tid.
@@ -924,26 +925,42 @@ nævner giver manglende sammenligning. Beregningen er en lokal sammenligning af
 fremdrift, ikke en resultatliste med starttidskorrektion.
 Baggrund: [Dansk Sejlunions forklaring af DH og tid på distance](https://dansksejlunion.dk/kapsejlads/regler-og-vejledning/dh-reglen).
 
-Visningen **tid pr. 100 m referencefremdrift** bruger de samme projicerede farter
-ved samme sted, uden handicapkorrektion. Med farterne i knob viser den
-`(3600 × 100 / 1852) × (v_båd − v_reference) / v_reference²`.
+Visningen **tid pr. 100 m · alle passager** bruger to forberedte tidsdatasæt pr. båd,
+uden handicapkorrektion. Retningen findes som finite difference mellem successive
+GPS-positioner; ved slutningen af en sammenhængende serie bruges den indgående
+difference. Fartstørrelsen kommer fra den separate målte SOG, ikke GPS-differencens
+længde pr. sekund. Den projicerede fart på rhumblinen giver den tidsindekserede
+værdi `secondsPerMeter = 3600 / (1852 × abs(projiceretSOG))`.
+Baglæns sejlads har dermed et positivt tidsforbrug, også ved vendepunkter hvor
+PCHIP-tangenten er nul.
+
+Disse værdier projiceres langs den nominelle sporkurve til 10-meterstationer.
+Inden for en enkelt fremad- eller tilbagegående passage gennemsnittes tidsforbruget
+efter dækket længde i hver stationscelle. Bidragene fra forskellige passager
+lægges sammen; målefrekvensen giver ikke flere bidrag i sig selv. En båd, der
+sejler frem, tilbage og frem over samme sted med konstant fart, får således tre
+gange tidsforbruget dér. Huller over fem minutter eller manglende SOG forbindes ikke.
+
+Farven på båd B bruger dens tidsindekserede værdi sammen med referencebåd A's
+summerede stationsværdi: `100 × (referenceSecondsPerMeter − ownSecondsPerMeter)`.
 Positiv værdi betyder indhentet tid (mættet blå), negativ tabt tid (rød).
-Referencefarten skal være positiv; egen stilstand og baglæns sejlads er gyldige
-og giver voksende tidstab. Med referencefart 5 knob giver egen fremdrift 2,5 knob
-cirka −19,4 s/100 m ref., stilstand −38,9 og 2,5 knob baglæns −58,3.
+En enkelt passage ved 3 knob mod 4 knob giver cirka −16,2 s/100 m;
+13 mod 14 knob giver kun cirka −1,1 s/100 m. En reference, der kun sejler
+baglæns, har stadig en gyldig tidsprofil, selv om fartprofilen ikke har en
+fremadgående passage. Egen baglæns passage har samme lokale tidsforbrug som
+fremadgående passage med samme projicerede fartstørrelse; den får ikke et ekstra
+fortegnsbaseret tab. Det er referenceprofilen, der summerer genbesøg.
 Den lineære farveskala går til ±120. Større tab (under −120) vises varmt gult,
 og større gevinst (over +120) vises magenta. Præcis på grænserne er farverne
 fortsat rød og blå. Skalaens spidser viser farverne uden for intervallet;
 hover og pins viser altid den faktiske værdi.
-Grå betyder manglende fælles data eller en referencefart på nul eller derunder.
-
-Ved summering vægtes hver værdi med referencefremdriften i intervallet divideret
-med 100 m. I et interval `dt` er det dermed `dt × (1 − v_båd / v_reference)`
-sekunders tab, hvor negativ fremdrift lægger ekstra tab til. Det er både tid brugt
-og tidsværdien af tabt fremdrift. Hvis A–B tager referencebåden 100 sekunder, og en
-anden båd sejler A–B–A–B med samme fart på 300 sekunder, giver bidragene 0, 200 og
-0 sekunders tab: samlet 200. Et minuts stilstand giver 60 sekunders tab.
-Visningen på sporet er den lokale normaliserede værdi, ikke et akkumuleret forspring.
+Præcis nul projiceret fart giver uendeligt tidsforbrug, ikke manglende data.
+GPU'en bruger en endelig overflowmarkør, så interpolation ikke giver NaN;
+hover og pins viser ±∞, og sporet bruger skalaens overflowfarve.
+Hvis begge værdier er uendelige, er forskellen udefineret og vises grå,
+ligesom manglende fælles data. En periode uden ændring i station får sin faktiske
+varighed fordelt på stationens 10 meter i referenceprofilen.
+Visningen er en lokal sammenligning af tidsforbrug, ikke et akkumuleret forspring.
 Valget gemmes ligesom de øvrige sporvalg.
 
 De projicerede kildeprøver og passageprofiler for alle både bygges offline af
@@ -962,28 +979,39 @@ dertil kommer fartkoderne, fire værdier i fem bytes. Kun sidste bytes ubrugte
 høje bits nuludfyldes. Negativ egen VMG bevares i indeksfeltets fortegn uden ekstra bytes;
 positioner og tidsstempler kvantiseres ikke til 10 bit.
 Alle både pakkes i én fingerprint-navngivet `fleet.bin`, som hentes med ét request.
-Manifest v4 angiver hver båds byte-offsets og den samlede filstørrelse; indlæsningen
+Manifest v6 angiver hver båds byte-offsets og den samlede filstørrelse; indlæsningen
 afviser ugyldige områder, overlap og afkortede filer uden at offentliggøre delvise data.
 Pages publicerer kun det aktuelle manifest og den tilhørende samlede fil.
-Filen fylder samlet cirka 11,71 MiB: 6,44 MiB kildeprøver og
+Fartdata fylder cirka 11,71 MiB: 6,44 MiB kildeprøver og
 5,27 MiB referenceprofiler. Browseren afkoder kildeprøverne én gang til GPU'ens
 Float32-format (8,36 MiB), mens alle referenceprofiler beholdes som Uint16-koder (8,43 MiB).
 Profilerne pakkes ud af downloadbufferen, så denne kan frigives efter indlæsning;
 der beholdes ingen views, som fastholder de allerede afkodede kildeprøver.
-Det samlede CPU-lager er derfor cirka 16,79 MiB. Lageret vokser lineært med
+Også tidsfarver gemmes som pakkede 10-bit-heltal, først efter at projektioner og
+summering af passager er færdige. Hver blok på højst 256 værdier har én Float32-skala,
+så store endelige tidsforbrug bevares uden et fast maksimum. Koderne 0–1021 er
+`kode * skala`; 1022 betyder uendelighed og 1023 manglende data. Fejlen er højst
+cirka 0,049 % af blokkens største endelige værdi. Skalaerne fylder cirka 0,016 byte
+pr. værdi ud over de 1,25 byte for selve 10-bit-koderne. Stationsindeks bevarer
+deres Float32-præcision, og alle tidsindekserede farvearrays bruger bådens ene
+oprindelige tidsakse; der gemmes ingen nye tidsstempler. Slutprøvens dublet
+genskabes ved afkodning. Samlet download er cirka 20,72 MiB før HTTP-komprimering.
+Det samlede CPU-lager for afkodede fart- og tidsprofiler
+er fortsat cirka 39,23 MiB. Lageret vokser lineært med
 kildeprøver og antal både; der opbygges ingen cache for alle bådpar.
 Profilerne gemmer hverken stationspositioner eller tider. Hoverens omtrentlige
 referencetid findes ved opslag og interpolation mellem de allerede forberedte
 kildepositioner og deres oprindelige tidsstempler.
 
-Kun den valgte referenceprofil afkodes til en genbrugt R32F GPU-tekstur, cirka
-0,160 MiB i den aktuelle opsætning. Transform feedback slår dens stationer op én gang pr.
+Kun den valgte references fart- og tidsprofiler uploades til en genbrugt RG32F
+GPU-tekstur, cirka 0,320 MiB i den aktuelle opsætning. Transform feedback slår dens stationer op én gang pr.
 referencevalg og skriver absolut-, handicap- og tidsforskel ved de oprindelige
 kildepunkter til en genbrugt GPU-buffer med tre floats pr. kildeprøve. Den ekstra
-kanal bruger cirka 2,79 MiB GPU-lager for det aktuelle felt, men øger hverken
-serverfilerne eller CPU-profilerne og opretter ingen cache for bådpar. Kildebufferen
+kanal bruger cirka 2,79 MiB GPU-lager for det aktuelle felt og opretter ingen
+cache for bådpar. Kildebufferen
 indeholder det heltallige stationsindeks, progression i sømil og egen VMG; indekset
 beregnes før Float32-konvertering, så GPU'en ikke afrunder til en anden station.
+En separat statisk kildebuffer indeholder tidsprøvens stationsindeks og tidsforbrug.
 Forskellene interpoleres langs sporet i den fælles WebGL 2-renderer.
 Et grundlagsskift ændrer kun shaderens valg af de allerede
 forberedte værdier. Referencevalg genberegner ingen CPU-profiler og uploader

@@ -15,12 +15,12 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     return {...original,id,name:id==='reference'?'Mercutio':id,handicapSecondsPerNm:580.6,
      points:[[reverse?12.08:12,lat,time],[reverse?12:12.08,lat,time+240]],speeds};
    }
-   boats.splice(0,boats.length,fixture('reference',55.6,[1,1]),fixture('gain',55.602,[6,6]),
-    fixture('loss',55.604,[6,6],true),fixture('crossing',55.606,[1,6]),fixture('missing',55.608,[null,null]));
+   boats.splice(0,boats.length,fixture('reference',55.6,[1,1]),fixture('gain',55.602,[25,25]),
+    fixture('loss',55.604,[6,6],true),fixture('crossing',55.606,[1,25]),fixture('missing',55.608,[null,null]),fixture('timeLoss',55.610,[.5,.5]));
    referenceBoatId='reference';chosen.clear();
    for(const boat of boats){
     colours[boat.name]='#ffdc42';chosen.add(boat.name);
-    trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat)});
+    trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat),...prepareTimeProfiles(boat)});
     webglTracks.prepare(boat);
    }
    webglTracks.prepareComparison();
@@ -46,7 +46,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     webglTracks.render(currentTime(),webglTracks.order,true);
     const limit=trackGainLimit(),end=webglTracks.comparisonSample(boats.find(boat=>boat.id==='crossing'),boats[0].points[1][2]);
     const endGain=end[comparison.basis==='time'?'timeGain':comparison.basis==='handicap'?'handicapGain':'absoluteGain'];
-    return {limit,gain:overflowSample('gain'),loss:overflowSample('loss'),missing:overflowSample('missing'),reference:overflowSample('reference'),
+    return {limit,gain:overflowSample('gain'),loss:overflowSample(comparison.basis==='time'?'timeLoss':'loss'),missing:overflowSample('missing'),reference:overflowSample('reference'),
      inside:overflowSample('crossing',.5*limit/endGain),outside:overflowSample('crossing',1.5*limit/endGain),
      colours:[-limit-.001,-limit,0,limit,limit+.001,NaN].map(value=>trackGainColour(value,limit)),
      extensions:[...$('trackSpeedLegend').querySelectorAll('[data-gain-overflow]')].map(node=>node.getAttribute('fill')),
@@ -71,7 +71,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await page.locator('[data-gain-overflow]').count(),0,'SOG legend has no comparison overflow markers');
   const sog=await page.evaluate(()=>{
    webglTracks.render(currentTime(),webglTracks.order,true);
-   return {actual:overflowSample('gain').pixel,expected:TRACK_SPEED_COLOURS[speedBin(6)].match(/\d+/g).map(Number)};
+   return {actual:overflowSample('gain').pixel,expected:TRACK_SPEED_COLOURS[speedBin(25)].match(/\d+/g).map(Number)};
   });
   assert.deepEqual(sog.actual,[...sog.expected,255],'Normal SOG palette is unchanged');
   assert.equal(await page.evaluate(()=>webglTracks.uploads===overflowUploads&&overflowBuffers.every(([key,value])=>webglTracks.buffers.get(key)===value)),true);

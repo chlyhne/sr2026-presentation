@@ -13,12 +13,12 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    stopPlayback();$('wind').checked=$('rain').checked=false;
    // Independent CPU oracle at the source endpoints, interpolated as on the GPU.
    window.pinExpected=(boat,index)=>{
-    const profile=trackProfileCache.get(boat.points),reference=referenceBoat();
+    const profile=trackProfileCache.get(boat.points),reference=referenceBoat(),referenceProfile=trackProfileCache.get(reference.points);
     const gains=[index,index+1].map(i=>{
      const speed=profile.samples[i*3+2],passage=referenceAtStation(profile.samples[i*3],trackProfileCache.get(reference.points).stations);
-     if(speed<-1e19||!passage)return null;
      const corrected=correctedProjectedSpeed(speed,boat.handicapSecondsPerNm,reference.handicapSecondsPerNm);
-     return [speed-passage.vmg,corrected===null?null:corrected-passage.vmg,timeGainPer100ReferenceMeters(speed,passage.vmg)];
+     const station=profile.timeSamples[i*2],valid=speed>=-1e19&&passage;
+     return [valid?speed-passage.vmg:null,valid&&corrected!==null?corrected-passage.vmg:null,station<0?null:timeGainPer100Meters(profile.timeSamples[i*2+1],referenceProfile.timeStations[station])];
     });
     return ['absolute','handicap','time'].map((basis,i)=>!gains[0]||!gains[1]||gains[0][i]===null||gains[1][i]===null?null:gains[0][i]+.37*(gains[1][i]-gains[0][i]));
    };
@@ -31,7 +31,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
      const time=a[2]+.37*(b[2]-a[2]),sample=trackSpeedSample(boat,time);
      if(sample.speed===null)continue;
      const expected=pinExpected(boat,i);
-     if(!target&&expected.every(v=>v!==null)&&Math.abs(expected[0]-expected[1])>.05&&Math.abs(expected[2])>.5)target={boatId:boat.id,time,index:i,expected,sog:sample.speed};
+     if(!target&&expected.every(v=>v!==null)&&Math.abs(expected[0]-expected[1])>.05&&Math.abs(expected[2])>.5&&Math.abs(expected[2])<1e12)target={boatId:boat.id,time,index:i,expected,sog:sample.speed};
      if(!missing&&sample.speed>3&&Math.hypot(b[0]-a[0],b[1]-a[1])>.0002&&expected.every(v=>v===null))missing={boatId:boat.id,time};
      if(target&&missing)break;
     }
@@ -69,7 +69,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    await page.locator('[data-speed-action="pin"]').click();
    await page.waitForSelector('[data-pinned="true"]');
    assert.equal(await page.evaluate(()=>speedPins.length),1,style+' pin click must save');
-   assert.match(await label.textContent(),style==='time'?/s\/100 m ref\.$/:/ kn$/);
+   assert.match(await label.textContent(),style==='time'?/s\/100 m$/:/ kn$/);
    await page.locator('[data-speed-action="unpin"]').click();
    assert.equal(await page.evaluate(()=>speedPins.length),0);
   }
@@ -81,11 +81,11 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await setStyle('absolute');
   await page.evaluate(()=>{
    const forbidden=()=>{throw Error('Style switch recalculated or reread prepared comparisons');};
-   prepareProjectedTrack=prepareReferenceProfile=projectedTrackSample=trackComparisonSample=forbidden;
+   prepareProjectedTrack=prepareReferenceProfile=prepareTimeProfiles=projectedTimeSample=projectedTrackSample=trackComparisonSample=forbidden;
    window.pinOriginalRead=webglTracks.gl.getBufferSubData;webglTracks.gl.getBufferSubData=forbidden;
    webglTracks.prepareComparison=forbidden;
   });
-  for(const [style,index,unit] of [['absolute',0,'kn'],['handicap',1,'kn'],['time',2,'s/100 m ref.'],['absolute',0,'kn']]){
+  for(const [style,index,unit] of [['absolute',0,'kn'],['handicap',1,'kn'],['time',2,'s/100 m'],['absolute',0,'kn']]){
    await setStyle(style);
    const expected=target.expected[index],text=await label.textContent();
    assert.equal(text,(expected>0?'+':'')+format(expected,2)+' '+unit);
@@ -101,7 +101,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   }));
   assert.deepEqual(scale.labels,['−120','0','+120']);assert.equal(scale.limit,120);
   await page.locator('#startPresentation').click();
-  assert.match(await label.textContent(),/s\/100 m ref\.$/);
+  assert.match(await label.textContent(),/s\/100 m$/);
   assert.equal(await page.locator('[data-speed-action]').count(),0);
   await page.screenshot({path:'/tmp/sr2026-pin-units.png'});
   assert.deepEqual(await page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-speed-pins'))),pins);
@@ -111,7 +111,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    chosen.clear();chosen.add(boat.name);view=[x-4,y-4,8,8];selectedTime=target.time+60;setview();render();
    setBoatFavouritesOnly(true);
   },target);
-  assert.match(await label.textContent(),/s\/100 m ref\.$/);
+  assert.match(await label.textContent(),/s\/100 m$/);
   // Reference changes invalidate cached numeric values; the reference's own
   // visible track and pin keep their original SOG rather than showing zero.
   await page.locator('#mapTracksToggle').click();await page.locator('#referenceBoat').selectOption(target.boatId);await page.locator('#mapTracksToggle').click();
@@ -119,7 +119,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#mapTracksToggle').click();
   const otherReference=await page.evaluate(id=>boats.find(b=>b.id!==id&&b.name==='Mercutio').id,target.boatId);
   await page.locator('#referenceBoat').selectOption(otherReference);await page.locator('#mapTracksToggle').click();
-  assert.equal(await label.textContent(),(target.expected[2]>0?'+':'')+format(target.expected[2],2)+' s/100 m ref.');
+  assert.equal(await label.textContent(),(target.expected[2]>0?'+':'')+format(target.expected[2],2)+' s/100 m');
   // Use a real interval whose prepared comparisons are missing but SOG exists.
   const missing=target.missing;
   for(const style of ['absolute','handicap','time']){

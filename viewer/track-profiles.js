@@ -8,11 +8,12 @@ async function loadTrackProfiles(){
  const response=await fetch('track-profiles/manifest.json',{cache:'no-store'});
  if(!response.ok)fail('manifest ('+response.status+').');
  const manifest=await response.json(),hex=/^[a-f0-9]{64}$/;
- if(!manifest||manifest.version!==4||!hex.test(manifest.sourceFingerprint)||!hex.test(manifest.dataDigest)||!hex.test(manifest.rhumblineDigest)
+ if(!manifest||manifest.version!==6||!hex.test(manifest.sourceFingerprint)||!hex.test(manifest.dataDigest)||!hex.test(manifest.rhumblineDigest)
   ||manifest.start!==D.start||manifest.byteOrder!=='little-endian'||manifest.sampleWords!==3||manifest.stationWords!==1
   ||manifest.stationSpacingMeters!==REFERENCE_STATION_METERS||manifest.profileEncoding!=='uint10-packed'
   ||manifest.stationCount!==referenceStationCount()
   ||manifest.samplePositionBytes!==8||manifest.sampleEncoding!=='uint10-speed-planar'||manifest.speedSignEncoding!=='signed-station-index'
+  ||manifest.timeEncoding!=='uint10-block-scaled-seconds-per-meter'||manifest.timeBits!==10||manifest.timeBlockSize!==TRACK_TIME_BLOCK_SIZE||manifest.timeCodes!==TRACK_TIME_CODES||manifest.timeInfinity!==TRACK_TIME_INFINITY||manifest.timeSampleWords!==2||manifest.timeStationWords!==1
   ||manifest.speedMaximum!==REFERENCE_SPEED_MAX||manifest.speedBits!==10||manifest.speedCodes!==REFERENCE_SPEED_CODES||manifest.missingValue!==REFERENCE_MISSING||manifest.sampleMissingValue!==-1e20
   ||!Array.isArray(manifest.boats)||manifest.boats.length!==boats.length)fail('ugyldigt manifestformat.');
  async function digest(value){
@@ -30,8 +31,12 @@ async function loadTrackProfiles(){
   seen.add(entry.id);
   if(entry.sampleOffset!==offset)fail('ugyldig kildeposition i manifestet.');
   offset+=(entry.pointCount+1)*8+packedSpeedBytes(entry.pointCount+1);
+  if(!Number.isSafeInteger(offset)||entry.timeSampleOffset!==offset)fail('ugyldig tidsprøveposition i manifestet.');
+  offset+=entry.pointCount*4+packedTimeBytes(entry.pointCount);
   if(!Number.isSafeInteger(offset)||entry.profileOffset!==offset)fail('ugyldig profilposition i manifestet.');
   offset+=packedSpeedBytes(entry.stationCount);
+  if(!Number.isSafeInteger(offset)||entry.timeProfileOffset!==offset)fail('ugyldig tidsprofilposition i manifestet.');
+  offset+=packedTimeBytes(entry.stationCount);
   if(!Number.isSafeInteger(offset)||offset>manifest.bundleBytes)fail('ugyldig profilstørrelse i manifestet.');
   pending.push({boat,entry});
  }
@@ -47,13 +52,21 @@ async function loadTrackProfiles(){
  let maximum=0;
  const prepared=new Map();
  for(const {boat,entry} of pending){
-  const packed=bundle.subarray(entry.sampleOffset,entry.profileOffset),stations=unpackSpeedCodes(bundle.subarray(entry.profileOffset,entry.profileOffset+packedSpeedBytes(entry.stationCount)),entry.stationCount);
+  const packed=bundle.subarray(entry.sampleOffset,entry.timeSampleOffset),stations=unpackSpeedCodes(bundle.subarray(entry.profileOffset,entry.timeProfileOffset),entry.stationCount);
   const samples=unpackProjectedTrack(packed);
+  const timeSamples=unpackTimeSamples(bundle.subarray(entry.timeSampleOffset,entry.profileOffset),entry.pointCount),timeStations=unpackTimeValues(bundle.subarray(entry.timeProfileOffset,entry.timeProfileOffset+packedTimeBytes(entry.stationCount)),entry.stationCount);
+  const validTime=value=>value>=0||value===Math.fround(TRACK_TIME_MISSING);
+  for(let index=0;index<timeSamples.length;index+=2){
+   const station=timeSamples[index],value=timeSamples[index+1];
+   if(!Number.isInteger(station)||station< -1||station>=entry.stationCount||!validTime(value)||(station===-1)!==(value<0))fail('ugyldig tidsprøve: '+boat.name+'.');
+  }
+  for(const value of timeStations)if(!validTime(value))fail('ugyldig tidsprofil: '+boat.name+'.');
   for(let index=0;index<samples.length;index+=3){
    if(!Number.isInteger(samples[index])||samples[index]<-1||samples[index]>=entry.stationCount)fail('ugyldigt stationsindeks: '+boat.name+'.');
   }
   if(entry.pointCount)for(let i=0;i<3;i++)if(samples[entry.pointCount*3+i]!==samples[(entry.pointCount-1)*3+i])fail('manglende slutprøve: '+boat.name+'.');
-  maximum=Math.max(maximum,entry.stationCount);prepared.set(boat.points,{samples,stations});
+  if(entry.pointCount)for(let index=0;index<2;index++)if(timeSamples[entry.pointCount*2+index]!==timeSamples[(entry.pointCount-1)*2+index])fail('manglende tids-slutprøve: '+boat.name+'.');
+  maximum=Math.max(maximum,entry.stationCount);prepared.set(boat.points,{samples,stations,timeSamples,timeStations});
  }
  for(const [points,profile] of prepared)trackProfileCache.set(points,profile);
  maxReferenceStations=maximum;

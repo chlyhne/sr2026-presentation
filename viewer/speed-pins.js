@@ -71,9 +71,10 @@ function trackPinValue(boat,sample){
  if(trackUsesComparison()&&referenceBoat()?.id!==boat.id){
   const gains=webglTracks.comparisonSample(boat,sample.time),timeMode=comparison.basis==='time';
   const value=gains?.[timeMode?'timeGain':comparison.basis==='handicap'?'handicapGain':'absoluteGain']??null;
-  const unit=timeMode?'s/100 m ref.':'kn';
-  const description=`${timeMode?'Tidsgevinst pr. 100 m referencefremdrift':'Fartforskel'+(comparison.basis==='handicap'?' (ToD)':' (absolut)')} mod ${referenceBoat().name} ved samme sted på ruten${timeMode?'. Negativ værdi er tabt tid; stilstand og baglæns sejlads tæller med.':''}`;
-  return {value,label:value===null?'Sammenligning mangler':`${value>0?'+':''}${value.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} ${unit}`,description};
+  const unit=timeMode?'s/100 m':'kn';
+  const description=`${timeMode?'Tidsgevinst pr. 100 m':'Fartforskel'+(comparison.basis==='handicap'?' (ToD)':' (absolut)')} mod ${referenceBoat().name} ved samme sted på ruten${timeMode?'. Negativ værdi er tabt tid. Referenceprofilen summerer alle passager, også baglæns.':''}`;
+  const formatted=timeMode&&Math.abs(value)>1e12?(value<0?'−∞':'+∞'):`${value>0?'+':''}${value?.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  return {value,label:value===null?'Sammenligning mangler':`${formatted} ${unit}`,description};
  }
  return {value:sample.speed,label:sample.speed===null?'Fart mangler':sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})+' kn',description:'SOG fra TracTrac'};
 }
