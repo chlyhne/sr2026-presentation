@@ -101,3 +101,47 @@ Profilværktøjet bruger kun headless Firefox og ændrer kun den isolerede brows
 - `SR_PROFILE_SKIP_GPU=1`: spring den isolerede GPU-prøvematrix over.
 - `SR_PROFILE_MESH_STEPS`: eksplicit diagnostisk mesh med 1, 2, 4, 8, 16 eller 32 underopdelinger. Kun browserens hentede svar ændres; ingen filer overskrives.
 - `SR_PROFILE_OUTPUT`: gem rå målinger og browser-/GPU-oplysninger som JSON. Gem rå kørsler separat; deres oplysninger om miljø og instrumentering er nødvendige for korrekt fortolkning.
+
+## Zoom efter ændret cacheoptagelse
+
+Samme lokale headless Firefox på Windows med Intel HD Graphics, 106 både,
+1500 × 1000 CSS-pixel viewport, standardkortudsnit og udgangspunkt ved
+`D.start + 43200`. Vind og radar er slået fra. Den virkelige wheel-handler
+modtager 12 zoomtrin ind og otte ud omkring kortets centrum. Tidslinjens normale
+afgrænsning bevares; 14 trin giver viewport-tegning og seks ændrer tidspunkt og
+giver fuld tegning. Samme instrumentering og kameraforløb bruges før og efter.
+
+| Måling | Før (`7978624`) | Efter |
+| --- | ---: | ---: |
+| Hændelsesarbejde, gennemsnit | 10,55 ms | 6,35 ms |
+| Tegnekald, gennemsnit | 537,30 ms | 18,05 ms |
+| Tegnekald, p95 | 2046 ms | 30 ms |
+| Efterfølgende GPU/driver-ventetid, gennemsnit | 153,10 ms | 28,20 ms |
+| Nye rasterfelter, 20 trin | 16.264 | 0 |
+| Ekstra atlaslager, 20 trin | 96 MiB | 0 |
+
+Tegnekaldets tid er JavaScript/DOM og aflevering af GPU-kommandoer. Den separate
+ventetid bruger `gl.finish()` i profilværktøjet og er ikke ren GPU-shadertid eller
+en måling af skærmens præsentation. Tallene er korte lokale kontrolmålinger med
+vejrlag slået fra; kameraforløbet ender delvist over land. En første eftermåling
+før den sidste justering gav 23,8 ms pr. tegnekald, ligeledes uden nye rasterfelter.
+
+Årsagen var cacheopbygning ved hver ny målestok: tusindvis af blokke blev
+rasteriseret, MSAA-resolved og kopieret til atlas, selv om næste wheel-hændelse
+straks gjorde målestokken uaktuel. Cachen optager nu først nye felter, når
+målestokken har været uændret i 150 ms. Manglende felter tegnes med den eksisterende
+kubiske geometriprimitiv, og sammenhængende intervaller samles. Der startes ingen
+ekstra tegning efter zoom; næste almindelige tegning kan fylde cachen. Eksisterende
+felter kan stadig bruges straks, og projektionsgrænser gemmes kun for seneste målestok.
+
+Valideret med [cachetestene](./test_viewer_track_cache.cjs): 14 scenarier med
+pixelkontrol af kold zoom, stabil målestok, tilbagevenden til cachede målestokke,
+kurver, samlinger, tidsdybde og farvevalg. [Wheel-testen](./test_viewer_zoom.cjs)
+zoomer omkring referencebåden, så spor forbliver synlige: 12 zoomtrin med 24
+indskudte fulde tegninger gav nul nye felter og nul atlasallokeringer. Efter
+stabilisering byggedes 1.651 felter, som næste afspilningsframe genbrugte.
+Testen afviser også genberegning af sammenligninger, ændring af faste GPU-data
+og udskiftning af de forberedte sporbuffere.
+
+Gentag zoommålingen med `node scripts/profile_viewer_zoom.cjs` og den samme
+`PLAYWRIGHT_MODULE`/lokale server som ovenfor.
