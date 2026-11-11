@@ -6,135 +6,141 @@
       "utc": "2026-06-11T08:00:00.000Z",
       "text": "Kåre Gibsholm-Madsen\n\nMødtes ved Silverudder 2024.\n\nInviterede mig med til Sjælland rundt 2025 - jeg kunne ikke.\n\nVandt First 27 SE ex. Seascape 27 mesterskabet til Silverrudder 2025 i Mercutio.\n\nMed ham på podiet var Janne Magnusson (Vera) og Peder Edman (My)\n\nInviterede mig til sjælland rundt igen 2026, og denne gang kunne jeg!",
       "view": [
-        686.0974225716841,
-        373.46917877338,
-        12.30557524258954,
-        15.084253523174288
+        685.3648558776366,
+        367.44213523203126,
+        12.305575242589542,
+        15.08425352317429
       ],
       "settings": {
-        "wind": true,
+        "wind": false,
         "windModel": "dmi_harmonie_arome_europe",
         "windNumbers": false,
-        "rain": true,
+        "rain": false,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
         "annotationsVisible": true,
-        "boats": [
-          "Mercutio",
-          "My",
-          "Rosa-Lux",
-          "THE HULK",
-          "Vera",
-          "Abelone 3",
-          "Alex",
-          "Alice",
-          "Allegra",
-          "Alvilda",
-          "Amalie",
-          "Ambra",
-          "Andraste",
-          "Andrea",
-          "Annibeth",
-          "Banner Viking",
-          "Bibs",
-          "Blacq Magic",
-          "Blåregn",
-          "Blue Bird",
-          "Buksesnedkeren",
-          "Casa Bent",
-          "Charlotte",
-          "Delizia",
-          "DenAnden",
-          "Dina 2",
-          "Dorthea",
-          "Dream on",
-          "DS37",
-          "Easy L♥️ver",
-          "Eldkvarn",
-          "Enjoy Life",
-          "Esmeralda",
-          "FARR-WELL II",
-          "Festina",
-          "Fifty",
-          "Freja",
-          "Frida II",
-          "Friendship 2",
-          "Frigg",
-          "GAIA",
-          "Grand Delice",
-          "Guldfisken",
-          "HANSEN 3.5",
-          "Irma",
-          "Irmgard II",
-          "Joujou 2",
-          "Joy",
-          "Julianehåb",
-          "Lacee Bee",
-          "Laguna",
-          "Laolao",
-          "Little Wing",
-          "Luna",
-          "Margrethe",
-          "Mary",
-          "Mette",
-          "Miss-X",
-          "MorGrethe",
-          "Moster",
-          "munje",
-          "Neptun",
-          "NINI",
-          "NJOY",
-          "Nordstjernen",
-          "Norma",
-          "Pandora",
-          "Petrix",
-          "PING",
-          "Pixie",
-          "Popeye",
-          "Quinta Light",
-          "Quokka",
-          "Rafi",
-          "Ran",
-          "SABRINA",
-          "Sagitta",
-          "Salka Valka",
-          "saltamalin",
-          "Sanne",
-          "Scarlet",
-          "Siroque",
-          "Slipstik",
-          "Sneppen",
-          "Solhverv",
-          "Sonja fra Sydhavnen",
-          "SPIDER PIG",
-          "Stormy",
-          "Thermidor",
-          "Tignanello",
-          "Tjørn",
-          "Triumph",
-          "Vaiana - DEN",
-          "Vaiana - NO",
-          "Valkyria",
-          "VELOCE",
-          "Vi Ses",
-          "Viento",
-          "Voador",
-          "Xanadu",
-          "XAR",
-          "XAVIA",
-          "XBOX",
-          "Xilje",
-          "XUSIDUS",
-          "Zenobia"
-        ],
+        "boats": [],
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ]
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
+        ],
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "absolute",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": false
       },
       "image": {
         "id": "9c03446e-9559-4545-9272-cab0abd19db7",
@@ -150,135 +156,141 @@
       "utc": "2026-06-11T08:00:01.000Z",
       "text": "Jeg sejler selv en First 27 SE Saga.\n\nOne design\nVægt: 1400kg\nKølvægt: 610 kg @ 2 meter\n28 m^2 storsejl\n20 m^2 fok\n80 m^2 A2\n64 m^2 A5 (vist her)\n56 m^2 Code-0 \n14 m^2 stagsejl (vist her)",
       "view": [
-        681.3781907548789,
-        368.9870484742677,
+        681.3490710485671,
+        364.38613487700917,
         21.522528009134366,
         26.382453688616344
       ],
       "settings": {
-        "wind": true,
+        "wind": false,
         "windModel": "dmi_harmonie_arome_europe",
         "windNumbers": false,
-        "rain": true,
+        "rain": false,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
         "annotationsVisible": true,
-        "boats": [
-          "Mercutio",
-          "My",
-          "Rosa-Lux",
-          "THE HULK",
-          "Vera",
-          "Abelone 3",
-          "Alex",
-          "Alice",
-          "Allegra",
-          "Alvilda",
-          "Amalie",
-          "Ambra",
-          "Andraste",
-          "Andrea",
-          "Annibeth",
-          "Banner Viking",
-          "Bibs",
-          "Blacq Magic",
-          "Blåregn",
-          "Blue Bird",
-          "Buksesnedkeren",
-          "Casa Bent",
-          "Charlotte",
-          "Delizia",
-          "DenAnden",
-          "Dina 2",
-          "Dorthea",
-          "Dream on",
-          "DS37",
-          "Easy L♥️ver",
-          "Eldkvarn",
-          "Enjoy Life",
-          "Esmeralda",
-          "FARR-WELL II",
-          "Festina",
-          "Fifty",
-          "Freja",
-          "Frida II",
-          "Friendship 2",
-          "Frigg",
-          "GAIA",
-          "Grand Delice",
-          "Guldfisken",
-          "HANSEN 3.5",
-          "Irma",
-          "Irmgard II",
-          "Joujou 2",
-          "Joy",
-          "Julianehåb",
-          "Lacee Bee",
-          "Laguna",
-          "Laolao",
-          "Little Wing",
-          "Luna",
-          "Margrethe",
-          "Mary",
-          "Mette",
-          "Miss-X",
-          "MorGrethe",
-          "Moster",
-          "munje",
-          "Neptun",
-          "NINI",
-          "NJOY",
-          "Nordstjernen",
-          "Norma",
-          "Pandora",
-          "Petrix",
-          "PING",
-          "Pixie",
-          "Popeye",
-          "Quinta Light",
-          "Quokka",
-          "Rafi",
-          "Ran",
-          "SABRINA",
-          "Sagitta",
-          "Salka Valka",
-          "saltamalin",
-          "Sanne",
-          "Scarlet",
-          "Siroque",
-          "Slipstik",
-          "Sneppen",
-          "Solhverv",
-          "Sonja fra Sydhavnen",
-          "SPIDER PIG",
-          "Stormy",
-          "Thermidor",
-          "Tignanello",
-          "Tjørn",
-          "Triumph",
-          "Vaiana - DEN",
-          "Vaiana - NO",
-          "Valkyria",
-          "VELOCE",
-          "Vi Ses",
-          "Viento",
-          "Voador",
-          "Xanadu",
-          "XAR",
-          "XAVIA",
-          "XBOX",
-          "Xilje",
-          "XUSIDUS",
-          "Zenobia"
-        ],
+        "boats": [],
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ]
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
+        ],
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "absolute",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": false
       },
       "image": {
         "id": "7a1d6092-a5e3-4a3a-a2f3-233c98a708b4",
@@ -294,8 +306,8 @@
       "utc": "2026-06-11T08:00:08.000Z",
       "text": "Mercutios motor var død.\n\nSå jeg kidnappede Sagas motor inden jeg kørte til Vedbæk.\n\nVi skulle afsted.",
       "view": [
-        359.21865050357155,
-        181.97522465829894,
+        216.68045057988573,
+        174.47321413599968,
         616.0861563398163,
         755.202385190743
       ],
@@ -305,124 +317,130 @@
         "windNumbers": false,
         "rain": true,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
         "annotationsVisible": true,
-        "boats": [
-          "Mercutio",
-          "My",
-          "Rosa-Lux",
-          "THE HULK",
-          "Vera",
-          "Abelone 3",
-          "Alex",
-          "Alice",
-          "Allegra",
-          "Alvilda",
-          "Amalie",
-          "Ambra",
-          "Andraste",
-          "Andrea",
-          "Annibeth",
-          "Banner Viking",
-          "Bibs",
-          "Blacq Magic",
-          "Blåregn",
-          "Blue Bird",
-          "Buksesnedkeren",
-          "Casa Bent",
-          "Charlotte",
-          "Delizia",
-          "DenAnden",
-          "Dina 2",
-          "Dorthea",
-          "Dream on",
-          "DS37",
-          "Easy L♥️ver",
-          "Eldkvarn",
-          "Enjoy Life",
-          "Esmeralda",
-          "FARR-WELL II",
-          "Festina",
-          "Fifty",
-          "Freja",
-          "Frida II",
-          "Friendship 2",
-          "Frigg",
-          "GAIA",
-          "Grand Delice",
-          "Guldfisken",
-          "HANSEN 3.5",
-          "Irma",
-          "Irmgard II",
-          "Joujou 2",
-          "Joy",
-          "Julianehåb",
-          "Lacee Bee",
-          "Laguna",
-          "Laolao",
-          "Little Wing",
-          "Luna",
-          "Margrethe",
-          "Mary",
-          "Mette",
-          "Miss-X",
-          "MorGrethe",
-          "Moster",
-          "munje",
-          "Neptun",
-          "NINI",
-          "NJOY",
-          "Nordstjernen",
-          "Norma",
-          "Pandora",
-          "Petrix",
-          "PING",
-          "Pixie",
-          "Popeye",
-          "Quinta Light",
-          "Quokka",
-          "Rafi",
-          "Ran",
-          "SABRINA",
-          "Sagitta",
-          "Salka Valka",
-          "saltamalin",
-          "Sanne",
-          "Scarlet",
-          "Siroque",
-          "Slipstik",
-          "Sneppen",
-          "Solhverv",
-          "Sonja fra Sydhavnen",
-          "SPIDER PIG",
-          "Stormy",
-          "Thermidor",
-          "Tignanello",
-          "Tjørn",
-          "Triumph",
-          "Vaiana - DEN",
-          "Vaiana - NO",
-          "Valkyria",
-          "VELOCE",
-          "Vi Ses",
-          "Viento",
-          "Voador",
-          "Xanadu",
-          "XAR",
-          "XAVIA",
-          "XBOX",
-          "Xilje",
-          "XUSIDUS",
-          "Zenobia"
-        ],
+        "boats": [],
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ]
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
+        ],
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "absolute",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": false
       },
       "image": {
         "id": "76c49f92-889c-4923-8737-cb3eb34524af",
@@ -449,6 +467,7 @@
         "windNumbers": false,
         "rain": true,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
         "annotationsVisible": true,
@@ -462,10 +481,122 @@
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ]
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
+        ],
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "absolute",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": true
       },
       "image": {
         "id": "a935847a-8b9a-416e-aa93-06a94ea9cb33",
@@ -565,8 +696,8 @@
       "utc": "2026-06-11T08:32:08.000Z",
       "text": "Starten\n\nVi får ikke verdens bedste start.\n\nVera og My får god start.\n\nVi ender med at ligge og kæmpe lidt med en J/80 Alice. Det er spild af tid.",
       "view": [
-        691.4529369697715,
-        372.61730666536147,
+        690.9009181599793,
+        372.54695132685856,
         2,
         2.4516129032258065
       ],
@@ -576,24 +707,137 @@
         "windNumbers": false,
         "rain": false,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
+        "annotationsVisible": true,
         "boats": [
           "Mercutio",
-          "Vera",
           "My",
+          "Vera",
           "THE HULK",
-          "Alice",
-          "Rosa-Lux"
+          "Rosa-Lux",
+          "Alice"
         ],
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
           "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ]
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
+        ],
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "absolute",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": true
       },
       "point": [
         691.8330557059962,
@@ -607,8 +851,8 @@
       "utc": "2026-06-11T08:42:21.000Z",
       "text": "Svag vind med mange pust og skift i vindretning. Domineret af bygen.\n\nVi skal uden om færger og holde klar af trafik separeringen!",
       "view": [
-        693.5655353232277,
-        375.24110034826566,
+        691.665277618954,
+        375.2554962399647,
         5.3200397609375045,
         6.52133906179436
       ],
@@ -618,8 +862,10 @@
         "windNumbers": false,
         "rain": false,
         "rainOpacity": 1,
+        "grid": true,
         "traffic": true,
         "military": true,
+        "annotationsVisible": true,
         "boats": [
           "Mercutio",
           "Vera",
@@ -630,10 +876,122 @@
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ]
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
+        ],
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "absolute",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": true
       },
       "point": [
         696.1106078699231,
@@ -647,19 +1005,21 @@
       "utc": "2026-06-11T08:49:10.000Z",
       "text": "Vi kæmper side om side med Hulk. Det handler om at finde pletter med vind.",
       "view": [
-        696.1628534121888,
-        375.50663168176214,
+        687.954755307994,
+        375.12369809880784,
         12.30557524258954,
         15.084253523174285
       ],
       "settings": {
-        "wind": true,
+        "wind": false,
         "windModel": "dmi_harmonie_arome_europe",
         "windNumbers": false,
-        "rain": true,
+        "rain": false,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
+        "annotationsVisible": true,
         "boats": [
           "Mercutio",
           "Vera",
@@ -670,11 +1030,122 @@
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
         ],
-        "annotationsVisible": true
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "absolute",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": true
       },
       "point": [
         696.3467806205153,
@@ -688,8 +1159,8 @@
       "utc": "2026-06-11T09:41:30.000Z",
       "text": "Det klarer op og vinden forsvinder.\n\nVera bommer for at finde vind mod Øst.\n\nRosa-Lux er startet 15 minutter efter os, men har næsten allerede hentet os. Hun har haft vind i starten, som vi ikke havde.",
       "view": [
-        695.7555096622998,
-        399.4562348365796,
+        693.3142894366857,
+        399.23729131858727,
         8.09111547141583,
         9.918141545606504
       ],
@@ -699,8 +1170,10 @@
         "windNumbers": false,
         "rain": true,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
+        "annotationsVisible": true,
         "boats": [
           "Mercutio",
           "Vera",
@@ -711,11 +1184,122 @@
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
         ],
-        "annotationsVisible": true
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "absolute",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": true
       },
       "point": [
         699.0361631140113,
@@ -737,8 +1321,8 @@
       "utc": "2026-06-11T10:06:42.000Z",
       "text": "De rige bliver rigere.\nVera og My trækker fra og vi er frustreret.",
       "view": [
-        693.3833347126631,
-        399.1815193904233,
+        689.9484204710997,
+        399.2475754335303,
         16.27412325832467,
         19.94892528439799
       ],
@@ -748,8 +1332,10 @@
         "windNumbers": false,
         "rain": true,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
+        "annotationsVisible": true,
         "boats": [
           "Mercutio",
           "Vera",
@@ -760,11 +1346,122 @@
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
         ],
-        "annotationsVisible": true
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": true,
+          "basis": "time",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": true
       },
       "point": [
         701.5203753039241,
@@ -789,6 +1486,7 @@
         "windNumbers": false,
         "rain": true,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
         "annotationsVisible": true,
@@ -802,10 +1500,122 @@
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
-        ]
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
+        ],
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "absolute",
+          "boatColour": true
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": true
       },
       "point": [
         714.2178292274475,
@@ -823,14 +1633,14 @@
       }
     },
     {
-      "time": 1781178435,
-      "utc": "2026-06-11T11:47:15.000Z",
+      "time": 1781179200,
+      "utc": "2026-06-11T12:00:00.000Z",
       "text": "Centrum af bygen går bagom os og giver en rummer, som vi vender på.\n\nNogle af de hurtige har satset hårdt på at komme tæt på bygen tidligt, og det har betalt sig.",
       "view": [
-        686.8645118209532,
-        428.3975628136427,
-        28.46354329208022,
-        34.8907950031951
+        672.1574876867573,
+        421.01733139897937,
+        37.643036003776096,
+        46.14307639172552
       ],
       "settings": {
         "wind": true,
@@ -838,8 +1648,10 @@
         "windNumbers": false,
         "rain": true,
         "rainOpacity": 0.75,
+        "grid": true,
         "traffic": true,
         "military": true,
+        "annotationsVisible": true,
         "boats": [
           "Mercutio",
           "My",
@@ -853,7 +1665,6 @@
           "SPIDER PIG",
           "Voador",
           "Xanadu",
-          "XAR",
           "XAVIA",
           "XBOX",
           "Xilje",
@@ -869,19 +1680,1266 @@
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
           "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
           "groensund:cf9aff90-4624-013f-297e-04421a259aad",
           "groensund:cf8e6940-4624-013f-2973-04421a259aad",
-          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
-          "groensund:d0363810-4624-013f-2a0b-04421a259aad"
+          "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad",
+          "groensund:ceb43140-4624-013f-28bd-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad",
+          "groensund:ced44e40-4624-013f-28d9-04421a259aad",
+          "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad",
+          "groensund:ced83f10-4624-013f-28dd-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "groensund:cedc3de0-4624-013f-28e1-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:d032b8e0-4624-013f-2a08-04421a259aad",
+          "groensund:cee02030-4624-013f-28e5-04421a259aad",
+          "groensund:cee42c80-4624-013f-28e9-04421a259aad",
+          "groensund:d02b1920-4624-013f-2a00-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad",
+          "groensund:d04eccd0-4624-013f-2a21-04421a259aad",
+          "groensund:d0410370-4624-013f-2a15-04421a259aad",
+          "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad",
+          "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad",
+          "groensund:cee826e0-4624-013f-28ed-04421a259aad",
+          "groensund:ceec1b50-4624-013f-28f1-04421a259aad",
+          "groensund:cef01130-4624-013f-28f5-04421a259aad",
+          "groensund:cef3cca0-4624-013f-28f8-04421a259aad",
+          "groensund:d00e2f90-4624-013f-29e6-04421a259aad",
+          "groensund:d047e6d0-4624-013f-2a1b-04421a259aad",
+          "groensund:cfd38280-4624-013f-29b2-04421a259aad",
+          "groensund:d039c5a0-4624-013f-2a0e-04421a259aad",
+          "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad",
+          "groensund:cf86cb90-4624-013f-296c-04421a259aad",
+          "groensund:d0156a30-4624-013f-29ed-04421a259aad",
+          "groensund:d0039c60-4624-013f-29dd-04421a259aad",
+          "groensund:cef7b8f0-4624-013f-28fc-04421a259aad",
+          "groensund:cefbcb60-4624-013f-2900-04421a259aad",
+          "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad",
+          "groensund:ceff8000-4624-013f-2903-04421a259aad",
+          "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:d0448170-4624-013f-2a18-04421a259aad",
+          "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad",
+          "groensund:d00726f0-4624-013f-29e0-04421a259aad",
+          "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad",
+          "groensund:d0275120-4624-013f-29fd-04421a259aad",
+          "groensund:cf0732e0-4624-013f-290a-04421a259aad",
+          "groensund:cf0ae510-4624-013f-290d-04421a259aad",
+          "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cf0e8b80-4624-013f-2910-04421a259aad",
+          "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad",
+          "groensund:cf123d90-4624-013f-2913-04421a259aad",
+          "groensund:cf186800-4624-013f-2916-04421a259aad",
+          "groensund:cf1f8dd0-4624-013f-291a-04421a259aad",
+          "groensund:cfdad3d0-4624-013f-29b8-04421a259aad",
+          "groensund:cfe976c0-4624-013f-29c6-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "groensund:cf267bd0-4624-013f-291d-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad",
+          "groensund:cf3c32b0-4624-013f-2925-04421a259aad",
+          "groensund:cf40a610-4624-013f-2929-04421a259aad",
+          "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad",
+          "groensund:cf44cf30-4624-013f-292d-04421a259aad",
+          "groensund:cf48fde0-4624-013f-2930-04421a259aad",
+          "groensund:d018e3c0-4624-013f-29f0-04421a259aad",
+          "groensund:d01fd840-4624-013f-29f6-04421a259aad",
+          "groensund:cf4cfb40-4624-013f-2933-04421a259aad",
+          "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad",
+          "groensund:d02f3110-4624-013f-2a05-04421a259aad",
+          "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad",
+          "groensund:cf512990-4624-013f-2937-04421a259aad",
+          "groensund:cf552280-4624-013f-293b-04421a259aad",
+          "groensund:cfcfc630-4624-013f-29af-04421a259aad",
+          "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "groensund:cf590bf0-4624-013f-293f-04421a259aad",
+          "groensund:cfe5ee70-4624-013f-29c3-04421a259aad",
+          "groensund:cfd73960-4624-013f-29b5-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "groensund:cf5cb670-4624-013f-2942-04421a259aad",
+          "groensund:d01c6220-4624-013f-29f3-04421a259aad",
+          "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:d03d5f50-4624-013f-2a11-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad",
+          "groensund:cf608a70-4624-013f-2946-04421a259aad",
+          "groensund:cf643a90-4624-013f-2949-04421a259aad",
+          "groensund:cf67f030-4624-013f-294c-04421a259aad",
+          "groensund:cf774910-4624-013f-295b-04421a259aad",
+          "groensund:d023a320-4624-013f-29fa-04421a259aad",
+          "groensund:d00aa040-4624-013f-29e3-04421a259aad",
+          "groensund:cf6bd310-4624-013f-2950-04421a259aad",
+          "groensund:cf6fb6c0-4624-013f-2954-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cf73a4d0-4624-013f-2958-04421a259aad",
+          "groensund:ce9ba240-4624-013f-28b0-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:d0363810-4624-013f-2a0b-04421a259aad",
+          "groensund:cf9e9de0-4624-013f-2981-04421a259aad",
+          "groensund:cf9742f0-4624-013f-297b-04421a259aad",
+          "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad"
         ],
-        "annotationsVisible": true
+        "mapVersion": 1,
+        "comparison": {
+          "enabled": false,
+          "basis": "time",
+          "boatColour": false
+        },
+        "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+        "trackLengthSeconds": 7200,
+        "handicapTracksEnabled": false,
+        "boatSearchQuery": "",
+        "boatFavouritesOnly": false
       },
       "point": [
         700.0839526355267,
         448.96999084949493
       ],
       "lon": 12.65037778685987,
-      "lat": 55.85855087072162
+      "lat": 55.85855087072162,
+      "drawings": [
+        {
+          "tool": "pen",
+          "colour": "#cc0000",
+          "width": 4,
+          "points": [
+            [
+              687.6175723802174,
+              436.19463773647425
+            ],
+            [
+              687.6175723802174,
+              436.19463773647425
+            ],
+            [
+              687.7194334792248,
+              436.19463773647425
+            ],
+            [
+              687.8722251277359,
+              436.2455682859779
+            ],
+            [
+              687.9740862267432,
+              436.2455682859779
+            ],
+            [
+              688.0759473257507,
+              436.2964988354816
+            ],
+            [
+              688.2287389742617,
+              436.3474293849853
+            ],
+            [
+              688.3306000732691,
+              436.3474293849853
+            ],
+            [
+              688.5343222712838,
+              436.4492904839927
+            ],
+            [
+              688.6871139197949,
+              436.50022103349636
+            ],
+            [
+              688.839905568306,
+              436.60208213250377
+            ],
+            [
+              688.9926972168171,
+              436.7039432315111
+            ],
+            [
+              689.1454888653282,
+              436.8058043305185
+            ],
+            [
+              689.2473499643355,
+              436.9076654295259
+            ],
+            [
+              689.4001416128466,
+              437.00952652853323
+            ],
+            [
+              689.5529332613576,
+              437.11138762754064
+            ],
+            [
+              689.654794360365,
+              437.213248726548
+            ],
+            [
+              689.8075860088761,
+              437.41697092456275
+            ],
+            [
+              689.9094471078835,
+              437.51883202357016
+            ],
+            [
+              690.0113082068908,
+              437.6206931225775
+            ],
+            [
+              690.1131693058982,
+              437.7225542215849
+            ],
+            [
+              690.2150304049055,
+              437.82441532059227
+            ],
+            [
+              690.2659609544093,
+              437.9262764195996
+            ],
+            [
+              690.3678220534166,
+              438.0790680681107
+            ],
+            [
+              690.4187526029203,
+              438.1809291671181
+            ],
+            [
+              690.5206137019277,
+              438.28279026612546
+            ],
+            [
+              690.5715442514314,
+              438.43558191463654
+            ],
+            [
+              690.622474800935,
+              438.58837356314757
+            ],
+            [
+              690.6734053504388,
+              438.690234662155
+            ],
+            [
+              690.7752664494461,
+              438.84302631066606
+            ],
+            [
+              690.8261969989499,
+              438.9448874096734
+            ],
+            [
+              690.8771275484535,
+              439.0467485086808
+            ],
+            [
+              690.9280580979572,
+              439.1486096076882
+            ],
+            [
+              690.9789886474609,
+              439.30140125619926
+            ],
+            [
+              691.0299191969646,
+              439.4032623552066
+            ],
+            [
+              691.1317802959719,
+              439.5560540037177
+            ],
+            [
+              691.1317802959719,
+              439.65791510272504
+            ],
+            [
+              691.1827108454756,
+              439.75977620173245
+            ],
+            [
+              691.284571944483,
+              439.9125678502435
+            ],
+            [
+              691.3355024939867,
+              440.0144289492509
+            ],
+            [
+              691.3864330434903,
+              440.11629004825824
+            ],
+            [
+              691.4373635929941,
+              440.21815114726564
+            ],
+            [
+              691.4373635929941,
+              440.320012246273
+            ],
+            [
+              691.5392246920014,
+              440.52373444428775
+            ],
+            [
+              691.5901552415052,
+              440.62559554329516
+            ],
+            [
+              691.5901552415052,
+              440.7274566423025
+            ],
+            [
+              691.6410857910089,
+              440.8802482908136
+            ],
+            [
+              691.6410857910089,
+              440.98210938982095
+            ],
+            [
+              691.6920163405125,
+              441.08397048882836
+            ],
+            [
+              691.7429468900162,
+              441.1858315878357
+            ],
+            [
+              691.7429468900162,
+              441.2876926868431
+            ],
+            [
+              691.7938774395199,
+              441.38955378585047
+            ],
+            [
+              691.7938774395199,
+              441.54234543436155
+            ],
+            [
+              691.7938774395199,
+              441.6442065333689
+            ],
+            [
+              691.8448079890236,
+              441.7460676323763
+            ],
+            [
+              691.8448079890236,
+              441.89885928088734
+            ],
+            [
+              691.8957385385273,
+              442.0516509293984
+            ],
+            [
+              691.946669088031,
+              442.30630367691685
+            ],
+            [
+              691.946669088031,
+              442.4081647759242
+            ],
+            [
+              691.946669088031,
+              442.5609564244353
+            ],
+            [
+              691.9975996375347,
+              442.7137480729464
+            ],
+            [
+              691.9975996375347,
+              442.8156091719537
+            ],
+            [
+              691.9975996375347,
+              442.9684008204648
+            ],
+            [
+              691.9975996375347,
+              443.17212301847957
+            ],
+            [
+              691.9975996375347,
+              443.2739841174869
+            ],
+            [
+              692.0485301870383,
+              443.426775765998
+            ],
+            [
+              692.0485301870383,
+              443.63049796401276
+            ],
+            [
+              692.0485301870383,
+              443.7323590630201
+            ],
+            [
+              692.0485301870383,
+              443.8851507115312
+            ],
+            [
+              692.0485301870383,
+              444.0379423600423
+            ],
+            [
+              692.0485301870383,
+              444.19073400855336
+            ],
+            [
+              691.9975996375347,
+              444.2925951075607
+            ],
+            [
+              692.0485301870383,
+              444.4963173055755
+            ],
+            [
+              692.0485301870383,
+              444.6491089540865
+            ],
+            [
+              692.0485301870383,
+              444.7509700530939
+            ],
+            [
+              692.0485301870383,
+              444.903761701605
+            ],
+            [
+              692.0485301870383,
+              445.056553350116
+            ],
+            [
+              692.0485301870383,
+              445.1584144491234
+            ],
+            [
+              692.0485301870383,
+              445.31120609763445
+            ],
+            [
+              692.0485301870383,
+              445.46399774614554
+            ],
+            [
+              692.0485301870383,
+              445.56585884515295
+            ],
+            [
+              692.0485301870383,
+              445.718650493664
+            ],
+            [
+              692.0485301870383,
+              445.8205115926714
+            ],
+            [
+              692.099460736542,
+              445.9733032411824
+            ],
+            [
+              692.1503912860458,
+              446.0751643401898
+            ],
+            [
+              692.1503912860458,
+              446.17702543919717
+            ],
+            [
+              692.1503912860458,
+              446.32981708770825
+            ],
+            [
+              692.1503912860458,
+              446.43167818671566
+            ],
+            [
+              692.2013218355494,
+              446.5844698352267
+            ],
+            [
+              692.2013218355494,
+              446.73726148373777
+            ],
+            [
+              692.1503912860458,
+              446.8391225827451
+            ],
+            [
+              692.1503912860458,
+              446.9409836817525
+            ],
+            [
+              692.2013218355494,
+              447.09377533026355
+            ],
+            [
+              692.1503912860458,
+              447.19563642927096
+            ],
+            [
+              692.1503912860458,
+              447.34842807778205
+            ],
+            [
+              692.2013218355494,
+              447.5012197262931
+            ],
+            [
+              692.2013218355494,
+              447.65401137480416
+            ],
+            [
+              692.2013218355494,
+              447.80680302331524
+            ],
+            [
+              692.2013218355494,
+              447.9086641223226
+            ],
+            [
+              692.2013218355494,
+              448.0614557708337
+            ],
+            [
+              692.2013218355494,
+              448.163316869841
+            ],
+            [
+              692.2013218355494,
+              448.26517796884843
+            ],
+            [
+              692.2013218355494,
+              448.41796961735946
+            ],
+            [
+              692.2013218355494,
+              448.57076126587054
+            ],
+            [
+              692.2013218355494,
+              448.67262236487795
+            ],
+            [
+              692.2013218355494,
+              448.87634456289265
+            ],
+            [
+              692.2013218355494,
+              449.02913621140374
+            ],
+            [
+              692.2013218355494,
+              449.1819278599148
+            ],
+            [
+              692.2522523850531,
+              449.33471950842585
+            ],
+            [
+              692.2522523850531,
+              449.43658060743326
+            ],
+            [
+              692.2522523850531,
+              449.58937225594434
+            ],
+            [
+              692.2522523850531,
+              449.74216390445537
+            ],
+            [
+              692.2522523850531,
+              449.8440250034628
+            ],
+            [
+              692.2522523850531,
+              449.9458861024701
+            ],
+            [
+              692.2522523850531,
+              450.1496083004849
+            ],
+            [
+              692.2522523850531,
+              450.2514693994923
+            ],
+            [
+              692.2522523850531,
+              450.4042610480033
+            ],
+            [
+              692.2522523850531,
+              450.6079832460181
+            ],
+            [
+              692.2522523850531,
+              450.76077489452916
+            ],
+            [
+              692.2522523850531,
+              450.91356654304025
+            ],
+            [
+              692.2522523850531,
+              451.0663581915513
+            ],
+            [
+              692.2522523850531,
+              451.21914984006236
+            ],
+            [
+              692.2522523850531,
+              451.3210109390697
+            ],
+            [
+              692.2522523850531,
+              451.4738025875808
+            ],
+            [
+              692.2522523850531,
+              451.57566368658814
+            ],
+            [
+              692.2522523850531,
+              451.67752478559555
+            ],
+            [
+              692.2013218355494,
+              451.8812469836103
+            ],
+            [
+              692.2522523850531,
+              451.98310808261766
+            ],
+            [
+              692.2013218355494,
+              452.08496918162507
+            ],
+            [
+              692.2013218355494,
+              452.28869137963983
+            ],
+            [
+              692.2013218355494,
+              452.3905524786472
+            ],
+            [
+              692.2013218355494,
+              452.54334412715826
+            ],
+            [
+              692.2522523850531,
+              452.6961357756693
+            ],
+            [
+              692.2522523850531,
+              452.8489274241804
+            ],
+            [
+              692.2522523850531,
+              452.9507885231878
+            ],
+            [
+              692.2522523850531,
+              453.15451072120254
+            ],
+            [
+              692.2522523850531,
+              453.30730236971357
+            ],
+            [
+              692.2522523850531,
+              453.46009401822465
+            ],
+            [
+              692.2522523850531,
+              453.6128856667357
+            ],
+            [
+              692.2522523850531,
+              453.76567731524676
+            ],
+            [
+              692.3031829345568,
+              453.91846896375785
+            ],
+            [
+              692.3541134840605,
+              454.1221911617726
+            ],
+            [
+              692.4050440335642,
+              454.27498281028363
+            ],
+            [
+              692.4559745830678,
+              454.4277744587947
+            ],
+            [
+              692.5069051325715,
+              454.6314966568095
+            ],
+            [
+              692.6087662315789,
+              454.78428830532056
+            ],
+            [
+              692.6087662315789,
+              454.8861494043279
+            ],
+            [
+              692.6596967810826,
+              455.038941052839
+            ],
+            [
+              692.7106273305862,
+              455.14080215184634
+            ],
+            [
+              692.7106273305862,
+              455.24266325085375
+            ],
+            [
+              692.76155788009,
+              455.3445243498611
+            ],
+            [
+              692.8124884295937,
+              455.4463854488685
+            ],
+            [
+              692.8124884295937,
+              455.54824654787586
+            ],
+            [
+              692.8124884295937,
+              455.65010764688327
+            ],
+            [
+              692.8124884295937,
+              455.7519687458906
+            ],
+            [
+              692.8124884295937,
+              455.853829844898
+            ],
+            [
+              692.8124884295937,
+              455.9556909439054
+            ],
+            [
+              692.76155788009,
+              456.15941314192014
+            ],
+            [
+              692.7106273305862,
+              456.2612742409275
+            ],
+            [
+              692.6596967810826,
+              456.3631353399349
+            ],
+            [
+              692.6087662315789,
+              456.5159269884459
+            ],
+            [
+              692.5578356820753,
+              456.61778808745333
+            ],
+            [
+              692.4559745830678,
+              456.8215102854681
+            ],
+            [
+              692.3541134840605,
+              456.9743019339792
+            ],
+            [
+              692.3031829345568,
+              457.1270935824902
+            ],
+            [
+              692.2013218355494,
+              457.2289546814976
+            ],
+            [
+              692.0485301870383,
+              457.43267687951237
+            ],
+            [
+              691.8448079890236,
+              457.63639907752713
+            ],
+            [
+              691.7429468900162,
+              457.78919072603816
+            ],
+            [
+              691.5901552415052,
+              458.0438434735566
+            ],
+            [
+              691.4373635929941,
+              458.145704572564
+            ],
+            [
+              691.284571944483,
+              458.2984962210751
+            ],
+            [
+              691.1317802959719,
+              458.4512878695861
+            ],
+            [
+              690.9280580979572,
+              458.6040795180972
+            ],
+            [
+              690.7752664494461,
+              458.7568711666082
+            ],
+            [
+              690.622474800935,
+              458.85873226561563
+            ],
+            [
+              690.316891503913,
+              459.0624544636304
+            ],
+            [
+              690.1131693058982,
+              459.26617666164515
+            ],
+            [
+              689.9603776573871,
+              459.3680377606525
+            ],
+            [
+              689.7057249098686,
+              459.62269050817093
+            ],
+            [
+              689.502002711854,
+              459.72455160717834
+            ],
+            [
+              689.3492110633429,
+              459.8264127061857
+            ],
+            [
+              689.1964194148318,
+              459.9792043546968
+            ],
+            [
+              689.0945583158244,
+              460.0810654537041
+            ],
+            [
+              688.9417666673133,
+              460.18292655271154
+            ],
+            [
+              688.7889750188023,
+              460.3357182012226
+            ],
+            [
+              688.6871139197949,
+              460.3357182012226
+            ],
+            [
+              688.5852528207876,
+              460.3866487507263
+            ],
+            [
+              688.4324611722765,
+              460.43757930022997
+            ],
+            [
+              688.2796695237654,
+              460.48850984973365
+            ],
+            [
+              688.0759473257507,
+              460.5394403992374
+            ],
+            [
+              687.9740862267432,
+              460.5394403992374
+            ],
+            [
+              687.8722251277359,
+              460.5394403992374
+            ],
+            [
+              687.7194334792248,
+              460.5394403992374
+            ],
+            [
+              687.5666418307137,
+              460.48850984973365
+            ],
+            [
+              687.4647807317064,
+              460.48850984973365
+            ],
+            [
+              687.3119890831953,
+              460.3866487507263
+            ],
+            [
+              687.1082668851806,
+              460.3357182012226
+            ],
+            [
+              686.9554752366695,
+              460.2847876517189
+            ],
+            [
+              686.8026835881584,
+              460.0810654537041
+            ],
+            [
+              686.700822489151,
+              459.9282738051931
+            ],
+            [
+              686.5989613901437,
+              459.8264127061857
+            ],
+            [
+              686.3443086426253,
+              459.5208294091636
+            ],
+            [
+              686.2424475436179,
+              459.26617666164515
+            ],
+            [
+              686.0387253456031,
+              458.9096628151193
+            ],
+            [
+              685.6822114990773,
+              458.2984962210751
+            ],
+            [
+              685.5294198505662,
+              457.78919072603816
+            ],
+            [
+              685.3766282020551,
+              457.2798852310013
+            ],
+            [
+              685.1219754545367,
+              456.61778808745333
+            ],
+            [
+              685.071044905033,
+              456.00662149340906
+            ],
+            [
+              685.071044905033,
+              455.54824654787586
+            ],
+            [
+              685.071044905033,
+              454.83521885482423
+            ],
+            [
+              685.1219754545367,
+              454.4277744587947
+            ],
+            [
+              685.2238365535441,
+              453.9693995132615
+            ],
+            [
+              685.2747671030478,
+              453.30730236971357
+            ],
+            [
+              685.3766282020551,
+              452.747066325173
+            ],
+            [
+              685.3766282020551,
+              452.28869137963983
+            ],
+            [
+              685.3766282020551,
+              451.7793858846029
+            ],
+            [
+              685.3766282020551,
+              450.8626359935365
+            ],
+            [
+              685.3766282020551,
+              450.2514693994923
+            ],
+            [
+              685.3766282020551,
+              449.640302805448
+            ],
+            [
+              685.3766282020551,
+              448.825414013389
+            ],
+            [
+              685.3766282020551,
+              448.2142474193447
+            ],
+            [
+              685.3766282020551,
+              447.6030808253005
+            ],
+            [
+              685.4275587515589,
+              447.19563642927096
+            ],
+            [
+              685.5294198505662,
+              446.8900531322488
+            ],
+            [
+              685.58035040007,
+              446.48260873621933
+            ],
+            [
+              685.6312809495736,
+              446.1260948896935
+            ],
+            [
+              685.6822114990773,
+              445.92237269167873
+            ],
+            [
+              685.6822114990773,
+              445.41306719664186
+            ],
+            [
+              685.6822114990773,
+              445.056553350116
+            ],
+            [
+              685.6822114990773,
+              444.7509700530939
+            ],
+            [
+              685.6822114990773,
+              444.19073400855336
+            ],
+            [
+              685.6822114990773,
+              443.78328961252384
+            ],
+            [
+              685.6822114990773,
+              443.4777063155017
+            ],
+            [
+              685.6822114990773,
+              442.9684008204648
+            ],
+            [
+              685.6822114990773,
+              442.61188697393897
+            ],
+            [
+              685.6822114990773,
+              442.4081647759242
+            ],
+            [
+              685.6822114990773,
+              442.1025814789021
+            ],
+            [
+              685.6822114990773,
+              441.79699818188
+            ],
+            [
+              685.6312809495736,
+              441.54234543436155
+            ],
+            [
+              685.6312809495736,
+              441.2876926868431
+            ],
+            [
+              685.6312809495736,
+              440.9311788403173
+            ],
+            [
+              685.6312809495736,
+              440.67652609279884
+            ],
+            [
+              685.6312809495736,
+              440.4218733452804
+            ],
+            [
+              685.6312809495736,
+              440.06535949875456
+            ],
+            [
+              685.6312809495736,
+              439.8107067512361
+            ],
+            [
+              685.6312809495736,
+              439.505123454214
+            ],
+            [
+              685.6312809495736,
+              439.19954015719185
+            ],
+            [
+              685.6312809495736,
+              438.9448874096734
+            ],
+            [
+              685.6312809495736,
+              438.74116521165865
+            ],
+            [
+              685.6312809495736,
+              438.4865124641402
+            ],
+            [
+              685.6312809495736,
+              438.33372081562914
+            ],
+            [
+              685.6312809495736,
+              438.1809291671181
+            ],
+            [
+              685.6822114990773,
+              438.0790680681107
+            ],
+            [
+              685.6822114990773,
+              437.97720696910335
+            ],
+            [
+              685.6822114990773,
+              437.87534587009594
+            ],
+            [
+              685.7840725980847,
+              437.6716236720812
+            ],
+            [
+              685.8350031475884,
+              437.56976257307383
+            ],
+            [
+              685.885933697092,
+              437.41697092456275
+            ],
+            [
+              685.885933697092,
+              437.2641792760517
+            ],
+            [
+              685.9877947960994,
+              437.11138762754064
+            ],
+            [
+              686.0387253456031,
+              437.00952652853323
+            ],
+            [
+              686.1405864446104,
+              436.9076654295259
+            ],
+            [
+              686.1915169941142,
+              436.8058043305185
+            ],
+            [
+              686.2933780931215,
+              436.7548737810148
+            ],
+            [
+              686.3952391921289,
+              436.65301268200744
+            ],
+            [
+              686.54803084064,
+              436.55115158300003
+            ],
+            [
+              686.6498919396473,
+              436.50022103349636
+            ],
+            [
+              686.8026835881584,
+              436.3474293849853
+            ],
+            [
+              686.9554752366695,
+              436.2455682859779
+            ],
+            [
+              687.1082668851806,
+              436.1437071869706
+            ],
+            [
+              687.2101279841879,
+              436.04184608796317
+            ],
+            [
+              687.3119890831953,
+              435.9909155384595
+            ],
+            [
+              687.4138501822027,
+              435.8890544394521
+            ],
+            [
+              687.5666418307137,
+              435.78719334044473
+            ],
+            [
+              687.7194334792248,
+              435.73626279094105
+            ],
+            [
+              687.8212945782323,
+              435.63440169193365
+            ],
+            [
+              687.9231556772396,
+              435.58347114242997
+            ],
+            [
+              688.025016776247,
+              435.5325405929263
+            ],
+            [
+              688.1268778752543,
+              435.5325405929263
+            ],
+            [
+              688.1268778752543,
+              435.5325405929263
+            ]
+          ]
+        }
+      ]
     },
     {
       "time": 1781179623,
@@ -6255,6 +8313,73 @@
       "lat": 54.884681232399856
     },
     {
+      "time": 1781239752,
+      "utc": "2026-06-12T04:49:12.000Z",
+      "text": "Ekstremt tæt på at blive påsejlet bagfra. Mindre end en meter til Guldfisken.\n\nBådstørrelser er har samme skala som kortet.",
+      "view": [
+        583.8560755984014,
+        831.5392256260775,
+        0.08034885041907258,
+        0.09849213922337936
+      ],
+      "settings": {
+        "wind": true,
+        "windModel": "dmi_harmonie_arome_europe",
+        "windNumbers": false,
+        "rain": true,
+        "rainOpacity": 0.75,
+        "traffic": true,
+        "military": true,
+        "annotationsVisible": true,
+        "boats": [
+          "Mercutio",
+          "My",
+          "Vera",
+          "saltamalin",
+          "FARR-WELL II",
+          "THE HULK",
+          "Slipstik",
+          "Ambra",
+          "Neptun",
+          "Voador",
+          "Alice",
+          "Andrea",
+          "Grand Delice",
+          "Guldfisken",
+          "Laolao",
+          "Thermidor",
+          "XAVIA",
+          "Alvilda",
+          "Blåregn",
+          "Rosa-Lux",
+          "SPIDER PIG",
+          "Moster"
+        ],
+        "boatNames": [
+          "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+          "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cf8e6940-4624-013f-2973-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad",
+          "groensund:cffc5650-4624-013f-29d6-04421a259aad",
+          "groensund:cff0fff0-4624-013f-29cd-04421a259aad",
+          "groensund:cf9aff90-4624-013f-297e-04421a259aad",
+          "groensund:cff53330-4624-013f-29d0-04421a259aad",
+          "groensund:cfed4030-4624-013f-29ca-04421a259aad",
+          "groensund:cf2ecd90-4624-013f-2921-04421a259aad",
+          "groensund:cfffdb60-4624-013f-29d9-04421a259aad",
+          "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad",
+          "groensund:cff8d1b0-4624-013f-29d3-04421a259aad",
+          "groensund:cfc7fa20-4624-013f-29a7-04421a259aad",
+          "groensund:d011b3e0-4624-013f-29e9-04421a259aad",
+          "groensund:cfe1fae0-4624-013f-29be-04421a259aad",
+          "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad",
+          "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad",
+          "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad",
+          "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad"
+        ]
+      }
+    },
+    {
       "time": 1781247971,
       "utc": "2026-06-12T07:06:11.000Z",
       "text": "Gennaker eller ej?\n\nVinden skal spidse og tiltage. Det gælder om at komme til stigsnæs hurtigst muligt. Det er tvivlsomt om vi kan holde A2, men Moster overbeviser os med sin spiler.\n\nMoster er en Albin express, som ender med at vinde Bøgestrøm banen.",
@@ -7757,6 +9882,151 @@
       ],
       "lon": 12.638478218197822,
       "lat": 56.07776607416444
+    },
+    {
+      "time": 1781314678,
+      "utc": "2026-06-13T01:37:58.000Z",
+      "text": "Vi er glade vindere",
+      "view": [
+        679.9681848865945,
+        358.9318392393324,
+        16.274123258324693,
+        19.948925284398015
+      ],
+      "settings": {
+        "wind": false,
+        "windModel": "dmi_harmonie_arome_europe",
+        "windNumbers": false,
+        "rain": false,
+        "rainOpacity": 0.75,
+        "grid": true,
+        "traffic": true,
+        "military": true,
+        "annotationsVisible": true,
+        "boats": [
+          "Mercutio",
+          "My",
+          "Rosa-Lux",
+          "THE HULK",
+          "Vera",
+          "Abelone 3",
+          "Alex",
+          "Alice",
+          "Allegra",
+          "Alvilda",
+          "Amalie",
+          "Ambra",
+          "Andraste",
+          "Andrea",
+          "Annibeth",
+          "Banner Viking",
+          "Bibs",
+          "Blacq Magic",
+          "Blåregn",
+          "Blue Bird",
+          "Buksesnedkeren",
+          "Casa Bent",
+          "Charlotte",
+          "Delizia",
+          "DenAnden",
+          "Dina 2",
+          "Dorthea",
+          "Dream on",
+          "DS37",
+          "Easy L♥️ver",
+          "Eldkvarn",
+          "Enjoy Life",
+          "Esmeralda",
+          "FARR-WELL II",
+          "Festina",
+          "Fifty",
+          "Freja",
+          "Frida II",
+          "Friendship 2",
+          "Frigg",
+          "GAIA",
+          "Grand Delice",
+          "Guldfisken",
+          "HANSEN 3.5",
+          "Irma",
+          "Irmgard II",
+          "Joujou 2",
+          "Joy",
+          "Julianehåb",
+          "Lacee Bee",
+          "Laguna",
+          "Laolao",
+          "Little Wing",
+          "Luna",
+          "Margrethe",
+          "Mary",
+          "Mette",
+          "Miss-X",
+          "MorGrethe",
+          "Moster",
+          "munje",
+          "Neptun",
+          "NINI",
+          "NJOY",
+          "Nordstjernen",
+          "Norma",
+          "Pandora",
+          "Petrix",
+          "PING",
+          "Pixie",
+          "Popeye",
+          "Quinta Light",
+          "Quokka",
+          "Rafi",
+          "Ran",
+          "SABRINA",
+          "Sagitta",
+          "Salka Valka",
+          "saltamalin",
+          "Sanne",
+          "Scarlet",
+          "Siroque",
+          "Slipstik",
+          "Sneppen",
+          "Solhverv",
+          "Sonja fra Sydhavnen",
+          "SPIDER PIG",
+          "Stormy",
+          "Thermidor",
+          "Tignanello",
+          "Tjørn",
+          "Triumph",
+          "Vaiana - DEN",
+          "Vaiana - NO",
+          "Valkyria",
+          "VELOCE",
+          "Vi Ses",
+          "Viento",
+          "Voador",
+          "Xanadu",
+          "XAR",
+          "XAVIA",
+          "XBOX",
+          "Xilje",
+          "XUSIDUS",
+          "Zenobia"
+        ],
+        "boatNames": [
+          "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+          "groensund:cf92fb10-4624-013f-2977-04421a259aad",
+          "groensund:cf9aff90-4624-013f-297e-04421a259aad",
+          "groensund:cf8e6940-4624-013f-2973-04421a259aad",
+          "groensund:cfde6e50-4624-013f-29bb-04421a259aad"
+        ]
+      },
+      "image": {
+        "id": "36e71e84-4079-40c4-9af9-e26939d2ab92",
+        "url": "event-images/36e71e84-4079-40c4-9af9-e26939d2ab92.webp",
+        "name": "vindere.jpeg",
+        "width": 1084,
+        "height": 1351,
+        "type": "image/webp"
+      }
     }
   ],
   "speedPins": [
