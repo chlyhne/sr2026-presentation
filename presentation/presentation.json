@@ -1311,10 +1311,10 @@
       "utc": "2026-06-11T10:34:00.000Z",
       "text": "Det klarer op og vinden forsvinder.\n\nVera bommer for at finde vind mod Øst.\n\nRosa-Lux er startet 15 minutter efter os, men har næsten allerede hentet os. Hun har haft vind i starten, som vi ikke havde.",
       "view": [
-        693.3142894366857,
-        399.23729131858727,
-        8.09111547141583,
-        9.918141545606504
+        682.0686044591191,
+        402.9441001072727,
+        28.463543292080207,
+        34.89079500319511
       ],
       "settings": {
         "wind": true,
@@ -1469,14 +1469,14 @@
       }
     },
     {
-      "time": 1781175642,
-      "utc": "2026-06-11T11:00:42.000Z",
+      "time": 1781174580,
+      "utc": "2026-06-11T10:43:00.000Z",
       "text": "Stadig meget svag vind, men bygen inde over land ser ud til at give mere. Vi går højt for at få noget af det.",
       "view": [
-        618.6645829499306,
-        345.566844803591,
-        152.2870755006076,
-        186.67447964590602
+        555.9276194406441,
+        315.2215085424583,
+        201.39965734955348,
+        246.87699933171083
       ],
       "settings": {
         "wind": true,
@@ -1644,7 +1644,7 @@
         "wind": true,
         "windModel": "dmi_harmonie_arome_europe",
         "windNumbers": false,
-        "rain": true,
+        "rain": false,
         "rainOpacity": 0.75,
         "grid": true,
         "traffic": true,
