@@ -13,17 +13,17 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
    $('wind').checked=$('rain').checked=false;stopPlayback();selectedTime=D.start+43200;render();
    const bytes=()=>boats.reduce((total,boat)=>{
     const profile=trackProfileCache.get(boat.points),record=webglTracks.buffers.get(boat.points);
-    total.cpu+=profile.samples.byteLength+profile.stations.byteLength;total.gpu+=record.bytes;
+    total.cpu+=profile.samples.byteLength+profile.stations.byteLength+profile.timeSamples.byteLength+profile.timeStations.byteLength;total.gpu+=record.bytes;
     return total;
    },{cpu:0,gpu:0});
    window.referenceTestBytes=bytes;window.referenceTestInitial=bytes();
    window.referenceTestUploads=webglTracks.uploads;
    const forbidden=()=>{throw Error('Referencevalg genberegnede eller allokerede faste spordata');};
-   projectedTrackSample=prepareProjectedTrack=prepareReferenceProfile=forbidden;
+   projectedTrackSample=prepareProjectedTrack=prepareReferenceProfile=prepareTimeProfiles=projectedTimeSample=forbidden;
    webglTracks.gl.createBuffer=webglTracks.gl.bufferData=webglTracks.gl.bufferSubData=forbidden;
    return {id:referenceBoatId,count:boats.length,bytes:referenceTestInitial};
   });
-  assert.ok(baseline.bytes.cpu<17*1024*1024,'Decoded profiles should keep the entire compact fleet below 17 MiB');
+  assert.ok(baseline.bytes.cpu<40*1024*1024,'All speed and time profiles remain linear-sized, below 40 MiB for this fleet');
   const format=await page.evaluate(()=>({
    bytes:boats.reduce((sum,boat)=>sum+trackProfileCache.get(boat.points).stations.byteLength,0),
    count:referenceStationCount(),boats:boats.length,
@@ -31,10 +31,11 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
    textureBytes:webglTracks.referenceUpload.byteLength
   }));
   assert.equal(format.compact,true);assert.equal(format.bytes,format.count*format.boats*2);
-  assert.equal(format.textureBytes,1024*Math.ceil(format.count/1024)*4);
+  assert.equal(format.textureBytes,1024*Math.ceil(format.count/1024)*8);
   const manifest=await page.evaluate(async()=>await (await fetch('track-profiles/manifest.json',{cache:'no-store'})).json());
   assert.equal(manifest.samplePositionBytes,8);assert.equal(manifest.sampleEncoding,'uint10-speed-planar');
-  assert.equal(manifest.speedBits,10);assert.equal(manifest.version,4);
+  assert.equal(manifest.speedBits,10);assert.equal(manifest.version,6);
+  assert.equal(manifest.timeEncoding,'uint10-block-scaled-seconds-per-meter');
   const downloads=await page.evaluate(()=>performance.getEntriesByType('resource').filter(entry=>/\/track-profiles\/.*\.bin$/.test(new URL(entry.name).pathname)).map(entry=>entry.name));
   assert.equal(downloads.length,1);assert.ok(downloads[0].endsWith('/fleet.bin'));
   assert.equal(await page.evaluate(()=>boats.every(boat=>trackProfileCache.get(boat.points).stations.buffer.byteLength===referenceStationCount()*2)),true);
@@ -47,10 +48,10 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
     const gl=webglTracks.gl;gl.finish();const start=performance.now();
     if(!saveReferenceBoat(id))throw Error($('comparisonStatus').textContent);
     gl.finish();const milliseconds=performance.now()-start;
-    const reference=referenceBoat(),stations=trackProfileCache.get(reference.points).stations;
+    const reference=referenceBoat(),referenceProfile=trackProfileCache.get(reference.points),stations=referenceProfile.stations;
     let checked=0,maxError=0,missing=0;
     for(const boat of boats){
-     const samples=trackProfileCache.get(boat.points).samples,record=webglTracks.buffers.get(boat.points);
+     const profile=trackProfileCache.get(boat.points),samples=profile.samples,record=webglTracks.buffers.get(boat.points);
      const gains=new Float32Array((boat.points.length+1)*3);
      gl.bindBuffer(gl.COPY_READ_BUFFER,record.comparisonBuffer);gl.getBufferSubData(gl.COPY_READ_BUFFER,0,gains);
      const stride=Math.max(1,Math.floor(boat.points.length/31));
@@ -58,7 +59,8 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
       const speed=samples[index*3+2],station=samples[index*3];
       const passage=speed<-1e19?null:referenceAtStation(station,stations);
       const corrected=correctedProjectedSpeed(speed,boat.handicapSecondsPerNm,reference.handicapSecondsPerNm);
-      const expected=[passage?speed-passage.vmg:null,passage&&corrected!==null?corrected-passage.vmg:null,passage?timeGainPer100ReferenceMeters(speed,passage.vmg):null];
+      const timeStation=profile.timeSamples[index*2];
+      const expected=[passage?speed-passage.vmg:null,passage&&corrected!==null?corrected-passage.vmg:null,timeStation<0?null:timeGainPer100Meters(profile.timeSamples[index*2+1],referenceProfile.timeStations[timeStation])];
       for(let basis=0;basis<3;basis++){
        const actual=gains[index*3+basis];
        if(expected[basis]===null){
@@ -121,11 +123,11 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   assert.equal(await broken.locator('main').getAttribute('inert'),'');
   assert.equal(await broken.locator('#viewerLoadingRetry').isVisible(),true);
   await broken.close();
-  for(const [key,value] of [['version',3],['stationSpacingMeters',5],['profileEncoding','float16'],['missingValue',0],['stationCount',1],['samplePositionBytes',12],['speedBits',8],['sampleEncoding','float32'],['bundleFile','track-profiles/../fleet.bin'],['bundleBytes',1],['sampleOffset',1],['profileOffset',1]]){
+  for(const [key,value] of [['version',4],['stationSpacingMeters',5],['profileEncoding','float16'],['missingValue',0],['stationCount',1],['samplePositionBytes',12],['speedBits',8],['sampleEncoding','float32'],['timeEncoding','uint10'],['timeBits',8],['timeBlockSize',128],['timeCodes',1022],['timeInfinity',1023],['bundleFile','track-profiles/../fleet.bin'],['bundleBytes',1],['sampleOffset',1],['profileOffset',1],['timeSampleOffset',1],['timeProfileOffset',1]]){
    const invalid=await browser.newPage();
    await invalid.route('**/track-profiles/manifest.json',async route=>{
     const response=await route.fetch(),manifest=await response.json();
-    if(key==='sampleOffset'||key==='profileOffset')manifest.boats[0][key]=value;
+    if(['sampleOffset','profileOffset','timeSampleOffset','timeProfileOffset'].includes(key))manifest.boats[0][key]=value;
     else manifest[key]=value;
     await route.fulfill({json:manifest});
    });

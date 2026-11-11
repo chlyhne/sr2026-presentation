@@ -39,9 +39,10 @@ Det indeholder formatversion, kildefingeraftryk, SHA-256 af `JSON.stringify(DATA
 Browseren validerer rhumblinens digest, bådenes ID og punktantal samt binærformatet.
 Det fulde datafingeraftryk beregnes kun offline; browseren serialiserer ikke DATA.
 Filnavnene indeholder kildefingeraftrykket og er relative til viewerens rod.
-Manifestversion 4 bruger et fælles gitter med 10 meters afstand langs rhumblinen.
+Manifestversion 6 bruger et fælles gitter med 10 meters afstand langs rhumblinen.
 Alle både ligger i én `bundleFile`, hvor manifestets `sampleOffset` og
-`profileOffset` angiver hvert dataområde, og `bundleBytes` angiver filstørrelsen.
+`timeSampleOffset`, `profileOffset` og `timeProfileOffset` angiver hvert dataområde,
+og `bundleBytes` angiver filstørrelsen.
 Kildeområdet indeholder `pointCount + 1` prøver: først alle little-endian
 Float32-par `[signedStationIndex, progressNm]` à otte bytes, derefter pakkede
 10-bit-fartkoder. Fire fartkoder fylder fem bytes, mindst betydende bits først;
@@ -57,6 +58,28 @@ fartstørrelse bruger samme bitformat, men bevarer negativ fremdrift via indekse
 Afstanden bestemmes af indekset; positioner og tider gentages ikke i profilen.
 Browseren pakker profilerne ud til Uint16-koder én gang og afkoder kun den valgte til en
 genbrugt Float32-tekstur på GPU'en. Ældre profilformater afvises tydeligt.
+
+Alle farvegrundlag pakkes med 10 bit pr. værdi. Tidsforbruget kvantiseres først
+efter projektion og summering af passager. Tidsfarver bruger blokke på højst 256
+værdier med én positiv little-endian Float32-skala pr. blok, efterfulgt af alle
+pakkede 10-bit-koder (fire værdier i fem bytes). Koderne 0–1021 afkodes som
+`kode * skala`; 1022 er positiv uendelighed og 1023 er manglende data.
+Skalaen er blokkens største endelige værdi divideret med 1021, afrundet til Float32;
+blokke uden positive endelige værdier bruger skala 1. Afrundingsfejlen er højst
+cirka en halv skalaenhed, altså 0,049 % af blokkens maksimum. Store endelige
+tidsværdier klippes ikke til et fast interval og kan ikke blive uendelighedskoden.
+Tidskildeområdet har `pointCount` Float32-stationsindeks, derefter skalaer og
+pakkede tidsfarver. Tidsprofilområdet indeholder skalaer og pakkede værdier pr.
+station. Browseren afkoder begge til Float32 og genskaber sidste dublerede
+kildeprøve. Alle tidsindekserede beregninger bruger samme oprindelige tidsakse
+fra bådens punkter; binærfilen indeholder ingen ekstra tidsstempler.
+Tidsprøverne bruger finite-difference-retning og målt SOG; tidsforbrug er positivt
+også ved baglæns sejlads. Stationsprofilen summerer alle frem- og tilbagepassager.
+Der gennemsnittes efter dækket længde inden for hver passages 10-metercelle,
+ikke efter antal observationer. I de afkodede arrays markeres manglende tidsdata
+med `-1e20`, og præcis nul fremdrift med positiv uendelighed. Tidsdata bruger ikke fartkodernes
+0–25-knobs-klipning. Alt forberedes server-side og vokser lineært med antal både
+og kildeprøver; der gemmes ingen parvise sammenligninger.
 
 Åbn <http://127.0.0.1:8097/>. Brug samme browser og adresse som før flytningen;
 browserens eksisterende noter følger adressen, ikke mappens placering.

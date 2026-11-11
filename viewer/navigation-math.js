@@ -1,11 +1,23 @@
 const REFERENCE_STATION_METERS=10,REFERENCE_SPEED_MAX=25,REFERENCE_SPEED_CODES=1022,REFERENCE_SPEED_SCALE=REFERENCE_SPEED_CODES/25,REFERENCE_MISSING=1023;
-const TRACK_SECONDS_PER_100_REFERENCE_METERS=3600*100/1852;
-// Signed time gained per 100 m of reference progress, using speeds in knots.
-// Multiplying by referenceSpeed * dt / this constant recovers dt * (v/vRef - 1).
-// Own zero/negative VMG is valid; the reference must have positive progress.
-function timeGainPer100ReferenceMeters(speed,referenceSpeed){
- if(!Number.isFinite(speed)||!Number.isFinite(referenceSpeed)||referenceSpeed<=0)return null;
- return TRACK_SECONDS_PER_100_REFERENCE_METERS*(speed-referenceSpeed)/(referenceSpeed*referenceSpeed);
+const TRACK_TIME_MISSING=-1e20,TRACK_TIME_OVERFLOW=1e15;
+const TRACK_TIME_BLOCK_SIZE=256,TRACK_TIME_CODES=1021,TRACK_TIME_INFINITY=1022;
+function timeGainPer100Meters(ownTime,referenceTime){
+ if(typeof ownTime!=='number'||typeof referenceTime!=='number'||!(ownTime>=0)||!(referenceTime>=0))return null;
+ const own=Math.min(ownTime,TRACK_TIME_OVERFLOW),reference=Math.min(referenceTime,TRACK_TIME_OVERFLOW);
+ if(own===TRACK_TIME_OVERFLOW&&reference===TRACK_TIME_OVERFLOW)return null;
+ return 100*(reference-own);
+}
+function preparedTimeGain(boat,time,profile,reference){
+ const index=timeBoundary(boat.points,time,true)-1;if(index<0)return null;
+ const current=boat.points[index],next=boat.points[index+1],connects=next&&next[2]>current[2]&&next[2]-current[2]<=TRACK_MAX_GAP;
+ if(time!==current[2]&&(!connects||time>next[2]))return null;
+ function gain(sampleIndex){
+  const station=profile.timeSamples[sampleIndex*2];
+  return station<0?null:timeGainPer100Meters(profile.timeSamples[sampleIndex*2+1],reference.timeStations[station]);
+ }
+ const start=gain(index),end=gain(connects?index+1:index);
+ if(start===null||end===null)return null;
+ return connects?start+(end-start)*(time-current[2])/(next[2]-current[2]):start;
 }
 function packedSpeedBytes(count){return Math.ceil(count*10/8);}
 function packSpeedCodes(values){
@@ -55,6 +67,20 @@ function projectedTrackSample(boat,time,index=timeBoundary(boat.points,time,true
  const vmg=length>0?speed*(east*Math.sin(course)+north*Math.cos(course))/length:0;
  return {...projected,vmg,time};
 }
+function sampleTrackInterval(points,index,model,visit){
+ function span(left,right,evaluation=null){
+  const latitude=left[1]*right[1]<=0?0:Math.min(Math.abs(left[1]),Math.abs(right[1]));
+  const meters=NAV_RADIUS_NM*1852*NAV_RAD*(Math.abs(right[1]-left[1])+Math.cos(latitude*NAV_RAD)*Math.abs(right[0]-left[0]));
+  if(!Number.isFinite(meters))throw Error('Non-finite profile sampling distance.');
+  if(meters>REFERENCE_STATION_METERS){
+   const time=(left[2]+right[2])/2;
+   if(time===left[2]||time===right[2])throw Error('Profile spatial sampling cannot resolve source time.');
+   const middle=trackValue(points,index,time,model);
+   span(left,middle.point,middle);span(middle.point,right,evaluation);
+  }else visit(right,evaluation);
+ }
+ span(points[index],points[index+1]);
+}
 function prepareReferenceProfile(boat){
  const values=new Uint16Array(referenceStationCount());values.fill(REFERENCE_MISSING);
  const step=REFERENCE_STATION_METERS/1852,last=values.length-1,model=getTrackModel(boat.points);
@@ -89,20 +115,9 @@ function prepareReferenceProfile(boat){
   let endpointIndex=i+1;
   while(endpointIndex+1<boat.points.length&&boat.points[endpointIndex+1][2]===b[2])endpointIndex++;
   let previous=projectedTrackSample(boat,a[2],i);
-  function sampleSpan(left,right,evaluation=null){
-   const latitude=left[1]*right[1]<=0?0:Math.min(Math.abs(left[1]),Math.abs(right[1]));
-   const meters=NAV_RADIUS_NM*1852*NAV_RAD*(Math.abs(right[1]-left[1])+Math.cos(latitude*NAV_RAD)*Math.abs(right[0]-left[0]));
-   if(!Number.isFinite(meters))throw Error('Non-finite reference sampling distance.');
-   if(meters>REFERENCE_STATION_METERS){
-    const time=(left[2]+right[2])/2;
-    if(time===left[2]||time===right[2])throw Error('Reference spatial sampling cannot resolve source time.');
-    const middle=trackValue(boat.points,i,time,model);
-    sampleSpan(left,middle.point,middle);sampleSpan(middle.point,right,evaluation);
-   }else{
-    const next=projectedTrackSample(boat,right[2],right[2]===b[2]?endpointIndex:i,evaluation);fill(previous,next);previous=next;
-   }
-  }
-  sampleSpan(a,b);
+  sampleTrackInterval(boat.points,i,model,(right,evaluation)=>{
+   const next=projectedTrackSample(boat,right[2],right[2]===b[2]?endpointIndex:i,evaluation);fill(previous,next);previous=next;
+  });
  }
  finish();
  return values;
@@ -157,4 +172,137 @@ function prepareProjectedTrack(boat){
  if(boat.points.length)values.set(values.subarray((boat.points.length-1)*3,boat.points.length*3),boat.points.length*3);
  else {values[0]=-1;values[2]=-1e20;}
  return values;
+}
+function projectedTimeSample(boat,time,index=timeBoundary(boat.points,time,true)-1){
+ const points=boat.points;if(index<0)return null;
+ const point=points[index],next=points[index+1];
+ const outgoing=next&&next[2]>point[2]&&next[2]-point[2]<=TRACK_MAX_GAP;
+ const directionIndex=outgoing?index:index-1,directionStart=points[directionIndex],directionEnd=points[directionIndex+1];
+ if(!directionStart||!directionEnd||directionEnd[2]<=directionStart[2]||directionEnd[2]-directionStart[2]>TRACK_MAX_GAP)return null;
+ if(time!==point[2]&&(!outgoing||time>next[2]))return null;
+ let position=point,speed=boat.speeds?.[index];
+ if(time!==point[2]){
+  const endSpeed=boat.speeds?.[index+1];
+  if(!Number.isFinite(speed)||speed<0||!Number.isFinite(endSpeed)||endSpeed<0)return null;
+  speed+=(endSpeed-speed)*(time-point[2])/(next[2]-point[2]);position=trackValue(points,index,time).point;
+ }
+ if(!Number.isFinite(speed)||speed<0)return null;
+ const projected=projectOnRhumbRoute(position);if(!projected||projected.outside)return null;
+ const east=(directionEnd[0]-directionStart[0])*Math.cos(position[1]*NAV_RAD),north=directionEnd[1]-directionStart[1],length=Math.hypot(east,north);
+ if(length<1e-15&&speed>0)return null;
+ const course=projected.bearing*NAV_RAD,alignment=length>0?(east*Math.sin(course)+north*Math.cos(course))/length:0;
+ const vmg=Math.abs(alignment)<=Number.EPSILON*8?0:speed*alignment;
+ return {...projected,secondsPerMeter:vmg===0?Infinity:3600/(1852*Math.abs(vmg))};
+}
+function prepareTimeProfiles(boat){
+ const count=boat.points.length,timeSamples=new Float32Array((count+1)*2),timeStations=new Float32Array(referenceStationCount());
+ timeStations.fill(TRACK_TIME_MISSING);
+ let sampleIndex=0;
+ for(let index=0;index<count;index++){
+  while(sampleIndex+1<count&&boat.points[sampleIndex+1][2]<=boat.points[index][2])sampleIndex++;
+  const sample=projectedTimeSample(boat,boat.points[index][2],sampleIndex);
+  timeSamples[index*2]=sample?referenceStationIndex(sample.progress):-1;
+  timeSamples[index*2+1]=sample?sample.secondsPerMeter:TRACK_TIME_MISSING;
+ }
+ if(count)timeSamples.set(timeSamples.subarray((count-1)*2,count*2),count*2);
+ else {timeSamples[0]=-1;timeSamples[1]=TRACK_TIME_MISSING;}
+ let pending=null,direction=0;
+ function add(index,value){timeStations[index]=timeStations[index]<0?value:timeStations[index]+value;}
+ function finish(){
+  if(pending)add(pending.index,pending.total/pending.meters);
+  pending=null;
+ }
+ function fill(left,right,leftTime,rightTime){
+  if(!left||!right){finish();direction=0;return;}
+  const from=left.progress*1852,to=right.progress*1852,delta=to-from,sign=Math.sign(delta);
+  if(!sign){
+   add(referenceStationIndex(left.progress),(rightTime-leftTime)/REFERENCE_STATION_METERS);return;
+  }
+  if(direction!==sign){finish();direction=sign;}
+  const low=Math.min(from,to),high=Math.max(from,to),first=referenceStationIndex(low/1852),last=referenceStationIndex(high/1852);
+  for(let offset=0;offset<=last-first;offset++){
+   const index=sign>0?first+offset:last-offset;
+   const begin=Math.max(low,(index-.5)*REFERENCE_STATION_METERS),end=Math.min(high,(index+.5)*REFERENCE_STATION_METERS);
+   if(end<=begin)continue;
+   const fraction=((begin+end)/2-from)/delta;
+   const density=left.secondsPerMeter===right.secondsPerMeter?left.secondsPerMeter:
+    left.secondsPerMeter===Infinity||right.secondsPerMeter===Infinity?Infinity:left.secondsPerMeter+(right.secondsPerMeter-left.secondsPerMeter)*fraction;
+   if(pending?.index!==index){finish();pending={index,total:0,meters:0};}
+   pending.total+=density*(end-begin);pending.meters+=end-begin;
+  }
+ }
+ const model=getTrackModel(boat.points);
+ for(let index=0;index<count-1;index++){
+  const startPoint=boat.points[index],endPoint=boat.points[index+1],duration=endPoint[2]-startPoint[2];
+  if(duration<=0||duration>TRACK_MAX_GAP||timeSamples[index*2]<0||timeSamples[(index+1)*2]<0){finish();direction=0;continue;}
+  let endpointIndex=index+1;
+  while(endpointIndex+1<count&&boat.points[endpointIndex+1][2]===endPoint[2])endpointIndex++;
+  const startDensity=timeSamples[index*2+1],endDensity=timeSamples[endpointIndex*2+1];
+  let previous=projectOnRhumbRoute(startPoint),previousTime=startPoint[2];
+  if(previous?.outside)previous=null;
+  if(previous)previous.secondsPerMeter=startDensity;
+  sampleTrackInterval(boat.points,index,model,right=>{
+   let next=projectOnRhumbRoute(right);if(next?.outside)next=null;
+   if(next){
+    const fraction=(right[2]-startPoint[2])/duration;
+    next.secondsPerMeter=fraction===1?endDensity:startDensity===endDensity?startDensity:
+     startDensity===Infinity||endDensity===Infinity?Infinity:startDensity+(endDensity-startDensity)*fraction;
+   }
+   fill(previous,next,previousTime,right[2]);previous=next;previousTime=right[2];
+  });
+ }
+ finish();
+ return {timeSamples,timeStations};
+}
+function packedTimeBytes(count){return Math.ceil(count/TRACK_TIME_BLOCK_SIZE)*4+packedSpeedBytes(count);}
+function packTimeValues(values){
+ const blocks=Math.ceil(values.length/TRACK_TIME_BLOCK_SIZE),bytes=new Uint8Array(packedTimeBytes(values.length)),view=new DataView(bytes.buffer),codes=new Uint16Array(values.length);
+ for(let block=0;block<blocks;block++){
+  const start=block*TRACK_TIME_BLOCK_SIZE,end=Math.min(values.length,start+TRACK_TIME_BLOCK_SIZE);let maximum=0;
+  for(let index=start;index<end;index++){
+   const value=values[index];
+   if(value!==TRACK_TIME_MISSING&&value!==Math.fround(TRACK_TIME_MISSING)&&!(value>=0))throw Error('Invalid time density.');
+   if(Number.isFinite(value))maximum=Math.max(maximum,value);
+  }
+  const scale=maximum>0?Math.fround(maximum/TRACK_TIME_CODES):1;
+  if(!(scale>0)||!Number.isFinite(scale))throw Error('Time scale cannot be represented.');
+  view.setFloat32(block*4,scale,true);
+  for(let index=start;index<end;index++)codes[index]=values[index]<0?REFERENCE_MISSING:values[index]===Infinity?TRACK_TIME_INFINITY:Math.min(TRACK_TIME_CODES,Math.round(values[index]/scale));
+ }
+ bytes.set(packSpeedCodes(codes),blocks*4);return bytes;
+}
+function unpackTimeValues(bytes,count){
+ if(Object.prototype.toString.call(bytes)!=='[object Uint8Array]'||!Number.isSafeInteger(count)||count<0||bytes.length!==packedTimeBytes(count))throw Error('Invalid time profile byte length or type.');
+ const blocks=Math.ceil(count/TRACK_TIME_BLOCK_SIZE),view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),codes=unpackSpeedCodes(bytes.subarray(blocks*4),count),values=new Float32Array(count);
+ for(let block=0;block<blocks;block++){
+  const scale=view.getFloat32(block*4,true);
+  if(!(scale>0)||!Number.isFinite(scale)||!Number.isFinite(Math.fround(scale*TRACK_TIME_CODES)))throw Error('Invalid time scale.');
+  for(let index=block*TRACK_TIME_BLOCK_SIZE;index<Math.min(count,(block+1)*TRACK_TIME_BLOCK_SIZE);index++){
+   const code=codes[index];values[index]=code===REFERENCE_MISSING?TRACK_TIME_MISSING:code===TRACK_TIME_INFINITY?Infinity:code*scale;
+  }
+ }
+ return values;
+}
+function packTimeSamples(samples){
+ if(samples.length<2||samples.length%2)throw Error('Time samples must contain padded pairs.');
+ const count=samples.length/2-1,bytes=new Uint8Array(count*4+packedTimeBytes(count)),view=new DataView(bytes.buffer),values=new Float32Array(count);
+ for(let index=0;index<count;index++){
+  const station=samples[index*2],value=samples[index*2+1];
+  if(!Number.isInteger(station)||station< -1||Math.fround(station)!==station||(station===-1)!==(value<0))throw Error('Invalid time sample position.');
+  view.setFloat32(index*4,station,true);values[index]=value;
+ }
+ for(let index=0;index<2;index++)if(samples[count*2+index]!==samples[(count?count-1:0)*2+index])throw Error('Invalid time sample padding.');
+ bytes.set(packTimeValues(values),count*4);return bytes;
+}
+function unpackTimeSamples(bytes,count){
+ if(Object.prototype.toString.call(bytes)!=='[object Uint8Array]'||!Number.isSafeInteger(count)||count<0||bytes.length!==count*4+packedTimeBytes(count))throw Error('Invalid time sample byte length or type.');
+ const values=unpackTimeValues(bytes.subarray(count*4),count),view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),samples=new Float32Array((count+1)*2);
+ for(let index=0;index<count;index++){
+  const station=view.getFloat32(index*4,true);
+  if(!Number.isInteger(station)||station< -1||(station===-1)!==(values[index]<0))throw Error('Invalid time sample position.');
+  samples[index*2]=station;samples[index*2+1]=values[index];
+ }
+ if(count)samples.set(samples.subarray((count-1)*2,count*2),count*2);
+ else {samples[0]=-1;samples[1]=TRACK_TIME_MISSING;}
+ return samples;
 }

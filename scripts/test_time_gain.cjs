@@ -2,41 +2,27 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {test}=require('node:test');
 const context=vm.createContext({});
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../viewer/navigation-math.js'),'utf8'),context);
-const gain=context.timeGainPer100ReferenceMeters,knots=metersPerSecond=>metersPerSecond*3600/1852;
-const near=(actual,expected)=>assert.ok(Number.isFinite(actual)&&Math.abs(actual-expected)<1e-9,`${actual} ≈ ${expected}`);
-// Integrate the displayed rate by the reference distance, not the boat's own
-// travelled distance. Expected totals below come directly from arrival times.
-function lossForVoyage(legs,referenceMetersPerSecond){
- return legs.reduce((loss,{seconds,speed})=>loss-gain(knots(speed),knots(referenceMetersPerSecond))*referenceMetersPerSecond*seconds/100,0);
-}
-test('5 kn reference: forward, stopped and backwards all have finite, ordered values',()=>{
- near(gain(5,5),0);near(gain(2.5,5),-100/(5*1852/3600)*.5);
- near(gain(0,5),-100/(5*1852/3600));
- near(gain(-2.5,5),-100/(5*1852/3600)*1.5);
- near(gain(-5,5),-100/(5*1852/3600)*2);
- assert.ok(gain(-5,5)<gain(-2.5,5)&&gain(-2.5,5)<gain(0,5));
- near(gain(8,5),-gain(2,5));
- assert.ok(Math.abs(gain(-1e-8,5)-gain(1e-8,5))<1e-6,'No singularity when own progress crosses zero');
+const gain=context.timeGainPer100Meters,density=speed=>3600/(1852*Math.abs(speed));
+const near=(actual,expected)=>assert.ok(Number.isFinite(actual)&&Math.abs(actual-expected)<1e-9,`${actual} expected ${expected}`);
+
+test('time density differences show seconds gained per 100 physical meters',()=>{
+ near(gain(density(4),density(4)),0);
+ near(gain(density(3),density(4)),-360000/1852/12);
+ near(gain(density(13),density(14)),-360000/1852/182);
+ near(gain(density(4),density(3)),360000/1852/12);
+ assert.ok(Math.abs(gain(density(3),density(4)))>15*Math.abs(gain(density(13),density(14))));
 });
-test('A–B in 100 s versus A–B–A–B in 300 s loses exactly 200 s',()=>{
- const outward={seconds:100,speed:1},backward={seconds:100,speed:-1};
- near(lossForVoyage([outward],1),0);
- near(lossForVoyage([backward],1),200);
- near(lossForVoyage([outward,backward,outward],1),300-100);
+
+test('a reference crossing three times contributes triple density; own reverse is positive time',()=>{
+ near(gain(density(4),3*density(4)),200*density(4));
+ near(gain(density(-4),3*density(4)),200*density(4));
+ near(gain(density(-4),density(4)),0);
 });
-test('a minute stopped costs a minute, and is counted once when progress resumes',()=>{
- near(lossForVoyage([{seconds:60,speed:0}],1),60);
- near(lossForVoyage([{seconds:50,speed:2},{seconds:60,speed:0},{seconds:50,speed:2}],2),160-100);
-});
-test('different sampling intervals and reverse speeds preserve total arrival-time difference',()=>{
- const legs=[{seconds:20,speed:3},{seconds:30,speed:-2},{seconds:15,speed:0},{seconds:80,speed:1.25}];
- const total=legs.reduce((sum,leg)=>sum+leg.seconds,0),progress=legs.reduce((sum,leg)=>sum+leg.speed*leg.seconds,0);
- near(lossForVoyage(legs,2),total-progress/2);
- const subdivided=legs.flatMap(leg=>Array.from({length:5},()=>({...leg,seconds:leg.seconds/5})));
- near(lossForVoyage(subdivided,2),total-progress/2);
-});
-test('missing or non-positive reference speeds remain missing; negative own speeds are valid',()=>{
- for(const [speed,reference] of [[1,0],[0,0],[-1,0],[1,-1],[NaN,5],[Infinity,5],[-Infinity,5],[1,NaN],[1,Infinity]])
-  assert.equal(gain(speed,reference),null);
- assert.ok(Number.isFinite(gain(-3,5)));
+
+test('zero progress has explicit overflow, not a missing colour; infinity minus infinity is undefined',()=>{
+ assert.ok(gain(Infinity,density(5))< -1e16);
+ assert.ok(gain(density(5),Infinity)>1e16);
+ assert.equal(gain(Infinity,Infinity),null);
+ near(gain(0,0),0);
+ for(const [own,reference] of [[-1,1],[1,-1],[NaN,1],[1,NaN],[undefined,1],[1,undefined],[null,1],[1,null],[-Infinity,1]])assert.equal(gain(own,reference),null);
 });
