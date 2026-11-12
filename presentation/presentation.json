@@ -1470,26 +1470,17 @@
         "height": 900,
         "type": "image/webp"
       },
-      "measurement": [
-        [
-          12.628477950339786,
-          55.92894181932935
-        ],
-        [
-          12.611334730291642,
-          55.908315429859414
-        ]
-      ]
+      "measurement": []
     },
     {
       "time": 1781174580,
       "utc": "2026-06-11T10:43:00.000Z",
       "text": "Stadig meget svag vind, men bygen inde over land ser ud til at give mere. Vi går højt for at få noget af det.",
       "view": [
-        555.9276194406441,
-        315.2215085424583,
-        201.39965734955348,
-        246.87699933171083
+        699.41987252785,
+        424.76761438796166,
+        8.091115471415836,
+        9.918141545606517
       ],
       "settings": {
         "wind": true,
@@ -1506,7 +1497,8 @@
           "Vera",
           "My",
           "THE HULK",
-          "Rosa-Lux"
+          "Rosa-Lux",
+          "Quinta Light"
         ],
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
@@ -1620,7 +1612,7 @@
         "comparison": {
           "enabled": false,
           "basis": "absolute",
-          "boatColour": true
+          "boatColour": false
         },
         "referenceBoatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
         "trackLengthSeconds": 7200,
@@ -1641,7 +1633,17 @@
         "width": 894,
         "height": 869,
         "type": "image/webp"
-      }
+      },
+      "measurement": [
+        [
+          12.645503582677124,
+          55.91426191100297
+        ],
+        [
+          12.643247484084224,
+          55.9008527826429
+        ]
+      ]
     },
     {
       "time": 1781179200,
@@ -1806,7 +1808,7 @@
         "trackLengthSeconds": 7200,
         "handicapTracksEnabled": false,
         "boatSearchQuery": "",
-        "boatFavouritesOnly": false
+        "boatFavouritesOnly": true
       },
       "point": [
         700.0839526355267,
