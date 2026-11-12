@@ -207,9 +207,10 @@ function endNavigationGesture(event){
 }
 function renderNavigation(){
  const shownMeasurement=currentMeasurement(),gates=currentGateMeasurement();
+ const results=navigationMode==='gates'||!gates.length?[]:gateResultsAtTime(gates,currentTime(),boats.filter(boatIsDisplayed));
  $('mapMeasureToggle').setAttribute('aria-pressed',String(!window.SR_RHUMBLINE_SETUP&&(navigationMode==='measure'||shownMeasurement.length>0)));
  $('mapGatesToggle').setAttribute('aria-pressed',String(navigationMode==='gates'||gates.length>0));
- const key=JSON.stringify([navigationMode,navigationDraft,shownMeasurement,gates,gateDraft]);
+ const key=JSON.stringify([navigationMode,navigationDraft,shownMeasurement,gates,gateDraft,results.map(row=>[row.boat.id,row.passage.end])]);
  if(key===lastNavigationKey)return;lastNavigationKey=key;
  const layer=$('mapNavigation');layer.replaceChildren();
  function draw(points,colour,label,dashed=false){
@@ -242,10 +243,32 @@ function renderNavigation(){
  if(navigationMode==='gates'){
   drawGate(gateDraft,1);drawGate(navigationDraft,gateDraft.length?2:1);
  }else for(let i=0;i<gates.length;i+=2)drawGate(gates.slice(i,i+2),i/2+1);
+ if(results.length)drawGateResults(layer,gates,results);
  if(navigationMode&&navigationMode!=='gates')draw(navigationDraft,navigationMode==='route'?'#7b3294':'#173d4c',navigationMode==='route'?'Rhumbline':'Måling',navigationMode==='route');
  const active=navigationMode?navigationDraft:shownMeasurement;
  $('measurementResult').textContent=active.length?`${buildRhumbRoute(active).total.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} sømil` :'';
  resizeSymbols(layer);
+}
+function drawGateResults(layer,gates,results){
+ const rankWidth=String(results.length).length*7.5+12,nameWidth=Math.max(...results.map(row=>row.boat.name.length))*7.5;
+ const timeWidth=Math.max(...results.map(row=>row.duration.length))*7.5+16,width=20+rankWidth+nameWidth+timeWidth,height=36+results.length*18;
+ const [firstA,firstB,a,b]=gates.map(xy),x=(a[0]+b[0])/2,y=(a[1]+b[1])/2;
+ let nx=b[1]-a[1],ny=a[0]-b[0];const length=Math.hypot(nx,ny);nx/=length;ny/=length;
+ // Put the whole upright panel beyond gate 2, on the side away from gate 1.
+ const direction=nx*(x-(firstA[0]+firstB[0])/2)+ny*(y-(firstA[1]+firstB[1])/2);
+ if(direction<0||direction===0&&(nx<0||nx===0&&ny<0)){nx=-nx;ny=-ny;}
+ const offset=24+Math.abs(nx)*width/2+Math.abs(ny)*height/2,anchor=screenGroup(x,y,layer);
+ anchor.setAttribute('class','gate-results');anchor.setAttribute('role','table');anchor.setAttribute('aria-label','Sejltider fra gate 1 til gate 2, hurtigste først');
+ const panel=el('g',{transform:`translate(${nx*offset-width/2} ${ny*offset-height/2})`,'pointer-events':'none',fill:'#173d4c','font-family':'monospace','font-size':12},anchor);
+ el('rect',{class:'gate-results-background',width,height,rx:5,fill:'#fffffff0',stroke:'#b8cbd5'},panel);
+ el('text',{x:10,y:18,'font-family':'system-ui, sans-serif','font-weight':700,'font-size':11},panel).textContent='Gate 1 → 2 · sejltid';
+ el('path',{d:`M0 26H${width}`,stroke:'#b8cbd5'},panel);
+ for(const [index,row] of results.entries()){
+  const group=el('g',{class:'gate-result',role:'row','data-boat-id':row.boat.id,'data-elapsed-seconds':row.passage.elapsed,transform:`translate(0 ${41+index*18})`,'font-weight':index?400:700},panel);
+  el('text',{x:10},group).textContent=index+1;
+  el('text',{x:10+rankWidth},group).textContent=row.boat.name;
+  el('text',{x:width-10,'text-anchor':'end'},group).textContent=row.duration;
+ }
 }
 $('mapMeasureToggle').onclick=()=>{
  if(navigationMode==='measure'||currentMeasurement().length){if(setMeasurement([]))cancelMapLine();}

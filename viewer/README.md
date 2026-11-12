@@ -190,13 +190,17 @@ python3 scripts/serve_viewer.py
   Træk først gate 1 (grøn), og træk derefter gate 2 (rød). Begge følger markøren
   under tegningen. Escape annullerer; Backspace fortryder den igangværende gate
   eller den første gate, hvis anden endnu ikke er startet. Et nyt tryk på ikonet
-  fjerner gates. Tiden for den senest afsluttede passage fra 1 til 2 vises ved
-  bådens navn som `1→2 · MM:SS,d`. Det er den faktiske sejltid fra kildesporet,
+  fjerner gates. Tiden for den senest afsluttede passage fra 1 til 2 vises i en
+  samlet liste uden for gate 2, på siden væk fra gate 1. Listen viser de valgte
+  både med den hurtigste øverst samt placering, navn og tid som `MM:SS,d`.
+  Den følger gaten ved zoom og panorering og beholder en læsbar skriftstørrelse.
+  Både bliver stående på resultatlisten, selv når deres aktuelle markør ikke
+  længere vises. Det er den faktiske sejltid fra kildesporet,
   også ved handicapvisning. Kun passager gennem de endelige gate-segmenter tæller;
   berøring uden krydsning og passager over huller i GPS-data tæller ikke.
   Krydsninger beregnes på sporenes interpolerede kurver for hele feltet, når gates
   defineres eller historikken indlæses. Bådvalg, sportype, zoom og afspilning
-  bruger de forberedte resultater.
+  filtrerer den forberedte rangliste uden at genberegne eller sortere passagerne.
   Gates følger samme eventkladde, **Gem ændringer**, annullering og tidsmæssige
   synlighed som linealen. De fire geografiske endepunkter ligger i `gates`;
   tomme målinger repræsenteres af `[]`. Den publicerede historik er opdateret med

@@ -303,7 +303,6 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  const drawingOrder=boats.filter(boatIsDisplayed).sort((a,b)=>(referenceBoatId===a.id)-(referenceBoatId===b.id));
  if(!webglTracks.render(t,drawingOrder))return;
  syncHandicapTracks();
- const gateTimes=preparedGateTiming(currentGateMeasurement());
  const active=new Set();let previous=null;
  for(const b of drawingOrder){
   const position=displayBoatPosition(b,t);if(!position)continue;
@@ -337,13 +336,6 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
     'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},record.symbols);
    record.name.textContent=b.name;
   }
-  const passage=gatePassageAtTime(gateTimes?.get(b.id),b,t);
-  if(passage){
-   if(!record.gateTime)record.gateTime=el('text',{class:'boat-gate-time','pointer-events':'none',x:7,y:+record.name.getAttribute('y')+14,fill:color,
-    'font-size':11,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},record.symbols);
-   const text='1→2 · '+formatGateDuration(passage.elapsed);if(record.gateTime.textContent!==text)record.gateTime.textContent=text;
-   setAttr(record.gateTime,'data-elapsed-seconds',passage.elapsed);
-  }else if(record.gateTime){record.gateTime.remove();record.gateTime=null;}
   const next=previous?previous.nextElementSibling:markerLayer.firstElementChild;
   if(next!==wrapper)markerLayer.insertBefore(wrapper,next);previous=wrapper;
  }
