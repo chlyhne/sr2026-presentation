@@ -1159,10 +1159,10 @@
       "utc": "2026-06-11T10:06:42.000Z",
       "text": "De rige bliver rigere.\nVera og My trækker fra og vi er frustreret.\n\nHvor får de vinden fra?!",
       "view": [
-        693.5575861633657,
-        407.3801833600601,
-        9.304782792128202,
-        11.40586277744748
+        687.8212737086767,
+        397.9942313737939,
+        16.27412325832467,
+        19.948925284397994
       ],
       "settings": {
         "wind": true,
@@ -1177,7 +1177,9 @@
         "boats": [
           "Mercutio",
           "My",
-          "Vera"
+          "Vera",
+          "Rosa-Lux",
+          "THE HULK"
         ],
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
@@ -1311,10 +1313,10 @@
       "utc": "2026-06-11T10:34:00.000Z",
       "text": "Det klarer op og vinden forsvinder.\n\nVera bommer for at finde vind mod Øst.\n\nRosa-Lux er startet 15 minutter efter os, men har næsten allerede hentet os. Hun har haft vind i starten, som vi ikke havde.",
       "view": [
-        682.0686044591191,
-        402.9441001072727,
-        28.463543292080207,
-        34.89079500319511
+        678.5094469875496,
+        394.5450900572335,
+        49.78291511499386,
+        61.02421852805703
       ],
       "settings": {
         "wind": true,
@@ -1331,7 +1333,8 @@
           "Vera",
           "My",
           "THE HULK",
-          "Rosa-Lux"
+          "Rosa-Lux",
+          "XUSIDUS"
         ],
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
@@ -3285,7 +3288,7 @@
     {
       "time": 1781187483,
       "utc": "2026-06-11T14:18:03.000Z",
-      "text": "My bliver nødt til at inkassere at hun har lagt sig ud på fløjen og det gør ondt.",
+      "text": "My bliver nødt til at inkassere at hun har lagt sig ud på fløjen og det gør ondt nu hvor den er meget plat.",
       "view": [
         702.34022287569,
         511.1215631851681,
@@ -6628,7 +6631,7 @@
     {
       "time": 1781200592,
       "utc": "2026-06-11T17:56:32.000Z",
-      "text": "Vi tjekker vindkort. Retningerne er usikre, men viser en svag højredrejning i løbet af de næste mange timer.\n\nKritisk beslutning: Vi sejler mod vest tidligt.\n\nVi skal holde fri af trafik sepereringen senere.",
+      "text": "Vi tjekker vindkort. Retningerne er usikre, men viser en svag højredrejning i løbet af de næste mange timer.\n\nKritisk beslutning: Vi sejler mod vest tidligt. Vi er heldige at vi allerede ligger lidt vestligt.\n\nVi skal holde fri af trafik sepereringen senere.",
       "view": [
         665.235538319446,
         532.0386875109888,
@@ -11727,6 +11730,11 @@
       "id": "30396c69-2fea-457a-981d-3ffee269d94a",
       "boatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
       "time": 1781266034.2166443
+    },
+    {
+      "id": "4c836020-2b27-455a-bcdb-0aab549b430d",
+      "boatId": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+      "time": 1781200341.12635
     }
   ]
 }
