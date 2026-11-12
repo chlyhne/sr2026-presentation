@@ -18,10 +18,10 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   });
   assert.equal(await page.evaluate(()=>boats.every(b=>b.handicapSecondsPerNm>0)),true);
   const alignment=await page.evaluate(()=>{
-   const map=$('map').getBoundingClientRect(),measure=$('mapMeasureToggle').getBoundingClientRect(),layers=$('mapLayersToggle').getBoundingClientRect();
-   return {gap:layers.left-measure.right,top:layers.top-map.top,right:map.right-$('mapTools').getBoundingClientRect().right,aligned:measure.top===layers.top};
+   const map=$('map').getBoundingClientRect(),buttons=['mapMeasureToggle','mapGatesToggle','mapTracksToggle','mapLayersToggle'].map(id=>$(id).getBoundingClientRect()),layers=buttons.at(-1);
+   return {gaps:buttons.slice(1).map((button,i)=>button.left-buttons[i].right),top:layers.top-map.top,right:map.right-$('mapTools').getBoundingClientRect().right,aligned:buttons.every(button=>button.top===layers.top)};
   });
-  assert.ok(alignment.aligned);near(alignment.gap,6,1);near(alignment.top,12,1);near(alignment.right,12,1);
+  assert.ok(alignment.aligned);alignment.gaps.forEach(gap=>near(gap,6,1));near(alignment.top,12,1);near(alignment.right,12,1);
   await page.setViewportSize({width:1200,height:900});
   const compact=await page.evaluate(()=>{
    const tools=$('mapTools').getBoundingClientRect(),legend=$('trackSpeedLegend').getBoundingClientRect();
@@ -31,15 +31,16 @@ const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)
   assert.equal(compact.overlap,false);assert.equal(compact.aligned,true);
   await page.setViewportSize({width:1500,height:1000});
   assert.equal(await page.locator('#drawRhumbline,#clearRhumbline,#reverseRhumbline').count(),0,'The presentation cannot define the permanent route');
-  const geographicClick=async coordinate=>{
-   const p=await page.evaluate(coordinate=>{
-    const [x,y]=xy(coordinate),p=new DOMPoint(x,y).matrixTransform($('map').getScreenCTM());return {x:p.x,y:p.y};
-   },coordinate);
-   await page.mouse.click(p.x,p.y);
+  const geographicDrag=async (start,end)=>{
+   const points=await page.evaluate(coordinates=>coordinates.map(coordinate=>{
+    const [x,y]=xy(coordinate),p=new DOMPoint(x,y).matrixTransform(mapViewport().matrix);return {x:p.x,y:p.y};
+   }),[start,end]);
+   await page.mouse.move(points[0].x,points[0].y);await page.mouse.down();
+   await page.mouse.move(points[1].x,points[1].y,{steps:5});await page.mouse.up();
   };
   await page.locator('#mapMeasureToggle').click();
-  await geographicClick([12,55.5]);await geographicClick([12,55.5+1/60]);
-  // A mouse click is quantized to screen pixels at this overview zoom.
+  await geographicDrag([12,55.5],[12,55.5+1/60]);
+  // Pointer coordinates are quantized to screen pixels at this overview zoom.
   near(await page.evaluate(()=>buildRhumbRoute(measurement).total),1.00067567,.15);
   assert.equal(await page.evaluate(()=>navigationMode),null);
   assert.match(await page.locator('#mapNavigation').textContent(),/Måling/);

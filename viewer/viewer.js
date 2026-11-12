@@ -8,11 +8,11 @@ function setAttr(node,name,value){value=String(value);if(node.getAttribute(name)
 function screenGroup(x,y,parent){
  return el('g',{'data-screen-x':x,'data-screen-y':y,transform:`translate(${x} ${y})`},parent);
 }
-function resizeSymbols(){
+function resizeSymbols(root=$('map')){
  const matrix=mapViewport()?.matrix;
  if(!matrix)return;
  const inverseScale=1/Math.hypot(matrix.a,matrix.b);
- for(const group of $('map').querySelectorAll('[data-screen-x]')){
+ for(const group of root.querySelectorAll('[data-screen-x]')){
   // Keep the interactive circle in map coordinates. Firefox cannot reliably
   // hit-test a marker beneath a tiny inverse-scale transform at close zoom.
   const marker=group.classList.contains('boat-marker');
@@ -20,7 +20,7 @@ function resizeSymbols(){
   if(group.getAttribute('transform')!==transform)group.setAttribute('transform',transform);
   if(marker)setAttr(group.boatHitTarget,'r',10*inverseScale);
  }
- resizeBoatIcons(matrix);
+ if(root===$('map'))resizeBoatIcons(matrix);
 }
 function path(points){return points.map((p,i)=>(i?'L':'M')+xy(p).join(',')).join(' ')}
 let mapLayout=null,mapCamera=null;
@@ -303,6 +303,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  const drawingOrder=boats.filter(boatIsDisplayed).sort((a,b)=>(referenceBoatId===a.id)-(referenceBoatId===b.id));
  if(!webglTracks.render(t,drawingOrder))return;
  syncHandicapTracks();
+ const gateTimes=preparedGateTiming(currentGateMeasurement());
  const active=new Set();let previous=null;
  for(const b of drawingOrder){
   const position=displayBoatPosition(b,t);if(!position)continue;
@@ -336,6 +337,13 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
     'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},record.symbols);
    record.name.textContent=b.name;
   }
+  const passage=gatePassageAtTime(gateTimes?.get(b.id),b,t);
+  if(passage){
+   if(!record.gateTime)record.gateTime=el('text',{class:'boat-gate-time','pointer-events':'none',x:7,y:+record.name.getAttribute('y')+14,fill:color,
+    'font-size':11,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},record.symbols);
+   const text='1→2 · '+formatGateDuration(passage.elapsed);if(record.gateTime.textContent!==text)record.gateTime.textContent=text;
+   setAttr(record.gateTime,'data-elapsed-seconds',passage.elapsed);
+  }else if(record.gateTime){record.gateTime.remove();record.gateTime=null;}
   const next=previous?previous.nextElementSibling:markerLayer.firstElementChild;
   if(next!==wrapper)markerLayer.insertBefore(wrapper,next);previous=wrapper;
  }
@@ -438,7 +446,7 @@ function changeMapView(next){
 }
 $('reset').onclick=()=>changeMapView([230,250,620,760]);
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
-$('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture||(!e.deltaY&&!e.deltaX))return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*((e.deltaY||e.deltaX)>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);changeMapView([anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f])},{passive:false});
+$('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture||navigationGesture||(!e.deltaY&&!e.deltaX))return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*((e.deltaY||e.deltaX)>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);changeMapView([anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f])},{passive:false});
 let drag=null;
 const map=$('map');
 // The map owns the gesture, including when it starts on SVG text or an image.
@@ -447,6 +455,7 @@ map.ondragstart=e=>e.preventDefault();
 map.onpointerdown=e=>{
  if(e.button!==0||drag)return;
  clearTrackHover();
+ if(beginNavigationGesture(e))return;
  if(beginDrawingGesture(e))return;
  e.preventDefault();
  drag={pointerId:e.pointerId,x:e.clientX,y:e.clientY,view:[...view],event:editableSettingsEvent(),
@@ -460,6 +469,7 @@ map.onpointerdown=e=>{
  map.classList.add('panning');
 };
 map.onpointermove=e=>{
+ if(moveNavigationGesture(e))return;
  if(moveDrawingGesture(e))return;
  if(!drag){updateTrackHover(e);return;}
  if(e.pointerId!==drag.pointerId)return;
@@ -473,6 +483,7 @@ map.onpointermove=e=>{
  setview();
 };
 function endPan(e){
+ if(endNavigationGesture(e))return;
  if(endDrawingGesture(e))return;
  if(!drag||e.pointerId!==drag.pointerId)return;
  const click=e.type==='pointerup'&&!drag.moved,{boatId,noteIndex,trackBoatId,speedKey,speedAction}=drag;
@@ -482,7 +493,7 @@ function endPan(e){
  drag=null;map.classList.remove('panning');
  if(map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);
  if(click){
-  if(navigationMode)addNavigationPoint(e);
+  if(navigationMode==='route')addNavigationPoint(e);
   else if(placingNote)placeAnnotation(e);
   else if(noteIndex!==undefined&&!document.body.classList.contains('presenting'))beginNoteEditing(notes[+noteIndex]);
   else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
