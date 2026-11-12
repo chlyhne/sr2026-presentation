@@ -6523,8 +6523,8 @@
       "gates": []
     },
     {
-      "time": 1781199840,
-      "utc": "2026-06-11T17:44:00.000Z",
+      "time": 1781200200,
+      "utc": "2026-06-11T17:50:00.000Z",
       "text": "Guds hånd!\n\n Vera får en ekspres levering af sit eget helt private vindhul og taber 13 minutter!\n\nDet ville tage en arbejdsdag at hente 13 minutter ellers.",
       "view": [
         699.355037752016,
@@ -6544,10 +6544,7 @@
         "annotationsVisible": true,
         "boats": [
           "Mercutio",
-          "Vera",
-          "My",
-          "THE HULK",
-          "Rosa-Lux"
+          "Vera"
         ],
         "boatNames": [
           "groensund:cf8a8000-4624-013f-296f-04421a259aad",
@@ -6676,7 +6673,24 @@
       "lon": 12.66872430834081,
       "lat": 55.54029528142853,
       "measurement": [],
-      "gates": []
+      "gates": [
+        [
+          12.665510109759754,
+          55.551073641703695
+        ],
+        [
+          12.670764388545262,
+          55.55103508950775
+        ],
+        [
+          12.67731517768044,
+          55.535961180892784
+        ],
+        [
+          12.664691261117857,
+          55.536038285284675
+        ]
+      ]
     },
     {
       "time": 1781200592,
@@ -7764,7 +7778,24 @@
         }
       ],
       "measurement": [],
-      "gates": []
+      "gates": [
+        [
+          12.676774810795425,
+          55.6963676592712
+        ],
+        [
+          12.722538477131398,
+          55.69660486274571
+        ],
+        [
+          12.67215645914684,
+          55.5561804058396
+        ],
+        [
+          12.69146956604092,
+          55.5564176093141
+        ]
+      ]
     },
     {
       "time": 1781203734,
@@ -10640,10 +10671,10 @@
       "utc": "2026-06-12T16:38:46.000Z",
       "text": "Vi runder Røsnæs og Code-0 er for vild! Vi sejler 14 knob uden at føler vi er ved at broache. Den er som på skinner! Vera er 8 minutter foran, men vi tror det er Hulk. Vi ved ikke at Hulk har mistet sin gennaker. Rosa-Lux har haft gavn af sin Sym spiler på plat læns og er nogenlunde med igen.",
       "view": [
-        379.9254227845452,
-        365.5904770583492,
-        28.463543292080256,
-        34.89079500319515
+        387.3178657094488,
+        357.5279135135344,
+        32.73307478589229,
+        40.12441425367442
       ],
       "settings": {
         "wind": true,
@@ -10678,7 +10709,24 @@
       "lon": 11.299710090756417,
       "lat": 56.005713718068804,
       "measurement": [],
-      "gates": []
+      "gates": [
+        [
+          11.02971963783661,
+          55.9397172832517
+        ],
+        [
+          11.08332650764333,
+          55.91574057594644
+        ],
+        [
+          11.26089926387809,
+          56.055815023887725
+        ],
+        [
+          11.284352269418529,
+          56.02679058872872
+        ]
+      ]
     },
     {
       "time": 1781283499,
