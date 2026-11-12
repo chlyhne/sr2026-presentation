@@ -83,7 +83,7 @@ function prepareGateTiming(gates){
  if(!gates.length)return null;
  const key=JSON.stringify(gates),cached=gateTimingCache.get(key);
  if(cached&&cached.size===boats.length&&boats.every(boat=>cached.get(boat.id)?.points===boat.points))return cached;
- const result=new Map();
+ const result=new Map();result.ranking=[];
  for(const boat of boats){
   const crossings=[...gateCurveCrossings(boat.points,gates.slice(0,2)).map(hit=>({...hit,gate:1})),...gateCurveCrossings(boat.points,gates.slice(2,4)).map(hit=>({...hit,gate:2}))].sort((a,b)=>a.time-b.time||a.gate-b.gate);
   const passages=[];let start=null,segment=null;
@@ -93,7 +93,9 @@ function prepareGateTiming(gates){
    else if(start!==null&&hit.time>start+1e-6){passages.push({start,end:hit.time,elapsed:hit.time-start});start=null;}
   }
   result.set(boat.id,{points:boat.points,passages});
+  for(const passage of passages)result.ranking.push({boat,passage,duration:formatGateDuration(passage.elapsed)});
  }
+ result.ranking.sort((a,b)=>a.passage.elapsed-b.passage.elapsed);
  gateTimingCache.set(key,result);return result;
 }
 function preparedGateTiming(gates){
@@ -106,6 +108,16 @@ function gatePassageAtTime(record,boat,time){
  const all=record.passages;let lo=0,hi=all.length;
  while(lo<hi){const mid=(lo+hi)>>>1,end=displayedTrackTime(boat,all[mid].end);if(end!==null&&end<=time)lo=mid+1;else hi=mid;}
  return lo?all[lo-1]:null;
+}
+function gateResultsAtTime(gates,time,displayedBoats){
+ const prepared=preparedGateTiming(gates);if(!prepared)return [];
+ const completed=new Set();
+ for(const boat of displayedBoats){
+  const passage=gatePassageAtTime(prepared.get(boat.id),boat,time);
+  if(passage)completed.add(passage);
+ }
+ // Fixed ranking includes all passages. Selection and replay only filter it.
+ return prepared.ranking.filter(row=>completed.has(row.passage));
 }
 function formatGateDuration(seconds){
  const tenths=Math.round(seconds*10),hours=Math.floor(tenths/36000),minutes=Math.floor(tenths/600)%60,whole=Math.floor(tenths/10)%60;

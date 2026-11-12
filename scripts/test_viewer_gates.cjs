@@ -12,7 +12,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    stopPlayback();const time=D.start+3600,metadata=boatMetadata('Mercutio');
    const boat=(id,name,latitude,step=60,reverse=false)=>({id,name,metadata,handicapSecondsPerNm:580.6,
     points:Array.from({length:13},(_,i)=>[12+(reverse?12-i:i)*.01,latitude,time+i*step]),speeds:Array(13).fill(6)});
-   boats.splice(0,boats.length,boat('fast','Mercutio',55.6),boat('slow','Vera',55.61,90),
+   boats.splice(0,boats.length,boat('slow','Vera',55.61,90),boat('fast','Mercutio',55.6),
     boat('outside','My',55.67),boat('reverse','THE HULK',55.62,60,true));
    referenceBoatId='fast';
    for(const boat of boats){prepareTrackFixture(boat);webglTracks.prepare(boat);prepareGateTrack(boat.points);}
@@ -52,35 +52,67 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   const points=await draw();
   assert.equal(points.length,4);assert.deepEqual(await stored(),initial,'Gate drawing stages the event draft');
   assert.deepEqual(await page.evaluate(()=>eventDraft.gates),points);
-  const times=await page.evaluate(()=>{flushRender();return [...document.querySelectorAll('.boat-gate-time')].map(node=>({id:node.closest('[data-boat-marker]').dataset.boatMarker,seconds:+node.dataset.elapsedSeconds,text:node.textContent}));});
-  assert.deepEqual(times.map(t=>t.id).sort(),['fast','slow'],'Finite gates and required order exclude other tracks');
+  const resultRows=()=>page.evaluate(()=>{flushRender();return [...document.querySelectorAll('.gate-result')].map(node=>({id:node.dataset.boatId,seconds:+node.dataset.elapsedSeconds,cells:[...node.querySelectorAll('text')].map(cell=>cell.textContent)}));});
+  const times=await resultRows();
+  assert.deepEqual(times.map(t=>t.id),['fast','slow'],'Rank by elapsed time, independent of fleet order; exclude finite misses and wrong gate order');
+  assert.deepEqual(times.map(t=>t.cells.slice(0,2)),[['1','Mercutio'],['2','Vera']]);
+  assert.equal(await page.locator('.gate-results').count(),1,'One result list at gate 2');
+  assert.equal(await page.locator('#boatMarkers .boat-gate-time').count(),0,'No times attached to boat markers');
   for(const timing of times){
    const expected=(points[2][0]-points[0][0])/.01*(timing.id==='fast'?60:90);
    assert.ok(Math.abs(timing.seconds-expected)<1e-4,`${timing.id}: ${timing.seconds} ~= ${expected}`);
-   assert.match(timing.text,/1→2 · \d\d:\d\d,\d/);
+   assert.match(timing.cells[2],/\d\d:\d\d,\d/);
   }
+  const placement=()=>page.evaluate(()=>{
+   const list=document.querySelector('.gate-results-background').getBoundingClientRect(),gate=currentGateMeasurement().slice(2).map(p=>new DOMPoint(...xy(p)).matrixTransform(mapViewport().matrix));
+   return {gap:list.left-gate[0].x,width:list.width,height:list.height,gate,rect:{left:list.left,right:list.right,top:list.top,bottom:list.bottom}};
+  });
+  const placed=await placement();assert.ok(placed.gap>=23&&placed.gap<=25,'List lies beyond the second gate');
   await page.locator('#save').click();assert.deepEqual((await stored())[0].gates,points);
   assert.deepEqual((await stored())[0].custom,{keep:true});
   // Drawing a ruler alongside gates preserves the two independent event tools.
   await page.evaluate(()=>{setMeasurement([[12,55.6],[12.01,55.6]]);renderNavigation();});
   await page.locator('#save').click();assert.equal((await stored())[0].measurement.length,2);
   await page.locator('#mapGatesToggle').click();assert.deepEqual(await gates(),[]);
-  assert.equal(await page.locator('.boat-gate-time').count(),0);
+  assert.equal(await page.locator('.gate-result').count(),0);
   await page.locator('#cancelEdit').click();assert.deepEqual(await gates(),points,'Cancel restores gates');
   // Boat/style/camera changes must use prepared crossings, even for an unselected boat.
   await page.evaluate(()=>{
    setPresentationMode(true);
    gateCurveCrossings=()=>{throw Error('Crossings must not be recomputed during interaction');};
    chosen.clear();chosen.add('Mercutio');boatFavouritesOnly=true;render();
+  });
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  assert.deepEqual((await resultRows()).map(row=>row.id),['fast'],'The list follows boat selection');
+  await page.evaluate(()=>{
    chosen.add('Vera');render();comparison={enabled:false,basis:'absolute',boatColour:true};render();
+   // Fixed ranking is already sorted; interaction must not sort it again.
+   const prepared=preparedGateTiming(currentGateMeasurement());prepared.ranking.sort=()=>{throw Error('Ranking sorted during interaction');};
+  });
+  const beforeZoom=await placement();
+  await page.evaluate(()=>{
    changeMapView([view[0],view[1],view[2]*.95,view[3]*.95]);flushRender();
   });
-  assert.equal(await page.locator('.boat-gate-time').count(),2);
-  await page.evaluate(()=>restoreNote(notes[1]));assert.deepEqual(await gates(),[]);assert.equal(await page.locator('.boat-gate-time').count(),0);
+  assert.deepEqual((await resultRows()).map(row=>row.id),['fast','slow']);
+  const zoomed=await placement();assert.ok(Math.abs(zoomed.width-beforeZoom.width)<.1&&Math.abs(zoomed.height-beforeZoom.height)<.1,'Zoom preserves list size within Firefox subpixel rounding: '+JSON.stringify({beforeZoom,zoomed}));
+  assert.ok(Math.abs(zoomed.gap-24)<1,'Zoom keeps the list outside the gate');
+  // Reversing the sailing direction places the list on the other side of gate 2.
+  await page.evaluate(()=>{
+   const reversed=[...currentGateMeasurement().slice(2),...currentGateMeasurement().slice(0,2)];
+   // Keep the prepared source results while probing annotation placement only.
+   const layer=$('mapNavigation');layer.replaceChildren();drawGateResults(layer,reversed,preparedGateTiming(currentGateMeasurement()).ranking.slice(0,2));resizeSymbols(layer);
+  });
+  const otherSide=await page.evaluate(()=>{
+   const rect=document.querySelector('.gate-results-background').getBoundingClientRect(),gate=new DOMPoint(...xy(currentGateMeasurement()[0])).matrixTransform(mapViewport().matrix);return gate.x-rect.right;
+  });
+  assert.ok(Math.abs(otherSide-24)<1,'The list stays outside gate 2 when sailing west');
+  await page.evaluate(()=>{lastNavigationKey=null;renderNavigation();});
+  if(process.env.SR_GATE_SCREENSHOT)await page.screenshot({path:process.env.SR_GATE_SCREENSHOT});
+  await page.evaluate(()=>restoreNote(notes[1]));assert.deepEqual(await gates(),[]);assert.equal(await page.locator('.gate-result').count(),0);
   await page.evaluate(points=>{notes[2].gates=points;restoreNote(notes[2]);},points);assert.deepEqual(await gates(),points,'Same-time events have independent gates');
   await page.evaluate(()=>restoreNote(notes[0]));assert.deepEqual(await gates(),points);
   await page.evaluate(()=>{setPresentationMode(true);setCurrentTime(notes[0].time+1,{allowOutsideVisibleRanges:true});render();});
-  assert.deepEqual(await gates(),[]);assert.equal(await page.locator('.boat-gate-time').count(),0,'Moving on removes event times as well as gates');
+  assert.deepEqual(await gates(),[]);assert.equal(await page.locator('.gate-result').count(),0,'Moving on removes event times as well as gates');
   await page.evaluate(()=>restoreNote(notes[0]));assert.deepEqual(await gates(),points);
   await page.locator('#mapGatesToggle').click();assert.deepEqual(await gates(),[]);
   assert.deepEqual((await stored())[0].gates,points,'Presentation changes are temporary');
@@ -90,6 +122,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#note').fill('New gates event');await page.locator('#save').click();
   assert.deepEqual((await stored()).find(n=>n.text==='New gates event').gates,points);
   assert.deepEqual(await page.evaluate(()=>gateMeasurement),[],'New event consumes standalone gates');
+  await page.evaluate(points=>{setPresentationMode(true);setCurrentTime(D.start+3600+1600,{allowOutsideVisibleRanges:true});setGateMeasurement(points);render();},points);
+  assert.equal(await page.locator('#boatMarkers .boat-marker').count(),0,'Current positions have expired');
+  assert.deepEqual((await resultRows()).map(row=>row.id),['fast','slow'],'Completed results remain after the boat markers disappear');
   const exported=await page.evaluate(async()=>{
    let data;const original=download;download=blob=>{data=blob.text().then(JSON.parse);};
    try{await exportEventNotes();return await data;}finally{download=original;}
@@ -106,6 +141,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.deepEqual(await publicPage.evaluate(()=>currentGateMeasurement()),points);
   assert.equal(await publicPage.evaluate(()=>preparedGateTiming(currentGateMeasurement()).size===boats.length),true);
   await publicPage.close();assert.deepEqual(errors,[]);
-  console.log('Firefox PC: two drags with live gates, real elapsed times, finite boundaries/order, event drafts/Save/Cancel/removal, selection/style/zoom reuse, event departure/return, presentation isolation, new events, export and public preparation.');
+  console.log('Firefox PC: live gates, ranked result list outside gate 2 in both directions, constant size/gap on zoom, selection without recomputation or sorting, completed boats retained, event Save/Cancel/departure/return, export and public preparation.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

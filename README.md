@@ -5,7 +5,20 @@ Beretning, magasin og LaTeX/PDF-dokumenter ligger i det separate projekt `../SR 
 
 Udviklingsprincip: Én nominel implementering pr. funktion, ingen skjulte
 fallbacks. Fejl skal vises tydeligt. Se [projektprincipperne](AGENTS.md).
-Løbende test begrænses til relevant lokal Firefox-test på PC.
+Test har to niveauer:
+
+- **Hurtig standardkontrol:** `node scripts/test.cjs` — syntaks, lille testdatasæt
+  og servervalidering, uden browser, serverstart eller beregning af hele feltet.
+  Køres ved hver ændring; normalt omkring ét sekund.
+- **Udvidet fejlsøgning:** `node scripts/test.cjs --extended gates zoom` — kører
+  standardkontrollen og de angivne Firefox-tests. Køres kun ved en fejlmelding
+  eller udtrykkelig anmodning, og kun for det berørte område. Testnavnene svarer
+  til filerne `scripts/test_viewer_<navn>.cjs`. Kræver en kørende lokal server
+  (`SR_VIEWER_URL`, som standard `http://127.0.0.1:8097/`) og Playwright med Firefox.
+  `PLAYWRIGHT_MODULE` kan angive en eksisterende Playwright-installation.
+
+Browser- og GPU-dækning hører til det udvidede niveau; standardkontrollen er
+bevidst lille. Alle browsertests skal køre skjult.
 
 ## Lokalt preview og redigering
 

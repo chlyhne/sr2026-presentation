@@ -68,7 +68,7 @@ function resizeBoatIcons(matrix){
  // The map is linear in longitude/latitude, so east and north have distinct scales.
  const radians=Math.PI/180,earthRadius=6371008.8,minimumPixelsPerMetre=8/2.54;
  for(const icon of $('map').querySelectorAll('.boat-icon')){
-  const key=[matrix.a,matrix.b,matrix.c,matrix.d,icon.dataset.lat,icon.dataset.course,!!icon.parentNode.querySelector('.boat-name'),!!icon.parentNode.querySelector('.boat-gate-time')].join(':');
+  const key=[matrix.a,matrix.b,matrix.c,matrix.d,icon.dataset.lat,icon.dataset.course,!!icon.parentNode.querySelector('.boat-name')].join(':');
   if(icon.boatSizeKey===key)continue;icon.boatSizeKey=key;
   const latitude=+icon.dataset.lat*radians,course=+icon.dataset.course;
   const east=1000/(4.5*radians*earthRadius*Math.cos(latitude));
@@ -87,6 +87,5 @@ function resizeBoatIcons(matrix){
   setAttr(icon,'transform',`matrix(${bx*beam*beamScale} ${by*beam*beamScale} ${-lx*length*lengthScale} ${-ly*length*lengthScale} 0 0)`);
   const name=icon.parentNode.querySelector('.boat-name');
   if(name)name.setAttribute('x',Math.max(7,(Math.abs(bx*beam)*beamScale+Math.abs(lx*length)*lengthScale)/2+3));
-  const gate=icon.parentNode.querySelector('.boat-gate-time');if(gate&&name)setAttr(gate,'x',name.getAttribute('x'));
  }
 }

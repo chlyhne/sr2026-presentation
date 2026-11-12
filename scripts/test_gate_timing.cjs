@@ -5,7 +5,7 @@ function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>
 function eventToolPoints(note,field,count){const p=note[field]??[];if(![0,count].includes(p.length))throw Error('Invalid gate');return p;}
 function displayedTrackTime(boat,time){return time;}`,context);
 for(const file of ['track-time','tracks','rhumbline-geometry','timeline','gate-timing'])vm.runInContext(fs.readFileSync('viewer/'+file+'.js','utf8'),context);
-const api=vm.runInContext('({boats,prepareGateTrack,gateCurveCrossings,prepareGateTiming,preparedGateTiming,gatePassageAtTime,formatGateDuration,gatePolynomialRoots,trackValue,getTrackModel})',context);
+const api=vm.runInContext('({boats,prepareGateTrack,gateCurveCrossings,prepareGateTiming,preparedGateTiming,gatePassageAtTime,gateResultsAtTime,formatGateDuration,gatePolynomialRoots,trackValue,getTrackModel})',context);
 const near=(a,b,tolerance=1e-6)=>assert.ok(Math.abs(a-b)<tolerance,`${a} ~= ${b}`);
 const gate=x=>[[x,-1],[x,1]],gates=[...gate(1),...gate(3)];
 function boat(points){const b={id:'test',points};api.boats.splice(0,api.boats.length,b);api.prepareGateTrack(points);return b;}
@@ -34,4 +34,15 @@ const model=api.getTrackModel(b.points);model.slopes[0].fill(.01);model.slopes[1
 const oblique=[[0,0],[1,1]],three=crossings(b,oblique);
 assert.equal(three.length,3);for(const [i,t] of [20,50,80].entries())near(three[i].time,t);
 assert.equal(api.formatGateDuration(125.4),'02:05,4');assert.equal(api.formatGateDuration(3725.4),'1:02:05,4');
-console.log('Gate timing: exact cubic crossings, three roots per interval, finite endpoints, knot deduplication, tangencies, collinearity, gaps, ordering, repeated passages, historical lookup and prepared-data reuse.');
+const slow={id:'slow',points:[[0,0,0],[2,0,200],[4,0,400]]},fast={id:'fast',points:[[0,0,0],[2,0,100],[4,0,200]]};
+api.boats.splice(0,api.boats.length,slow,fast);for(const b of api.boats)api.prepareGateTrack(b.points);
+results=api.prepareGateTiming(gates);
+results.ranking.sort=()=>{throw Error('Ranking must not be sorted again');};
+vm.runInContext("gateCurveCrossings=()=>{throw Error('Crossings must be prepared');};",context);
+const ranked=(time,selected)=>Array.from(api.gateResultsAtTime(gates,time,selected),row=>row.boat.id);
+assert.deepEqual(ranked(400,[slow,fast]),['fast','slow'],'Fastest first, even when fleet order differs');
+assert.deepEqual(ranked(400,[slow]),['slow'],'Selection filters prepared ranking');
+assert.deepEqual(ranked(200,[slow,fast]),['fast'],'Only completed passages appear');
+assert.deepEqual(ranked(100,[slow,fast]),[],'Seeking backwards hides unfinished passages');
+assert.deepEqual(ranked(10000,[slow,fast]),['fast','slow'],'Results survive after source positions end');
+console.log('Gate timing: cubic crossings, finite endpoints, tangencies, gaps, repeated passages, historical lookup, and ranking/selection without recomputation or sorting.');
