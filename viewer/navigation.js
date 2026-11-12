@@ -12,7 +12,32 @@ function validComparison(value){
   &&Object.keys(value).every(key=>['enabled','basis','boatColour'].includes(key));
 }
 let comparison={enabled:false,basis:'absolute'},comparisonRevision=0;
-let navigationMode=null,navigationDraft=[],measurement=[],lastNavigationKey=null;
+let navigationMode=null,navigationDraft=[],measurement=[],measurementOverride=null,lastNavigationKey=null;
+function eventMeasurement(note){
+ const points=note.measurement===undefined?[]:note.measurement;
+ if(!Array.isArray(points)||![0,2].includes(points.length)||!points.every(point=>Array.isArray(point)&&point.length===2
+  &&point.every(Number.isFinite)&&Math.abs(point[0])<=180&&Math.abs(point[1])<85))throw Error('Eventets måling skal indeholde to gyldige geografiske punkter.');
+ return points;
+}
+function currentMeasurement(){
+ if(window.SR_RHUMBLINE_SETUP)return measurement;
+ const target=currentMapEvent();
+ if(measurementOverride&&measurementOverride.target!==target)measurementOverride=null;
+ if(measurementOverride)return measurementOverride.points;
+ return target?eventMeasurement(target===editingNote?eventDraft:target):measurement;
+}
+function setMeasurement(points){
+ const next=eventMeasurement({measurement:points}).map(point=>[...point]),target=currentMapEvent(),editable=editableSettingsEvent();
+ if(editable){
+  if(!stageEventChanges(editable,{measurement:next}))return false;
+  measurement=[];measurementOverride=null;
+ }else if(target){
+  // Presentation changes are temporary and never alter the saved event.
+  measurementOverride={target,points:next};
+ }else{measurement=next;measurementOverride=null;}
+ return true;
+}
+function resetMapMeasurement(){measurement=[];measurementOverride=null;navigationMode=null;navigationDraft=[];}
 function comparisonMessage(message){$('comparisonStatus').textContent=message;$('comparisonStatus').hidden=!message;}
 try{
  const stored=localStorage.getItem(TRACK_COMPARISON_KEY);
@@ -101,7 +126,6 @@ function syncNavigationControls(){
  $('trackLengthSummary').textContent=trackLengthSeconds?`Spor: seneste ${$('trackLength').selectedOptions[0].textContent}`:'Spor: hele forløbet';
  $('finishMapLine').disabled=!navigationMode||navigationDraft.length<2;
  $('undoMapPoint').disabled=!navigationMode||!navigationDraft.length;
- $('mapMeasureToggle').setAttribute('aria-pressed',String(!window.SR_RHUMBLINE_SETUP&&(navigationMode==='measure'||measurement.length>0)));
  $('map').classList.toggle('measuring',!!navigationMode);
 }
 function startMapLine(mode){
@@ -114,7 +138,7 @@ function cancelMapLine(){navigationMode=null;navigationDraft=[];syncNavigationCo
 function finishMapLine(){
  if(navigationDraft.length<2)return;
  if(navigationMode==='route'){savePermanentRhumbline();return;}
- if(navigationMode==='measure')measurement=navigationDraft.map(p=>[...p]);
+ if(navigationMode==='measure'&&!setMeasurement(navigationDraft))return;
  cancelMapLine();
 }
 function addNavigationPoint(event){
@@ -128,7 +152,9 @@ function addNavigationPoint(event){
  syncNavigationControls();renderNavigation();
 }
 function renderNavigation(){
- const key=JSON.stringify([navigationMode,navigationDraft,measurement]);
+ const shownMeasurement=currentMeasurement();
+ $('mapMeasureToggle').setAttribute('aria-pressed',String(!window.SR_RHUMBLINE_SETUP&&(navigationMode==='measure'||shownMeasurement.length>0)));
+ const key=JSON.stringify([navigationMode,navigationDraft,shownMeasurement]);
  if(key===lastNavigationKey)return;lastNavigationKey=key;
  const layer=$('mapNavigation');layer.replaceChildren();
  function draw(points,colour,label,dashed=false){
@@ -147,15 +173,15 @@ function renderNavigation(){
   const [x,y]=xy(points.at(-1)),group=screenGroup(x,y,layer),total=buildRhumbRoute(points).total;
   el('text',{x:8,y:17,fill:colour,'font-size':12,'font-weight':700,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},group).textContent=`${label} · ${total.toLocaleString('da-DK',{maximumFractionDigits:2})} sm`;
  }
- if(window.SR_RHUMBLINE_SETUP&&navigationMode!=='route'&&!measurement.length)draw(window.SR_RHUMBLINE.points,'#7b3294','Rhumbline',true);
- if(navigationMode!=='measure')draw(measurement,window.SR_RHUMBLINE_SETUP?'#7b3294':'#173d4c',window.SR_RHUMBLINE_SETUP?'Rhumbline':'Måling',!!window.SR_RHUMBLINE_SETUP);
+ if(window.SR_RHUMBLINE_SETUP&&navigationMode!=='route'&&!shownMeasurement.length)draw(window.SR_RHUMBLINE.points,'#7b3294','Rhumbline',true);
+ if(navigationMode!=='measure')draw(shownMeasurement,window.SR_RHUMBLINE_SETUP?'#7b3294':'#173d4c',window.SR_RHUMBLINE_SETUP?'Rhumbline':'Måling',!!window.SR_RHUMBLINE_SETUP);
  if(navigationMode)draw(navigationDraft,navigationMode==='route'?'#7b3294':'#173d4c',navigationMode==='route'?'Rhumbline':'Måling',navigationMode==='route');
- const active=navigationMode?navigationDraft:measurement;
+ const active=navigationMode?navigationDraft:shownMeasurement;
  $('measurementResult').textContent=active.length?`${buildRhumbRoute(active).total.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} sømil` :'';
  resizeSymbols();
 }
 $('mapMeasureToggle').onclick=()=>{
- if(navigationMode==='measure'||measurement.length){measurement=[];cancelMapLine();}
+ if(navigationMode==='measure'||currentMeasurement().length){if(setMeasurement([]))cancelMapLine();}
  else startMapLine('measure');
 };
 $('finishMapLine').onclick=finishMapLine;
@@ -181,8 +207,8 @@ document.addEventListener('keydown',event=>{
   event.preventDefault();event.stopImmediatePropagation();
   if(window.SR_RHUMBLINE_SAVING)return;
   if(event.key==='Escape')cancelMapLine();else if(event.key==='Enter'&&navigationMode==='route')finishMapLine();else if(event.key==='Backspace'){navigationDraft.pop();syncNavigationControls();renderNavigation();}
- }else if(event.key==='Escape'&&measurement.length&&!window.SR_RHUMBLINE_SETUP){
-  event.preventDefault();event.stopImmediatePropagation();measurement=[];cancelMapLine();$('mapMeasureToggle').focus();
+ }else if(event.key==='Escape'&&currentMeasurement().length&&!window.SR_RHUMBLINE_SETUP){
+  event.preventDefault();event.stopImmediatePropagation();if(setMeasurement([]))cancelMapLine();$('mapMeasureToggle').focus();
  }
 },true);
 if(referencePreferenceError)comparisonMessage(referencePreferenceError);

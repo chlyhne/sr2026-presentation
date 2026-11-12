@@ -47,7 +47,7 @@ python3 scripts/serve_viewer.py
   Det gemte kortudsnit bruges kun ved direkte hop; afspilning hen til eventet
   beholder det udsnit, der følger referencebåden.
   Når tiden står på et event i redigering, bliver ændringer til en kladde:
-  tekst, tidspunkt, billeder, videoer, markør, tegninger, lag, både, filtre,
+  tekst, tidspunkt, billeder, videoer, markør, tegninger, måling, lag, både, filtre,
   sporindstillinger og kortudsnit ved zoom eller afsluttet panorering.
   **Gem ændringer** opdaterer eventet; **Annullér ændringer** genskaber det gemte
   event. Der kræves ikke et indledende klik på **Redigér**. Med ugemte ændringer
@@ -177,6 +177,16 @@ python3 scripts/serve_viewer.py
   Klik to steder på kortet: afstand i sømil og kurs vises direkte på målingen.
   Tryk på linealen igen for at fjerne målingen, eller tryk Escape. Kortet kan
   trækkes og zoomes undervejs. Måleværktøjet virker også i præsentation og fuld skærm.
+  Står tiden på et event i redigering, indgår målingen i eventets kladde og gemmes
+  med **Gem ændringer**. Det gælder også fjernelse af målingen; **Annullér ændringer**
+  genskaber den gemte måling. En måling tegnet mellem events medtages, når der
+  oprettes et nyt event. Eventets måling vises kun ved dets tidspunkt og forsvinder,
+  når tiden afspilles eller flyttes videre. Den kommer tilbage ved tilbagevenden
+  til eventet. Målinger i præsentation er midlertidige og ændrer ikke gemte events.
+  Endepunkterne gemmes geografisk i eventets valgfrie `measurement`-felt og følger
+  med genindlæsning, import/eksport og udgivelse. Ældre events uden feltet har
+  ingen måling. `node scripts/test_viewer_event_measurement.cjs` kontrollerer dette
+  i lokal headless Firefox på PC.
 - Den permanente rhumbline tegnes én gang på det separate lokale kort
   <http://127.0.0.1:18097/rhumbline.html> (start serveren med
   `python3 scripts/serve_viewer.py --port 18097`). Klik punkterne i sejlretningen,

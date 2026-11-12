@@ -1,5 +1,5 @@
 let notes=[];
-function chronologicalNotes(list){return [...list].sort((a,b)=>a.time-b.time);}
+function chronologicalNotes(list){for(const note of list)eventMeasurement(note);return [...list].sort((a,b)=>a.time-b.time);}
 {
  const saved=JSON.parse(SRStorage.getItem('sr2026-notes')??'[]');
  if(!Array.isArray(saved)||saved.some(n=>!n||!Number.isFinite(n.time)||typeof n.text!=='string'))throw Error('De gemte noter er ugyldige.');
@@ -117,10 +117,12 @@ function applyLayerSettings(settings){
  if(D.wind_models[settings.windModel])$('windModel').value=settings.windModel;
  if(Number.isFinite(settings.rainOpacity))$('rainOpacity').value=settings.rainOpacity;
 }
-function editableSettingsEvent(){
- if(window.SR_READONLY||document.body.classList.contains('presenting'))return null;
+function currentMapEvent(){
  const time=currentTime();
  return notes.includes(activePresentationNote)&&activePresentationNote.time===time?activePresentationNote:notes.find(note=>note.time===time)||null;
+}
+function editableSettingsEvent(){
+ return window.SR_READONLY||document.body.classList.contains('presenting')?null:currentMapEvent();
 }
 function syncEventEditor(){
  const target=editableSettingsEvent();
@@ -198,12 +200,13 @@ function saveAnnotation(point) {
  }
  const time=currentTime();
  const note={time,utc:new Date(time*1000).toISOString(),text,view:[...view],settings:sceneSettings()};
+ if(measurement.length)note.measurement=measurement.map(point=>[...point]);
  if(pendingEventImage)note.image=pendingEventImage;
  if(pendingEventVideo)note.video=pendingEventVideo;
  if(point){note.point=point;note.lon=9.5+point[0]*4.5/1000;note.lat=57-point[1]*3/1180;}
  const next=chronologicalNotes([...notes,note]);
  if(!persistNotes(next))return;
- notes=next;pendingEventImage=null;clearPendingEventImage();clearPendingEventVideo();$('note').value='';
+ notes=next;measurement=[];pendingEventImage=null;clearPendingEventImage();clearPendingEventVideo();$('note').value='';
  activePresentationNote=note;cancelPlacement();showNotes();updateTimeline();renderAnnotations();
 }
 $('placeNote').onclick=()=>{
@@ -257,7 +260,7 @@ function restoreNote(n,{showImage=false,restoreView=true}={}) {
  if(!noteNavigationAllowed())return;
  hideMapEventImage();hideEventVideo();
  activePresentationNote=n;
- stopPlayback();cancelPlacement();selectedTime=n.time;
+ stopPlayback();cancelPlacement();selectedTime=n.time;resetMapMeasurement();
  applySceneSettings(n.settings);
  prepareSelectedTracks();
  if(restoreView&&Array.isArray(n.view)&&n.view.length===4&&n.view.every(Number.isFinite)&&n.view[2]>0&&n.view[3]>0) {view=[...n.view];setview();}
