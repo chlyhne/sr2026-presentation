@@ -1,5 +1,8 @@
 let notes=[];
-function chronologicalNotes(list){for(const note of list)eventMeasurement(note);return [...list].sort((a,b)=>a.time-b.time);}
+function chronologicalNotes(list){
+ for(const note of list){eventMeasurement(note);prepareGateTiming(eventGates(note));}
+ return [...list].sort((a,b)=>a.time-b.time);
+}
 {
  const saved=JSON.parse(SRStorage.getItem('sr2026-notes')??'[]');
  if(!Array.isArray(saved)||saved.some(n=>!n||!Number.isFinite(n.time)||typeof n.text!=='string'))throw Error('De gemte noter er ugyldige.');
@@ -199,14 +202,13 @@ function saveAnnotation(point) {
   $('annotationStatus').textContent='Eventet er gemt.';return;
  }
  const time=currentTime();
- const note={time,utc:new Date(time*1000).toISOString(),text,view:[...view],settings:sceneSettings()};
- if(measurement.length)note.measurement=measurement.map(point=>[...point]);
+ const note={time,utc:new Date(time*1000).toISOString(),text,view:[...view],settings:sceneSettings(),measurement:measurement.map(point=>[...point]),gates:gateMeasurement.map(point=>[...point])};
  if(pendingEventImage)note.image=pendingEventImage;
  if(pendingEventVideo)note.video=pendingEventVideo;
  if(point){note.point=point;note.lon=9.5+point[0]*4.5/1000;note.lat=57-point[1]*3/1180;}
  const next=chronologicalNotes([...notes,note]);
  if(!persistNotes(next))return;
- notes=next;measurement=[];pendingEventImage=null;clearPendingEventImage();clearPendingEventVideo();$('note').value='';
+ notes=next;measurement=[];gateMeasurement=[];pendingEventImage=null;clearPendingEventImage();clearPendingEventVideo();$('note').value='';
  activePresentationNote=note;cancelPlacement();showNotes();updateTimeline();renderAnnotations();
 }
 $('placeNote').onclick=()=>{
@@ -258,6 +260,7 @@ $('cancelEdit').onclick=()=>{
 function restoreNote(n,{showImage=false,restoreView=true}={}) {
  if(!finishInlineTextEditing())return;
  if(!noteNavigationAllowed())return;
+ prepareGateTiming(eventGates(n));
  hideMapEventImage();hideEventVideo();
  activePresentationNote=n;
  stopPlayback();cancelPlacement();selectedTime=n.time;resetMapMeasurement();

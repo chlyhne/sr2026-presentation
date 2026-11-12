@@ -27,15 +27,22 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    assert.equal(await button.getAttribute('aria-pressed'),'true');
    assert.equal(await page.evaluate(()=>navigationMode),'measure');
    const before=await page.evaluate(()=>JSON.stringify(SR_RHUMBLINE));
-   await click(first);
-   assert.equal(await page.evaluate(()=>navigationDraft.length),1);
-   await click(first);
-   assert.equal(await page.evaluate(()=>navigationDraft.length),1,'A repeated position is not a second point');
+   await click(first);await click(second);
+   assert.equal(await page.evaluate(()=>navigationDraft.length),0,'Clicks do not draw a measurement');
    await button.focus();await page.keyboard.press('Enter');
    assert.equal(await page.evaluate(()=>navigationMode),null,'The ruler also toggles off from the keyboard');
    assert.equal(await page.locator('#mapNavigation').textContent(),'');
-   await button.click();await click(first);await click(second);
-   assert.equal(await page.evaluate(()=>navigationMode),null,'The second point automatically finishes the measurement');
+   const draw=async()=>{
+    await page.mouse.move(first.x,first.y);await page.mouse.down();
+    const viewBefore=await page.evaluate(()=>[...view]);
+    await page.mouse.move(second.x,second.y,{steps:5});
+    assert.equal(await page.evaluate(()=>navigationDraft.length),2);
+    assert.match(await page.locator('#mapNavigation').textContent(),/Måling.*sm/,'The ruler is visible before releasing the pointer');
+    assert.deepEqual(await page.evaluate(()=>view),viewBefore,'Drawing does not pan the camera');
+    await page.mouse.up();
+   };
+   await button.click();await draw();
+   assert.equal(await page.evaluate(()=>navigationMode),null,'Releasing the pointer finishes the measurement');
    assert.equal(await page.evaluate(()=>measurement.length),2);
    assert.equal(await button.getAttribute('aria-pressed'),'true','Completed measurement remains active until cleared');
    assert.match(await page.locator('#mapNavigation').textContent(),/Måling.*sm/);
@@ -48,16 +55,19 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    assert.equal(await page.locator('#mapNavigation').textContent(),'');
    await button.click();
    await page.mouse.move(first.x,first.y);await page.mouse.down();
-   await page.mouse.move(first.x+45,first.y+30,{steps:5});await page.mouse.up();
-   assert.equal(await page.evaluate(()=>navigationDraft.length),0,'Panning does not place a measurement point');
-   await click(first);await page.keyboard.press('Escape');
+   await page.mouse.move(second.x,second.y,{steps:5});
+   await page.locator('#map').dispatchEvent('pointercancel',await page.evaluate(()=>({pointerId:navigationGesture.pointerId,clientX:0,clientY:0})));
+   await page.mouse.up();
+   assert.equal(await page.evaluate(()=>navigationDraft.length),0,'A cancelled pointer clears the preview');
+   assert.equal(await page.evaluate(()=>measurement.length),0,'A cancelled pointer does not commit');
+   await page.keyboard.press('Escape');
    assert.equal(await button.getAttribute('aria-pressed'),'false');
    assert.equal(await page.locator('#mapNavigation').textContent(),'');
-   await button.click();await click(first);await click(second);await page.keyboard.press('Escape');
+   await button.click();await draw();await page.keyboard.press('Escape');
    assert.equal(await page.evaluate(()=>measurement.length),0,'Escape clears a completed measurement');
    assert.equal(await page.evaluate(()=>document.body.classList.contains('presenting')),readonly,'Escape does not exit presentation while clearing a measurement');
    assert.deepEqual(errors,[]);
-   console.log(JSON.stringify({browser:'firefox',readonly,checks:'ruler icon, no submenu, two-click measurement, clear/restart, keyboard, panning, permanent route untouched',errors}));
+   console.log(JSON.stringify({browser:'firefox',readonly,checks:'ruler icon, drag with live preview, no click-click, clear/restart, keyboard, pointer cancellation, stable camera, permanent route untouched',errors}));
    await page.close();
   }
  }finally{await browser.close();}

@@ -1,5 +1,6 @@
 import test, {afterEach} from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {webcrypto} from 'node:crypto';
 import worker, {seal, validateDocument} from './worker.mjs';
 globalThis.crypto ||= webcrypto;
@@ -10,6 +11,17 @@ const origin = 'https://admin.example.com';
 const document = {version:1, notes:[{time:123, text:'En hændelse', view:[0,0,1000,1000], settings:{boats:['Mercutio'],rainOpacity:.5}}], speedPins:[]};
 const sha = 'a'.repeat(40);
 const reply = (value, status=200) => new Response(JSON.stringify(value), {status});
+test('measurements and gates round trip and the published history validates',()=>{
+ const doc=structuredClone(document),line=[[12,55],[12.1,55.1]];
+ Object.assign(doc.notes[0],{measurement:line,gates:[...line,[12.2,55],[12.3,55.1]]});
+ assert.equal(validateDocument(doc),doc);
+ for(const field of ['measurement','gates'])for(const value of [null,{},[[12,55]],[...line,[12,55]],[[181,55],[12,55]],[[12,85],[12,55]]]){
+  const invalid=structuredClone(doc);invalid.notes[0][field]=value;assert.throws(()=>validateDocument(invalid));
+ }
+ const file=new URL('../presentation/presentation.json',import.meta.url),published=JSON.parse(fs.readFileSync(file,'utf8'));
+ assert.equal(validateDocument(published),published);
+ assert.equal(published.version,1);assert.ok(published.notes.every(note=>Array.isArray(note.measurement)&&Array.isArray(note.gates)));
+});
 test('route definitions do not belong to presentation documents',()=>{
  assert.equal(validateDocument(document),document);
  assert.throws(()=>validateDocument({...document,comparison:{route:[[12,55],[12.1,55]],enabled:true,basis:'absolute'}}),/præsentationsfelter/);

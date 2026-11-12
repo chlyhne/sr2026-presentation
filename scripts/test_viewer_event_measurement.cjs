@@ -18,9 +18,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   const visible=()=>page.evaluate(()=>{flushRender();return {points:currentMeasurement(),text:$('mapNavigation').textContent,result:$('measurementResult').textContent,pressed:$('mapMeasureToggle').getAttribute('aria-pressed')};});
   const draw=async()=>{
    await page.locator('#mapMeasureToggle').click();
-   for(const coordinate of [[12,55.5],[12.06,55.55]]){
+   for(const [i,coordinate] of [[12,55.5],[12.06,55.55]].entries()){
     const p=await page.evaluate(coordinate=>new DOMPoint(...xy(coordinate)).matrixTransform(mapViewport().matrix).toJSON(),coordinate);
-    await page.mouse.click(p.x,p.y);
+    await page.mouse.move(p.x,p.y,{steps:i?5:1});if(!i)await page.mouse.down();else await page.mouse.up();
    }
    return page.evaluate(()=>currentMeasurement().map(point=>[...point]));
   };

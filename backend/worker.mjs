@@ -88,6 +88,10 @@ export function validateDocument(doc) {
     if (!object(note) || !Number.isFinite(note.time) || !string(note.text, 50000)) fail(400, 'Ugyldigt event.');
     if (note.view !== undefined && (!vector(note.view, 4) || note.view[2] <= 0 || note.view[3] <= 0)) fail(400, 'Ugyldigt kortudsnit.');
     if (note.point !== undefined && !vector(note.point, 2)) fail(400, 'Ugyldig markør.');
+    for (const [field, count] of [['measurement', 2], ['gates', 4]]) {
+      if (note[field] !== undefined && (!Array.isArray(note[field]) || ![0, count].includes(note[field].length)
+        || !note[field].every(p => vector(p, 2) && Math.abs(p[0]) <= 180 && Math.abs(p[1]) < 85))) fail(400, 'Ugyldig måling.');
+    }
     for (const k of ['lon', 'lat']) if (note[k] !== undefined && !Number.isFinite(note[k])) fail(400, 'Ugyldig koordinat.');
     if (note.settings !== undefined) {
       const s = note.settings; if (!object(s)) fail(400, 'Ugyldige indstillinger.');

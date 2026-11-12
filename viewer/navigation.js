@@ -12,13 +12,14 @@ function validComparison(value){
   &&Object.keys(value).every(key=>['enabled','basis','boatColour'].includes(key));
 }
 let comparison={enabled:false,basis:'absolute'},comparisonRevision=0;
-let navigationMode=null,navigationDraft=[],measurement=[],measurementOverride=null,lastNavigationKey=null;
-function eventMeasurement(note){
- const points=note.measurement===undefined?[]:note.measurement;
- if(!Array.isArray(points)||![0,2].includes(points.length)||!points.every(point=>Array.isArray(point)&&point.length===2
-  &&point.every(Number.isFinite)&&Math.abs(point[0])<=180&&Math.abs(point[1])<85))throw Error('Eventets måling skal indeholde to gyldige geografiske punkter.');
+let navigationMode=null,navigationDraft=[],measurement=[],measurementOverride=null,gateMeasurement=[],gateOverride=null,gateDraft=[],navigationGesture=null,lastNavigationKey=null;
+function eventToolPoints(note,field,count){
+ const points=note[field]===undefined?[]:note[field];
+ if(!Array.isArray(points)||![0,count].includes(points.length)||!points.every(point=>Array.isArray(point)&&point.length===2
+  &&point.every(Number.isFinite)&&Math.abs(point[0])<=180&&Math.abs(point[1])<85))throw Error('Eventets '+field+' skal indeholde '+count+' gyldige geografiske punkter.');
  return points;
 }
+function eventMeasurement(note){return eventToolPoints(note,'measurement',2);}
 function currentMeasurement(){
  if(window.SR_RHUMBLINE_SETUP)return measurement;
  const target=currentMapEvent();
@@ -37,7 +38,28 @@ function setMeasurement(points){
  }else{measurement=next;measurementOverride=null;}
  return true;
 }
-function resetMapMeasurement(){measurement=[];measurementOverride=null;navigationMode=null;navigationDraft=[];}
+function currentGateMeasurement(){
+ if(window.SR_RHUMBLINE_SETUP)return [];
+ const target=currentMapEvent();
+ if(gateOverride&&gateOverride.target!==target)gateOverride=null;
+ if(gateOverride)return gateOverride.points;
+ return target?eventGates(target===editingNote?eventDraft:target):gateMeasurement;
+}
+function setGateMeasurement(points){
+ const next=eventGates({gates:points}).map(point=>[...point]);prepareGateTiming(next);
+ const target=currentMapEvent(),editable=editableSettingsEvent();
+ if(editable){if(!stageEventChanges(editable,{gates:next}))return false;gateMeasurement=[];gateOverride=null;}
+ else if(target)gateOverride={target,points:next};
+ else{gateMeasurement=next;gateOverride=null;}
+ requestRender();return true;
+}
+function cancelNavigationGesture(){
+ const gesture=navigationGesture;navigationGesture=null;
+ if(gesture&&$('map').hasPointerCapture(gesture.pointerId))$('map').releasePointerCapture(gesture.pointerId);
+}
+function resetMapMeasurement(){
+ cancelNavigationGesture();measurement=[];measurementOverride=null;gateMeasurement=[];gateOverride=null;navigationMode=null;navigationDraft=[];gateDraft=[];
+}
 function comparisonMessage(message){$('comparisonStatus').textContent=message;$('comparisonStatus').hidden=!message;}
 try{
  const stored=localStorage.getItem(TRACK_COMPARISON_KEY);
@@ -130,11 +152,11 @@ function syncNavigationControls(){
 }
 function startMapLine(mode){
  stopPlayback();cancelPlacement();cancelDrawingGesture();setDrawingTool('pan');clearTrackHover();
- navigationMode=mode;navigationDraft=[];
+ cancelNavigationGesture();navigationMode=mode;navigationDraft=[];gateDraft=[];
  setMapLayersExpanded(false);setMapTracksExpanded(false);$('comparisonStatus').hidden=true;
  syncNavigationControls();renderNavigation();
 }
-function cancelMapLine(){navigationMode=null;navigationDraft=[];syncNavigationControls();renderNavigation();}
+function cancelMapLine(){cancelNavigationGesture();navigationMode=null;navigationDraft=[];gateDraft=[];syncNavigationControls();renderNavigation();}
 function finishMapLine(){
  if(navigationDraft.length<2)return;
  if(navigationMode==='route'){savePermanentRhumbline();return;}
@@ -142,19 +164,52 @@ function finishMapLine(){
  cancelMapLine();
 }
 function addNavigationPoint(event){
+ if(navigationMode!=='route')return;
  const point=new DOMPoint(event.clientX,event.clientY).matrixTransform(mapViewport().inverse);
  const geographic=[9.5+point.x*4.5/1000,57-point.y*3/1180];
  if(Math.abs(geographic[0])>180||Math.abs(geographic[1])>=85){comparisonMessage('Punktet ligger uden for kortets måleområde.');return;}
  if(navigationDraft.length&&rhumbLeg(navigationDraft.at(-1),geographic).distance<1e-6)return;
  if(navigationDraft.length>=200){comparisonMessage('En rhumbline kan højst have 200 punkter.');return;}
  navigationDraft.push(geographic);
- if(navigationMode==='measure'&&navigationDraft.length===2){finishMapLine();return;}
  syncNavigationControls();renderNavigation();
 }
+function navigationPoint(event,inverse){
+ const point=new DOMPoint(event.clientX,event.clientY).matrixTransform(inverse),geographic=[9.5+point.x*4.5/1000,57-point.y*3/1180];
+ return Math.abs(geographic[0])<=180&&Math.abs(geographic[1])<85?geographic:null;
+}
+function beginNavigationGesture(event){
+ if(!['measure','gates'].includes(navigationMode))return false;
+ event.preventDefault();
+ if(navigationGesture)return true;
+ const inverse=mapViewport().inverse,point=navigationPoint(event,inverse);if(!point)return true;
+ navigationGesture={pointerId:event.pointerId,x:event.clientX,y:event.clientY,inverse};
+ navigationDraft=[point,[...point]];$('map').setPointerCapture(event.pointerId);renderNavigation();return true;
+}
+function moveNavigationGesture(event){
+ if(!navigationGesture)return false;
+ if(event.pointerId!==navigationGesture.pointerId)return true;
+ event.preventDefault();const point=navigationPoint(event,navigationGesture.inverse);
+ if(point){navigationDraft[1]=point;renderNavigation();}return true;
+}
+function endNavigationGesture(event){
+ if(!navigationGesture||event.pointerId!==navigationGesture.pointerId)return false;
+ const gesture=navigationGesture;moveNavigationGesture(event);
+ const valid=event.type==='pointerup'&&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)>4&&rhumbLeg(...navigationDraft).distance>=1e-6;
+ cancelNavigationGesture();
+ if(!valid){navigationDraft=[];renderNavigation();return true;}
+ if(navigationMode==='measure')finishMapLine();
+ else if(!gateDraft.length){gateDraft=navigationDraft;navigationDraft=[];renderNavigation();}
+ else{
+  try{if(setGateMeasurement([...gateDraft,...navigationDraft]))cancelMapLine();}
+  catch(error){comparisonMessage(error.message);navigationDraft=[];renderNavigation();}
+ }
+ return true;
+}
 function renderNavigation(){
- const shownMeasurement=currentMeasurement();
+ const shownMeasurement=currentMeasurement(),gates=currentGateMeasurement();
  $('mapMeasureToggle').setAttribute('aria-pressed',String(!window.SR_RHUMBLINE_SETUP&&(navigationMode==='measure'||shownMeasurement.length>0)));
- const key=JSON.stringify([navigationMode,navigationDraft,shownMeasurement]);
+ $('mapGatesToggle').setAttribute('aria-pressed',String(navigationMode==='gates'||gates.length>0));
+ const key=JSON.stringify([navigationMode,navigationDraft,shownMeasurement,gates,gateDraft]);
  if(key===lastNavigationKey)return;lastNavigationKey=key;
  const layer=$('mapNavigation');layer.replaceChildren();
  function draw(points,colour,label,dashed=false){
@@ -173,16 +228,32 @@ function renderNavigation(){
   const [x,y]=xy(points.at(-1)),group=screenGroup(x,y,layer),total=buildRhumbRoute(points).total;
   el('text',{x:8,y:17,fill:colour,'font-size':12,'font-weight':700,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},group).textContent=`${label} · ${total.toLocaleString('da-DK',{maximumFractionDigits:2})} sm`;
  }
+ function drawGate(points,number){
+  if(points.length!==2)return;
+  const colour=number===1?'#087b3d':'#a82a34';
+  el('path',{d:path(points),fill:'none',stroke:'#fff','stroke-width':6,'vector-effect':'non-scaling-stroke','data-gate':number},layer);
+  el('path',{d:path(points),fill:'none',stroke:colour,'stroke-width':3,'vector-effect':'non-scaling-stroke'},layer);
+  for(const point of points){const [x,y]=xy(point);el('circle',{r:4,fill:colour,stroke:'#fff','stroke-width':1.5},screenGroup(x,y,layer));}
+  const [a,b]=points.map(xy),label=screenGroup((a[0]+b[0])/2,(a[1]+b[1])/2,layer);
+  el('text',{y:-9,'text-anchor':'middle',fill:colour,'font-size':12,'font-weight':700,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},label).textContent='Gate '+number;
+ }
  if(window.SR_RHUMBLINE_SETUP&&navigationMode!=='route'&&!shownMeasurement.length)draw(window.SR_RHUMBLINE.points,'#7b3294','Rhumbline',true);
  if(navigationMode!=='measure')draw(shownMeasurement,window.SR_RHUMBLINE_SETUP?'#7b3294':'#173d4c',window.SR_RHUMBLINE_SETUP?'Rhumbline':'Måling',!!window.SR_RHUMBLINE_SETUP);
- if(navigationMode)draw(navigationDraft,navigationMode==='route'?'#7b3294':'#173d4c',navigationMode==='route'?'Rhumbline':'Måling',navigationMode==='route');
+ if(navigationMode==='gates'){
+  drawGate(gateDraft,1);drawGate(navigationDraft,gateDraft.length?2:1);
+ }else for(let i=0;i<gates.length;i+=2)drawGate(gates.slice(i,i+2),i/2+1);
+ if(navigationMode&&navigationMode!=='gates')draw(navigationDraft,navigationMode==='route'?'#7b3294':'#173d4c',navigationMode==='route'?'Rhumbline':'Måling',navigationMode==='route');
  const active=navigationMode?navigationDraft:shownMeasurement;
  $('measurementResult').textContent=active.length?`${buildRhumbRoute(active).total.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} sømil` :'';
- resizeSymbols();
+ resizeSymbols(layer);
 }
 $('mapMeasureToggle').onclick=()=>{
  if(navigationMode==='measure'||currentMeasurement().length){if(setMeasurement([]))cancelMapLine();}
  else startMapLine('measure');
+};
+$('mapGatesToggle').onclick=()=>{
+ if(navigationMode==='gates'||currentGateMeasurement().length){if(setGateMeasurement([]))cancelMapLine();}
+ else startMapLine('gates');
 };
 $('finishMapLine').onclick=finishMapLine;
 $('undoMapPoint').onclick=()=>{navigationDraft.pop();syncNavigationControls();renderNavigation();};
@@ -202,11 +273,19 @@ $('trackLength').onchange=()=>{
 $('mapTracksToggle').addEventListener('click',()=>{if(!$('mapTracksPanel').hidden)setMapLayersExpanded(false);});
 document.addEventListener('keydown',event=>{
  if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
- if(event.key!=='Escape'&&event.target.closest('button'))return;
+ if(event.key!=='Escape'&&event.target.closest('button')&&!(navigationMode&&event.key==='Backspace'))return;
  if(navigationMode&&['Escape','Enter','Backspace'].includes(event.key)){
   event.preventDefault();event.stopImmediatePropagation();
   if(window.SR_RHUMBLINE_SAVING)return;
-  if(event.key==='Escape')cancelMapLine();else if(event.key==='Enter'&&navigationMode==='route')finishMapLine();else if(event.key==='Backspace'){navigationDraft.pop();syncNavigationControls();renderNavigation();}
+  if(event.key==='Escape')cancelMapLine();
+  else if(event.key==='Enter'&&navigationMode==='route')finishMapLine();
+  else if(event.key==='Backspace'){
+   if(navigationMode==='route')navigationDraft.pop();
+   else{cancelNavigationGesture();if(!navigationDraft.length)gateDraft=[];navigationDraft=[];}
+   syncNavigationControls();renderNavigation();
+  }
+ }else if(event.key==='Escape'&&!window.SR_RHUMBLINE_SETUP&&currentGateMeasurement().length){
+  event.preventDefault();event.stopImmediatePropagation();if(setGateMeasurement([]))cancelMapLine();$('mapGatesToggle').focus();
  }else if(event.key==='Escape'&&currentMeasurement().length&&!window.SR_RHUMBLINE_SETUP){
   event.preventDefault();event.stopImmediatePropagation();if(setMeasurement([]))cancelMapLine();$('mapMeasureToggle').focus();
  }

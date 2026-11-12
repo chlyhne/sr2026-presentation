@@ -18,7 +18,7 @@ python3 scripts/serve_viewer.py
   Ingen både har hjerte som standard, og favoritfilteret starter slået fra.
   Klik hvor som helst i en bådrække for at skifte dens hjerte.
 - Grid starter slået til; vind, radar og eventpanelet starter slået fra.
-  Kortværktøjerne står fra højre mod venstre: eventpanel, lag, spor, mål,
+  Kortværktøjerne står fra højre mod venstre: eventpanel, lag, spor, gates, lineal,
   redigér og fuld skærm.
 - **Lag → Grid** viser et antialiaseret afstandsgrid oven på kortbaggrunden,
   under sporene. Afstanden skifter automatisk mellem **15 sømil, 5 sømil,
@@ -47,7 +47,7 @@ python3 scripts/serve_viewer.py
   Det gemte kortudsnit bruges kun ved direkte hop; afspilning hen til eventet
   beholder det udsnit, der følger referencebåden.
   Når tiden står på et event i redigering, bliver ændringer til en kladde:
-  tekst, tidspunkt, billeder, videoer, markør, tegninger, måling, lag, både, filtre,
+  tekst, tidspunkt, billeder, videoer, markør, tegninger, måling, gates, lag, både, filtre,
   sporindstillinger og kortudsnit ved zoom eller afsluttet panorering.
   **Gem ændringer** opdaterer eventet; **Annullér ændringer** genskaber det gemte
   event. Der kræves ikke et indledende klik på **Redigér**. Med ugemte ændringer
@@ -173,20 +173,38 @@ python3 scripts/serve_viewer.py
   Vindmodel og radarens synlighed justeres
   fortsat i sidepanelet.
   `node scripts/test_viewer_layers.cjs` tester lagmenuen lokalt i Firefox på PC.
-- **Linealknappen** ved siden af **Lag** starter en afstandsmåling uden undermenu.
-  Klik to steder på kortet: afstand i sømil og kurs vises direkte på målingen.
+- **Linealknappen** starter en afstandsmåling uden undermenu.
+  Træk fra start til slut: lineal, afstand i sømil og kurs tegnes, mens du trækker.
   Tryk på linealen igen for at fjerne målingen, eller tryk Escape. Kortet kan
-  trækkes og zoomes undervejs. Måleværktøjet virker også i præsentation og fuld skærm.
+  panoreres efter målingen og zoomes mellem træk. Måleværktøjet virker også i præsentation og fuld skærm.
   Står tiden på et event i redigering, indgår målingen i eventets kladde og gemmes
   med **Gem ændringer**. Det gælder også fjernelse af målingen; **Annullér ændringer**
   genskaber den gemte måling. En måling tegnet mellem events medtages, når der
   oprettes et nyt event. Eventets måling vises kun ved dets tidspunkt og forsvinder,
   når tiden afspilles eller flyttes videre. Den kommer tilbage ved tilbagevenden
   til eventet. Målinger i præsentation er midlertidige og ændrer ikke gemte events.
-  Endepunkterne gemmes geografisk i eventets valgfrie `measurement`-felt og følger
-  med genindlæsning, import/eksport og udgivelse. Ældre events uden feltet har
-  ingen måling. `node scripts/test_viewer_event_measurement.cjs` kontrollerer dette
+  Endepunkterne gemmes geografisk i eventets `measurement`-felt og følger
+  med genindlæsning, import/eksport og udgivelse. `node scripts/test_viewer_event_measurement.cjs` kontrollerer dette
   i lokal headless Firefox på PC.
+- **Gateknappen** ved siden af linealen måler sejltiden mellem to gates.
+  Træk først gate 1 (grøn), og træk derefter gate 2 (rød). Begge følger markøren
+  under tegningen. Escape annullerer; Backspace fortryder den igangværende gate
+  eller den første gate, hvis anden endnu ikke er startet. Et nyt tryk på ikonet
+  fjerner gates. Tiden for den senest afsluttede passage fra 1 til 2 vises ved
+  bådens navn som `1→2 · MM:SS,d`. Det er den faktiske sejltid fra kildesporet,
+  også ved handicapvisning. Kun passager gennem de endelige gate-segmenter tæller;
+  berøring uden krydsning og passager over huller i GPS-data tæller ikke.
+  Krydsninger beregnes på sporenes interpolerede kurver for hele feltet, når gates
+  defineres eller historikken indlæses. Bådvalg, sportype, zoom og afspilning
+  bruger de forberedte resultater.
+  Gates følger samme eventkladde, **Gem ændringer**, annullering og tidsmæssige
+  synlighed som linealen. De fire geografiske endepunkter ligger i `gates`;
+  tomme målinger repræsenteres af `[]`. Den publicerede historik er opdateret med
+  eksplicitte `measurement`- og `gates`-felter på alle events; øvrigt indhold er
+  bevaret, og dokumentet bruger fortsat version 1.
+  `node scripts/test_gate_timing.cjs` tester kurvekrydsningerne, og
+  `node scripts/test_viewer_gates.cjs` tester interaktion, tider, forberedte opslag
+  og eventforløbet i lokal headless Firefox på PC.
 - Den permanente rhumbline tegnes én gang på det separate lokale kort
   <http://127.0.0.1:18097/rhumbline.html> (start serveren med
   `python3 scripts/serve_viewer.py --port 18097`). Klik punkterne i sejlretningen,
