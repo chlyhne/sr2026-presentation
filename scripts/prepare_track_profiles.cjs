@@ -1,128 +1,70 @@
-const fs=require('node:fs');
-const path=require('node:path');
-const crypto=require('node:crypto');
-const vm=require('node:vm');
-const os=require('node:os');
-
-const ROOT=path.resolve(__dirname,'..');
-const OUTPUT=path.join(ROOT,'viewer','track-profiles');
-const MANIFEST=path.join(OUTPUT,'manifest.json');
-const SOURCES=['viewer/data.js','viewer/track-time.js','viewer/tracks.js','viewer/rhumbline-geometry.js','viewer/navigation-math.js','viewer/rhumbline.json','scripts/track-resampling.js','scripts/prepare_track_profiles.cjs'];
-const REPLAY_ORIGIN=[9.5,57];
+// Prepare native source data only; all track/profile mathematics runs on the GPU.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),vm=require('node:vm');
+const {execFileSync}=require('node:child_process');
+const ROOT=path.resolve(__dirname,'..'),OUTPUT=path.join(ROOT,'viewer','track-profiles'),MANIFEST=path.join(OUTPUT,'manifest.json');
+const SOURCES=['viewer/data.js','data/tractrac/combined_tracks.json','data/tractrac/speeds_groensund.json','data/tractrac/speeds_boegestroemmen.json','viewer/track-source-codec.js','scripts/prepare_track_profiles.cjs'];
 const digest=value=>crypto.createHash('sha256').update(value).digest('hex');
-const {packProjectedTrack,packSpeedCodes,packedSpeedBytes,packTimeValues,packTimeSamples,packedTimeBytes}=vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer','navigation-math.js'),'utf8')+'\n({packProjectedTrack,packSpeedCodes,packedSpeedBytes,packTimeValues,packTimeSamples,packedTimeBytes});',vm.createContext(vm.constants.DONT_CONTEXTIFY));
-
+const {packSourceTrack,unpackSourceTrack,sourceTrackBytes}=vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer','track-source-codec.js'),'utf8')+'\n({packSourceTrack,unpackSourceTrack,sourceTrackBytes});',vm.createContext(vm.constants.DONT_CONTEXTIFY));
 function sourceState(){
  const hash=crypto.createHash('sha256'),sources={};
- for(const name of SOURCES){
-  const value=fs.readFileSync(path.join(ROOT,name));
-  sources[name]=digest(value);hash.update(name+'\0').update(value).update('\0');
- }
+ for(const name of SOURCES){const value=fs.readFileSync(path.join(ROOT,name));sources[name]=digest(value);hash.update(name+'\0').update(value).update('\0');}
  return {sourceFingerprint:hash.digest('hex'),sources};
 }
-
 function currentManifest(state){
  if(!fs.existsSync(MANIFEST))return null;
- let manifest;
- try{manifest=JSON.parse(fs.readFileSync(MANIFEST,'utf8'));}catch(error){
-  if(error instanceof SyntaxError)return null;
-  throw error;
- }
- if(manifest.version!==7||manifest.sampleSeconds!==10||manifest.replayEncoding!=='float32-local-xy-speed'||JSON.stringify(manifest.replayOrigin)!==JSON.stringify(REPLAY_ORIGIN)
-  ||manifest.sourceFingerprint!==state.sourceFingerprint||!Array.isArray(manifest.boats)
-  ||manifest.stationSpacingMeters!==10||manifest.profileEncoding!=='uint10-packed'||manifest.speedMaximum!==25
-  ||manifest.speedCodes!==1022||manifest.speedBits!==10||manifest.missingValue!==1023||manifest.sampleMissingValue!==-1e20
-  ||manifest.sampleWords!==3||manifest.samplePositionBytes!==8||manifest.sampleEncoding!=='uint10-speed-planar'
-  ||manifest.speedSignEncoding!=='signed-station-index'||manifest.stationWords!==1||manifest.byteOrder!=='little-endian'
-  ||manifest.timeEncoding!=='uint10-block-scaled-seconds-per-meter'||manifest.timeBits!==10||manifest.timeBlockSize!==256||manifest.timeCodes!==1021||manifest.timeInfinity!==1022||manifest.timeSampleWords!==2||manifest.timeStationWords!==1)return null;
- if(!Number.isSafeInteger(manifest.stationCount)||manifest.stationCount<1)return null;
- if(manifest.bundleFile!==`track-profiles/${state.sourceFingerprint}/fleet.bin`||!Number.isSafeInteger(manifest.bundleBytes)||manifest.bundleBytes<0)return null;
- if(manifest.dataFile!==`track-profiles/${state.sourceFingerprint}/data.json`||!fs.existsSync(path.join(ROOT,'viewer',manifest.dataFile)))return null;
+ let m;try{m=JSON.parse(fs.readFileSync(MANIFEST,'utf8'));}catch(error){if(error instanceof SyntaxError)return null;throw error;}
+ if(m?.version!==9||m.sourceFingerprint!==state.sourceFingerprint||m.replayEncoding!=='source-integers-xor-byteplanes-v1'||m.compression!=='gzip'||m.coordinateScale!==1e7||m.speedScaleKmh!==10||m.sourcePointBytes!==18||m.byteOrder!=='little-endian'||!Array.isArray(m.boats))return null;
+ const prefix='track-profiles/'+state.sourceFingerprint+'/';
+ if(m.replayFile!==prefix+'source.bin.gz'||m.dataFile!==prefix+'data.json'||!fs.existsSync(path.join(ROOT,'viewer',m.dataFile)))return null;
  const ids=new Set();let offset=0;
- for(const boat of manifest.boats){
-  if(typeof boat.id!=='string'||ids.has(boat.id)||!Number.isSafeInteger(boat.pointCount)||boat.pointCount<0||boat.stationCount!==manifest.stationCount)return null;
-  ids.add(boat.id);
-  if(boat.replayOffset!==offset)return null;
-  offset+=boat.pointCount*12;
-  if(boat.sampleOffset!==offset)return null;
-  offset+=(boat.pointCount+1)*8+packedSpeedBytes(boat.pointCount+1);
-  if(!Number.isSafeInteger(offset)||boat.timeSampleOffset!==offset)return null;
-  offset+=boat.pointCount*4+packedTimeBytes(boat.pointCount);
-  if(!Number.isSafeInteger(offset)||boat.profileOffset!==offset)return null;
-  offset+=packedSpeedBytes(boat.stationCount);
-  if(!Number.isSafeInteger(offset)||boat.timeProfileOffset!==offset)return null;
-  offset+=packedTimeBytes(boat.stationCount);
-  if(!Number.isSafeInteger(offset))return null;
- }
- const file=path.join(ROOT,'viewer',manifest.bundleFile);
- if(offset!==manifest.bundleBytes||!fs.existsSync(file)||fs.statSync(file).size!==offset)return null;
- return manifest;
+ for(const boat of m.boats){if(typeof boat.id!=='string'||ids.has(boat.id)||!Number.isSafeInteger(boat.pointCount)||boat.pointCount<0||!Number.isSafeInteger(boat.pointCount*18)||boat.sourceOffset!==offset)return null;ids.add(boat.id);offset+=sourceTrackBytes(boat.pointCount);}
+ const file=path.join(ROOT,'viewer',m.replayFile);
+ return offset===m.replayBytes&&Number.isSafeInteger(m.replayCompressedBytes)&&m.replayCompressedBytes>0&&fs.existsSync(file)&&fs.statSync(file).size===m.replayCompressedBytes?m:null;
 }
-
-function loadNominalMath(){
- const context=vm.createContext(vm.constants.DONT_CONTEXTIFY);
- context.window={};
- for(const name of ['data','track-time','tracks','rhumbline-geometry','navigation-math']){
-  vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer',name+'.js'),'utf8'),context,{filename:name+'.js'});
-  if(name==='data')vm.runInContext('const D=window.DATA;const boats=D.boats;',context);
- }
- vm.runInContext(fs.readFileSync(path.join(ROOT,'scripts','track-resampling.js'),'utf8'),context,{filename:'track-resampling.js'});
- const definition=JSON.parse(fs.readFileSync(path.join(ROOT,'viewer','rhumbline.json'),'utf8'));
- context.routeDefinition=definition;
- vm.runInContext("if(!validRhumbline(routeDefinition))throw Error('Invalid permanent rhumbline.');const rhumbRoute=buildRhumbRoute(routeDefinition.points);",context);
- return {definition,...vm.runInContext('({D,boats,resampleBoatTrack,prepareReferenceProfile,prepareProjectedTrack,prepareTimeProfiles,referenceStationCount})',context)};
-}
-
-function writeAtomic(filename,value){
- const temporary=filename+'.'+process.pid+'.tmp';
- try{fs.writeFileSync(temporary,value);fs.renameSync(temporary,filename);}finally{if(fs.existsSync(temporary))fs.unlinkSync(temporary);}
+function writeAtomic(filename,value){const temporary=filename+'.'+process.pid+'.tmp';try{fs.writeFileSync(temporary,value);fs.renameSync(temporary,filename);}finally{if(fs.existsSync(temporary))fs.unlinkSync(temporary);}}
+function gzip(bytes){return execFileSync(process.platform==='win32'?'python':'python3',['-c','import gzip,sys;sys.stdout.buffer.write(gzip.compress(sys.stdin.buffer.read(),compresslevel=9,mtime=0))'],{input:bytes,maxBuffer:bytes.byteLength+1048576,windowsHide:true});}
+function nativeSourceTracks(boats){
+ const read=file=>JSON.parse(fs.readFileSync(path.join(ROOT,'data','tractrac',file),'utf8'));
+ const source=read('combined_tracks.json'),speeds=Object.fromEntries(['groensund','boegestroemmen'].map(course=>[course,read('speeds_'+course+'.json')]));
+ if(Object.keys(source.tracks).length!==boats.length)throw Error('Native boat count changed; regenerate viewer/data.js.');
+ const key=point=>JSON.stringify(point.slice(0,3));
+ return boats.map(boat=>{
+  const competitor=source.competitors[boat.id],points=source.tracks[boat.id];
+  if(!competitor||!points||points.length!==boat.points.length)throw Error('Native source does not match viewer: '+boat.id);
+  const records=speeds[competitor.source_course].tracks[competitor.source_id],lookup=new Map(records.map(row=>[key(row),row[3]]));
+  const values=points.map((point,index)=>{
+   if(!lookup.has(key(point)))throw Error('Missing native source speed: '+boat.id);
+   const value=lookup.get(key(point)),speed=typeof value==='number'&&Number.isFinite(value)&&value>=0?value:null;
+   if(point[0]!==boat.points[index][0]||point[1]!==boat.points[index][1]||point[2]/1000!==boat.points[index][2]
+    ||(speed===null?null:speed/1.852)!==boat.speeds[index])throw Error('Native source changed; regenerate viewer/data.js: '+boat.id);
+   return speed;
+  });
+  const bytes=packSourceTrack(points,values),decoded=unpackSourceTrack(bytes,points.length);
+  for(let index=0;index<points.length;index++){
+   if(decoded.points[index].some((value,axis)=>value!==boat.points[index][axis])||decoded.speeds[index]!==boat.speeds[index])throw Error('Source integer round trip failed: '+boat.id);
+  }
+  return {bytes,boat:{...boat,...decoded}};
+ });
 }
 
 function generate({ifStale=false}={}){
- if(os.endianness()!=='LE')throw Error('Track profile generation requires a little-endian Node.js host.');
- const started=performance.now(),state=sourceState();
- if(ifStale&&currentManifest(state)){console.log('Track profiles are current: '+state.sourceFingerprint);return;}
- const {definition,D,boats:sourceBoats,resampleBoatTrack,prepareReferenceProfile,prepareProjectedTrack,prepareTimeProfiles,referenceStationCount}=loadNominalMath();
- const boats=sourceBoats.map(boat=>resampleBoatTrack(boat,D.start,REPLAY_ORIGIN));
- const directory=path.join(OUTPUT,state.sourceFingerprint);
- fs.mkdirSync(directory,{recursive:true});
- const entries=[],chunks=[],ids=new Set();let byteLength=0,stationCount=0,pointCount=0;
- for(const [index,boat] of boats.entries()){
-  if(typeof boat.id!=='string'||ids.has(boat.id))throw Error('Track profile boats must have unique string IDs.');
-  ids.add(boat.id);
-  const replay=new Float32Array(boat.points.length*3);
-  for(let pointIndex=0;pointIndex<boat.points.length;pointIndex++){
-   replay[pointIndex*3]=boat.points[pointIndex][0]-REPLAY_ORIGIN[0];
-   replay[pointIndex*3+1]=boat.points[pointIndex][1]-REPLAY_ORIGIN[1];
-   replay[pointIndex*3+2]=boat.speeds[pointIndex]===null?NaN:boat.speeds[pointIndex];
-  }
-  const samples=packProjectedTrack(prepareProjectedTrack(boat)),stations=prepareReferenceProfile(boat),profile=packSpeedCodes(stations);
-  const {timeSamples,timeStations}=prepareTimeProfiles(boat),packedTimes=packTimeSamples(timeSamples),packedTimeProfile=packTimeValues(timeStations);
-  const replayOffset=byteLength,sampleOffset=replayOffset+replay.byteLength,timeSampleOffset=sampleOffset+samples.byteLength,profileOffset=timeSampleOffset+packedTimes.byteLength,timeProfileOffset=profileOffset+profile.byteLength;
-  for(const values of [replay,samples,packedTimes,profile,packedTimeProfile])chunks.push(Buffer.from(values.buffer,values.byteOffset,values.byteLength));
-  byteLength=timeProfileOffset+packedTimeProfile.byteLength;
-  entries.push({id:boat.id,pointCount:boat.points.length,stationCount:stations.length,replayOffset,sampleOffset,timeSampleOffset,profileOffset,timeProfileOffset});
-  stationCount+=stations.length;pointCount+=boat.points.length;
-  if((index+1)%10===0||index+1===boats.length)console.log(`Prepared ${index+1}/${boats.length} boats`);
+ const started=performance.now(),state=sourceState();if(ifStale&&currentManifest(state)){console.log('Source data are current: '+state.sourceFingerprint);return;}
+ const context=vm.createContext(vm.constants.DONT_CONTEXTIFY);context.window={};vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer','data.js'),'utf8'),context);
+ const D=context.window.DATA,native=nativeSourceTracks(D.boats),prefix='track-profiles/'+state.sourceFingerprint+'/',chunks=[],entries=[],metadata=[];let offset=0;
+ for(const {bytes,boat} of native){
+  entries.push({id:boat.id,pointCount:boat.points.length,sourceOffset:offset});chunks.push(Buffer.from(bytes));offset+=bytes.byteLength;
+  const {points,speeds,...details}=boat,trackSegments=[];
+  for(const point of points){if(!trackSegments.length||point[2]-trackSegments.at(-1)[1]>300)trackSegments.push([point[2],point[2]]);else trackSegments.at(-1)[1]=point[2];}
+  metadata.push({...details,trackSegments});
  }
- if(sourceState().sourceFingerprint!==state.sourceFingerprint)throw Error('Track profile sources changed during generation; run the generator again.');
- const bundleFile=`track-profiles/${state.sourceFingerprint}/fleet.bin`;
- writeAtomic(path.join(ROOT,'viewer',bundleFile),Buffer.concat(chunks,byteLength));
- const dataFile=`track-profiles/${state.sourceFingerprint}/data.json`;
- const replayData={...D,boats:boats.map(({points,speeds,...metadata})=>metadata)};
- writeAtomic(path.join(ROOT,'viewer',dataFile),JSON.stringify(replayData));
- const manifest={version:7,sampleSeconds:10,replayOrigin:REPLAY_ORIGIN,replayEncoding:'float32-local-xy-speed',dataFile,sourceFingerprint:state.sourceFingerprint,sources:state.sources,dataDigest:digest(JSON.stringify(D)),rhumblineDigest:digest(JSON.stringify(definition)),start:D.start,byteOrder:'little-endian',stationCount:referenceStationCount(),stationSpacingMeters:10,profileEncoding:'uint10-packed',speedMaximum:25,speedCodes:1022,speedBits:10,missingValue:1023,sampleMissingValue:-1e20,sampleWords:3,samplePositionBytes:8,sampleEncoding:'uint10-speed-planar',speedSignEncoding:'signed-station-index',stationWords:1,timeEncoding:'uint10-block-scaled-seconds-per-meter',timeBits:10,timeBlockSize:256,timeCodes:1021,timeInfinity:1022,timeSampleWords:2,timeStationWords:1,bundleFile,bundleBytes:byteLength,boats:entries};
+ const compressed=gzip(Buffer.concat(chunks,offset));
+ if(sourceState().sourceFingerprint!==state.sourceFingerprint)throw Error('Source data changed during preparation. Run the generator again.');
+ fs.mkdirSync(path.join(OUTPUT,state.sourceFingerprint),{recursive:true});
+ const replayFile=prefix+'source.bin.gz',dataFile=prefix+'data.json';
+ writeAtomic(path.join(ROOT,'viewer',replayFile),compressed);writeAtomic(path.join(ROOT,'viewer',dataFile),JSON.stringify({...D,boats:metadata}));
+ const manifest={version:9,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:state.sourceFingerprint,sources:state.sources,start:D.start,dataFile,replayFile,replayBytes:offset,replayCompressedBytes:compressed.byteLength,boats:entries};
  writeAtomic(MANIFEST,JSON.stringify(manifest,null,2)+'\n');
- console.log(`Track profiles: ${boats.length} boats, ${pointCount} points, ${stationCount} stations, ${byteLength} bytes (${(byteLength/1048576).toFixed(2)} MiB), ${((performance.now()-started)/1000).toFixed(2)} s`);
- return manifest;
+ console.log(`Source data: ${native.length} boats, ${entries.reduce((n,b)=>n+b.pointCount,0)} original points, ${compressed.byteLength} gzip bytes, ${((performance.now()-started)/1000).toFixed(2)} s`);return manifest;
 }
-
-if(require.main===module){
- try{
-  const args=process.argv.slice(2);
-  if(args.some(arg=>arg!=='--if-stale'))throw Error('Usage: node scripts/prepare_track_profiles.cjs [--if-stale]');
-  generate({ifStale:args.includes('--if-stale')});
- }catch(error){console.error('Track profile preparation failed: '+error.message);process.exitCode=1;}
-}
-
-module.exports={generate,sourceState,currentManifest,loadNominalMath,packProjectedTrack};
+if(require.main===module){try{const args=process.argv.slice(2);if(args.some(a=>a!=='--if-stale'))throw Error('Usage: node scripts/prepare_track_profiles.cjs [--if-stale]');generate({ifStale:args.includes('--if-stale')});}catch(error){console.error('Source preparation failed: '+error.message);process.exitCode=1;}}
+module.exports={generate,sourceState,currentManifest};

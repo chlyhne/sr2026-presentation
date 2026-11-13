@@ -22,7 +22,7 @@ for(const folder of ['viewer','scripts'])for(const name of fs.readdirSync(path.j
  const file=path.join(root,folder,name);if(fs.statSync(file).size>1024*1024)continue;
  new vm.Script(fs.readFileSync(file,'utf8'),{filename:file});checked++;
 }
-run(['--test','backend/worker.test.mjs','scripts/test_gate_timing.cjs','scripts/test_gate_results.cjs','scripts/test_time_gain.cjs','scripts/test_track_resampling.cjs']);
+run(['--test','backend/worker.test.mjs','scripts/test_gate_timing.cjs','scripts/test_gate_results.cjs','scripts/test_time_gain.cjs','scripts/test_track_profiles.cjs','scripts/test_replay_data.cjs']);
 console.log(`Quick checks passed: ${checked} syntax checks and focused logic tests in ${((performance.now()-started)/1000).toFixed(2)} s.`);
 if(extended){
  const env={...process.env,SR_VIEWER_URL:process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/'};

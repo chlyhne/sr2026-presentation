@@ -8,7 +8,7 @@ import tempfile
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLIC_SUFFIXES = {'.html', '.js', '.css', '.json', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.ico', '.woff', '.woff2', '.bin'}
+PUBLIC_SUFFIXES = {'.html', '.js', '.css', '.json', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.ico', '.woff', '.woff2', '.gz'}
 
 
 def prepare_track_profiles():
@@ -33,7 +33,7 @@ def build():
         stage = Path(temporary) / 'public'
         stage.mkdir()
         profile_manifest = json.loads((ROOT / 'viewer' / 'track-profiles' / 'manifest.json').read_text(encoding='utf-8'))
-        profile_files = {'track-profiles/manifest.json', profile_manifest['bundleFile'], profile_manifest['dataFile']}
+        profile_files = {'track-profiles/manifest.json', profile_manifest['replayFile'], profile_manifest['dataFile']}
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
             if relative.parts[0] == 'track-profiles' and relative.as_posix() not in profile_files:

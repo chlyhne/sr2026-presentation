@@ -5,6 +5,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
+  await require('./viewer-track-fixtures.cjs')(page);
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   await page.evaluate(()=>{
@@ -20,7 +21,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    referenceBoatId='reference';chosen.clear();
    for(const boat of boats){
     colours[boat.name]='#ffdc42';chosen.add(boat.name);
-    trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat),...prepareTimeProfiles(boat)});
+    prepareTrackFixture(boat);
     webglTracks.prepare(boat);
    }
    webglTracks.prepareComparison();

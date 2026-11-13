@@ -14,7 +14,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    models:boats.every(boat=>trackModelCache.has(boat.points)),
    timeline:boats.every(boat=>timelineTrackCache.has(boat.points)),
    comparison:boats.every(boat=>
-    trackProfileCache.has(boat.points)&&!!webglTracks.buffers.get(boat.points).comparisonBuffer)
+    trackProfileCache.has(boat.points)&&!!webglTracks.buffers.get(boat.points).comparisonTexture)
   }));
   assert.deepEqual(prepared,{geometry:true,models:true,timeline:true,comparison:true});
   assert.equal(await page.evaluate(()=>boats.every(boat=>{
@@ -32,7 +32,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    projectedTrackSample=forbidden;
   });
   await page.locator('#visibleBoatsToggle').click();
-  await page.locator('#boatClearFavourites').click();
+  if(await page.locator('#boatClearFavourites').isEnabled())await page.locator('#boatClearFavourites').click();
   await page.locator('#boatSearchInput').press('Enter');
   await page.waitForFunction(()=>chosen.size===boats.length&&webglTracks.order.length===boats.length);
   await page.locator('#boatFavouritesOnly').click();await page.locator('#boatFavouritesOnly').click();
@@ -50,7 +50,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#trackLength').selectOption('900');
   await page.locator('#trackLength').selectOption('0');
   await page.locator('#trackLength').selectOption('7200');
-  await page.locator('#boatClearFavourites').click();
+  if(await page.locator('#boatClearFavourites').isEnabled())await page.locator('#boatClearFavourites').click();
   await page.locator('#boatSearchInput').press('Enter');
   await page.waitForFunction(()=>chosen.size===boats.length&&webglTracks.order.length===boats.length);
   await page.locator('#boatFavouritesOnly').click();await page.locator('#boatFavouritesOnly').click();
@@ -63,7 +63,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.evaluate(()=>setPresentationMode(true));
   await page.locator('#mapTracksToggle').click();
   assert.equal(await page.locator('#mapTracksPanel').isVisible(),true);
-  await page.screenshot({path:'/tmp/sr2026-tracks-menu.png'});
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#mapTracksPanel').isVisible(),false);
   assert.equal(await page.evaluate(()=>document.body.classList.contains('presenting')),true);

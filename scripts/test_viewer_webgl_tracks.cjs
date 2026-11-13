@@ -5,6 +5,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
+  await require('./viewer-track-fixtures.cjs')(page);
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const result=await page.evaluate(()=>{
@@ -13,7 +14,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    $('wind').checked=$('rain').checked=false;
    const boat=boats.find(b=>b.name==='Mercutio'),point=(x,y,t)=>[9.5+x*4.5/1000,57-y*3/1180,D.start+t];
    boat.points=[point(600,460,100),point(610,468,160),point(630,465,220),point(640,480,280),point(645,470,1000),point(650,465,1060)];
-   boat.speeds=[2,5,9,11,null,7];
+   boat.speeds=[2,5,9,11,null,7];prepareTrackFixture(boat);
    chosen.clear();chosen.add(boat.name);view=[595,455,65,35];setview();selectedTime=D.start+1100;render();
    const gl=webglTracks.gl,record=webglTracks.buffers.get(boat.points),uploads=webglTracks.uploads;
    check($('routes').querySelectorAll('path').length===0,'Live paths still exist');
@@ -46,7 +47,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    // Repeated crossings must show the newest local sample, including
    // when a moving tail clips the beginning of one of the overlapping curves.
    const originalPoints=boat.points,originalSpeeds=boat.speeds;
-   boat.points=[point(600,465,100),point(620,465,160),point(600,465,220),point(620,465,280)];boat.speeds=[2,10,5,7];
+   boat.points=[point(600,465,100),point(620,465,160),point(600,465,220),point(620,465,280)];boat.speeds=[2,10,5,7];prepareTrackFixture(boat);
    const overlapColour=TRACK_SPEED_COLOURS[speedBin(5+2*Math.SQRT1_2)].match(/\d+/g).map(Number);
    for(const time of [7300,7330]){
     selectedTime=D.start+time;render();webglTracks.render(selectedTime,webglTracks.order,true);
@@ -54,7 +55,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    }
    // An older crossing cannot cover the newer passage, even if submitted last.
    const crossing={id:'test-crossing',name:'test-crossing',points:[point(610,460,100),point(610,470,160)],speeds:[2,2]};
-   webglTracks.render(selectedTime,[boat,crossing],true);
+   prepareTrackFixture(crossing);webglTracks.render(selectedTime,[boat,crossing],true);
    const crossingColour=overlapColour;
    check(pixel(610,465).slice(0,3).every((v,i)=>Math.abs(v-crossingColour[i])<=3),'Boat layer order changed');
    chosen.add(crossing.name);

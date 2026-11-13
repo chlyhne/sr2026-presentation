@@ -23,6 +23,8 @@ test('zero progress has explicit overflow, not a missing colour; infinity minus 
  assert.ok(gain(Infinity,density(5))< -1e16);
  assert.ok(gain(density(5),Infinity)>1e16);
  assert.equal(gain(Infinity,Infinity),null);
+ assert.equal(gain(Math.fround(1e15),Math.fround(1e15)),null);
+ assert.equal(gain(Math.fround(1e15),Infinity),null);
  near(gain(0,0),0);
  for(const [own,reference] of [[-1,1],[1,-1],[NaN,1],[1,NaN],[undefined,1],[1,undefined],[null,1],[1,null],[-Infinity,1]])assert.equal(gain(own,reference),null);
 });

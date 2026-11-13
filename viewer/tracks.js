@@ -15,9 +15,9 @@ function speedBin(speed){
  return !Number.isFinite(speed)||speed<0?-1:Math.round(Math.min(TRACK_SPEED_MAX,speed)/TRACK_SPEED_MAX*(TRACK_SPEED_BINS-1));
 }
 // Prepare immutable nominal GPU buffers once for the whole voyage.
-function prepareBoatTrack(boat){webglTracks.prepare(boat);}
+function prepareBoatTrack(boat){return webglTracks.prepare(boat);}
 function prepareSelectedTracks(){
- for(const boat of boats)if(boatIsDisplayed(boat))prepareBoatTrack(boat);
+ for(const boat of boats)if(boatIsDisplayed(boat))webglTracks.requirePrepared(boat);
 }
 async function prepareFleetTracks(onProgress=()=>{}){
  let prepared=0;
@@ -25,7 +25,7 @@ async function prepareFleetTracks(onProgress=()=>{}){
   // The renderer has already displayed its error. Finish loading its controls
   // so the user can reload; no alternative rendering or calculation is used.
   if(!webglTracks.active)return false;
-  prepareBoatTrack(boat);
+  await prepareBoatTrack(boat);
   onProgress(++prepared,boats.length);
   // Let the loading message paint between boats while interaction is locked.
   await new Promise(resolve=>setTimeout(resolve,0));
