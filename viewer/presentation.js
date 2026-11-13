@@ -387,6 +387,7 @@ function setPresentationMode(enabled){
 function handlePresentationKey(event){
  if(eventVideoView)return;
  if(!document.body.classList.contains('presenting')||event.altKey||event.ctrlKey||event.metaKey)return;
+ if(event.target.closest('[data-gate-results-scroll]'))return;
  if(event.key==='Escape'){
   event.preventDefault();event.stopImmediatePropagation();
   if(pickedTrackSpeed)closeTrackSpeedSelection();else setPresentationMode(false);return;
