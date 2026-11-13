@@ -203,8 +203,10 @@ python3 scripts/serve_viewer.py
   Krydsninger beregnes på sporenes interpolerede kurver for hele feltet, når gates
   defineres eller historikken indlæses. Bådvalg, sportype, zoom og afspilning
   filtrerer den forberedte rangliste uden at genberegne eller sortere passagerne.
-  Gates følger samme eventkladde, **Gem ændringer**, annullering og tidsmæssige
-  synlighed som linealen. De fire geografiske endepunkter ligger i `gates`;
+  Gates følger samme eventkladde, **Gem ændringer** og annullering som linealen.
+  Under play og pause beholdes gates: gemte eventgates følger eventskift, mens
+  midlertidige gates overlever events, der passeres under play. Spoling eller hop
+  til et event rydder midlertidige gates. De fire geografiske endepunkter ligger i `gates`;
   tomme målinger repræsenteres af `[]`. Den publicerede historik er opdateret med
   eksplicitte `measurement`- og `gates`-felter på alle events; øvrigt indhold er
   bevaret, og dokumentet bruger fortsat version 1.

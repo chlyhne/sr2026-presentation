@@ -13,6 +13,8 @@ function validComparison(value){
 }
 let comparison={enabled:false,basis:'absolute'},comparisonRevision=0;
 let navigationMode=null,navigationDraft=[],measurement=[],measurementOverride=null,gateMeasurement=[],gateOverride=null,gateDraft=[],navigationGesture=null,lastNavigationKey=null;
+// Keep the gates' origin across playback and pause: temporary gates outlive events.
+let playbackGateMeasurement=null;
 function eventToolPoints(note,field,count){
  const points=note[field]===undefined?[]:note[field];
  if(!Array.isArray(points)||![0,count].includes(points.length)||!points.every(point=>Array.isArray(point)&&point.length===2
@@ -40,6 +42,7 @@ function setMeasurement(points){
 }
 function currentGateMeasurement(){
  if(window.SR_RHUMBLINE_SETUP)return [];
+ if(playbackGateMeasurement!==null)return playbackGateMeasurement.points;
  const target=currentMapEvent();
  if(gateOverride&&gateOverride.target!==target)gateOverride=null;
  if(gateOverride)return gateOverride.points;
@@ -51,6 +54,7 @@ function setGateMeasurement(points){
  if(editable){if(!stageEventChanges(editable,{gates:next}))return false;gateMeasurement=[];gateOverride=null;}
  else if(target)gateOverride={target,points:next};
  else{gateMeasurement=next;gateOverride=null;}
+ playbackGateMeasurement=null;
  requestRender();return true;
 }
 function cancelNavigationGesture(){
@@ -58,7 +62,7 @@ function cancelNavigationGesture(){
  if(gesture&&$('map').hasPointerCapture(gesture.pointerId))$('map').releasePointerCapture(gesture.pointerId);
 }
 function resetMapMeasurement(){
- cancelNavigationGesture();measurement=[];measurementOverride=null;gateMeasurement=[];gateOverride=null;navigationMode=null;navigationDraft=[];gateDraft=[];
+ cancelNavigationGesture();measurement=[];measurementOverride=null;gateMeasurement=[];gateOverride=null;playbackGateMeasurement=null;navigationMode=null;navigationDraft=[];gateDraft=[];
 }
 function comparisonMessage(message){$('comparisonStatus').textContent=message;$('comparisonStatus').hidden=!message;}
 try{

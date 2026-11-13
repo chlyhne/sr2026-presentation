@@ -202,13 +202,13 @@ function saveAnnotation(point) {
   $('annotationStatus').textContent='Eventet er gemt.';return;
  }
  const time=currentTime();
- const note={time,utc:new Date(time*1000).toISOString(),text,view:[...view],settings:sceneSettings(),measurement:measurement.map(point=>[...point]),gates:gateMeasurement.map(point=>[...point])};
+ const note={time,utc:new Date(time*1000).toISOString(),text,view:[...view],settings:sceneSettings(),measurement:measurement.map(point=>[...point]),gates:currentGateMeasurement().map(point=>[...point])};
  if(pendingEventImage)note.image=pendingEventImage;
  if(pendingEventVideo)note.video=pendingEventVideo;
  if(point){note.point=point;note.lon=9.5+point[0]*4.5/1000;note.lat=57-point[1]*3/1180;}
  const next=chronologicalNotes([...notes,note]);
  if(!persistNotes(next))return;
- notes=next;measurement=[];gateMeasurement=[];pendingEventImage=null;clearPendingEventImage();clearPendingEventVideo();$('note').value='';
+ notes=next;measurement=[];gateMeasurement=[];gateOverride=null;playbackGateMeasurement=null;pendingEventImage=null;clearPendingEventImage();clearPendingEventVideo();$('note').value='';
  activePresentationNote=note;cancelPlacement();showNotes();updateTimeline();renderAnnotations();
 }
 $('placeNote').onclick=()=>{

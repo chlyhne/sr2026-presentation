@@ -406,7 +406,7 @@ function advancePlayback(now){
  playbackTickTime=now;
  if(target&&nextTime>=end-1e-6){restoreNote(target,{showImage:true,restoreView:false});return;}
  if(currentTime()>=end){stopPlayback();return;}
- setCurrentTime(Math.min(end,nextTime),{fractional:true,crossedEvents:!target,allowOutsideVisibleRanges:true});
+ setCurrentTime(Math.min(end,nextTime),{fractional:true,crossedEvents:!target,allowOutsideVisibleRanges:true,preservePlaybackGates:true});
  if(target)centerPlaybackOnReferenceBoat();
  requestRender();
  if(nextTime>=end)stopPlayback();
@@ -415,6 +415,10 @@ function startPlayback({target=null}={}){
  if(interval!==null||hasRenderingFailure())return;
  if((!target&&currentTime()>=viewerEndTime())||!finishEventEditing())return;
  prepareSelectedTracks();
+ if(playbackGateMeasurement===null){
+  const points=currentGateMeasurement().map(point=>[...point]);
+  playbackGateMeasurement={points,event:gateOverride?null:currentMapEvent()};
+ }
  eventPlaybackTarget=target;
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
  $('play').disabled=false;interval=setInterval(()=>advancePlayback(performance.now()),50);syncPlaybackControls();

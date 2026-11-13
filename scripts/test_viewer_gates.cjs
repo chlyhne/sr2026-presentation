@@ -111,6 +111,54 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.evaluate(()=>restoreNote(notes[1]));assert.deepEqual(await gates(),[]);assert.equal(await page.locator('.gate-result').count(),0);
   await page.evaluate(points=>{notes[2].gates=points;restoreNote(notes[2]);},points);assert.deepEqual(await gates(),points,'Same-time events have independent gates');
   await page.evaluate(()=>restoreNote(notes[0]));assert.deepEqual(await gates(),points);
+  // First play from an event must carry both saved and temporary gates.
+  const playOneSecond=async()=>{
+   await page.locator('#play').click();
+   assert.equal(await page.evaluate(()=>interval!==null),true,'Play starts');
+   await page.evaluate(()=>{advancePlayback(playbackTickTime+1000/playbackRate);stopPlayback();flushRender();});
+   assert.deepEqual(await gates(),points,'Gates survive playback and pause after leaving the exact event timestamp');
+  };
+  await playOneSecond();await playOneSecond();
+  await page.evaluate(()=>{
+   startPlayback();advancePlayback(playbackTickTime+(notes[1].time-currentTime()+.1)*1000/playbackRate);stopPlayback();render();
+  });
+  assert.deepEqual(await gates(),[],'Crossing the next event removes the previous gates');
+  await page.evaluate(points=>{
+   notes.push({...notes[1],time:notes[1].time+10,text:'Next gates',gates:points});
+   startPlayback();advancePlayback(playbackTickTime+(notes.at(-1).time-currentTime()+.1)*1000/playbackRate);stopPlayback();render();
+  },points);
+  assert.deepEqual(await gates(),points,'Crossing an event between ticks activates its gates');
+  await playOneSecond();
+  await page.evaluate(()=>notes.pop());
+  const beforeTemporary=await stored();
+  for(const atEvent of [true,false]){
+   await page.evaluate(({points,atEvent})=>{
+    restoreNote(notes[0]);
+    if(!atEvent)setCurrentTime(notes[0].time+1,{allowOutsideVisibleRanges:true});
+    setGateMeasurement(points);render();
+   },{points,atEvent});
+   await playOneSecond();
+   await page.evaluate(()=>{
+    startPlayback();advancePlayback(playbackTickTime+(notes[1].time-currentTime()+.1)*1000/playbackRate);stopPlayback();render();
+   });
+   assert.deepEqual(await gates(),points,'Play across an event keeps temporary gates, whether drawn on or between events');
+   await playOneSecond();
+   await page.evaluate(()=>{setCurrentTime(notes[1].time+2,{allowOutsideVisibleRanges:true});render();});
+   assert.deepEqual(await gates(),points,'Seeking between events keeps temporary gates');
+   await page.evaluate(()=>{setCurrentTime(notes[1].time,{allowOutsideVisibleRanges:true});render();});
+   assert.deepEqual(await gates(),[],'Seeking to an event clears temporary gates');
+  }
+  assert.deepEqual(await stored(),beforeTemporary,'Temporary gates never edit saved events');
+  await page.evaluate(()=>restoreNote(notes[0]));
+  await page.evaluate(()=>{
+   startPlayback({target:notes[1]});advancePlayback(playbackTickTime+1000/playbackRate);stopPlayback();render();
+  });
+  assert.deepEqual(await gates(),points,'Play to the next event also keeps gates along the way');
+  await page.evaluate(()=>{
+   startPlayback({target:notes[1]});advancePlayback(playbackTickTime+(notes[1].time-currentTime())*1000/playbackRate);flushRender();
+  });
+  assert.deepEqual(await gates(),[],'Arriving at the next event releases gates');
+  await page.evaluate(()=>restoreNote(notes[0]));
   await page.evaluate(()=>{setPresentationMode(true);setCurrentTime(notes[0].time+1,{allowOutsideVisibleRanges:true});render();});
   assert.deepEqual(await gates(),[]);assert.equal(await page.locator('.gate-result').count(),0,'Moving on removes event times as well as gates');
   await page.evaluate(()=>restoreNote(notes[0]));assert.deepEqual(await gates(),points);
@@ -140,6 +188,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await publicPage.goto(url);await publicPage.waitForSelector('main:not([inert])',{timeout:120000});
   assert.deepEqual(await publicPage.evaluate(()=>currentGateMeasurement()),points);
   assert.equal(await publicPage.evaluate(()=>preparedGateTiming(currentGateMeasurement()).size===boats.length),true);
+  await publicPage.locator('#play').click();
+  await publicPage.evaluate(()=>{advancePlayback(playbackTickTime+1000/playbackRate);stopPlayback();flushRender();});
+  assert.deepEqual(await publicPage.evaluate(()=>currentGateMeasurement()),points,'First play after a fresh public load preserves gates');
   await publicPage.close();assert.deepEqual(errors,[]);
   console.log('Firefox PC: live gates, ranked result list outside gate 2 in both directions, constant size/gap on zoom, selection without recomputation or sorting, completed boats retained, event Save/Cancel/departure/return, export and public preparation.');
  }finally{await browser.close();}

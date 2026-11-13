@@ -35,7 +35,7 @@ function renderTimelineEvents(){
   mark.style.left=`calc(${ratio*100}% + ${8-16*ratio}px)`;marks.append(mark);
  }
 }
-function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false,includeHiddenEvents=false}={}){
+function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false,includeHiddenEvents=false,preservePlaybackGates=false}={}){
  let matches=timelineNotes().filter(n=>n.time===selectedTime);
  if(crossedEvents&&previousTime!==selectedTime){
   const forward=selectedTime>previousTime;
@@ -49,6 +49,11 @@ function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false,includ
  }
  if(!matches.length)return;
  if(!matches.includes(activePresentationNote))activePresentationNote=matches[0];
+ if(!preservePlaybackGates){
+  gateMeasurement=[];gateOverride=null;playbackGateMeasurement=null;
+ }else if(previousTime!==selectedTime&&playbackGateMeasurement?.event){
+  playbackGateMeasurement={event:activePresentationNote,points:eventGates(activePresentationNote).map(point=>[...point])};
+ }
  updatePresentationControls();
 }
 function seekTimeline(offset,{snap=true}={}){
@@ -171,7 +176,11 @@ function offsetAtTime(time){
  return Math.max(0,timelineLength-1);
 }
 
-function setCurrentTime(time,{fractional=false,crossedEvents=false,allowOutsideVisibleRanges=false}={}){
+function setCurrentTime(time,{fractional=false,crossedEvents=false,allowOutsideVisibleRanges=false,preservePlaybackGates=false}={}){
+ if(!preservePlaybackGates){
+  if(playbackGateMeasurement?.event===null){gateMeasurement=playbackGateMeasurement.points;gateOverride=null;}
+  playbackGateMeasurement=null;
+ }
  const previousTime=selectedTime;
  time=Math.max(D.start,Math.min(allowOutsideVisibleRanges?VIEWER_DATA_END:viewerEndTime(),fractional?time:Math.round(time)));
  let nearest=time,distance=Infinity;
@@ -186,7 +195,7 @@ function setCurrentTime(time,{fractional=false,crossedEvents=false,allowOutsideV
  syncPlaybackAvailability();
  // Continuous replay crosses every event; manual slider navigation only
  // crosses the visible visits represented by that slider.
- syncTimelineEvent(previousTime,{crossedEvents,includeHiddenEvents:allowOutsideVisibleRanges});
+ syncTimelineEvent(previousTime,{crossedEvents,includeHiddenEvents:allowOutsideVisibleRanges,preservePlaybackGates});
 }
 
 function updateTimeline(){
