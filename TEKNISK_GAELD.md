@@ -10,6 +10,13 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 
 ## Åbne punkter
 
+### UI-01 — Samlet browserkontrol af fartmærker i visningstilstand
+
+- **Område:** [fartmærker](./viewer/speed-pins.js) og [præsentation](./viewer/presentation.js).
+- **Udskudt:** Browserkontrol af klik, Pin/Fjern pin, tastatur og skift af tilstand i lokal præsentation og offentlig visning. Ingen udvidet browsertest er kørt i denne iteration.
+- **Konsekvens/usikkerhed:** Den hurtige standardkontrol og en lille kontrol af midlertidige valg kontra gemte pins er gennemført; den fulde brugerinteraktion er ikke browservalideret.
+- **Færdig når:** Begge visningstilstande kan tilføje/fjerne markører, uden at gemte pins ændres, og tastaturvalg ikke udløser eventnavigation. Saml kontrollen med øvrig relevant UI-validering ved catch-up.
+
 ### GPU-01 — Saml og ajourfør de udvidede sportests
 
 - **Område:** [browsertests](./scripts/) og [fælles sporfixtures](./scripts/viewer-track-fixtures.cjs).

@@ -371,6 +371,7 @@ function setPresentationMode(enabled){
  if(!enabled){hideMapEventImage();hideEventVideo();}
  stopPlayback();cancelPlacement();
  document.body.classList.toggle('presenting',enabled);
+ pickedTrackSpeed=null;viewingSpeedPins=null;
  $('editingTimeline').hidden=false;$('presentationFooter').hidden=false;
  $('startPresentation').hidden=enabled;$('endPresentation').hidden=!enabled;
  $('presentationMessage').textContent='';refreshPresentationEvents();
@@ -387,10 +388,11 @@ function handlePresentationKey(event){
  if(eventVideoView)return;
  if(!document.body.classList.contains('presenting')||event.altKey||event.ctrlKey||event.metaKey)return;
  if(event.key==='Escape'){
-  event.preventDefault();event.stopImmediatePropagation();setPresentationMode(false);return;
+  event.preventDefault();event.stopImmediatePropagation();
+  if(pickedTrackSpeed)closeTrackSpeedSelection();else setPresentationMode(false);return;
  }
  if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
- if(event.target.closest('[data-boat-marker]')&&['Enter',' '].includes(event.key))return;
+ if(event.target.closest('[data-boat-marker],[data-speed-key]')&&['Enter',' '].includes(event.key))return;
  let index;
  if(['ArrowRight','ArrowDown','PageDown'].includes(event.key)||(event.key===' '&&event.target.tagName!=='BUTTON')){
   event.preventDefault();event.stopImmediatePropagation();movePresentationEvent(1);return;

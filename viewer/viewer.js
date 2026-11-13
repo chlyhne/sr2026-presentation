@@ -491,9 +491,7 @@ function endPan(e){
   else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
   else if(boatId)activateBoatMarker(boatId);
   else if(trackBoatId)chooseTrackSpeed(e,trackBoatId);
-  else if(!document.body.classList.contains('presenting')){
-   chooseTrackSpeed(e);
-  }
+  else chooseTrackSpeed(e);
  }
 }
 map.onpointerup=endPan;
