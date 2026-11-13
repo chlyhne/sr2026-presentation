@@ -194,6 +194,7 @@ python3 scripts/serve_viewer.py
   samlet liste uden for gate 2, på siden væk fra gate 1. Listen viser de valgte
   både med den hurtigste øverst samt placering, navn og tid som `MM:SS,d`.
   Den følger gaten ved zoom og panorering og beholder en læsbar skriftstørrelse.
+  Listen er højst 300 skærmpixels høj; flere både kan ses ved at scrolle i listen.
   Både bliver stående på resultatlisten, selv når deres aktuelle markør ikke
   længere vises. Det er den faktiske sejltid fra kildesporet,
   også ved handicapvisning. Kun passager gennem de endelige gate-segmenter tæller;

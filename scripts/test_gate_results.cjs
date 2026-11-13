@@ -2,10 +2,10 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const navigation=fs.readFileSync('viewer/navigation.js','utf8'),viewer=fs.readFileSync('viewer/viewer.js','utf8');
 // Exercise the production SVG composition without loading a browser or fleet.
 const element=(tag,attrs={},parent)=>{
- const node={tag,attrs,children:[],textContent:'',setAttribute(key,value){this.attrs[key]=value;}};
+ const node={tag,attrs,children:[],style:{},listeners:{},textContent:'',setAttribute(key,value){this.attrs[key]=value;},append(child){this.children.push(child);},addEventListener(type,fn){this.listeners[type]=fn;}};
  if(parent)parent.children.push(node);return node;
 };
-const context=vm.createContext({el:element,screenGroup:(x,y,parent)=>element('g',{'data-screen-x':x,'data-screen-y':y},parent)});
+const context=vm.createContext({document:{createElementNS:(ns,tag)=>element(tag)},el:element,screenGroup:(x,y,parent)=>element('g',{'data-screen-x':x,'data-screen-y':y},parent)});
 vm.runInContext(viewer.split('\n').find(line=>line.startsWith('const xy=')),context);
 const project=vm.runInContext('xy',context);
 vm.runInContext(navigation.slice(navigation.indexOf('function drawGateResults('),navigation.indexOf("$('mapMeasureToggle').onclick")),context);
@@ -30,9 +30,14 @@ for(const gates of variants){
  if(nx*(mid[0]-from[0])+ny*(mid[1]-from[1])<0){nx=-nx;ny=-ny;}
  const nearest=Math.min(...[[left,top],[left+width,top],[left,top+height],[left+width,top+height]].map(([x,y])=>nx*x+ny*y));
  assert.ok(Math.abs(nearest-24)<1e-9,'The whole upright list clears gate 2 by 24 screen pixels in every direction');
- const rendered=panel.children.filter(node=>node.attrs.class==='gate-result');
+ const rendered=panel.children.find(node=>node.tag==='foreignObject').children[0].children[0].children;
  assert.deepEqual(rendered.map(node=>node.children.map(cell=>cell.textContent)),[[1,'Mercutio','04:00,0'],[2,'Vera','06:00,0']]);
  assert.deepEqual(rendered.map(node=>node.attrs['data-boat-id']),['fast','slow']);
  assert.ok(rect.attrs.width>150&&rect.attrs.height>60,'The list has a readable panel');
 }
-console.log('Gate results: ranked rows, geographic anchor, and the entire panel outside the finish gate in six orientations.');
+const large=element('g');context.drawGateResults(large,variants[0],Array.from({length:100},()=>rows[0]),180);
+const panel=large.children[0].children[0],viewport=panel.children.find(node=>node.tag==='foreignObject'),scroller=viewport.children[0];
+assert.equal(panel.children[0].attrs.height,300);assert.equal(scroller.children[0].children.length,100);assert.equal(scroller.scrollTop,180);
+assert.match(scroller.style.cssText,/overflow-y:auto/);
+for(const type of ['wheel','pointerdown','keydown']){let stopped=false;scroller.listeners[type]({stopPropagation(){stopped=true;}});assert.ok(stopped);}
+console.log('Gate results: ranking, geographic placement, 300px height cap and scrolling without map gestures.');
