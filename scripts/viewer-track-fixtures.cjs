@@ -1,13 +1,15 @@
+// Browser fixtures use the same GPU preparation as production.
 module.exports=async function installTrackFixtures(page){
  await page.addInitScript(()=>{
   window.prepareTrackFixture=boat=>{
-   const {timeSamples,timeStations}=prepareTimeProfiles(boat);
-   trackProfileCache.set(boat.points,{
-    samples:prepareProjectedTrack(boat),
-    stations:prepareReferenceProfile(boat),
-    timeSamples:unpackTimeSamples(packTimeSamples(timeSamples),boat.points.length),
-    timeStations:unpackTimeValues(packTimeValues(timeStations),timeStations.length)
-   });
+   if(webglTracks.preparation.legs!==rhumbRoute.legs){
+    webglTracks.buffers.clear();webglTracks.preparation=new GPUTrackPreparation(webglTracks);webglTracks.comparisonReference=null;
+   }
+   webglTracks.prepare(boat);
+   if(webglTracks.buffers.has(referenceBoat()?.points)&&boats.every(b=>webglTracks.buffers.has(b.points))){
+    const temporary=!boats.includes(boat);if(temporary)boats.push(boat);
+    try{webglTracks.comparisonReference=null;webglTracks.prepareComparison();}finally{if(temporary)boats.pop();}
+   }
    return boat;
   };
  });

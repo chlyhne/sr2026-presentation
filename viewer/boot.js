@@ -69,7 +69,7 @@ function validatePresentationDocument(document){
   window.SR_DRAFT_KEY=draftKey;
  }
  updateViewerLoading(5);
- const files=['track-time','replay-data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','tracks','rhumbline-geometry','navigation-math','navigation','track-profiles','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
+ const files=['track-time','tracks','track-source-codec','replay-data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','rhumbline-geometry','navigation-math','navigation','gpu-track-preparation','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
  const preparationWeight=60,totalSteps=files.length+preparationWeight;
  let completed=0;
  for(const file of files){
@@ -87,7 +87,6 @@ function validatePresentationDocument(document){
   });
   if(file==='replay-data'){
    await loadReplayData();
-   if(routeSetup)replayResources=null;
    const data=window.DATA;
    if(!data||!Array.isArray(data.coast)||!data.coast_metadata?.attribution||data.coast_metadata.license!=='ODbL-1.0')throw Error('Kortdata mangler den detaljerede OSM-kystlinje.');
    for(const name of ['land','course_lines','route_t','traffic_separation','military_areas']){
@@ -102,13 +101,9 @@ function validatePresentationDocument(document){
    window.SR_RHUMBLINE=Object.freeze({version:1,points:Object.freeze(route.points.map(p=>Object.freeze(p)))});
   }
   if(file==='boat-icons')await loadBoatHulls();
-  if(file==='track-profiles'&&!routeSetup)await loadTrackProfiles();
   if(file==='track-renderer'){
-   if(routeSetup)prepareSelectedTracks();
-   else{
-    await prepareFleetTracks((prepared,total)=>updateViewerLoading(5+90*(completed+preparationWeight*prepared/total)/totalSteps));
-    if(webglTracks.active)webglTracks.prepareComparison();
-   }
+   await prepareFleetTracks((prepared,total)=>updateViewerLoading(5+90*(completed+preparationWeight*prepared/total)/totalSteps));
+   if(webglTracks.active){webglTracks.prepareComparison();await webglTracks.preparation.ready();}
    completed+=preparationWeight;
   }
   updateViewerLoading(5+90*++completed/totalSteps);

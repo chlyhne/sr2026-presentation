@@ -73,7 +73,7 @@ const rhumbRoute=buildRhumbRoute(window.SR_RHUMBLINE.points);
 if(comparison.enabled&&!rhumbRoute.legs.length){comparison.enabled=false;comparisonMessage('Den permanente rhumbline er endnu ikke defineret.');}
 function referenceAtProgress(progress,stations=trackProfileCache.get(referenceBoat()?.points)?.stations){
  if(!stations)throw Error('Referencebådens sporprofil er ikke forberedt.');
- return packedReferenceAtProgress(progress,stations);
+ return referenceProfileAtProgress(progress,stations);
 }
 function referenceTimeAtProgress(progress){
  const boat=referenceBoat(),profile=trackProfileCache.get(boat.points);
@@ -96,13 +96,16 @@ function trackGainLimit(){return comparison.basis==='time'?TRACK_TIME_GAIN_LIMIT
 function trackComparisonSample(boat,time){
  const ownProfile=trackProfileCache.get(boat.points),referenceProfile=trackProfileCache.get(referenceBoat()?.points);
  if(!ownProfile||!referenceProfile)throw Error('Sporenes sammenligningsprofiler er ikke forberedt.');
- const sample=projectedTrackSample(boat,time),reference=sample?referenceAtProgress(sample.progress):null;
- const timeGain=preparedTimeGain(boat,time,ownProfile,referenceProfile);
- if(!reference&&timeGain===null)return null;
- const vmg=sample?quantizeProjectedSpeed(sample.vmg):null;
- const corrected=vmg===null?null:correctedProjectedSpeed(vmg,boat.handicapSecondsPerNm,referenceBoat()?.handicapSecondsPerNm);
- return {absoluteGain:reference&&vmg!==null?vmg-reference.vmg:null,handicapGain:reference&&corrected!==null?corrected-reference.vmg:null,timeGain,
-  vmg,referenceVmg:reference?.vmg??null,referenceTime:sample?referenceTimeAtProgress(sample.progress):null,progress:sample?.progress??null};
+ const gains=webglTracks.comparisonSample(boat,time);if(!gains)return null;
+ const index=timeBoundary(boat.points,time,true)-1;if(index<0)return null;
+ const next=boat.points[index+1],connects=next&&next[2]>boat.points[index][2]&&next[2]-boat.points[index][2]<=TRACK_MAX_GAP;
+ const fraction=connects?(time-boat.points[index][2])/(next[2]-boat.points[index][2]):0;
+ const samples=ownProfile.samples,first=index*3,last=(connects?index+1:index)*3;
+ const valid=samples[first]>=0&&samples[last]>=0,vmg=valid?samples[first+2]+(samples[last+2]-samples[first+2])*fraction:null;
+ const progress=valid?samples[first+1]+(samples[last+1]-samples[first+1])*fraction:null;
+ if(vmg===null&&gains.timeGain===null)return null;
+ return {...gains,vmg,referenceVmg:vmg!==null&&gains.absoluteGain!==null?vmg-gains.absoluteGain:null,
+  referenceTime:progress!==null?referenceTimeAtProgress(progress):null,progress};
 }
 function trackGainSample(boat,time){
  const sample=trackComparisonSample(boat,time);if(!sample)return null;

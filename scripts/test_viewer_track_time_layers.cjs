@@ -5,6 +5,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  try{
   const page=await browser.newPage({viewport:{width:1300,height:850}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
+  await require('./viewer-track-fixtures.cjs')(page);
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const initial=await page.evaluate(()=>({gpu:webglTracks.active,error:webglTracks.error,renderer:webglTracks.renderer}));
@@ -30,9 +31,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     const expected=speed=>TRACK_SPEED_COLOURS[speedBin(speed)].match(/\d+/g).map(Number);
     const matches=(actual,speed)=>actual[3]>240&&actual.slice(0,3).every((value,i)=>Math.abs(value-expected(speed)[i])<=14);
     const draw=(time,order=[a,b])=>{
-     for(const boat of order)if(!trackProfileCache.has(boat.points))trackProfileCache.set(boat.points,{
-      samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat),...prepareTimeProfiles(boat)
-     });
+     for(const boat of order)prepareTrackFixture(boat);
      selectedTime=D.start+time;renderer.render(selectedTime,order,true);
     };
     draw(650);check(matches(pixel(600,460),2),'newer B must cover Mercutio at first crossing: '+pixel(600,460));

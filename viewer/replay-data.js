@@ -1,36 +1,49 @@
-let replayResources=null;
+async function fetchTrackGzip(file,expectedBytes){
+ const response=await fetch(file);
+ if(!response.ok)throw Error('Spordata kunne ikke hentes: '+file+' ('+response.status+').');
+ if(typeof DecompressionStream!=='function')throw Error('Browseren understøtter ikke gzip-afkodning af spordata.');
+ const buffer=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+ if(buffer.byteLength!==expectedBytes)throw Error('Spordata har forkert filstørrelse: '+file+'.');
+ return buffer;
+}
 async function loadReplayData(){
- const fail=message=>{throw Error('Sporenes 10-sekunders data kunne ikke indlæses: '+message);};
+ const fail=message=>{throw Error('Sporenes kildedata kunne ikke indlæses: '+message);};
  const response=await fetch('track-profiles/manifest.json',{cache:'no-store'});
  if(!response.ok)fail('manifest ('+response.status+').');
  const manifest=await response.json();
- if(manifest?.version!==7||manifest.sampleSeconds!==TRACK_SAMPLE_SECONDS||manifest.replayEncoding!=='float32-local-xy-speed'
+ if(manifest?.version!==9||manifest.replayEncoding!=='source-integers-xor-byteplanes-v1'
+  ||manifest.compression!=='gzip'||manifest.coordinateScale!==1e7||manifest.speedScaleKmh!==10||manifest.sourcePointBytes!==SOURCE_POINT_BYTES
   ||manifest.byteOrder!=='little-endian'||!/^[a-f0-9]{64}$/.test(manifest.sourceFingerprint)
   ||manifest.dataFile!==`track-profiles/${manifest.sourceFingerprint}/data.json`
-  ||manifest.bundleFile!==`track-profiles/${manifest.sourceFingerprint}/fleet.bin`
-  ||!Array.isArray(manifest.replayOrigin)||manifest.replayOrigin.length!==2||!manifest.replayOrigin.every(Number.isFinite)
-  ||!Number.isFinite(manifest.start)||!Number.isSafeInteger(manifest.bundleBytes)||manifest.bundleBytes<0||!Array.isArray(manifest.boats))fail('ugyldigt manifest. Genbyg dataene.');
- const [dataResponse,bundleResponse]=await Promise.all([fetch(manifest.dataFile),fetch(manifest.bundleFile)]);
- if(!dataResponse.ok||!bundleResponse.ok)fail('data eller sporfil mangler.');
- const [data,bundle]=await Promise.all([dataResponse.json(),bundleResponse.arrayBuffer()]);
- if(bundle.byteLength!==manifest.bundleBytes||data.start!==manifest.start||!Array.isArray(data.boats)||data.boats.length!==manifest.boats.length)fail('forkert filstørrelse eller bådantal.');
- const entries=new Map(manifest.boats.map(entry=>[entry.id,entry])),seen=new Set(),view=new DataView(bundle);
+  ||manifest.replayFile!==`track-profiles/${manifest.sourceFingerprint}/source.bin.gz`
+  ||!Number.isFinite(manifest.start)
+  ||!Number.isSafeInteger(manifest.replayBytes)||manifest.replayBytes<0||!Array.isArray(manifest.boats))fail('ugyldigt manifest. Genbyg dataene.');
+ const [dataResponse,source]=await Promise.all([
+  fetch(manifest.dataFile),fetchTrackGzip(manifest.replayFile,manifest.replayBytes)
+ ]);
+ if(!dataResponse.ok)fail('metadata mangler ('+dataResponse.status+').');
+ const data=await dataResponse.json();
+ if(data.start!==manifest.start||!Array.isArray(data.boats)||data.boats.length!==manifest.boats.length)fail('forkert starttid eller bådantal.');
+ const entries=new Map(manifest.boats.map(entry=>[entry.id,entry])),seen=new Set(),bytes=new Uint8Array(source);
+ if(entries.size!==manifest.boats.length)fail('gentagne båd-ID i manifestet.');
+ let sourceOffset=0;
+ for(const entry of manifest.boats){
+  if(typeof entry.id!=='string'||!Number.isSafeInteger(entry.pointCount)||entry.pointCount<0||entry.sourceOffset!==sourceOffset)fail('ugyldig båd eller kildeposition.');
+  sourceOffset+=sourceTrackBytes(entry.pointCount);
+  if(sourceOffset>bytes.byteLength)fail('kildedata er afkortet.');
+ }
+ if(sourceOffset!==bytes.byteLength)fail('forkert samlet kildestørrelse.');
+ const prepared=[];
  for(const boat of data.boats){
   const entry=entries.get(boat.id);
-  if(!entry||seen.has(boat.id)||!Number.isSafeInteger(entry.pointCount)||entry.pointCount<0
-   ||!Number.isSafeInteger(entry.replayOffset)||entry.replayOffset<0||entry.sampleOffset!==entry.replayOffset+entry.pointCount*12
-   ||entry.sampleOffset>bundle.byteLength||!Array.isArray(boat.trackSegments))fail('ugyldig båd eller sporposition.');
+  if(!entry||seen.has(boat.id)||!Array.isArray(boat.trackSegments))fail('ugyldig båd eller sporsegmenter.');
   seen.add(boat.id);
-  const points=[],speeds=[];
-  visitTrackSampleTimes(boat.trackSegments,manifest.start,time=>{
-   const offset=entry.replayOffset+points.length*12;
-   if(points.length>=entry.pointCount)fail('for mange tidspunkter.');
-   const longitude=view.getFloat32(offset,true)+manifest.replayOrigin[0],latitude=view.getFloat32(offset+4,true)+manifest.replayOrigin[1],speed=view.getFloat32(offset+8,true);
-   if(!Number.isFinite(longitude)||Math.abs(longitude)>180||!Number.isFinite(latitude)||Math.abs(latitude)>=85||(!Number.isNaN(speed)&&(!Number.isFinite(speed)||speed<0)))fail('ugyldig position eller fart.');
-   points.push([longitude,latitude,time]);speeds.push(Number.isNaN(speed)?null:speed);
-  });
-  if(points.length!==entry.pointCount)fail('forkert antal tidspunkter.');
-  boat.points=points;boat.speeds=speeds;prepareTrackTimeIndex(points);
+  const raw=unpackSourceTrack(bytes.subarray(entry.sourceOffset,entry.sourceOffset+sourceTrackBytes(entry.pointCount)),entry.pointCount),segments=[];
+  for(const point of raw.points){if(!segments.length||point[2]-segments.at(-1)[1]>TRACK_MAX_GAP)segments.push([point[2],point[2]]);else segments.at(-1)[1]=point[2];}
+  if(JSON.stringify(segments)!==JSON.stringify(boat.trackSegments))fail('kildedata stemmer ikke med sporsegmenterne.');
+  prepareTrackTimeIndex(raw.points);getTrackModel(raw.points);
+  prepared.push({...boat,...raw});
  }
- window.DATA=data;replayResources={manifest,bundle};
+ data.boats=prepared;
+ window.DATA=data;
 }

@@ -8,6 +8,7 @@ const near=(actual,expected,tolerance=.001)=>assert.ok(Math.abs(actual-expected)
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
+  await require('./viewer-track-fixtures.cjs')(page);
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const fleet=await page.evaluate(()=>{
@@ -36,10 +37,7 @@ const near=(actual,expected,tolerance=.001)=>assert.ok(Math.abs(actual-expected)
     const boat={id,name:id,metadata,handicapSecondsPerNm:580.6,
      points:meters.map((value,index)=>[longitude(value),latitude+row*.00008,D.start+3600+index*60]),speeds:meters.map(()=>speed)};
     colours[id]='#ffdc42';
-    const {timeSamples,timeStations}=prepareTimeProfiles(boat);
-    trackProfileCache.set(boat.points,{samples:prepareProjectedTrack(boat),stations:prepareReferenceProfile(boat),
-     timeSamples:unpackTimeSamples(packTimeSamples(timeSamples),boat.points.length),
-     timeStations:unpackTimeValues(packTimeValues(timeStations),timeStations.length)});
+    prepareTrackFixture(boat);
     webglTracks.prepare(boat);return boat;
    }
    boats.splice(0,boats.length,
