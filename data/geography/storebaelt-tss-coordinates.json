@@ -1,0 +1,13 @@
+{
+  "name": "Trafikseparering ved Storebæltsbroen",
+  "source": "Brugerens fem hjørnekoordinater",
+  "source_date": "2026-11-13",
+  "replaces": ["way/180387150", "way/180387151", "way/180387152", "way/180752172", "way/180752173"],
+  "points": [
+    {"latitude": [55, "19.100"], "longitude": [11, "2.800"]},
+    {"latitude": [55, "22.330"], "longitude": [11, "2.760"]},
+    {"latitude": [55, "22.036"], "longitude": [11, "1.276"]},
+    {"latitude": [55, "21.018"], "longitude": [11, "1.579"]},
+    {"latitude": [55, "18.910"], "longitude": [11, "1.415"]}
+  ]
+}

@@ -1,4 +1,4 @@
-"""Convert the user's Hatter Barn firing-area coordinates to local GeoJSON."""
+"""Convert the user's combined Hatter Barn area coordinates to local GeoJSON."""
 import argparse
 from decimal import Decimal
 import json
@@ -25,7 +25,7 @@ def main():
     parser.add_argument('--source', type=Path, default=RAW,
                         help='JSON containing latitude/longitude degrees and decimal minutes')
     args = parser.parse_args()
-    source = json.loads(args.source.read_text())
+    source = json.loads(args.source.read_text(encoding='utf-8'))
     points = [[decimal_degrees(p['longitude'][0], p['longitude'][1], 180),
                decimal_degrees(p['latitude'][0], p['latitude'][1], 90)]
               for p in source['points']]
@@ -44,7 +44,7 @@ def main():
         'simplified': False, 'activation_times_included': False,
     }
     OUT.write_text(json.dumps({'type': 'FeatureCollection', 'metadata': metadata,
-                               'features': [feature]}, ensure_ascii=False, separators=(',', ':')))
+                               'features': [feature]}, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     print('Firing area ready:', source['name'], len(points), 'corners + ring closure')
 
 
