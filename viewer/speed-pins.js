@@ -1,5 +1,8 @@
 // Pins identify a boat and source time. Their values follow the visible track style.
 let speedPins=JSON.parse(SRStorage.getItem('sr2026-speed-pins')??'[]'),pickedTrackSpeed=null;
+let viewingSpeedPins=null;
+function speedPinsAreTemporary(){return window.SR_READONLY||document.body.classList.contains('presenting');}
+function visibleSpeedPins(){return speedPinsAreTemporary()?(viewingSpeedPins??speedPins):speedPins;}
 if(!Array.isArray(speedPins)||speedPins.some(pin=>!pin||typeof pin.id!=='string'||typeof pin.boatId!=='string'||!Number.isFinite(pin.time)||!boats.some(boat=>boat.id===pin.boatId)))throw Error('Ugyldige gemte fartmærker.');
 function trackSpeedSample(boat,time){
  const points=boat.points,i=timeBoundary(points,time,true)-1;if(i<0)return null;
@@ -65,7 +68,7 @@ function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
  return best;
 }
 function matchingSpeedPin(sample){
- return speedPins.find(p=>p.boatId===sample.boatId&&Math.abs(p.time-sample.time)<.05);
+ return visibleSpeedPins().find(p=>p.boatId===sample.boatId&&Math.abs(p.time-sample.time)<.05);
 }
 function trackPinValue(boat,sample){
  if(trackUsesComparison()&&referenceBoat()?.id!==boat.id){
@@ -79,7 +82,6 @@ function trackPinValue(boat,sample){
  return {value:sample.speed,label:sample.speed===null?'Fart mangler':sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})+' kn',description:'SOG fra TracTrac'};
 }
 function chooseTrackSpeed(e,boatId){
- if(document.body.classList.contains('presenting'))return;
  pickedTrackSpeed=nearestTrackSpeed(e.clientX,e.clientY,boatId,!boatId);
  if(pickedTrackSpeed)stopPlayback();
  renderSpeedPins();
@@ -105,8 +107,7 @@ function updateTrackHover(e){
   const speed=sample.speed===null?'fart mangler':`SOG ${sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})} knob`;
   let difference='';
   if(trackUsesComparison()&&referenceBoat()?.id!==boat.id){
-   const relative=trackPinValue(boat,sample),projected=projectedTrackSample(boat,hit.time);
-   const referenceTime=projected?referenceTimeAtProgress(projected.progress):null;
+   const relative=trackPinValue(boat,sample),referenceTime=trackComparisonSample(boat,hit.time)?.referenceTime??null;
    difference=relative.value===null?' · Sammenligning mangler ved dette sted':` · ${relative.value>=0?'Henter':'Taber'} ${relative.label}${referenceTime===null?'':` · ${referenceBoat().name} samme sted ca. kl. ${fmt(referenceTime)}`}`;
   }
   trackHoverTip.textContent=`${boat.name} · ${speed}${difference} · TracTrac`;
@@ -117,19 +118,22 @@ function updateTrackHover(e){
 }
 function closeTrackSpeedSelection(){pickedTrackSpeed=null;renderSpeedPins();}
 function toggleSpeedPin(){
- if(!pickedTrackSpeed||document.body.classList.contains('presenting'))return;
+ if(!pickedTrackSpeed)return;
  const boat=boats.find(b=>b.id===pickedTrackSpeed.boatId),sample=boat&&trackSpeedSample(boat,pickedTrackSpeed.time);
  if(!sample)return;
  const existing=matchingSpeedPin(sample);
- const next=existing?speedPins.filter(p=>p!==existing):[...speedPins,{id:crypto.randomUUID(),boatId:sample.boatId,time:sample.time}];
- try{SRStorage.setItem('sr2026-speed-pins',JSON.stringify(next));speedPins=next;$('speedPinStatus').textContent='';}
+ const pins=visibleSpeedPins(),next=existing?pins.filter(p=>p!==existing):[...pins,{id:crypto.randomUUID(),boatId:sample.boatId,time:sample.time}];
+ try{
+  if(speedPinsAreTemporary())viewingSpeedPins=next;
+  else{SRStorage.setItem('sr2026-speed-pins',JSON.stringify(next));speedPins=next;}
+  $('speedPinStatus').textContent='';
+ }
  catch{$('speedPinStatus').textContent='Fartmærket kunne ikke gemmes i browseren.';}
  renderSpeedPins();
 }
 function handleSpeedPinClick(action,key){
- if(document.body.classList.contains('presenting'))return;
  if(action){toggleSpeedPin();return;}
- const pin=speedPins.find(p=>p.id===key);
+ const pin=visibleSpeedPins().find(p=>p.id===key);
  if(pin)pickedTrackSpeed={boatId:pin.boatId,time:pin.time};
  else if(key==='preview'&&pickedTrackSpeed){pickedTrackSpeed=null;}
  renderSpeedPins();
@@ -138,9 +142,8 @@ function renderSpeedPins(){
  const layer=$('speedMarkers');layer.replaceChildren();
  const map=$('map'),matrix=mapViewport()?.matrix;if(!matrix)return;
  const rect=mapViewport().rect,scale=1/Math.hypot(matrix.a,matrix.b),now=currentTime();
- const presenting=document.body.classList.contains('presenting');
- const entries=speedPins.map(pin=>({...pin,pinned:true}));
- if(!presenting&&pickedTrackSpeed&&!matchingSpeedPin(pickedTrackSpeed))entries.push({...pickedTrackSpeed,id:'preview',pinned:false});
+ const entries=visibleSpeedPins().map(pin=>({...pin,pinned:true}));
+ if(pickedTrackSpeed&&!matchingSpeedPin(pickedTrackSpeed))entries.push({...pickedTrackSpeed,id:'preview',pinned:false});
  entries.sort((a,b)=>(referenceBoat()?.id===a.boatId)-(referenceBoat()?.id===b.boatId));
  for(const entry of entries){
   const boat=boats.find(b=>b.id===entry.boatId);
@@ -163,16 +166,14 @@ function renderSpeedPins(){
   const top=screen.y+45>rect.bottom?-42:screen.y-20<rect.top?20:-12;
   el('text',{class:'track-speed-label',x:left,y:top,fill:colour,'font-size':12,'font-weight':700,
    stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},group).textContent=label;
-  if(!presenting){
-   group.setAttribute('role','button');group.setAttribute('tabindex','0');group.setAttribute('aria-label',accessibleLabel);
-   const selected=pickedTrackSpeed&&entry.boatId===pickedTrackSpeed.boatId&&Math.abs(entry.time-pickedTrackSpeed.time)<.05;
-   if(selected){
-    const button=el('g',{'data-speed-action':entry.pinned?'unpin':'pin',role:'button',tabindex:0,
-     'aria-label':entry.pinned?'Fjern pin for '+accessibleLabel:'Pin '+accessibleLabel},group);
-    const buttonWidth=entry.pinned?76:44;
-    el('rect',{x:left,y:top+8,width:buttonWidth,height:24,rx:4,fill:'#f4fafb',stroke:'#365766','stroke-width':1},button);
-    el('text',{x:left+buttonWidth/2,y:top+24,'text-anchor':'middle',fill:'#14212a','font-size':12,'font-weight':650},button).textContent=entry.pinned?'Fjern pin':'Pin';
-   }
+  group.setAttribute('role','button');group.setAttribute('tabindex','0');group.setAttribute('aria-label',accessibleLabel);
+  const selected=pickedTrackSpeed&&entry.boatId===pickedTrackSpeed.boatId&&Math.abs(entry.time-pickedTrackSpeed.time)<.05;
+  if(selected){
+   const button=el('g',{'data-speed-action':entry.pinned?'unpin':'pin',role:'button',tabindex:0,
+    'aria-label':entry.pinned?'Fjern pin for '+accessibleLabel:'Pin '+accessibleLabel},group);
+   const buttonWidth=entry.pinned?76:44;
+   el('rect',{x:left,y:top+8,width:buttonWidth,height:24,rx:4,fill:'#f4fafb',stroke:'#365766','stroke-width':1},button);
+   el('text',{x:left+buttonWidth/2,y:top+24,'text-anchor':'middle',fill:'#14212a','font-size':12,'font-weight':650},button).textContent=entry.pinned?'Fjern pin':'Pin';
   }
  }
 }

@@ -343,7 +343,7 @@ python3 scripts/serve_viewer.py
   `SR_FULL_TEST=1` aktiverer den bredere browser- og mobiltest ved en endelig udgivelse.
 - Bådenes navne vises altid. Klik på en båds ikon, mens et filter er aktivt,
   skifter dens hjerte. Gamle events med skjulte navne viser også alle navne.
-- Klik på et sted på et spor i redigering for at vise farten i knob
+- Klik på et sted på et spor i redigering eller præsentation for at vise farten i knob
   som et mærke ved punktet, uden bådnavn. Mærket har bådens farve.
   Der klikkes på den glatte PCHIP-kurve, også mellem
   kildepunkterne. Farten kommer fra TracTracs oprindelige SOG-felt og interpoleres
@@ -361,11 +361,13 @@ python3 scripts/serve_viewer.py
   og præsentation, når båden er valgt, punktets tid ligger i det viste to-timersspor,
   og selve punktet er i kortudsnittet. Det behøver ikke være bådens aktuelle position.
   Det skjules automatisk uden for perioden, ved fravalg af båden og uden for udsnittet.
-  Klik på et pinnet mærke i redigering, og vælg **Fjern pin** for at fjerne det.
+  Klik på et pinnet mærke, og vælg **Fjern pin** for at fjerne det.
   Klik på tomt kort eller tryk Escape for at lukke et midlertidigt fartmærke;
   pinnede mærker bevares. Et træk fra sporet panorerer stadig kortet.
   Pin-knapperne kan også betjenes med Tab og Enter/mellemrum.
-  Midlertidige mærker vises kun under redigering. Præsentationen viser kun pins.
+  I præsentation og offentlig visning er Pin/Fjern pin midlertidige visningsvalg;
+  de ændrer ikke gemte eller udgivne mærker. Valgene nulstilles ved skift af
+  redigerings-/præsentationstilstand eller genindlæsning.
 
 Fart-pins gemmes separat i browserens `sr2026-speed-pins` som `id`, `boatId` og
 præcis tracktid i sekunder. De bevares ved genindlæsning og deles mellem events,
