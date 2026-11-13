@@ -50,7 +50,7 @@ const near=(actual,expected,tolerance=.001)=>assert.ok(Math.abs(actual-expected)
    view=[left-.06,top-.06,right-left+.12,bottom-top+.12];setview();
    comparison={enabled:true,basis:'time'};comparisonRevision++;
    const forbidden=()=>{throw Error('Interaction recalculated time profiles or uploaded fixed buffers');};
-   prepareTimeProfiles=projectedTimeSample=prepareProjectedTrack=prepareReferenceProfile=forbidden;
+   webglTracks.preparation.prepare=forbidden;
    webglTracks.gl.createBuffer=webglTracks.gl.bufferData=webglTracks.gl.bufferSubData=forbidden;
    const value=(boat,index=0)=>webglTracks.comparisonSample(boat,boat.points[index][2])?.timeGain??null;
    function reference(id){referenceBoatId=id;webglTracks.comparisonReference=null;webglTracks.prepareComparison();}

@@ -3,7 +3,7 @@ module.exports=async function installTrackFixtures(page){
  await page.addInitScript(()=>{
   window.prepareTrackFixture=boat=>{
    if(webglTracks.preparation.legs!==rhumbRoute.legs){
-    webglTracks.buffers.clear();webglTracks.preparation=new GPUTrackPreparation(webglTracks);webglTracks.comparisonReference=null;
+    webglTracks.preparation.dispose();webglTracks.preparation=new GPUTrackPreparation(webglTracks);webglTracks.comparisonReference=null;
    }
    webglTracks.prepare(boat);
    if(webglTracks.buffers.has(referenceBoat()?.points)&&boats.every(b=>webglTracks.buffers.has(b.points))){

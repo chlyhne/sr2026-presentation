@@ -3,7 +3,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
 (async()=>{
- const browser=await firefox.launch({headless:false});
+ const browser=await firefox.launch({headless:true});
  try{
   for(const admin of [false,true]){
    const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];

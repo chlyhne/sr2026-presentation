@@ -19,7 +19,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
    window.referenceTestBytes=bytes;window.referenceTestInitial=bytes();
    window.referenceTestUploads=webglTracks.uploads;
    const forbidden=()=>{throw Error('Referencevalg genberegnede eller allokerede faste spordata');};
-   projectedTrackSample=prepareProjectedTrack=prepareReferenceProfile=prepareTimeProfiles=projectedTimeSample=forbidden;
+   webglTracks.preparation.prepare=forbidden;
    webglTracks.gl.createBuffer=webglTracks.gl.bufferData=webglTracks.gl.bufferSubData=forbidden;
    return {id:referenceBoatId,count:boats.length,bytes:referenceTestInitial,expectedCpu:boats.reduce((sum,boat)=>sum+(boat.points.length+1)*20+referenceStationCount()*8,0)};
   });

@@ -37,6 +37,32 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
    if(data[10]!==31.125)throw Error('Source speed clipped to old 25 knot limit');
    return {maxError,curvature};
   });
+  const resources=await page.evaluate(()=>{
+   const gl=webglTracks.gl,originals=new Map(),live=new Map();
+   for(const kind of ['Buffer','Texture','VertexArray','TransformFeedback','Framebuffer','Program','Shader']){
+    const create='create'+kind,remove='delete'+kind;originals.set(create,gl[create]);originals.set(remove,gl[remove]);
+    gl[create]=function(...args){const value=originals.get(create).apply(gl,args);live.set(value,kind);return value;};
+    gl[remove]=function(value){live.delete(value);return originals.get(remove).call(gl,value);};
+   }
+   let preparation;
+   try{
+    const compile=gl.compileShader;gl.compileShader=()=>{throw Error('Injected shader compilation');};let constructorFailed=false;
+    try{new GPUTrackPreparation({gl,buffers:new Map(),uploads:0});}catch(error){constructorFailed=error.message==='Injected shader compilation';}finally{gl.compileShader=compile;}
+    if(!constructorFailed||live.size)throw Error('Failed shader initialization leaked resources');
+    const renderer={gl,buffers:new Map(),uploads:0};preparation=new GPUTrackPreparation(renderer);const persistent=live.size;
+    const boat={...boats[0],points:boats[0].points.slice(100,104),speeds:boats[0].speeds.slice(100,104)};
+    for(const stage of ['feedback','profile','readback']){
+     const method=stage==='feedback'?'drawArrays':stage==='profile'?'draw':'readProfile',owner=stage==='feedback'?gl:preparation,original=owner[method];
+     owner[method]=()=>{throw Error('Injected '+stage);};let failed=false;
+     try{preparation.prepare(boat);}catch(error){failed=error.message==='Injected '+stage;}finally{owner[method]=original;}
+     if(!failed||renderer.buffers.size||trackProfileCache.has(boat.points)||preparation.denseSamples||live.size!==persistent)throw Error('Partial preparation leaked/published at '+stage+': '+live.size+'/'+persistent);
+     if(gl.isEnabled(gl.RASTERIZER_DISCARD)||gl.getParameter(gl.FRAMEBUFFER_BINDING)!==null||gl.getError())throw Error('GPU state leaked at '+stage);
+    }
+    preparation.prepare(boat);if(renderer.buffers.size!==1)throw Error('Failed transaction poisoned later preparation');
+    preparation.dispose();if(live.size||renderer.buffers.size||trackProfileCache.has(boat.points))throw Error('Dispose leaked GPU resources');
+    return {injectedFailures:4,liveAfterDispose:live.size};
+   }finally{preparation?.dispose();for(const [name,method] of originals)gl[name]=method;}
+  });
   const fixtures=await page.evaluate(async()=>{
    const leg=rhumbRoute.legs[4],point=meters=>{const u=meters/(leg.distance*1852);return [(leg.x+leg.dx*u)/NAV_RAD,inverseMercatorLatitude(leg.y+leg.dy*u)];};
    const make=(id,meters,speeds,times=meters.map((_,i)=>i*60))=>({id:'gpu-test-'+id,name:'GPU '+id,course:boats[0].course,handicapSecondsPerNm:300,points:meters.map((m,i)=>[...point(1000+m),D.start+10000+times[i]]),speeds});
@@ -58,6 +84,6 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
     if(target>=0)assert.ok(Math.abs(value-target)<=Math.max(.005,Math.abs(target)*.002)||value>=1e15&&target===Infinity,boat.id+' time '+value+' / '+target);
    }
   }
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',...initial,route:undefined,interpolation,fixtures:fixtures.length,errors}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'firefox',...initial,route:undefined,interpolation,resources,fixtures:fixtures.length,errors}));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

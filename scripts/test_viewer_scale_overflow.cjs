@@ -72,7 +72,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    assert.deepEqual(state.labels,['−'+state.limit,'0','+'+state.limit]);
    assert.match(state.description,/varm gul.*magenta/);assert.equal(state.active,true);assert.equal(state.error,0);
   }
-  await page.screenshot({path:'/tmp/sr2026-scale-overflow-firefox.png'});
   await setStyle('speed');
   assert.equal(await page.locator('[data-gain-overflow]').count(),0,'SOG legend has no comparison overflow markers');
   const sog=await page.evaluate(()=>{

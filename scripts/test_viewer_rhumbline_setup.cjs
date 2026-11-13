@@ -3,7 +3,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
 (async()=>{
- const browser=await firefox.launch({headless:false});
+ const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
@@ -17,7 +17,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    definition=route.request().postDataJSON();await route.fulfill({status:201,json:definition});
   });
   const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
-  await page.goto(new URL('rhumbline.html',base).href);await page.waitForSelector('body.rhumbline-setup');
+  await page.goto(new URL('rhumbline.html',base).href);await page.waitForSelector('main:not([inert])',{timeout:120000});await page.waitForSelector('body.rhumbline-setup');
   assert.equal(await page.locator('#eventPanel').isVisible(),false);
   assert.equal(await page.locator('#mapTracks').isVisible(),false);
   assert.equal(await page.locator('#mapLayers').isVisible(),false);
@@ -45,12 +45,11 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await page.locator('#undoMapPoint').isDisabled(),true);
   assert.equal(await page.evaluate(()=>localStorage.getItem('sr2026-notes')),originalNotes);
   assert.equal(await page.evaluate(()=>localStorage.getItem('sr2026-comparison')),null);
-  await page.reload();await page.waitForSelector('body.rhumbline-setup');
+  await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});await page.waitForSelector('body.rhumbline-setup');
   assert.equal(await page.locator('#finishMapLine').isDisabled(),true);
   assert.equal(await page.evaluate(()=>navigationMode),null,'A defined permanent route cannot be redrawn');
   assert.deepEqual(await page.evaluate(()=>SR_RHUMBLINE),definition);
   assert.equal(writes,2);
-  await page.screenshot({path:'/tmp/sr2026-permanent-rhumbline-test.png'});
   assert.deepEqual(errors,[]);
   console.log(JSON.stringify({browser:'firefox',checks:'separate full-screen map, same WebGL renderer, draw/undo/reverse, failure preserves points, save once and lock after reload, existing notes untouched',errors}));
   await page.close();

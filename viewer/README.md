@@ -195,6 +195,7 @@ python3 scripts/serve_viewer.py
   både med den hurtigste øverst samt placering, navn og tid som `MM:SS,d`.
   Den følger gaten ved zoom og panorering og beholder en læsbar skriftstørrelse.
   Listen er højst 300 skærmpixels høj; flere både kan ses ved at scrolle i listen.
+  Resultatboksen tegnes over sporene og under bådikonerne.
   Både bliver stående på resultatlisten, selv når deres aktuelle markør ikke
   længere vises. Det er den faktiske sejltid fra kildesporet,
   også ved handicapvisning. Kun passager gennem de endelige gate-segmenter tæller;
@@ -1081,6 +1082,11 @@ gzip eller GPU vises tydeligt uden fallback.
 
 [`gpu-track-preparation.js`](./gpu-track-preparation.js) er den nominelle beregning
 af kubiske koefficienter, ruteprojektioner, VMG og fart-/tidsprofiler i WebGL 2.
+Shadertrinnene ligger samlet i [`gpu-track-shaders.js`](./gpu-track-shaders.js);
+teksturkanaler og enheder er beskrevet ved klargøringen. Hver båd klargøres som
+en transaktion: kun validerede geometri-/profilteksturer beholdes. Midlertidige
+buffere, teksturer og projektions-VAO frigives også ved fejl; delvise resultater
+indsættes ikke i feltets cache. Konteksttab frigiver ejerskabet af ugyldige handles.
 Kildens intervaldifferencer beregnes før Float32-konvertering, og relative
 koordinater og delt tid bevarer præcisionen. GPU'en sampler PCHIP-kurven efter
 en øvre grænse for kurvelængden med højst cirka otte meter pr. trin.
@@ -1092,6 +1098,14 @@ afbryder passagen, så nære start-/målben ikke skaber en falsk helrutepassage.
 Profiler og sammenligningsværdier er Float32 uden 10-bit-kvantiseringslag eller
 25-knobs-klipning. Manglende data er `-1e20`; uendeligt tidsforbrug har en fælles
 Float32-overflowmarkør.
+Rutens yderste endepunkter har en tolerance på 0,1 meter, så afrunding af lokale
+Float32-koordinater ikke gør et punkt på start-/slutgrænsen til manglende data.
+Passageoptællingen bevarer retningen gennem plateauer og kræver 0,2 meters
+bevægelse fra passagens ekstremum for at tælle en vending; afrundingsstøj
+bliver dermed ikke til flere passager. Overflow bevares eksplicit ved summering.
+Profilteksturens to ekstra kanaler gemmer første passages tidspunkt og samplingens
+tidsbredde. De gør afvigelser ved ruteknæk og korte delpassager sporbare uden en
+alternativ beregningsvej. Se [samlet validering](../scripts/track-validation.md).
 
 Hele feltet forberedes før betjening frigives. Tidslinjen og positionsmarkørerne
 beholder deres CPU-model af samme PCHIP-kurver. GPU'ens færdige profiler og

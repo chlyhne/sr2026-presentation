@@ -69,7 +69,7 @@ function validatePresentationDocument(document){
   window.SR_DRAFT_KEY=draftKey;
  }
  updateViewerLoading(5);
- const files=['track-time','tracks','track-source-codec','replay-data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','rhumbline-geometry','navigation-math','navigation','gpu-track-preparation','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
+ const files=['track-time','tracks','track-source-codec','replay-data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','rhumbline-geometry','navigation-math','navigation','gpu-track-shaders','gpu-track-preparation','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
  const preparationWeight=60,totalSteps=files.length+preparationWeight;
  let completed=0;
  for(const file of files){
