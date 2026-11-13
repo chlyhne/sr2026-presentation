@@ -9,7 +9,7 @@ class WebGLTrackRenderer {
   this.canvas.style.cssText='display:block;width:100%;height:100%;pointer-events:none';
   this.host.append(this.canvas);
   this.canvas.addEventListener('webglcontextlost',e=>{
-   e.preventDefault();this.fail(Error('WebGL-konteksten er mistet.'));
+   e.preventDefault();this.preparation?.dispose();this.fail(Error('WebGL-konteksten er mistet.'));
   });
   this.canvas.addEventListener('webglcontextrestored',async()=>{
    this.restoring=true;this.buffers.clear();this.initialize();

@@ -29,7 +29,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    webglTracks.gl.createBuffer=forbidden;
    webglTracks.gl.bufferData=forbidden;
    webglTracks.gl.bufferSubData=forbidden;
-   projectedTrackSample=forbidden;
+   webglTracks.preparation.prepare=forbidden;
   });
   await page.locator('#visibleBoatsToggle').click();
   if(await page.locator('#boatClearFavourites').isEnabled())await page.locator('#boatClearFavourites').click();

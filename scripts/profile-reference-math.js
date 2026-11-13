@@ -47,13 +47,14 @@ function sampleTrackInterval(points,index,model,visit){
 }
 function prepareReferenceProfile(boat){
  const values=new Float64Array(referenceStationCount());values.fill(REFERENCE_MISSING);
+ values.passages=new Float64Array(values.length).fill(NaN);
  const step=REFERENCE_STATION_METERS/1852,last=values.length-1,model=getTrackModel(boat.points);
  let passage=null;
  function write(index,progress,a,b){
   if(values[index]!==REFERENCE_MISSING)return;
   const fraction=(Math.max(a.progress,Math.min(b.progress,progress))-a.progress)/(b.progress-a.progress);
   const speed=a.vmg+(b.vmg-a.vmg)*fraction;
-  values[index]=Math.max(0,speed);
+  values[index]=Math.max(0,speed);values.passages[index]=a.time+(b.time-a.time)*fraction;
  }
  function finish(){
   if(!passage)return;

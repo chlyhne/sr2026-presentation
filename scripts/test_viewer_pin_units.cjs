@@ -81,7 +81,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await setStyle('absolute');
   await page.evaluate(()=>{
    const forbidden=()=>{throw Error('Style switch recalculated or reread prepared comparisons');};
-   prepareProjectedTrack=prepareReferenceProfile=prepareTimeProfiles=projectedTimeSample=projectedTrackSample=trackComparisonSample=forbidden;
+   webglTracks.preparation.prepare=forbidden;
    window.pinOriginalRead=webglTracks.gl.getBufferSubData;webglTracks.gl.getBufferSubData=forbidden;
    webglTracks.prepareComparison=forbidden;
   });
@@ -103,7 +103,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#startPresentation').click();
   assert.match(await label.textContent(),/s\/100 m$/);
   assert.equal(await page.locator('[data-speed-action]').count(),0);
-  await page.screenshot({path:'/tmp/sr2026-pin-units.png'});
   assert.deepEqual(await page.evaluate(()=>JSON.parse(SRStorage.getItem('sr2026-speed-pins'))),pins);
   await page.reload();await page.waitForSelector('main:not([inert])',{timeout:120000});
   await page.evaluate(target=>{

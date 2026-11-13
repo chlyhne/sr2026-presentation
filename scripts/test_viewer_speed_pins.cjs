@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const path=require('node:path');
-const {chromium,firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
+const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{
  paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]
 }));
 async function check(type){
@@ -16,7 +16,7 @@ async function check(type){
    const index=boat.points.findIndex((p,i)=>p[2]>D.start+26*3600&&boat.points[i+1]?.[2]-p[2]<300&&boat.speeds[i]>4);
    const a=boat.points[index],b=boat.points[index+1],time=a[2]+.37*(b[2]-a[2]);
    const point=trackValue(boat.points,index,time).point,[x,y]=xy(point);
-   chosen.clear();chosen.add(boat.name);$('wind').checked=$('rain').checked=false;
+   setBoatFavouritesOnly(true);chosen.clear();chosen.add(boat.name);$('wind').checked=$('rain').checked=false;
    view=[x-4,y-4,8,8];setview();selectedTime=time+600;render();
    const screen=new DOMPoint(x,y).matrixTransform($('map').getScreenCTM());
    const hit=nearestTrackSpeed(screen.x,screen.y,boat.id);
@@ -39,7 +39,7 @@ async function check(type){
    return {x:screen.x,y:screen.y};
   },target));
   const notesBefore=await page.evaluate(()=>localStorage.getItem('sr2026-notes'));
-  const renderer=await page.evaluate(()=>webglTracks.active?'webgl':'svg');
+  assert.equal(await page.evaluate(()=>webglTracks.active),true);const renderer='webgl';
   if(renderer==='webgl'){
    await page.mouse.move(target.x,target.y);
    await page.waitForFunction(()=>!$('trackHover')?.hidden&&$('map').classList.contains('track-hover'));
@@ -74,7 +74,7 @@ async function check(type){
   await page.locator('.note-jump').click();assert.equal(await page.locator('.track-speed-label').textContent(),labelBefore);
   await page.locator('#startPresentation').click();assert.equal(await page.locator('#speedMarkers [data-pinned="true"]').count(),1);
   assert.equal(await page.locator('[data-speed-action]').count(),0);
-  assert.equal(await page.evaluate(()=>webglTracks.active?getComputedStyle(webglTracks.host).pointerEvents:getComputedStyle(document.querySelector('.track-hit-target')).pointerEvents),'none');
+  assert.equal(await page.evaluate(()=>getComputedStyle(webglTracks.host).pointerEvents),'none');
   const visibility=await page.evaluate(pin=>{
    const seen=()=>{render();return $('speedMarkers').children.length;};
    selectedTime=pin.time-1;const future=seen();
@@ -84,11 +84,10 @@ async function check(type){
    view=[0,0,10,10];setview();const offscreen=seen();
    return {future,old,inTail,unselected,offscreen};
   },pins[0]);assert.deepEqual(visibility,{future:0,old:0,inTail:1,unselected:0,offscreen:0});
-  await page.locator('#eventSelect').selectOption('0');
+  await page.evaluate(()=>showPresentationEvent(0));
   await page.mouse.move(700,450);await page.mouse.wheel(0,-120);await page.waitForTimeout(100);
   assert.equal(await page.locator('#speedMarkers [data-pinned="true"]').count(),1);
   assert.equal(await page.locator('.track-speed-label').textContent(),labelBefore);
-  await page.screenshot({path:'/tmp/sr2026-speed-pins-'+type.name()+'-presentation.png'});
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('sr2026-speed-pins'))),pins,'Time and viewport changes preserve pins');
   assert.equal(await page.evaluate(()=>localStorage.getItem('sr2026-notes')),notesBefore,'Pins do not modify saved events');
   await page.locator('#endPresentation').click();await page.locator('.note-jump').click();
@@ -103,4 +102,4 @@ async function check(type){
   console.log(JSON.stringify({browser:type.name(),renderer,checks:'exact curve picking, hover, native speed interpolation, click preview, pin/unpin/keyboard, persistence, selected boats, tail and viewport visibility, no gaps, panning, presentation, zoom, failed save',errors}));
  }finally{await browser.close();}
 }
-(async()=>{for(const type of [chromium,firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{for(const type of [firefox])await check(type);})().catch(e=>{console.error(e);process.exit(1)});

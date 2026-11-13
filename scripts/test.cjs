@@ -1,11 +1,15 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{spawnSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..'),args=process.argv.slice(2),started=performance.now();
-function run(args,env=process.env){
+function run(args,env=process.env,keepGoing=false){
  const result=spawnSync(process.execPath,args,{cwd:root,env,stdio:'inherit'});
  if(result.error)throw result.error;
- if(result.status!==0)process.exit(result.status||1);
+ if(result.status!==0&&!keepGoing)process.exit(result.status||1);
+ return result.status===0;
 }
-const extended=args[0]==='--extended',names=extended?args.slice(1):[];
+const extended=args[0]==='--extended',requested=extended?args.slice(1):[];
+// Explicit, Firefox-only catch-up: one pass through distinct coverage areas.
+const catchUp=['gpu_preparation','gpu_profiles','track_geometry','track_bindings','track_joins','track_time_layers','scale_overflow','time_profiles','reference_boat','fleet_preparation','playback_camera','navigation','navigation_online','rhumbline_setup','pin_units','speed_pins','gates','view_controls'];
+const names=[...new Set(requested.flatMap(name=>name==='catch_up'?catchUp:[name]))];
 if(args.length&&(!extended||!names.length)){
  console.error('Usage: node scripts/test.cjs [--extended gates zoom ...]');process.exit(1);
 }
@@ -26,5 +30,7 @@ run(['--test','backend/worker.test.mjs','scripts/test_gate_timing.cjs','scripts/
 console.log(`Quick checks passed: ${checked} syntax checks and focused logic tests in ${((performance.now()-started)/1000).toFixed(2)} s.`);
 if(extended){
  const env={...process.env,SR_VIEWER_URL:process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/'};
- for(const file of browserFiles)run([file],env);
+ const failures=[];
+ for(const file of browserFiles)if(!run([file],env,process.env.SR_TEST_KEEP_GOING==='1'))failures.push(file);
+ if(failures.length){console.error('Failed extended checks: '+failures.join(', '));process.exitCode=1;}
 }

@@ -215,9 +215,9 @@ function renderNavigation(){
  $('mapGatesToggle').setAttribute('aria-pressed',String(navigationMode==='gates'||gates.length>0));
  const key=JSON.stringify([navigationMode,navigationDraft,shownMeasurement,gates,gateDraft,results.map(row=>[row.boat.id,row.passage.end])]);
  if(key===lastNavigationKey)return;lastNavigationKey=key;
- const layer=$('mapNavigation'),previous=layer.querySelector('[data-gate-results-scroll]');
+ const layer=$('mapNavigation'),resultLayer=$('gateResults'),previous=resultLayer.querySelector('[data-gate-results-scroll]');
  const scrollTop=previous?.getAttribute('data-gates')===JSON.stringify(gates)?previous.scrollTop:0;
- layer.replaceChildren();
+ layer.replaceChildren();resultLayer.replaceChildren();
  function draw(points,colour,label,dashed=false){
   if(!points.length)return;
   el('path',{d:path(points),fill:'none',stroke:'#ffffff','stroke-width':5,'vector-effect':'non-scaling-stroke'},layer);
@@ -248,11 +248,11 @@ function renderNavigation(){
  if(navigationMode==='gates'){
   drawGate(gateDraft,1);drawGate(navigationDraft,gateDraft.length?2:1);
  }else for(let i=0;i<gates.length;i+=2)drawGate(gates.slice(i,i+2),i/2+1);
- if(results.length)drawGateResults(layer,gates,results,scrollTop);
+ if(results.length)drawGateResults(resultLayer,gates,results,scrollTop);
  if(navigationMode&&navigationMode!=='gates')draw(navigationDraft,navigationMode==='route'?'#7b3294':'#173d4c',navigationMode==='route'?'Rhumbline':'Måling',navigationMode==='route');
  const active=navigationMode?navigationDraft:shownMeasurement;
  $('measurementResult').textContent=active.length?`${buildRhumbRoute(active).total.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} sømil` :'';
- resizeSymbols(layer);
+ resizeSymbols(layer);resizeSymbols(resultLayer);
 }
 function drawGateResults(layer,gates,results,scrollTop=0){
  const rankWidth=String(results.length).length*7.5+12,nameWidth=Math.max(...results.map(row=>row.boat.name.length))*7.5;

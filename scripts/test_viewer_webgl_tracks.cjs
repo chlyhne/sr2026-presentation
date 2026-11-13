@@ -67,7 +67,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    check(gl.getError()===gl.NO_ERROR,'WebGL error');
    return {allocations,uploads:1,checks:'native cubic/SOG pixels, missing SOG, gaps, static buffers, forward/reverse seek, zoom, newest passage above older crossings, no SVG paths'};
   });
-  await page.screenshot({path:'/tmp/sr2026-webgl-tracks.png'});
   // A lost GPU context must fail visibly, then recover using the same renderer.
   const contextLoss=await page.evaluate(()=>{
    const extension=webglTracks.gl.getExtension('WEBGL_lose_context');

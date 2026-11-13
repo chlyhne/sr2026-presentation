@@ -23,6 +23,10 @@ Test har to niveauer:
 
 Browser- og GPU-dækning hører til det udvidede niveau; standardkontrollen er
 bevidst lille. Alle browsertests skal køre skjult.
+Ved et bestilt catch-up kan `node scripts/test.cjs --extended catch_up` køre den
+samlede spor-/GPU-/gate-kontrol i headless Firefox. `SR_TEST_KEEP_GOING=1` samler
+fejl fra flere delkontroller i én kørsel. Se [dækning og målinger](scripts/track-validation.md).
+Denne kontrol køres ikke ved almindelige iterationer.
 
 ## Lokalt preview og redigering
 
