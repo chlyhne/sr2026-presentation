@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import requests
+from prepare_military import decimal_degrees
 
 ROOT=Path(__file__).resolve().parents[1]
 RAW=ROOT/'data/geography/osm-tss.json'
@@ -58,6 +59,15 @@ def main():
             raise ValueError('TSS aggregate contains geometry absent from the extract')
     if not features:
         raise ValueError('No traffic separation geometry returned')
+    override=json.loads((ROOT/'data/geography/storebaelt-tss-coordinates.json').read_text(encoding='utf-8'))
+    points=[[decimal_degrees(p['longitude'][0],p['longitude'][1],180),
+             decimal_degrees(p['latitude'][0],p['latitude'][1],90)] for p in override['points']]
+    features=[f for f in features if f['id'] not in override['replaces']]
+    features.append({'type':'Feature','id':'user/storebaelt-tss',
+                     'properties':{'kind':'separation_zone','name':override['name'],
+                                   'source':override['source'],'source_date':override['source_date'],
+                                   'source_coordinates':override['points'],'replaces':override['replaces']},
+                     'geometry':{'type':'Polygon','coordinates':[points+[points[0]]]}})
     metadata={'source':'OpenSeaMap / OpenStreetMap seamarks','attribution':'© OpenStreetMap contributors',
               'copyright_url':'https://www.openstreetmap.org/copyright','license':'ODbL-1.0',
               'license_url':'https://opendatacommons.org/licenses/odbl/1-0/',
@@ -69,7 +79,7 @@ def main():
               'excluded_context_types':dict(excluded),'simplified':False}
     RAW.parent.mkdir(parents=True,exist_ok=True);RAW.write_bytes(raw)
     OUT.write_text(json.dumps({'type':'FeatureCollection','metadata':metadata,'features':features},
-                             ensure_ascii=False,separators=(',',':')))
+                             ensure_ascii=False,separators=(',',':')),encoding='utf-8')
     print('TSS ready:',len(features),'features;',metadata['counts'])
 
 if __name__=='__main__':

@@ -393,11 +393,11 @@ deres betydning ved referencevalg, genindlæsning, manglende data og præsentati
 - Vindpilene ligger i et kvadratisk gitter med 90 skærmpixels mellem centrene,
   uanset zoom. Gitteret opdateres ved zoom, panorering og ændret vinduesstørrelse.
   Pilene interpolerer vinden ved gitterets geografiske placeringer.
-- **Trafikseparering · TSS** viser skillezoner med lilla skravering, skillelinjer
-  med fuldt optrukne lilla linjer, grænser med stiplede linjer og trafikretning med
-  store, åbne lilla pile. Laget er slået til fra start og kan skjules.
-  Valget gemmes med noter. Pile og skravering har fast skærmstørrelse ved zoom.
-- **Skydeområde · Hatter Barn** viser polygonen fra dine syv hjørnekoordinater med
+- **Trafikseparering · TSS** viser områders polygoner med samme sorte kant og
+  skravering som skydeområder; åbne skillelinjer og grænser tegnes med sort kant.
+  Retningspile tegnes ikke. Laget er slået til fra start og kan skjules.
+  Valget gemmes med noter. Skravering har fast skærmstørrelse ved zoom.
+- **Hatter Barn · skydeområde og TSS** viser den samlede polygon fra dine ni hjørnekoordinater med
   sort kant og skravering. Laget kan vælges uafhængigt af TSS og gemmes med noter.
   Skraveringen har samme faste størrelse som TSS.
   Kyst, trafikseparering, skydeområde og Rute T ligger samlet i landkortets SVG-lag
@@ -728,13 +728,13 @@ Et allerede hentet Overpass-svar kan indlæses med `--source <fil>`.
 
 ## Genskab data
 
-Skydeområdets polygon er **Hatter Barn skydeområde**, indtegnet efter brugerens
-syv hjørnekoordinater modtaget 7. november 2026. De oprindelige koordinater
+Områdets polygon er **Hatter Barn skydeområde og trafikseparering**, indtegnet efter brugerens
+ni hjørnekoordinater modtaget 13. november 2026. De oprindelige koordinater
 bevares i `../data/geography/hatter-barn-coordinates.json`, med decimalminutter
 gemt som strenge.
 Koordinaterne omregnes til decimalgrader uden afrunding og i samme rækkefølge.
 `10° 60.000′ E` normaliseres til `11° 00.000′ E`. Første hjørne gentages som
-ottende koordinat for at lukke polygonen. Grænsen tegnes med sort streg og
+tiende koordinat for at lukke polygonen. Grænsen tegnes med sort streg og
 skravering og følger med i noter med gemte lagindstillinger.
 
 Den genererede GeoJSON med kildekoordinater og metadata ligger i
@@ -753,10 +753,14 @@ og 1 trafikrundkørsel. Overpass-forespørgslen bruger den historiske database p
 Kildens base-tidsstempel for serverens aktuelle database gemmes separat fra
 det historiske tidspunkt, der er angivet i forespørgslen.
 
-Alle koordinater og retningsforløbenes nodeorden er bevaret. Kun kildeobjekter
-af typen `separation_zone` fyldes med skravering. Der opfindes ingen arealgrænser
-omkring skillelinjer. Pilenes retning følger de registrerede `separation_lane`-veje:
-https://wiki.openstreetmap.org/wiki/Tag:seamark:type=separation_lane .
+Ved Storebæltsbroen erstattes de fem oprindelige linjeobjekter af brugerens
+samlede fempunkts-polygon, bevaret med decimalminutter i
+`../data/geography/storebaelt-tss-coordinates.json`. Den skraveres sort.
+
+Alle kildekoordinater er bevaret. Polygoner (skillezoner og trafikrundkørsel)
+fyldes med sort skravering som skydeområder. Åbne grænser og skillelinjer
+tegnes som linjer; de indeholder ikke lukkede arealer. Retningsforløbene
+(`separation_lane`) udelades fra tegningen.
 En overordnet TSS-relation tegnes gennem de allerede medtagne medlemmer og
 duplikeres ikke som en ekstra zone. Kysttrafikzoner og forsigtighedsområder er
 udeladt fra dette lag. Data beskriver OSM’s registreringer af systemerne.

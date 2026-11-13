@@ -21,7 +21,7 @@ function renderMilitary(){
   if(feature.node){if(!feature.node.parentNode)layer.append(feature.node);continue;}
   const group=el('g',{'data-military-id':feature.id,'aria-label':feature.properties.name},layer);
   feature.node=group;
-  el('title',{},group).textContent=feature.properties.name+' · skydeområdets afgrænsning';
+  el('title',{},group).textContent=feature.properties.name+' · områdets afgrænsning';
   el('path',{d:feature.d,fill:'#000000','fill-opacity':.035,stroke:'none','fill-rule':'evenodd'},group);
   el('path',{d:feature.d,fill:'url(#militaryHatch)','fill-rule':'evenodd',stroke:'#000000',
    'stroke-width':1.4,'stroke-linejoin':'round','vector-effect':'non-scaling-stroke'},group);

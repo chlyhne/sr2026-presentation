@@ -163,11 +163,14 @@ for(const [i,name] of [...new Set(boats.map(b=>b.name))].sort().entries()){
 }
 for(const b of boats){const label=document.createElement('label');label.className='boat';const {choice,heart}=createBoatHeartChoice(b);const dot=document.createElement('span');dot.className='dot';dot.style.background=colours[b.name];label.append(choice,heart,dot,document.createTextNode(b.name));$('choices').append(label)}
 for(const [name,lon,lat] of [['Helsingør',12.61,56.04],['København',12.57,55.67],['Stevns',12.45,55.28],['Møn',12.3,54.98],['Farø',11.99,54.95],['Agersø',11.2,55.21],['Storebæltsbroen',11.03,55.33],['Røsnæs',10.87,55.74],['Sj. Odde',11.3,55.97],['Gilleleje',12.31,56.13]]){const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('places'));el('circle',{cx:0,cy:0,r:2,fill:'#173d4c'},group);const n=el('text',{x:4,y:-4,fill:'#173d4c','font-size':11,stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);n.textContent=name}
-// Red mark in Snekkeløb: user-supplied 56° 2.391′ N, 11° 16.523′ E.
-{
- const [x,y]=xy([11+16.523/60,56+2.391/60]),group=screenGroup(x,y,$('seamarks'));
- el('circle',{id:'snekkeloebRedMark',cx:0,cy:0,r:5,fill:'#e02020',stroke:'#ffffff','stroke-width':1},group);
- el('title',{},group).textContent='Rød i Snekkeløb · 56° 2.391′ N 11° 16.523′ E';
+// User-supplied mandatory marks; preserve the original decimal minutes.
+for(const [id,lon,lat,title] of [
+ ['snekkeloebRedMark',11+16.523/60,56+2.391/60,'Rød i Snekkeløb · 56° 2.391′ N 11° 16.523′ E'],
+ ['mandatoryRedMark',12+11.358/60,54+49.783/60,'Bøje, der skal overholdes · 54° 49.783′ N 12° 11.358′ E']
+]){
+ const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('seamarks'));
+ el('circle',{id,cx:0,cy:0,r:5,fill:'#e02020',stroke:'#ffffff','stroke-width':1},group);
+ el('title',{},group).textContent=title;
 }
 // Rute T is an open line through the user's waypoints, in the base map layer.
 for(const feature of D.course_lines.features){

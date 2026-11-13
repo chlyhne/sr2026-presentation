@@ -156,7 +156,7 @@ body.presenting #annotations [data-note-index]{cursor:inherit}
 .colour-legend{display:flex;font-size:10px;overflow:hidden;border-radius:3px;margin-top:8px}
 .colour-legend span{flex:1;text-align:center;min-width:0;padding:5px 0;color:#10212d}
 .colour-legend .dark{color:white}
-.tss-swatch{display:inline-block;width:22px;height:13px;vertical-align:middle;margin-right:4px;border:1px solid #b469ad;background:repeating-linear-gradient(135deg,transparent 0 4px,#b469ad 4px 5px)}
+.tss-swatch{display:inline-block;width:22px;height:13px;vertical-align:middle;margin-right:4px;border:1px solid #000;background:repeating-linear-gradient(135deg,transparent 0 4px,#000 4px 5px)}
 .military-swatch{border-color:#000;background:repeating-linear-gradient(135deg,#dcecf0 0 4px,#000 4px 5px)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 body.presenting main{--event-width:clamp(280px,28vw,440px);grid-template-columns:minmax(0,1fr) var(--event-width)}
