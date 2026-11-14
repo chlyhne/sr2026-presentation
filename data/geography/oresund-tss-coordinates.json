@@ -1,0 +1,161 @@
+{
+  "name": "Trafikseparering i Øresund",
+  "source": "Brugerens femten hjørnekoordinater",
+  "source_date": "2026-11-14",
+  "replaces": [
+    "tss/sound",
+    "tss/sound-entrance"
+  ],
+  "points": [
+    {
+      "latitude": [
+        55,
+        "58.820"
+      ],
+      "longitude": [
+        12,
+        "39.979"
+      ]
+    },
+    {
+      "latitude": [
+        55,
+        "59.080"
+      ],
+      "longitude": [
+        12,
+        "42.370"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "1.199"
+      ],
+      "longitude": [
+        12,
+        "41.152"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "3.350"
+      ],
+      "longitude": [
+        12,
+        "39.970"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "4.914"
+      ],
+      "longitude": [
+        12,
+        "37.279"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "6.390"
+      ],
+      "longitude": [
+        12,
+        "34.740"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "8.030"
+      ],
+      "longitude": [
+        12,
+        "32.690"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "6.581"
+      ],
+      "longitude": [
+        12,
+        "30.220"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "5.496"
+      ],
+      "longitude": [
+        12,
+        "33.223"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "4.279"
+      ],
+      "longitude": [
+        12,
+        "35.816"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "3.097"
+      ],
+      "longitude": [
+        12,
+        "38.215"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "1.660"
+      ],
+      "longitude": [
+        12,
+        "37.790"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "0.800"
+      ],
+      "longitude": [
+        12,
+        "38.200"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "0.800"
+      ],
+      "longitude": [
+        12,
+        "39.350"
+      ]
+    },
+    {
+      "latitude": [
+        55,
+        "59.980"
+      ],
+      "longitude": [
+        12,
+        "39.870"
+      ]
+    }
+  ]
+}

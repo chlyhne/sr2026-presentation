@@ -1,0 +1,59 @@
+{
+  "name": "Forbudt kystområde ved Helsingør",
+  "source": "Brugerens fem hjørnekoordinater og kortets OSM-kystlinje",
+  "source_date": "2026-11-14",
+  "replaces": [],
+  "close_along_coast": true,
+  "points": [
+    {
+      "latitude": [
+        56,
+        "2.190"
+      ],
+      "longitude": [
+        12,
+        "37.231"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "2.190"
+      ],
+      "longitude": [
+        12,
+        "37.480"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "2.050"
+      ],
+      "longitude": [
+        12,
+        "37.480"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "1.840"
+      ],
+      "longitude": [
+        12,
+        "37.200"
+      ]
+    },
+    {
+      "latitude": [
+        56,
+        "1.840"
+      ],
+      "longitude": [
+        12,
+        "36.725"
+      ]
+    }
+  ]
+}
