@@ -32,23 +32,24 @@ test('source encoding rejects precision loss, bad timestamps and unrepresentable
 function fixture(){
  const fingerprint='a'.repeat(64),c=codec();
  return {
-  manifest:{version:9,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:fingerprint,
-   dataFile:`track-profiles/${fingerprint}/data.json`,replayFile:`track-profiles/${fingerprint}/source.bin.gz`,replayBytes:54,start:1000,
+  manifest:{version:10,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:fingerprint,
+   dataFile:`track-profiles/${fingerprint}/data.json.gz`,replayFile:`track-profiles/${fingerprint}/source.bin.gz`,replayBytes:54,start:1000,
    boats:[{id:'one',pointCount:3,sourceOffset:0}]},
   data:{start:1000,boats:[{id:'one',trackSegments:[[1003,1027],[1501,1501]]}]},
   source:c.packSourceTrack([[12,55,1003000],[12.01,55.02,1027000],[13,56,1501000]],[7.4,null,18.5]),bundle:Buffer.alloc(7)
  };
 }
 function load(input){
- const requests=[],context=vm.createContext({Response,DecompressionStream,window:{},fetch:async url=>{
+ const requests=[],context=vm.createContext({Response,DecompressionStream,TextDecoder,window:{},fetch:async url=>{
   requests.push(url);
   if(url===input.missing)return new Response('',{status:404});
   if(url.endsWith('manifest.json'))return new Response(JSON.stringify(input.manifest));
-  if(url.endsWith('data.json'))return new Response(JSON.stringify(input.data));
+  if(url.endsWith('data.json.gz'))return new Response(input.dataGzip??gzipSync(JSON.stringify(input.data)));
   return new Response(url.endsWith('source.bin.gz')?(input.sourceGzip??gzipSync(input.source)):gzipSync(input.bundle));
  }});
  const boot=source('boot'),files=boot.match(/const files=\[(.*?)\];/)[1].match(/'[^']+'/g).map(name=>name.slice(1,-1));
  for(const name of files){vm.runInContext(source(name),context);if(name==='replay-data')break;}
+ input.manifest.dataBytes??=Buffer.byteLength(JSON.stringify(input.data));
  return {context,requests,promise:context.loadReplayData()};
 }
 test('gzip source load preserves original times, gaps and native SOG before publishing data',async()=>{
@@ -57,7 +58,7 @@ test('gzip source load preserves original times, gaps and native SOG before publ
  assert.deepEqual(Array.from(boat.points,p=>p[2]),[1003,1027,1501]);
  assert.deepEqual(Array.from(boat.points[0]),[12,55,1003]);
  assert.deepEqual(Array.from(boat.speeds),[7.4/1.852,null,18.5/1.852]);
- assert.equal(requests.length,3);assert.ok(requests.includes(input.manifest.replayFile));
+ assert.equal(requests.length,3);assert.ok(requests.includes(input.manifest.replayFile));assert.ok(requests.includes(input.manifest.dataFile));assert.equal(requests.some(url=>url.endsWith('/data.json')),false);
  assert.equal(vm.runInContext('trackTimeIndexes.has(window.DATA.boats[0].points)',context),true);
  assert.equal(vm.runInContext('trackModelCache.has(window.DATA.boats[0].points)',context),true);
 });
@@ -68,6 +69,10 @@ for(const [name,mutate] of [
  ['wrong coordinate scale',input=>input.manifest.coordinateScale=1e6],
  ['unsafe metadata path',input=>input.manifest.dataFile='track-profiles/../data.json'],
  ['unsafe source path',input=>input.manifest.replayFile='track-profiles/../source.bin.gz'],
+ ['missing metadata file',input=>input.missing=input.manifest.dataFile],
+ ['uncompressed metadata',input=>input.dataGzip=Buffer.from(JSON.stringify(input.data))],
+ ['wrong metadata size',input=>input.manifest.dataBytes=1],
+ ['broken metadata gzip',input=>input.dataGzip=Buffer.from('not gzip')],
  ['missing source file',input=>input.missing=input.manifest.replayFile],
  ['wrong boat id',input=>input.data.boats[0].id='other'],
  ['duplicate manifest id',input=>{input.manifest.boats.push({...input.manifest.boats[0]});input.data.boats.push({...input.data.boats[0]});}],

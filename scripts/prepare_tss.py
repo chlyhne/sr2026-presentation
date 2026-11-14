@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import requests
 from prepare_military import decimal_degrees
-from shapely.geometry import Polygon, Point, mapping, shape
+from shapely.geometry import Polygon, Point, mapping, shape, box
 from shapely.ops import unary_union, substring
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -114,7 +114,17 @@ def main():
             omitted.append(feature['id'])
         else:
             retained.append(feature)
-    features=retained
+    display_bbox=json.loads((ROOT/'data/geography/map-bounds.json').read_text())['bbox']
+    display_area=box(*display_bbox)
+    features=[]
+    for feature in retained:
+        area=shape(feature['geometry']).intersection(display_area)
+        if area.is_empty:
+            omitted.append(feature['id'])
+            continue
+        if area.geom_type not in {'Polygon','MultiPolygon'}:
+            raise ValueError('Invalid clipped traffic area: '+feature['id'])
+        features.append({**feature,'geometry':mapping(area)})
     metadata={'source':'OpenSeaMap / OpenStreetMap seamarks','attribution':'© OpenStreetMap contributors',
               'copyright_url':'https://www.openstreetmap.org/copyright','license':'ODbL-1.0',
               'license_url':'https://opendatacommons.org/licenses/odbl/1-0/',
@@ -122,7 +132,7 @@ def main():
               'server_base_timestamp':source.get('osm3s',{}).get('timestamp_osm_base'),
               'endpoint':ENDPOINT,'query':QUERY,'query_bbox':[9.3,53.8,14.2,57.2],
               'counts':dict(Counter(f['properties']['kind'] for f in features)),
-              'display_limits':limits,'omitted_outside_display_limits':omitted,
+              'map_bbox':display_bbox,'display_limits':limits,'omitted_outside_display_limits':omitted,
               'aggregates_represented_by_outer_area':[r['id'] for r in aggregates],
               'excluded_context_types':dict(excluded),'simplified':False,
               'presentation':'outer boundaries with whole-area hatching',

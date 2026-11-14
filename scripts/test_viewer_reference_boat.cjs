@@ -33,7 +33,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   assert.equal(format.compact,true);assert.equal(format.bytes,format.count*format.boats*4);
   assert.equal(format.textureBytes,1024*Math.ceil(format.count/1024)*16);
   const manifest=await page.evaluate(async()=>await (await fetch('track-profiles/manifest.json',{cache:'no-store'})).json());
-  assert.equal(manifest.version,9);assert.equal(manifest.replayEncoding,'source-integers-xor-byteplanes-v1');assert.equal(manifest.bundleFile,undefined);
+  assert.equal(manifest.version,10);assert.equal(manifest.replayEncoding,'source-integers-xor-byteplanes-v1');assert.equal(manifest.bundleFile,undefined);
   const downloads=await page.evaluate(()=>performance.getEntriesByType('resource').filter(entry=>/\/track-profiles\/.*\.bin\.gz$/.test(new URL(entry.name).pathname)).map(entry=>entry.name));
   assert.equal(downloads.length,1);assert.ok(downloads[0].endsWith('/source.bin.gz'));
   assert.equal(await page.evaluate(()=>boats.every(boat=>trackProfileCache.get(boat.points).stations.buffer.byteLength===referenceStationCount()*4)),true);

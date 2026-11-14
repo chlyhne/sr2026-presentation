@@ -45,6 +45,8 @@ for name, position, expected in [
     ('Sverige', (13.2, 55.8), True), ('Øresund', (12.8, 55.8), False),
     ('Storebælt', (11, 55.6), False), ('København hav', (12.7, 55.7), False),
 ]:
+    if not bounds.covers(Point(position)):
+        continue
     if any(polygons[i].covers(Point(position)) for i in land) != expected:
         raise ValueError(f'Land/sea reference failed: {name}')
 output = {'type': 'FeatureCollection', 'metadata': {
