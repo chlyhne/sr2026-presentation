@@ -13,9 +13,9 @@ function sourceState(){
 function currentManifest(state){
  if(!fs.existsSync(MANIFEST))return null;
  let m;try{m=JSON.parse(fs.readFileSync(MANIFEST,'utf8'));}catch(error){if(error instanceof SyntaxError)return null;throw error;}
- if(m?.version!==9||m.sourceFingerprint!==state.sourceFingerprint||m.replayEncoding!=='source-integers-xor-byteplanes-v1'||m.compression!=='gzip'||m.coordinateScale!==1e7||m.speedScaleKmh!==10||m.sourcePointBytes!==18||m.byteOrder!=='little-endian'||!Array.isArray(m.boats))return null;
+ if(m?.version!==10||m.sourceFingerprint!==state.sourceFingerprint||m.replayEncoding!=='source-integers-xor-byteplanes-v1'||m.compression!=='gzip'||m.coordinateScale!==1e7||m.speedScaleKmh!==10||m.sourcePointBytes!==18||m.byteOrder!=='little-endian'||!Array.isArray(m.boats))return null;
  const prefix='track-profiles/'+state.sourceFingerprint+'/';
- if(m.replayFile!==prefix+'source.bin.gz'||m.dataFile!==prefix+'data.json'||!fs.existsSync(path.join(ROOT,'viewer',m.dataFile)))return null;
+ if(m.replayFile!==prefix+'source.bin.gz'||m.dataFile!==prefix+'data.json.gz'||!Number.isSafeInteger(m.dataBytes)||m.dataBytes<=0||!Number.isSafeInteger(m.dataCompressedBytes)||m.dataCompressedBytes<=0||!fs.existsSync(path.join(ROOT,'viewer',m.dataFile))||fs.statSync(path.join(ROOT,'viewer',m.dataFile)).size!==m.dataCompressedBytes)return null;
  const ids=new Set();let offset=0;
  for(const boat of m.boats){if(typeof boat.id!=='string'||ids.has(boat.id)||!Number.isSafeInteger(boat.pointCount)||boat.pointCount<0||!Number.isSafeInteger(boat.pointCount*18)||boat.sourceOffset!==offset)return null;ids.add(boat.id);offset+=sourceTrackBytes(boat.pointCount);}
  const file=path.join(ROOT,'viewer',m.replayFile);
@@ -60,9 +60,10 @@ function generate({ifStale=false}={}){
  const compressed=gzip(Buffer.concat(chunks,offset));
  if(sourceState().sourceFingerprint!==state.sourceFingerprint)throw Error('Source data changed during preparation. Run the generator again.');
  fs.mkdirSync(path.join(OUTPUT,state.sourceFingerprint),{recursive:true});
- const replayFile=prefix+'source.bin.gz',dataFile=prefix+'data.json';
- writeAtomic(path.join(ROOT,'viewer',replayFile),compressed);writeAtomic(path.join(ROOT,'viewer',dataFile),JSON.stringify({...D,boats:metadata}));
- const manifest={version:9,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:state.sourceFingerprint,sources:state.sources,start:D.start,dataFile,replayFile,replayBytes:offset,replayCompressedBytes:compressed.byteLength,boats:entries};
+ const replayFile=prefix+'source.bin.gz',dataFile=prefix+'data.json.gz';
+ const data=Buffer.from(JSON.stringify({...D,boats:metadata})),compressedData=gzip(data);
+ writeAtomic(path.join(ROOT,'viewer',replayFile),compressed);writeAtomic(path.join(ROOT,'viewer',dataFile),compressedData);
+ const manifest={version:10,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:state.sourceFingerprint,sources:state.sources,start:D.start,dataFile,dataBytes:data.byteLength,dataCompressedBytes:compressedData.byteLength,replayFile,replayBytes:offset,replayCompressedBytes:compressed.byteLength,boats:entries};
  writeAtomic(MANIFEST,JSON.stringify(manifest,null,2)+'\n');
  console.log(`Source data: ${native.length} boats, ${entries.reduce((n,b)=>n+b.pointCount,0)} original points, ${compressed.byteLength} gzip bytes, ${((performance.now()-started)/1000).toFixed(2)} s`);return manifest;
 }

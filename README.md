@@ -45,7 +45,9 @@ Genererede filer i `viewer/track-profiles/` ignoreres af Git og forberedes med
 kontrol. GitHub Actions cacher kildepakken under generatorens SHA-256-fingeraftryk.
 Ændringer af events eller renderingskode kræver ingen ny komprimering.
 
-Manifestversion 9 hentes med `cache: 'no-store'` og angiver metadata (`dataFile`),
+Kort- og vejrmetadata hentes som `data.json.gz` og pakkes ud i browseren, ligesom spordata. Det sikrer gzip ved både lokal visning og statisk hosting.
+
+Manifestversion 10 hentes med `cache: 'no-store'` og angiver metadata (`dataFile`),
 kildepakken (`replayFile`), kildefingeraftryk og hver båds ID, originale punktantal
 og `sourceOffset`. Filnavne indeholder fingeraftrykket. Browseren kontrollerer
 format, offset, filstørrelse, ID'er, tidsrækkefølge og segmentgrænser, før data frigives.
