@@ -13,9 +13,9 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 ### MAP-01 — Komplette arealgrænser for trafikseparering
 
 - **Område:** [trafiklaget](./viewer/traffic.js) og [kildedata](./data/traffic-separation.geojson).
-- **Udskudt:** Saml komplette TSS-arealer fra dokumenterede ydergrænser samt visuel browserkontrol af skravering.
-- **Konsekvens/usikkerhed:** Hatter Barn og Storebæltsbroen er dækket af brugerens samlede polygoner. Storebæltsbroens gamle linjer erstattes af den nye flade. Øvrige eksisterende polygoner skraveres som skydeområder, og retningspile er fjernet. Andre åbne TSS-grænselinjer i kilden har intet areal at skravere; hele trafiksystemets udstrækning er derfor ikke udfyldt. Samspillet mellem de overlappende lag er ikke browserkontrolleret.
-- **Færdig når:** TSS-arealer har verificerede, lukkede polygoner og vises med sammenhængende skravering.
+- **Udskudt:** Visuel browserkontrol af de samlede TSS-flader mod dokumenterede ydergrænser.
+- **Konsekvens/usikkerhed:** Trafiklaget bruger nu lukkede flader med sammenhængende skravering uden indvendige linjer. Hatter Barns gamle trafikgeometri er udeladt, og brugerens polygoner for Hatter Barn, Storebæltsbroen og Øresund er bevaret. Øresunds to tidligere flader er erstattet af brugerens femten punkter. Ved øvrige områder er åbne ender lukket mellem kildegrænserne. Samspillet mellem lagene er ikke browserkontrolleret.
+- **Færdig når:** De samlede ydergrænser er kontrolleret mod dokumenterede grænser, og skraveringen er visuelt kontrolleret i Firefox.
 
 ### UI-02 — Eventredigering efter pause med midlertidige gates
 
