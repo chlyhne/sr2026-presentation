@@ -49,7 +49,7 @@ function layoutVisibleBoats(){
  const viewport=mapViewport();if(!viewport)return;
  const {rect}=viewport,layout=trackSpeedLegendLayout();
  // Second icon row starts at 12px + 36px row height + 6px gap.
- const top=SIMPLE_IPHONE_TRACKS?54:layout.top+layout.height+8;
+ const top=SIMPLE_IPHONE_TRACKS&&trackUsesBoatColour()?54:layout.top+layout.height+8;
  const key=[rect.width,rect.height,layout.width,top,$('visibleBoatsPanel').hidden].join(':');
  if(key===visibleBoatLayoutKey)return;visibleBoatLayoutKey=key;
  $('mapHeading').style.width=layout.width+'px';

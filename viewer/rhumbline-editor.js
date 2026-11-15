@@ -28,11 +28,12 @@ async function savePermanentRhumbline(){
  if(!validRhumbline(definition)){setupStatus.textContent='Ruten indeholder ugyldige punkter. Ret ruten, før du gemmer.';return;}
  savingRhumbline=true;window.SR_RHUMBLINE_SAVING=true;syncNavigationControls();
  $('finishMapLine').disabled=$('undoMapPoint').disabled=reverseRoute.disabled=restartRoute.disabled=true;
- setupStatus.textContent='Gemmer rhumbline …';
+ setupStatus.textContent='Gemmer rhumbline og klargør sporfiler på serveren …';
  try{
   const response=await fetch('/api/rhumbline',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(definition)});
   const result=await response.json();if(!response.ok)throw Error(result.error||'Rhumbline kunne ikke gemmes.');
   lockRhumblineEditor(result.points);
+  $('measurementHelp').textContent='Rhumbline og sporfiler er gemt. Genindlæs præsentationen for at bruge den nye rute.';
  }catch(error){setupStatus.textContent=error.message;syncNavigationControls();reverseRoute.disabled=restartRoute.disabled=false;}
  finally{savingRhumbline=false;window.SR_RHUMBLINE_SAVING=false;}
 }

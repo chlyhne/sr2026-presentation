@@ -18,7 +18,7 @@
   }
   button('Log ud',async()=>{try{const r=await fetch(config.apiBase+'/api/logout',{method:'POST'});if(!r.ok)throw Error('Kunne ikke logge ud.');location.reload();}catch(e){status.textContent=e.message;}});
   const publish=button('Udgiv',async()=>{
-   if(!finishInlineTextEditing()||!noteNavigationAllowed())return;
+   if(!noteNavigationAllowed(()=>publish.click()))return;
    publish.disabled=true;
    try{
     const response=await fetch(config.apiBase+'/api/presentation',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha:window.SR_SHA,document:{version:1,notes,speedPins}})});
@@ -30,11 +30,11 @@
   });
  }
  const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.hidden=true;document.body.append(input);
- button('Importér noter',()=>input.click());
- input.onchange=async()=>{
-  const file=input.files[0];if(!file)return;
+ button('Importér noter',()=>{input.value='';input.click();});
+ input.onchange=()=>{const file=input.files[0];if(file)importNotes(file);};
+ async function importNotes(file){
+  if(!noteNavigationAllowed(()=>importNotes(file)))return;
   try{
-   if(!noteNavigationAllowed())return;
    const data=validatePresentationDocument(JSON.parse(await file.text()));
    const incoming=data.notes,pins=data.speedPins;
    if(incoming.some(n=>!n||!Number.isFinite(n.time)||typeof n.text!=='string'))throw Error('Filen indeholder ikke gyldige noter.');
@@ -53,5 +53,5 @@
    notes=chronologicalNotes(incoming);speedPins=pins;activePresentationNote=null;finishNoteEditing();showNotes();updateTimeline();render();
    status.textContent=config.admin?'Importeret til kladden. Klik Udgiv for at offentliggøre.':'Noter og fart-pins er importeret.';
   }catch(e){status.textContent=e.message;}finally{input.value='';}
- };
+ }
 })();

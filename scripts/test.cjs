@@ -8,7 +8,7 @@ function run(args,env=process.env,keepGoing=false){
 }
 const extended=args[0]==='--extended',requested=extended?args.slice(1):[];
 // Explicit, Firefox-only catch-up: one pass through distinct coverage areas.
-const catchUp=['gpu_preparation','gpu_profiles','track_geometry','track_bindings','track_joins','track_time_layers','scale_overflow','time_profiles','reference_boat','fleet_preparation','playback_camera','navigation','navigation_online','rhumbline_setup','pin_units','speed_pins','gates','view_controls'];
+const catchUp=['gpu_preparation','cpu_profiles','track_geometry','track_bindings','track_joins','track_time_layers','scale_overflow','time_profiles','reference_boat','fleet_preparation','playback_camera','navigation','navigation_online','rhumbline_setup','pin_units','speed_pins','gates','view_controls'];
 const names=[...new Set(requested.flatMap(name=>name==='catch_up'?catchUp:[name]))];
 if(args.length&&(!extended||!names.length)){
  console.error('Usage: node scripts/test.cjs [--extended gates zoom ...]');process.exit(1);
@@ -26,7 +26,7 @@ for(const folder of ['viewer','scripts'])for(const name of fs.readdirSync(path.j
  const file=path.join(root,folder,name);if(fs.statSync(file).size>1024*1024)continue;
  new vm.Script(fs.readFileSync(file,'utf8'),{filename:file});checked++;
 }
-run(['--test','backend/worker.test.mjs','scripts/test_gate_timing.cjs','scripts/test_gate_results.cjs','scripts/test_time_gain.cjs','scripts/test_track_profiles.cjs','scripts/test_replay_data.cjs']);
+run(['--test','backend/worker.test.mjs','scripts/test_gate_timing.cjs','scripts/test_gate_results.cjs','scripts/test_time_gain.cjs','scripts/test_track_profiles.cjs','scripts/test_track_preparation.cjs','scripts/test_prepared_tracks.cjs','scripts/test_replay_data.cjs']);
 console.log(`Quick checks passed: ${checked} syntax checks and focused logic tests in ${((performance.now()-started)/1000).toFixed(2)} s.`);
 if(extended){
  const env={...process.env,SR_VIEWER_URL:process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/'};

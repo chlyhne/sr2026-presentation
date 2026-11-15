@@ -10,14 +10,29 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 
 ## Åbne punkter
 
-### GPU-01 — Tilbagevendende konteksttab under indlæsning på iPhone
+### GPU-01 — Bekræft deploy-klargjorte spor og alle farvevalg på iPhone
 
-- **Område:** [GPU-klargøring](./viewer/gpu-track-preparation.js) og [sporfejl](./viewer/track-renderer.js).
-- **Udskudt:** Bekræftelse på den berørte iPhone med enkle spor med bådfarver og ikonrækken genindført som tre kolonner og to rækker. Den konkrete årsag til det tidligere konteksttab er endnu ikke fastslået.
-- **Konsekvens/usikkerhed:** Telefonen virkede efter begrænsning af rasteropløsningen, men konteksttabet er meldt igen under indlæsning. Transform feedback opdeles nu i højst 4.096 punkter pr. kald, og profilberegning i én teksturrække med 1.024 stationer pr. kald; GPU-kommandoerne flushes mellem delene. Datasættet, beregningerne og de permanente teksturer er uændrede. Fejlen angiver seneste båd, GPU-trin og antal klargjorte både. Hukommelsestryk kan stadig spille ind.
-- **Aktuel diagnose:** Begge kontekster mistes efter første tegning med grafikbuffer 340 × 1248 og alle 106 både klargjort. Lokal Firefox viser ét sporinterval, fire kildeendestykker og cirka 156 MB permanente GPU-spordata. Årsagen på iPhone er fortsat ukendt. Forsøget med delt referenceplads og CPU-upload ved referencevalg er rullet tilbage på brugerens anmodning; alle referenceprofiler bliver på GPU'en af hensyn til hurtigt bådskift. Yderligere fejlsøgning er stoppet efter brugerens instruktion.
-- **Ny iPhone-visning:** Efter at telefonen igen fejlede med sammenligningsfarver, er iPhone på brugerens anmodning tilbage på helt enkle spor: bådfarver, fast tykkelse, 32 bytes pr. kildepunkt og seks vertices pr. sporstykke. Ingen GPU-profiler, sammenligningsdata, kurver eller kapper oprettes. Ikonrækken er fortsat tre kolonner og to rækker, og menuer åbner under hele rækken. Desktop beholder alle farvevalg. Sporindstillingerne viser kun sporlængde og handicapkompensering, og bådlisten står direkte under overskriften. Den hurtige standardkontrol er bestået. Brugeren melder nu, at Chrome virker, og har bedt om at lade WebGL-fejlsøgningen ligge; stabilitet i de øvrige berørte visninger er fortsat uafklaret.
-- **Færdig når:** Opstart virker stabilt på den berørte iPhone, og knapperne kan vises i to rækker uden konteksttab; ellers bruges den konkrete fejl og dens klargøringstrin til at afgrænse næste rettelse.
+- **Område:** [build](./scripts/prepare_track_profiles.cjs), [fillæsning](./viewer/track-files.js) og [renderer](./viewer/track-renderer.js).
+- **Udskudt:** Samlet kontrol på den berørte iPhone af opstart, alle sportyper, referenceskift og 3×2-ikonrækken uden konteksttab.
+- **Aktuel løsning:** Efter brugerens ønske beregnes begge geometrier, modeller, indeks, profiler og alle referencefarver ved build/deploy. Browseren læser tabsfrit kodede filer; der er ingen worker, IndexedDB-lagring eller klientberegning som reserve. WebGL 2 tegner kun fælles geometri og aktiv R32F-farvetype.
+- **Gennemført:** Hurtige analytiske matematiktests og tabsfri codec-kontrol. Skjult Firefox kontrollerer opstart, begge geometrier, alle sportyper, referenceformler/-skift, manglende/korrupte filer samt kontekstgenskabelse. Filtesten blokerer worker, IndexedDB og beregning af kurver/indeks. Opstart inklusive stil- og referenceskift var ca. 3 sekunder på PC. Den konkrete telefon er endnu ikke kontrolleret med deploy-filerne.
+- **Konsekvens/usikkerhed:** GPU-driverens tidligere fejl er ikke alene afkræftet af lokale tests. Residente geometri-/SOG-data efter upload er ca. 50,8 MB på desktop og 27,4 MB for enkle spor, ud over baggrunden.
+- **Testarbejdsgang:** Automatisk genindlæsningskommando er ryddet efter brugerens ønske. Saml lokale rettelser og kontroller før én aftalt telefontest. Fejl og indlæsningstrin gemmes i `/tmp/sr2026-client-errors.jsonl` uden eventindhold.
+- **Færdig når:** Den berørte iPhone starter og skifter mellem alle farvetyper og referencer stabilt med deploy-filer og WebGL 2-tegning.
+
+### DATA-01 — Reducer førstegangsdownload af fælles spordata
+
+- **Område:** [filcodec](./viewer/prepared-track-codec.js) og [build](./scripts/prepare_track_profiles.cjs).
+- **Udskudt:** Yderligere tabsfri komprimering, eksempelvis byteplaner eller deltakanaler, af de fælles opslag og kurvemodeller.
+- **Konsekvens/usikkerhed:** Første download er ca. 55 MB på iPhone og 65 MB på desktop med Mercutio. Fællesdelen udgør ca. 38 MB. Efterfølgende referencevalg henter 1–5 MB; fingerprintede URL'er kan caches. Hele buildet er ca. 475 MB og hentes ikke samlet, men første download kan være mærkbar på langsomme forbindelser.
+- **Færdig når:** Downloadstørrelsen er målt reduceret uden tab af kildeheltal, Float64-modeller eller øvrige lagrede bytes, og uden at indføre ny tung klientberegning.
+
+### TEST-01 — Tilpas ældre udvidede fixtures til deploy-filer
+
+- **Område:** [fixturehjælper](./scripts/viewer-track-fixtures.cjs) og ældre udvidede spor-/profiltests.
+- **Udskudt:** Migrering af ældre GPU-/CPU-klargøringsfixtures, som opretter profiler og syntetiske både direkte i klienten i stedet for at bruge et bygget fixture-datasæt.
+- **Konsekvens/usikkerhed:** Deres gamle API-, beregnings- og lagerantagelser er overhalet. Den tidligere matematiske kontrol mod den uafhængige reference genbruges; den målrettede [filtest](./scripts/test_viewer_track_files.cjs) validerer begge geometrier og den nominelle lagring; hele den ældre catch-up-suite er ikke kørt på den nye arkitektur.
+- **Færdig når:** Fixtures afventer filklargøring og aktivering, lagerassertioner følger aktiv type, og relevante tests består ved et aftalt catch-up.
 
 ### GPU-02 — Bekræft bådenes lagrækkefølge på iPhone
 
@@ -39,6 +54,13 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 - **Udskudt:** Ekstra browserdækning af oprettelse, gem og annullering af events efter pause med gates fra afspilning.
 - **Konsekvens/usikkerhed:** Play/pause, passage af events, manuel spoling og frisk offentlig opstart er kontrolleret i Firefox. Gem bruger nu de synlige gates og afslutter deres midlertidige afspilningstilstand; den særlige kombination er kun kodegennemgået.
 - **Færdig når:** En målrettet browserkontrol bekræfter, at et nyt event efter pause gemmer de synlige gates og derefter følger normale eventskift.
+
+### UI-03 — Prompt under billedklargøring og online udgivelse
+
+- **Område:** [eventprompt](./viewer/presentation.js) og [import/udgivelse](./viewer/online.js).
+- **Udskudt:** Ekstra browserdækning af prompten under igangværende billedklargøring og ved autentificeret online udgivelse/import med indlejrede billeder.
+- **Konsekvens/usikkerhed:** Gem, Gem ikke, Annullér, Escape, gemmefejl, afspilning, præsentation og eventskift efter ændret rækkefølge er kontrolleret i skjult Firefox på PC. Uploadannullering og online fortsættelse er kodegennemgået; deres særlige kombinationer er endnu ikke browserkontrolleret.
+- **Færdig når:** Målrettet kontrol viser, at et sent uploadsvar ikke overskriver det nye event, og at online handlinger kun fortsætter efter et vellykket valg af Gem eller Gem ikke.
 
 Det tidligere catch-up og genbrugelig validering er beskrevet i
 [spor-/GPU-valideringen](./scripts/track-validation.md).

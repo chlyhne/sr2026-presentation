@@ -58,7 +58,7 @@ function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false,includ
 }
 function seekTimeline(offset,{snap=true}={}){
  syncTimelineViewport();
- if(!finishEventEditing()){$('time').value=offsetAtTime(currentTime());return;}
+ if(!finishEventEditing(()=>seekTimeline(offset,{snap}))){$('time').value=offsetAtTime(currentTime());return;}
  hideMapEventImage();
  hideEventVideo();
  stopPlayback();

@@ -4,9 +4,12 @@ import json
 import math
 import os
 import re
+import subprocess
 import tempfile
 import threading
+import time
 import uuid
+from datetime import datetime, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -18,6 +21,9 @@ MAX_UPLOAD = 16 * 1024 * 1024
 IMAGE_NAME = re.compile(r'^[0-9a-f-]{36}\.(webp|png|jpg)$')
 RHUMBLINE_FILE = ROOT / 'viewer' / 'rhumbline.json'
 RHUMBLINE_LOCK = threading.Lock()
+CLIENT_ERRORS_FILE = Path(tempfile.gettempdir()) / 'sr2026-client-errors.jsonl'
+CLIENT_ERRORS_LOCK = threading.Lock()
+CLIENT_CONTROL_FILE = Path(tempfile.gettempdir()) / 'sr2026-client-control.json'
 
 
 def valid_rhumbline(value):
@@ -47,7 +53,7 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         if self.test_alias:
             # Keep /test/ in the browser while using the same handlers and files.
             self.path = self.path[len('/test'):]
-            del self.headers['If-Modified-Since']
+        del self.headers['If-Modified-Since']
         return True
 
     def translate_path(self, path):
@@ -62,8 +68,8 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         return super().translate_path(path)
 
     def end_headers(self):
-        if getattr(self, 'test_alias', False) or urlsplit(self.path).path in {'/rhumbline.json', '/track-profiles/manifest.json'}:
-            self.send_header('Cache-Control', 'no-store')
+        immutable = re.fullmatch(r'/track-profiles/[a-f0-9]{64}/[a-zA-Z0-9_.-]+\.gz', urlsplit(self.path).path)
+        self.send_header('Cache-Control', 'public, max-age=31536000, immutable' if immutable else 'no-store')
         super().end_headers()
 
     def json_response(self, status, data):
@@ -71,16 +77,42 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         self.send_response(status)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Content-Length', str(len(body)))
-        self.send_header('Cache-Control', 'no-store')
         self.end_headers()
         self.wfile.write(body)
 
+    def active_client_command(self):
+        command = json.loads(CLIENT_CONTROL_FILE.read_text(encoding='utf-8')) if CLIENT_CONTROL_FILE.exists() else {}
+        matches = command.get('target') == 'all' or (command.get('target') == 'iphone' and 'iPhone' in self.headers.get('User-Agent', ''))
+        return command if matches and command.get('command') == 'reload' and command.get('expiresAt', 0) > time.time() * 1000 else {}
+
     def do_GET(self):
+        # An explicit local test command can select the diagnostic document.
+        # The client still reloads only after acknowledging and protecting drafts.
+        if urlsplit(self.path).path in {'/', '/index.html'} and CLIENT_CONTROL_FILE.exists():
+            try:
+                command = self.active_client_command()
+                if command.get('page') == 'probe':
+                    self.path = '/gpu-probe.html'
+            except (OSError, ValueError, TypeError):
+                self.json_response(500, {'error': 'GPU-testkommandoen kunne ikke læses.'})
+                return
+        if urlsplit(self.path).path == '/api/client-control':
+            try:
+                command = json.loads(CLIENT_CONTROL_FILE.read_text(encoding='utf-8')) if CLIENT_CONTROL_FILE.exists() else {'command': None}
+                self.json_response(200, command)
+            except (OSError, ValueError):
+                self.json_response(500, {'error': 'Testserverens klientkommando kunne ikke læses.'})
+            return
         if urlsplit(self.path).path == '/config.js':
-            body = b'window.SR_CONFIG={local:true,admin:false,apiBase:""};'
+            try:
+                revision = self.active_client_command().get('revision')
+            except (OSError, ValueError, TypeError):
+                self.json_response(500, {'error': 'Testserverens klientkommando kunne ikke læses.'})
+                return
+            config = {'local': True, 'admin': False, 'apiBase': '', 'diagnosticsUrl': 'api/client-errors', 'clientControlUrl': 'api/client-control', 'clientControlRevision': revision}
+            body = ('window.SR_CONFIG=' + json.dumps(config) + ';').encode()
             self.send_response(200)
             self.send_header('Content-Type', 'application/javascript')
-            self.send_header('Cache-Control', 'no-store')
             self.send_header('Content-Length', str(len(body)))
             self.end_headers()
             self.wfile.write(body)
@@ -88,6 +120,9 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
+        if urlsplit(self.path).path == '/api/client-errors':
+            self.save_client_error()
+            return
         if urlsplit(self.path).path == '/api/rhumbline':
             self.save_rhumbline()
             return
@@ -130,6 +165,32 @@ class ViewerHandler(SimpleHTTPRequestHandler):
             return
         self.json_response(201, {'id': image_id, 'url': f'/event-images/{name}'})
 
+    def save_client_error(self):
+        if self.headers.get('Origin') != f'http://{self.headers.get("Host")}':
+            self.json_response(403, {'error': 'Fejlrapporter skal komme fra denne testserver.'})
+            return
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+            if not 0 < length <= 65536:
+                raise ValueError('size')
+            report = json.loads(self.rfile.read(length))
+            if not isinstance(report, dict) or report.get('version') != 1 or not all(isinstance(report.get(key), str) for key in ['session', 'kind', 'message']):
+                raise ValueError('report')
+        except (ValueError, UnicodeDecodeError):
+            self.json_response(400, {'error': 'Ugyldig fejlrapport.'})
+            return
+        entry = {'id': str(uuid.uuid4()), 'received': datetime.now(timezone.utc).isoformat(), 'report': report}
+        try:
+            with CLIENT_ERRORS_LOCK:
+                if CLIENT_ERRORS_FILE.exists() and CLIENT_ERRORS_FILE.stat().st_size > 2 * 1024 * 1024:
+                    CLIENT_ERRORS_FILE.replace(CLIENT_ERRORS_FILE.with_suffix('.jsonl.1'))
+                with CLIENT_ERRORS_FILE.open('a', encoding='utf-8') as target:
+                    target.write(json.dumps(entry, ensure_ascii=False) + '\n')
+        except OSError:
+            self.json_response(500, {'error': 'Testserveren kunne ikke gemme fejlrapporten.'})
+            return
+        self.json_response(201, {'id': entry['id']})
+
     def save_rhumbline(self):
         if self.headers.get('Origin') != f'http://{self.headers.get("Host")}':
             self.json_response(403, {'error': 'Gem rhumblinen fra kortet på denne lokale server.'})
@@ -151,7 +212,7 @@ class ViewerHandler(SimpleHTTPRequestHandler):
                 existing = json.loads(RHUMBLINE_FILE.read_text(encoding='utf-8'))
                 if existing != {'version': 1, 'points': []} and not valid_rhumbline(existing):
                     raise ValueError('Invalid permanent rhumbline')
-                if existing.get('points'):
+                if existing.get('points') and existing != definition:
                     self.json_response(409, {'error': 'Rhumbline er allerede gemt permanent og kan ikke overskrives fra kortet.'})
                     return
                 with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=RHUMBLINE_FILE.parent, delete=False) as target:
@@ -166,6 +227,11 @@ class ViewerHandler(SimpleHTTPRequestHandler):
                     temporary.unlink(missing_ok=True)
                 self.json_response(500, {'error': 'Rhumbline kunne ikke gemmes i projektet.'})
                 return
+        try:
+            prepare_track_profiles()
+        except (OSError, subprocess.CalledProcessError):
+            self.json_response(500, {'error': 'Rhumbline er gemt, men sporfilerne kunne ikke bygges. Gem den samme rute igen for at prøve klargøringen igen.'})
+            return
         self.json_response(201, definition)
 
 

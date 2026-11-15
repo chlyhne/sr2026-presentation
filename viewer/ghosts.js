@@ -19,8 +19,8 @@ try{
  if(typeof stored!=='boolean')throw Error('Ugyldigt valg.');
  handicapTracksEnabled=stored;
 }catch(error){handicapPreferenceError='Handicapkompenseret spor kunne ikke indlæses: '+error.message;}
-function trackUsesBoatColour(){return SIMPLE_IPHONE_TRACKS||handicapTracksEnabled||comparison.boatColour;}
-function trackUsesComparison(){return !SIMPLE_IPHONE_TRACKS&&!handicapTracksEnabled&&comparison.enabled;}
+function trackUsesBoatColour(){return handicapTracksEnabled||comparison.boatColour;}
+function trackUsesComparison(){return !handicapTracksEnabled&&comparison.enabled;}
 function syncHandicapTracks(){
  $('handicapCompensatedTracks').checked=handicapTracksEnabled;
  const missing=handicapTracksEnabled?boats.filter(boat=>boatIsDisplayed(boat)&&ghostClocks.get(boat.id).error):[];

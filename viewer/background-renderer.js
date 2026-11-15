@@ -58,9 +58,11 @@ class WebGLBackgroundRenderer {
   $('mapSurface').insertBefore(this.host,$('mapBase'));
   this.canvas=document.createElement('canvas');
   this.canvas.style.cssText='display:block;width:100%;height:100%;pointer-events:none';this.host.append(this.canvas);
-  this.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();this.fail(Error(`WebGL-konteksten er mistet. Trin: ${this.phase||'initialisering'}. Grafikbuffer: ${this.canvas.width} × ${this.canvas.height}.`));});
+  window.SRClientDiagnostics?.register('baggrund',()=>({active:this.active,phase:this.phase,canvas:[this.canvas.width,this.canvas.height],contextLost:this.gl?.isContextLost()??null,
+   uploads:this.uploads,textureUploads:this.textureUploads,draws:this.draws}));
+  this.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();if(releasingPageGraphics||!this.active&&this.error)return;this.fail(Error(`WebGL-konteksten er mistet. Trin: ${this.phase||'initialisering'}. Grafikbuffer: ${this.canvas.width} × ${this.canvas.height}.`));});
   this.canvas.addEventListener('webglcontextrestored',()=>{this.initialize();requestRender();});
-  this.initialize();
+  this.phase='Afventer sporklargøring';
  }
  setActive(active){
   this.active=active;this.lastKey=null;
@@ -70,21 +72,24 @@ class WebGLBackgroundRenderer {
    if(this.weatherSlots)for(const buffer of [windImageBuffer,radarImageBuffer])for(const entry of [buffer.front,buffer.back])if(entry?.ready)this.prepareWeather(buffer,entry);
   }
  }
- fail(error){this.error=error.message;this.setActive(false);reportRenderingFailure('Baggrund',error);}
+ fail(error){const failure=Error(error.message+(error.message.includes('Trin:')?'':' Trin: '+this.phase+'.'));this.error=failure.message;this.setActive(false);reportRenderingFailure('Baggrund',failure);}
  program(vertex,fragment){
-  const gl=this.gl,shaders=[];let program;
+  const gl=this.gl,shaders=[],number=++this.programCount;let program;
   try{
    for(const [type,source] of [[gl.VERTEX_SHADER,vertex],[gl.FRAGMENT_SHADER,fragment]]){
+    this.phase='Kompilér baggrundsprogram '+number+' · '+(type===gl.VERTEX_SHADER?'vertex':'fragment');
     const shader=gl.createShader(type);shaders.push(shader);gl.shaderSource(shader,source);gl.compileShader(shader);
-    if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(shader));
+    if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(shader)||(gl.isContextLost()?'WebGL-konteksten er mistet under shaderkompilering.':'Shaderkompileringen mislykkedes uden fejlbesked.'));
    }
+   this.phase='Link baggrundsprogram '+number;
    program=gl.createProgram();for(const shader of shaders)gl.attachShader(program,shader);gl.linkProgram(program);
    if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
    return {program,uniforms:Object.fromEntries(['origin','screen','size','image','opacity','gridStep','gridAnchor'].map(name=>[name,gl.getUniformLocation(program,name)]))};
   }finally{for(const shader of shaders)gl.deleteShader(shader);}
  }
- initialize(){
-  this.phase='Initialisér kortbaggrundens WebGL';
+ initializePrograms(){
+  this.active=false;this.error=null;this.programCount=0;
+  this.phase='Opret kortbaggrundens WebGL-kontekst';
   try{
    const gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,depth:false,stencil:false,premultipliedAlpha:true});
    if(!gl)throw Error('WebGL 2 unavailable');this.gl=gl;
@@ -132,8 +137,18 @@ void main(){
  float alpha=coverage*0.32;
  colour=vec4(vec3(0.10,0.22,0.28)*alpha,alpha);
 }`);
+   this.phase='Kortbaggrundens programmer klargjort; afventer sporklargøring';
+  }catch(error){this.fail(error);}
+ }
+ initializeGeometry(){
+  if(this.error)return;
+  try{
+   const gl=this.gl;
+   if(!gl||gl.isContextLost())throw Error('Kortbaggrundens WebGL-kontekst er ikke tilgængelig.');
+   this.phase='Klargør kortbaggrundens geometri';
    this.geometry||=prepareBackgroundGeometry(landPolygons,coastChunks);
-   this.landMesh=this.mesh(this.geometry.land,4);this.coastMesh=this.mesh(this.geometry.coast,8);
+   this.phase='Upload landgeometri';this.landMesh=this.mesh(this.geometry.land,4);
+   this.phase='Upload kystgeometri';this.coastMesh=this.mesh(this.geometry.coast,8);
    this.quad=gl.createVertexArray();gl.bindVertexArray(this.quad);
    const quad=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0,1,0,0,1,0,1,1,0,1,1]),gl.STATIC_DRAW);
    gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,8,0);gl.bindVertexArray(null);
@@ -141,9 +156,10 @@ void main(){
    // Explicit order is independent of SVG node creation or weather load order.
    this.layers=[{id:'wind',buffer:windImageBuffer,node:$('windField')},{id:'land',mesh:this.landMesh,node:$('land')},
     {id:'radar',buffer:radarImageBuffer,node:$('precipitation')},{id:'coast',mesh:this.coastMesh,node:$('coast')}];
-   this.viewportKey=null;this.setActive(true);
+   this.viewportKey=null;this.setActive(true);this.phase='Kortbaggrund klargjort; afventer første tegning';
   }catch(error){this.fail(error);}
  }
+ initialize(){this.initializePrograms();this.initializeGeometry();}
  mesh(data,stride){
   const gl=this.gl,vao=gl.createVertexArray();gl.bindVertexArray(vao);
   const vertices=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vertices);gl.bufferData(gl.ARRAY_BUFFER,data.vertices,gl.STATIC_DRAW);

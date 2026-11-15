@@ -1,28 +1,50 @@
-// One direct GPU path. Source cubics, comparison values and real cap addresses
-// are immutable textures. Camera/time/style change uniforms, never raster atlases.
+// One WebGL 2 path: shared geometry and only the selected scalar colour data.
+// Other styles and reference profiles are binary files; camera/time use uniforms.
 const TRACK_CURVE_ERROR_PX=.125;
 class WebGLTrackRenderer {
  constructor(layer){
+  this.simpleTracks=SIMPLE_IPHONE_TRACKS;this.vertexShaderKind=this.simpleTracks?'line-v1':'cubic-v1';
   this.layer=layer;this.buffers=new Map();this.uploads=0;this.active=false;
   this.host=document.createElement('div');this.host.dataset.webglTracks='';
   $('mapSurface').insertBefore(this.host,$('map'));
   this.canvas=document.createElement('canvas');
   this.canvas.style.cssText='display:block;width:100%;height:100%;pointer-events:none';
   this.host.append(this.canvas);
+  window.SRClientDiagnostics?.register('spor',()=>({active:this.active,phase:this.phase,canvas:[this.canvas.width,this.canvas.height],contextLost:this.gl?.isContextLost()??null,
+   simple:this.simpleTracks,shader:this.vertexShaderKind,preparation:'deployed-files-v1',graphicsReady:!!this.graphicsReady,boatsPrepared:this.buffers.size,sourceFinished:!!this.preparation?.sourceFinished,styleLoading:!!this.styleLoading,style:this.loadedMode,
+   gpuBytes:[...this.buffers.values()].reduce((sum,record)=>sum+record.bytes,0)}));
   this.canvas.addEventListener('webglcontextlost',e=>{
-   e.preventDefault();const detail=this.preparation;
+   e.preventDefault();if(releasingPageGraphics)return;const detail=this.preparation;
    const message=` Trin: ${this.phase||'initialisering'}. Grafikbuffer: ${this.canvas.width} × ${this.canvas.height}.`+
     (detail?.currentBoat?` Seneste klargøring: ${detail.currentBoat}, ${detail.stage}. ${this.buffers.size} både klargjort.`:'');
-   this.preparation?.dispose();this.fail(Error('WebGL-konteksten er mistet.'+message));
+   this.preparation?.dispose();
+   if(!this.active&&this.error)return;
+   this.fail(Error('WebGL-konteksten er mistet.'+message));
   });
   this.canvas.addEventListener('webglcontextrestored',async()=>{
-   this.restoring=true;this.buffers.clear();this.initialize();
-   try{if(this.active){await prepareFleetTracks();this.restoring=false;this.prepareComparison();requestRender();}}catch(error){this.restoring=false;this.fail(error);}
+   // A failed bootstrap must be reloaded, not resumed with half its modules.
+   if(!viewerModulesReady)return;
+   this.restoring=true;this.buffers.clear();this.initializePreparation();
+   try{
+    if(!this.active)throw Error(this.error||'WebGL kunne ikke genskabes.');
+    if(!await prepareFleetTracks())throw Error(this.error||'Sporklargøringen blev afbrudt.');
+    await this.preparation.compare(referenceBoat());
+    this.initialize();if(!this.active)throw Error(this.error||'Sporrenderer kunne ikke genskabes.');
+    await this.preparation.loadGeometry();
+    if(!await this.prepareComparison())throw Error(this.error||'Sportypen kunne ikke genskabes.');
+    clearRenderingFailure('Spor');requestRender();
+   }catch(error){this.fail(error);}finally{this.restoring=false;}
   });
-  this.initialize();
+  try{this.initializePreparation();}catch(error){this.fail(error);}
+ }
+ initializePreparation(){
+  this.error=null;this.graphicsReady=false;this.phase='Indlæs færdige sporfiler';
+  this.comparisonReference=null;this.comparisonEpoch=-1;this.loadedMode=null;this.loadedReference=null;this.loadedEpoch=-1;this.styleTask=null;this.styleLoading=false;
+  this.preparation=new TrackPreparation(this);this.active=true;
  }
  initialize(){
-  this.phase='Initialisér sporenes WebGL';
+  this.active=false;this.error=null;
+  this.phase='Opret sporenes WebGL-kontekst';
   try{
    const gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,depth:true,premultipliedAlpha:true});
    if(!gl)throw Error('WebGL 2 unavailable');
@@ -30,17 +52,66 @@ class WebGLTrackRenderer {
    const debug=gl.getExtension('WEBGL_debug_renderer_info');
    this.renderer=debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):'';
    const shader=(type,source)=>{
+    this.phase='Kompilér spor-'+(type===gl.VERTEX_SHADER?'vertexshader':'fragmentshader');
     const result=gl.createShader(type);gl.shaderSource(result,source);gl.compileShader(result);
-    if(!gl.getShaderParameter(result,gl.COMPILE_STATUS)){const message=gl.getShaderInfoLog(result);gl.deleteShader(result);throw Error(message);}
+    if(!gl.getShaderParameter(result,gl.COMPILE_STATUS)){const message=gl.getShaderInfoLog(result)||(gl.isContextLost()?'WebGL-konteksten er mistet under shaderkompilering.':'Shaderkompileringen mislykkedes uden fejlbesked.');gl.deleteShader(result);throw Error(message);}
     return result;
    };
-   const vertex=shader(gl.VERTEX_SHADER,`#version 300 es
+   // Select geometry before compilation. The line shader contains no desktop
+   // curve/cap code or integer cap sampler, even as an unreachable branch.
+   const vertex=shader(gl.VERTEX_SHADER,this.simpleTracks?`#version 300 es
+precision highp float;
+precision highp int;
+uniform highp sampler2D trackData;
+uniform highp sampler2D comparisonData;
+uniform int firstInstance;
+uniform bool boatColourMode;
+uniform vec4 origin;
+uniform mat2 screen;
+uniform vec2 size;
+uniform vec4 windowTime;
+uniform float radius;
+out float sourceU;
+out vec2 strokeOffset;
+out vec2 speeds;
+out vec3 gainsStart;
+out vec3 gainsEnd;
+void main(){
+ int sampleIndex=firstInstance+gl_InstanceID;
+ int width=textureSize(trackData,0).x,texel=sampleIndex*2;
+ ivec2 address=ivec2(texel%width,texel/width);
+ vec4 position=texelFetch(trackData,address,0);
+ vec4 timing=texelFetch(trackData,address+ivec2(1,0),0);
+ float age=(timing.x-windowTime.y)+(timing.z-windowTime.w),duration=timing.y,tail=windowTime.x;
+ bool visible=duration>0.0?age+duration>-tail&&age<0.0:timing.w>0.0&&age>=-tail&&age<=0.0;
+ if(!visible){gl_Position=vec4(2.0,2.0,2.0,1.0);return;}
+ float from=duration>0.0?clamp((-tail-age)/duration,0.0,1.0):0.0;
+ float to=duration>0.0?clamp(-age/duration,0.0,1.0):1.0;
+ int corner=gl_VertexID;
+ bool end=corner==2||corner==3||corner==5;
+ float u=end?to:from,side=corner==0||corner==2||corner==3?-1.0:1.0;
+ vec2 direction=screen*position.zw;
+ vec2 tangent=length(direction)>0.000001?normalize(direction):vec2(1.0,0.0);
+ vec2 pixel=screen*((position.xy-origin.xy)-origin.zw+position.zw*u)+radius*side*vec2(-tangent.y,tangent.x);
+ if(length(direction)<0.000001)pixel+=radius*tangent*(end?1.0:-1.0);
+ float depth=0.1-0.8*(age+duration*u)/tail;
+ gl_Position=vec4(pixel.x*2.0/size.x-1.0,1.0-pixel.y*2.0/size.y,depth*2.0-1.0,1.0);
+ sourceU=u;strokeOffset=vec2(side,0.0);speeds=vec2(-1.0);gainsStart=vec3(-1e20);gainsEnd=vec3(-1e20);
+ if(!boatColourMode){
+  int colourWidth=textureSize(comparisonData,0).x,nextIndex=sampleIndex+1;
+  float a=texelFetch(comparisonData,ivec2(sampleIndex%colourWidth,sampleIndex/colourWidth),0).r;
+  float b=texelFetch(comparisonData,ivec2(nextIndex%colourWidth,nextIndex/colourWidth),0).r;
+  speeds=vec2(a,b);gainsStart=vec3(a);gainsEnd=vec3(b);
+ }
+}`:`#version 300 es
 precision highp float;
 precision highp int;
 uniform highp sampler2D trackData;
 uniform highp sampler2D comparisonData;
 uniform highp isampler2D capData;
 uniform int firstInstance;
+uniform bool boatColourMode;
+const bool simpleMode=${this.simpleTracks?'true':'false'};
 uniform bool relativeMode;
 uniform int subdivisions;
 uniform int capMode;
@@ -63,7 +134,7 @@ void main(){
  int sampleIndex=firstInstance+gl_InstanceID;
  vec4 shape;
  bool sourceCap=false;
- if(capMode==0){
+ if(simpleMode||capMode==0){
   int step=gl_VertexID/6,corner=gl_VertexID%6;
   float u=float(step+(corner==2||corner==3||corner==5?1:0))/float(subdivisions);
   shape=vec4(u,corner==0||corner==2||corner==3?-1.0:1.0,0.0,0.0);
@@ -83,9 +154,9 @@ void main(){
   shape=vec4(kind<0?0.0:1.0,corner==0?0.0:sin(angle),corner==0?0.0:float(kind)*cos(angle),float(kind));
  }
  int trackWidth=textureSize(trackData,0).x;
- int texel=sampleIndex*4;
+ int texel=sampleIndex*(simpleMode?2:4);
  ivec2 address=ivec2(texel%trackWidth,texel/trackWidth);
- vec4 timing=texelFetch(trackData,address+ivec2(3,0),0);
+ vec4 timing=texelFetch(trackData,address+ivec2(simpleMode?1:3,0),0);
  float duration=timing.y;
  float age=(timing.x-windowTime.y)+(timing.z-windowTime.w);
  float tail=windowTime.x;
@@ -95,15 +166,16 @@ void main(){
  // Adjacent cubics share an edge, not overlapping round caps. A newer start
  // cap would otherwise paint its dark rim across the preceding coloured body.
  bool startCap=mod(timing.w,2.0)>0.5,endCap=timing.w>=2.0;
- if(capMode!=0){
+ if(!simpleMode&&capMode!=0){
   if(sourceCap)visible=visible&&(shape.w<0.0?(startCap&&from==0.0):(endCap&&to==1.0));
   else visible=visible&&duration>0.0&&(shape.w<0.0
    ?(age<=-tail&&!(startCap&&from==0.0)):(age+duration>=0.0&&!(endCap&&to==1.0)));
  }
  if(!visible){gl_Position=vec4(2.0,2.0,2.0,1.0);return;}
  vec4 position=texelFetch(trackData,address,0);
- vec4 curve=texelFetch(trackData,address+ivec2(1,0),0);
- vec4 ending=texelFetch(trackData,address+ivec2(2,0),0);
+ vec4 curve=simpleMode?vec4(position.zw,position.zw):texelFetch(trackData,address+ivec2(1,0),0);
+ vec4 ending=simpleMode?vec4(position.zw,0.0,0.0):texelFetch(trackData,address+ivec2(2,0),0);
+ if(simpleMode)position.zw=vec2(0.0);
  float u=mix(from,to,shape.x),u2=u*u,u3=u2*u;
  vec2 delta=curve.xy,m0=curve.zw,m1=ending.xy;
  vec2 p=(position.xy-origin.xy)+(position.zw-origin.zw)
@@ -113,17 +185,18 @@ void main(){
  vec2 tangent=length(derivative)>0.000001?normalize(derivative):vec2(1.0,0.0);
  vec2 normal=vec2(-tangent.y,tangent.x);
  vec2 pixel=screen*p+radius*(normal*shape.y+tangent*shape.z);
+ if(simpleMode&&length(screen*delta)<0.000001)pixel+=radius*tangent*(shape.x*2.0-1.0);
  // Time is interpolated by the rasterizer. Newer samples have smaller depth.
  // Keeping depth in gl_Position allows early depth rejection on the GPU.
  float depth=0.1-0.8*(age+duration*u)/tail;
  gl_Position=vec4(pixel.x*2.0/size.x-1.0,1.0-pixel.y*2.0/size.y,depth*2.0-1.0,1.0);
- sourceU=u;speeds=ending.zw;strokeOffset=shape.yz;
- gainsStart=vec3(-1e20);gainsEnd=vec3(-1e20);
- if(relativeMode){
+ sourceU=u;strokeOffset=shape.yz;speeds=vec2(-1.0);gainsStart=vec3(-1e20);gainsEnd=vec3(-1e20);
+ if(!boatColourMode){
   int comparisonWidth=textureSize(comparisonData,0).x;
-  gainsStart=texelFetch(comparisonData,ivec2(sampleIndex%comparisonWidth,sampleIndex/comparisonWidth),0).rgb;
+  float start=texelFetch(comparisonData,ivec2(sampleIndex%comparisonWidth,sampleIndex/comparisonWidth),0).r;
   int nextIndex=sampleIndex+1;
-  gainsEnd=texelFetch(comparisonData,ivec2(nextIndex%comparisonWidth,nextIndex/comparisonWidth),0).rgb;
+  float end=texelFetch(comparisonData,ivec2(nextIndex%comparisonWidth,nextIndex/comparisonWidth),0).r;
+  speeds=vec2(start,end);gainsStart=vec3(start);gainsEnd=vec3(end);
  }
 }`);
    const fragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
@@ -153,13 +226,15 @@ void main(){
   else if(value > gainLimit)bin=${TRACK_SPEED_BINS+2};
  }
 
- float distance=length(strokeOffset);
+${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(palette,ivec2(bin,0),0);':` float distance=length(strokeOffset);
  float feather=max(fwidth(distance)*0.5,0.000001);
  float outline=smoothstep(innerRatio-feather,innerRatio+feather,distance);
  colour=mix(boatColourMode?vec4(boatColour,1.0):texelFetch(palette,ivec2(bin,0),0),vec4(23.0/255.0,49.0/255.0,62.0/255.0,1.0),outline);
 
+`}
  colour*=opacity;
 }`);
+   this.phase='Link sporenes shaderprogram';
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
@@ -168,12 +243,15 @@ void main(){
    // Procedural vertices require no mesh buffer or changing attribute bindings.
    this.vao=gl.createVertexArray();gl.bindVertexArray(this.vao);
    gl.bindVertexArray(null);
+   this.phase='Klargør sporenes farvepaletter';
    this.initializePalettes();
    this.initializeBoatColours();
-   this.comparisonReference=null;this.preparation=new GPUTrackPreparation(this);
+   this.loadedMode=null;this.loadedReference=null;this.loadedEpoch=-1;this.styleTask=null;this.styleLoading=false;
+   this.preparation.attachGraphics(gl);this.neutralStyle=this.preparation.texture(1,1,new Float32Array([-1,-1,-1,-1]));
    this.stats={frames:0,draws:0,vertices:0,intervals:0,caps:0};
-   this.active=true;this.host.hidden=false;this.lastKey=null;this.viewportKey=null;this.sceneKey=null;
-   clearRenderingFailure('Spor');
+   this.active=true;this.graphicsReady=true;this.host.hidden=false;this.lastKey=null;this.viewportKey=null;this.sceneKey=null;
+   this.phase='Sporrenderer klargjort; afventer upload';
+   if(!this.restoring)clearRenderingFailure('Spor');
   }catch(error){
    this.fail(error);
   }
@@ -203,30 +281,58 @@ void main(){
    }finally{colourProbe.remove();}
  }
  fail(error){
-  this.active=false;this.error=error.message;this.host.hidden=true;
-  reportRenderingFailure('Spor',error);
+  const failure=Error(error.message+(error.message.includes('Trin:')?'':' Trin: '+this.phase+'.'));
+  this.active=false;this.error=failure.message;this.host.hidden=true;
+  reportRenderingFailure('Spor',failure);
  }
- prepare(boat){
+ async prepare(boat){
   if(!this.active)throw Error(this.error||'WebGL is unavailable.');
   this.phase='Klargør båd: '+boat.name;
-  if(!this.buffers.has(boat.points))this.preparation.prepare(boat);
+  if(!this.buffers.has(boat.points))await this.preparation.prepare(boat);
  }
  requirePrepared(boat){
   if(!this.restoring&&!this.buffers.has(boat.points))throw Error('Bådens GPU-spor er ikke forberedt: '+boat.name);
  }
+ desiredStyle(){
+  const compensated=typeof handicapTracksEnabled!=='undefined'&&handicapTracksEnabled;
+  return {mode:compensated||comparison.boatColour?'boat':comparison.enabled?comparison.basis:'speed',reference:referenceBoat()};
+ }
+ styleReady(){
+  const {mode,reference}=this.desiredStyle();
+  return this.loadedMode===mode&&this.loadedReference===reference?.points&&this.loadedEpoch===this.uploads;
+ }
  prepareComparison(){
-  if(!this.active||this.restoring)return;
-  const reference=referenceBoat();
-  if(!reference)throw Error('Referencebåden findes ikke.');
-  if(this.comparisonReference===reference.points)return;
-  this.phase='Beregn sammenligninger for hele feltet';
-  this.preparation.compare();
-  for(const record of this.buffers.values())record.comparisonSamples.clear();
-  this.comparisonReference=reference.points;this.lastKey=null;
+  if(!this.active||!this.graphicsReady)return Promise.resolve(false);
+  if(this.styleTask)return this.styleTask;
+  if(this.styleReady())return Promise.resolve(true);
+  const preparation=this.preparation;
+  this.styleLoading=true;this.host.hidden=true;
+  $('trackDataStatus').hidden=false;$('trackDataStatus').textContent='Henter forberedte spordata …';
+  this.styleTask=Promise.resolve().then(async()=>{
+   while(this.active&&this.preparation===preparation&&!this.styleReady()){
+    const {mode,reference}=this.desiredStyle();
+    if(!reference)throw Error('Referencebåden findes ikke.');
+    // Release the old type before reference preparation or loading the new type.
+    preparation.releaseStyle();this.loadedMode=null;
+    if(this.comparisonReference!==reference.points||this.comparisonEpoch!==this.uploads)await preparation.compare(reference);
+    if(this.preparation!==preparation||!this.active)return false;
+    await preparation.loadStyle(mode,reference);
+    if(this.preparation!==preparation||!this.active)return false;
+    this.loadedMode=mode;this.loadedReference=reference.points;this.loadedEpoch=this.uploads;
+   }
+   this.lastKey=null;this.sceneKey=null;this.host.hidden=false;
+   return true;
+  }).catch(error=>{if(this.preparation===preparation&&!preparation.disposed)this.fail(error);return false;}).finally(()=>{
+   if(this.preparation!==preparation)return;
+   this.styleLoading=false;this.styleTask=null;$('trackDataStatus').hidden=true;
+   requestRender();
+  });
+  return this.styleTask;
  }
  comparisonSample(boat,time){
   try{
    const record=this.buffers.get(boat.points);
+   if(this.styleLoading)return null;
    if(!this.active||!record||this.comparisonReference!==referenceBoat()?.points)throw Error('Sammenligningsdata er ikke forberedt.');
    const index=timeBoundary(boat.points,time,true)-1;if(index<0)return null;
    const a=boat.points[index],b=boat.points[index+1],connects=b&&b[2]>a[2]&&b[2]-a[2]<=TRACK_MAX_GAP;
@@ -252,13 +358,13 @@ void main(){
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);
   gl.uniform4f(u.origin,Math.fround(top.x),Math.fround(top.y),top.x-Math.fround(top.x),top.y-Math.fround(top.y));
   gl.uniformMatrix2fv(u.screen,false,new Float32Array([matrix.a,matrix.b,matrix.c,matrix.d]));gl.uniform2f(u.size,rect.width,rect.height);
-  gl.uniform1f(u.radius,TRACK_OUTLINE_WIDTH/2);gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
+  gl.uniform1f(u.radius,(this.simpleTracks?TRACK_STROKE_WIDTH:TRACK_OUTLINE_WIDTH)/2);gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
   gl.uniform1i(u.gainComponent,comparison.basis==='time'?2:comparison.basis==='handicap'?1:0);gl.uniform1f(u.gainLimit,trackGainLimit());
   gl.uniform1i(u.palette,0);gl.uniform1i(u.trackData,2);gl.uniform1i(u.comparisonData,3);gl.uniform1i(u.capData,4);
  }
  drawRange(state,viewport){
   const gl=this.gl,u=this.uniforms,{boat,record,window,first,last,boundaryFirst,isReference,relative,solidColour}=state;
-  const stamp=window.to-D.start,high=Math.fround(stamp),subdivisions=this.subdivisions(record,viewport);
+  const stamp=window.to-D.start,high=Math.fround(stamp),subdivisions=this.simpleTracks?1:this.subdivisions(record,viewport);
   gl.uniform4f(u.windowTime,Math.max(1e-6,window.to-window.from),high,0,stamp-high);
   gl.uniform1i(u.boatColourMode,solidColour?1:0);gl.uniform1f(u.opacity,isReference?0.18:1);
   if(solidColour){
@@ -266,13 +372,16 @@ void main(){
    if(!colour)throw Error('Bådens sporfarve er ikke forberedt: '+boat.name);
    gl.uniform3fv(u.boatColour,colour);
   }
-  if(relative&&!record.comparisonTexture)throw Error('Sammenligningsdata er ikke forberedt.');
+  if(!solidColour&&!record.comparisonTexture)throw Error('Den valgte sportype er ikke indlæst.');
   gl.uniform1i(u.relativeMode,relative?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
   gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,record.texture);
-  gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,relative?record.comparisonTexture:record.texture);
+  gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,record.comparisonTexture||this.neutralStyle);
   gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_2D,record.capTexture);
   gl.uniform1i(u.firstInstance,first);gl.uniform1i(u.subdivisions,subdivisions);gl.uniform1i(u.capMode,0);
   gl.drawArraysInstanced(gl.TRIANGLES,0,subdivisions*6,last-first);
+  if(this.simpleTracks){
+   this.stats.draws++;this.stats.intervals+=last-first;this.stats.vertices+=6*(last-first);return;
+  }
   gl.uniform2i(u.boundarySamples,boundaryFirst,last-1);gl.uniform1i(u.sourceCaps,record.capCount);gl.uniform1i(u.capMode,1);
   gl.drawArraysInstanced(gl.TRIANGLES,0,36,record.capCount+2);
   this.stats.draws+=2;this.stats.intervals+=last-first;this.stats.caps+=record.capCount+2;
@@ -282,6 +391,7 @@ void main(){
   this.time=time;this.order=order;
   if(!this.active)return false;
   if(this.restoring)return true;
+  if(this.styleLoading||!this.styleReady()){this.prepareComparison();return true;}
   try{
    if(this.gl.isContextLost())throw Error('WebGL-konteksten er mistet.');
    const baseViewport=mapViewport();if(!baseViewport)return true;
@@ -328,108 +438,4 @@ void main(){
  }
  redraw(){if(this.order)this.render(this.time,this.order);}
 }
-// iPhone retains only a 32-byte line record per point. No GPU profiles,
-// comparison textures, curves or caps are allocated in this mode.
-// Each connected pair is one constant-width rectangle (two triangles).
-class SimpleIPhoneTrackRenderer extends WebGLTrackRenderer {
- initialize(){
-  this.phase='Initialisér enkle iPhone-spor';
-  try{
-   const gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,depth:true,premultipliedAlpha:true});
-   if(!gl)throw Error('WebGL 2 unavailable');
-   this.gl=gl;
-   const shader=(type,source)=>{
-    const result=gl.createShader(type);gl.shaderSource(result,source);gl.compileShader(result);
-    if(!gl.getShaderParameter(result,gl.COMPILE_STATUS)){const message=gl.getShaderInfoLog(result);gl.deleteShader(result);throw Error(message);}
-    return result;
-   };
-   const vertex=shader(gl.VERTEX_SHADER,`#version 300 es
-precision highp float;
-layout(location=0) in vec2 start;
-layout(location=1) in vec2 delta;
-layout(location=2) in vec4 timing;
-uniform vec4 origin;
-uniform mat2 screen;
-uniform vec2 size;
-uniform vec4 windowTime;
-uniform float radius;
-void main(){
- float age=(timing.x-windowTime.y)+(timing.z-windowTime.w),duration=timing.y,tail=windowTime.x;
- if(timing.w==0.0||(duration>0.0?(age+duration<=-tail||age>=0.0):(age < -tail||age>0.0))){gl_Position=vec4(2.0,2.0,2.0,1.0);return;}
- float from=duration>0.0?clamp((-tail-age)/duration,0.0,1.0):0.0,to=duration>0.0?clamp(-age/duration,0.0,1.0):1.0;
- int corner=gl_VertexID;
- float u=(corner==2||corner==3||corner==5)?to:from;
- float side=(corner==0||corner==2||corner==3)?-1.0:1.0;
- vec2 direction=screen*delta;
- vec2 tangent=length(direction)>0.000001?normalize(direction):vec2(1.0,0.0);
- vec2 pixel=screen*((start-origin.xy)-origin.zw+delta*u)+radius*side*vec2(-tangent.y,tangent.x);
- if(length(direction)<0.000001)pixel+=radius*tangent*((corner==2||corner==3||corner==5)?1.0:-1.0);
- float depth=0.1-0.8*(age+duration*u)/tail;
- gl_Position=vec4(pixel.x*2.0/size.x-1.0,1.0-pixel.y*2.0/size.y,depth*2.0-1.0,1.0);
-}`);
-   const fragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
-precision highp float;
-uniform vec3 boatColour;
-out vec4 colour;
-void main(){colour=vec4(boatColour,1.0);}`);
-   this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
-   gl.deleteShader(vertex);gl.deleteShader(fragment);
-   if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
-   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','boatColour'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
-   this.initializeBoatColours();
-   this.preparation={
-    ready:async()=>{this.phase='Enkle iPhone-spor klargjort';},
-    dispose:()=>{
-     if(!gl.isContextLost())for(const record of this.buffers.values()){gl.deleteVertexArray(record.vao);gl.deleteBuffer(record.buffer);}
-     this.buffers.clear();
-    }
-   };
-   this.stats={frames:0,draws:0,vertices:0,intervals:0,caps:0};
-   this.active=true;this.host.hidden=false;this.lastKey=null;this.viewportKey=null;this.sceneKey=null;
-   clearRenderingFailure('Spor');
-  }catch(error){this.fail(error);}
- }
- prepare(boat){
-  if(!this.active)throw Error(this.error||'WebGL is unavailable.');
-  if(this.buffers.has(boat.points))return;
-  this.phase='Klargør enkelt spor: '+boat.name;
-  const gl=this.gl,points=boat.points,data=new Float32Array(points.length*8);
-  for(let i=0;i<points.length;i++){
-   const a=points[i],b=points[i+1]||a,[x,y]=xy(a),stamp=a[2]-D.start,dt=b[2]-a[2];
-   data.set([x,y,(b[0]-a[0])*1000/4.5,-(b[1]-a[1])*1180/3,stamp,dt,stamp-Math.fround(stamp),dt>0&&dt<=TRACK_MAX_GAP?1:(i===0||a[2]-points[i-1][2]>TRACK_MAX_GAP?2:0)],i*8);
-   if(data[i*8+7]===2){data[i*8+2]=0;data[i*8+3]=0;data[i*8+5]=0;}
-  }
-  const buffer=gl.createBuffer(),vao=gl.createVertexArray();
-  try{
-   if(!buffer||!vao)throw Error('Kunne ikke allokere enkelt GPU-spor.');
-   gl.bindVertexArray(vao);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
-   for(const [index,size,offset] of [[0,2,0],[1,2,8],[2,4,16]]){
-    gl.enableVertexAttribArray(index);gl.vertexAttribPointer(index,size,gl.FLOAT,false,32,offset);gl.vertexAttribDivisor(index,1);
-   }
-   const error=gl.getError();if(error)throw Error('Klargøring af enkelt GPU-spor: '+error);
-   this.buffers.set(points,{buffer,vao,bytes:data.byteLength});this.uploads++;
-  }catch(error){gl.deleteVertexArray(vao);gl.deleteBuffer(buffer);throw error;}
-  finally{gl.bindVertexArray(null);gl.bindBuffer(gl.ARRAY_BUFFER,null);}
- }
- prepareComparison(){/* iPhone uses boat colours and has no comparison data. */}
- begin(viewport){
-  const gl=this.gl,u=this.uniforms,{matrix,topLeft:top,rect}=viewport;
-  gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);
-  gl.clearColor(0,0,0,0);gl.clearDepth(1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-  gl.useProgram(this.program);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);
-  gl.uniform4f(u.origin,Math.fround(top.x),Math.fround(top.y),top.x-Math.fround(top.x),top.y-Math.fround(top.y));
-  gl.uniformMatrix2fv(u.screen,false,new Float32Array([matrix.a,matrix.b,matrix.c,matrix.d]));gl.uniform2f(u.size,rect.width,rect.height);
-  gl.uniform1f(u.radius,TRACK_STROKE_WIDTH/2);
- }
- drawRange({boat,record,window,first,last}){
-  const gl=this.gl,u=this.uniforms,stamp=window.to-D.start,high=Math.fround(stamp),colour=this.boatColours.get(colours[boat.name]);
-  if(!colour)throw Error('Bådens sporfarve er ikke forberedt: '+boat.name);
-  gl.uniform4f(u.windowTime,Math.max(1e-6,window.to-window.from),high,0,stamp-high);gl.uniform3fv(u.boatColour,colour);
-  gl.bindVertexArray(record.vao);gl.bindBuffer(gl.ARRAY_BUFFER,record.buffer);
-  // Address the visible time range without rebuilding or uploading source data.
-  for(const [index,size,offset] of [[0,2,0],[1,2,8],[2,4,16]])gl.vertexAttribPointer(index,size,gl.FLOAT,false,32,first*32+offset);
-  gl.drawArraysInstanced(gl.TRIANGLES,0,6,last-first);gl.bindBuffer(gl.ARRAY_BUFFER,null);
-  this.stats.draws++;this.stats.intervals+=last-first;this.stats.vertices+=6*(last-first);
- }
-}
-const webglTracks=new (SIMPLE_IPHONE_TRACKS?SimpleIPhoneTrackRenderer:WebGLTrackRenderer)($('routes'));
+const webglTracks=new WebGLTrackRenderer($('routes'));

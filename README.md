@@ -61,29 +61,35 @@ Kildepakken fylder cirka 2,62 MB. Der downloades ingen sammenligningsprofiler.
 Metadata og kildepakke hentes parallelt; gzip afkodes med `DecompressionStream`.
 Den oprindelige `data.js` bruges kun offline og publiceres ikke med Pages.
 
-Klienten skalerer kildepunkterne til lokale Float32-data.
-[GPU-klargøringen](viewer/gpu-track-preparation.js) beregner PCHIP-koefficienter,
-ruteprojektioner, VMG og tidsprofiler i WebGL 2. Der indsættes ikke et ekstra
-tidsgitter. Kubisk interpolation mellem originalpunkterne er bevaret, også under
-afspilning; huller over fem minutter forbindes ikke. GPU'ens profilberegning
-sampler kurverne med højst cirka otte meters kurvelængde pr. trin og samler
-referenceprofiler på stationer med ti meters afstand langs rhumblinen.
-GPU-klargøringen opdeler transform feedback i højst 4.096 punkter pr. kald og
-profilberegning i én teksturrække pr. kald. Det begrænser arbejdet i hvert
-GPU-kald under indlæsning uden at ændre data eller beregningsgrundlag.
+Buildet beregner sporene med [fælles matematik](viewer/track-preparation-math.js)
+og gemmer komprimerede, færdige filer. Det omfatter begge geometrier, kurvemodeller,
+tidsindeks, profiler samt alle tre farvegrundlag for samtlige referencebåde.
+Browseren henter og afkoder filerne; der køres ingen worker, profilberegning,
+sammenligningsberegning eller IndexedDB-lagring på klienten. WebGL 2 tegner
+fortsat kort og spor. Desktop viser kurver, mens iPhone viser enkle streger.
 
-Alle både, kubiske modeller, tidslinjeindeks og begge profilgrundlag er forberedt,
-før betjening frigives. GPU'ens Float32-profiler spejles én gang til CPU'en til
-hover og andre opslag. Fart og tidsforbrug kvantiseres ikke til 10 bit.
-Referencevalg genbruger de eksisterende GPU-teksturer og beregner absolut-,
-handicap- og tidsforskel for alle både. Bådvalg og visningsskift genberegner ingen
-faste data; kamera og afspilning ændrer uniformer. Lageret vokser lineært med
-antal observationer og både, uden cache for alle bådpar.
+`python3 scripts/build_pages.py` udfører beregningen automatisk ved deploy;
+`python3 scripts/serve_viewer.py` gør det samme før lokal serverstart.
+`node scripts/prepare_track_profiles.cjs --if-stale` genbruger et færdigt build,
+indtil kildedata, matematik, rhumbline eller handicapdata ændres. Manglende eller
+ugyldige filer giver en synlig fejl; klienten beregner dem ikke som reserve.
+Native kildeheltal og Float64-kurvemodeller bevares præcist i filkodningen.
+
+Første download med Mercutio som reference er ca. 55 MB på iPhone og 65 MB
+på desktop. Et nyt referencevalg henter én forberedt fil på ca. 1–5 MB.
+Hele den forberedte pakke er ca. 475 MB, men downloades ikke samlet af klienten.
+Filerne har versionsbestemte URL'er og kan caches. Den lokale server giver
+fingerprintede data lang cachelevetid, mens HTML, JavaScript og manifest ikke caches.
+Sportypeskift læser allerede beregnede farvefiler og erstatter de tidligere
+farveteksturer med én R32F-kanal. Bådfarver kræver ingen farvetekstur pr. båd.
+Bådvalg, kamera og afspilning genbruger de aktive GPU-data. Både desktop og
+iPhone har alle farvevalg; iPhone tegner fortsat enkle streger.
+Lagerfejl vises tydeligt uden alternativ lagrings- eller beregningsvej.
 
 Tidsprofiler summerer frem- og tilbagepassager efter dækket længde pr. station.
 Manglende værdier markeres med `-1e20`, og uendeligt tidsforbrug repræsenteres af
 en fælles Float32-overflowmarkør. Uendelighed minus uendelighed er udefineret.
-Fejl i indlæsning eller GPU-klargøring vises tydeligt uden alternativ beregningsvej.
+Fejl i indlæsning eller GPU-tegning vises tydeligt uden alternativ beregningsvej.
 Genstart den lokale server efter ændringer af kildedata eller generatoren.
 
 Åbn <http://127.0.0.1:8097/>. Brug samme browser og adresse som før flytningen;

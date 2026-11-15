@@ -23,15 +23,19 @@ function prepareSelectedTracks(){
 }
 async function prepareFleetTracks(onProgress=()=>{}){
  let prepared=0;
+ if(!webglTracks.active)return false;
+ await webglTracks.preparation.files.open();
  for(const boat of boats){
   // The renderer has already displayed its error. Finish loading its controls
   // so the user can reload; no alternative rendering or calculation is used.
   if(!webglTracks.active)return false;
+  setViewerLoadingStage('Klargør spor · '+boat.name+' ('+(prepared+1)+'/'+boats.length+')');
   await prepareBoatTrack(boat);
   onProgress(++prepared,boats.length);
   // Let the loading message paint between boats while interaction is locked.
   await new Promise(resolve=>setTimeout(resolve,0));
  }
+ webglTracks.preparation.finishSourcePreparation();
  return true;
 }
 function trackSpeedLegendLayout(){
@@ -124,6 +128,12 @@ function getTrackModel(points){
 function trackValue(points,index,time,model=null){
  const a=points[index],b=points[index+1],h=b[2]-a[2],u=Math.max(0,Math.min(1,(time-a[2])/h));
  if(SIMPLE_IPHONE_TRACKS)return {point:[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,time],velocity:[(b[0]-a[0])/h,(b[1]-a[1])/h]};
+ return trackCurveValue(points,index,time,model);
+}
+// The prepared reference profiles always use the same PCHIP curve, including
+// when the phone presents that data with straight segments.
+function trackCurveValue(points,index,time,model=null){
+ const a=points[index],b=points[index+1],h=b[2]-a[2],u=Math.max(0,Math.min(1,(time-a[2])/h));
  model??=getTrackModel(points);
  const u2=u*u,u3=u2*u,point=[0,0,time],velocity=[0,0];
  for(let axis=0;axis<2;axis++){

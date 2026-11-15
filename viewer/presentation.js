@@ -199,7 +199,7 @@ function saveAnnotation(point) {
   Object.assign(target,updated);eventDraft=JSON.parse(JSON.stringify(target));
   selectedTime=target.time;$('note').value=target.text;eventEditorInitialFields=eventEditorFields();
   cancelDrawingGesture();showNotes();updateTimeline();render();
-  $('annotationStatus').textContent='Eventet er gemt.';return;
+  $('annotationStatus').textContent='Eventet er gemt.';return true;
  }
  const time=currentTime();
  const note={time,utc:new Date(time*1000).toISOString(),text,view:[...view],settings:sceneSettings(),measurement:measurement.map(point=>[...point]),gates:currentGateMeasurement().map(point=>[...point])};
@@ -209,7 +209,7 @@ function saveAnnotation(point) {
  const next=chronologicalNotes([...notes,note]);
  if(!persistNotes(next))return;
  notes=next;measurement=[];gateMeasurement=[];gateOverride=null;playbackGateMeasurement=null;pendingEventImage=null;clearPendingEventImage();clearPendingEventVideo();$('note').value='';
- activePresentationNote=note;cancelPlacement();showNotes();updateTimeline();renderAnnotations();
+ activePresentationNote=note;cancelPlacement();showNotes();updateTimeline();renderAnnotations();return true;
 }
 $('placeNote').onclick=()=>{
  if(!validateEventVideoInput())return;
@@ -224,22 +224,51 @@ function placeAnnotation(e) {
 }
 $('save').onclick=()=>saveAnnotation();
 
-function finishEventEditing(){
- if(!finishInlineTextEditing())return false;
- if(editingNote&&(eventImageLoading||hasEventChanges())){
-  $('annotationStatus').textContent=eventImageLoading?'Vent, mens billedet klargøres.':'Tryk Gem ændringer eller Annullér ændringer, før du forlader eventet.';
-  return false;
- }
- return true;
+let pendingEventAction=null;
+function promptEventChanges(continueAction){
+ const dialog=$('eventChangesDialog');
+ if(dialog.open)return;
+ pendingEventAction=continueAction;
+ $('eventChangesStatus').textContent='';
+ const index=notes.indexOf(activePresentationNote);if(index>=0)$('eventSelect').value=String(index);
+ dialog.showModal();
 }
-function noteNavigationAllowed(){
- if(!finishEventEditing())return false;
+function resolveEventChanges(save){
+ if(save){
+  if(eventImageLoading){$('eventChangesStatus').textContent='Vent, mens billedet klargøres, eller vælg Gem ikke.';return;}
+  if(saveAnnotation()!==true){
+   $('eventChangesStatus').textContent=$('inlineTextStatus').textContent||(!$('noteVideo').validity.valid?$('noteVideoStatus').textContent:$('annotationStatus').textContent);
+   return;
+  }
+ }else if(editingNote){
+  $('cancelEdit').onclick();
+ }else{
+  finishInlineTextEditing(true);clearPendingEventImage();finishNoteEditing();render();
+ }
+ const action=pendingEventAction;pendingEventAction=null;
+ $('eventChangesDialog').close();
+ action?.();
+}
+$('eventChangesSave').onclick=()=>resolveEventChanges(true);
+$('eventChangesDiscard').onclick=()=>resolveEventChanges(false);
+$('eventChangesCancel').onclick=()=>{$('eventChangesDialog').close();};
+$('eventChangesDialog').addEventListener('close',()=>{if(!$('eventChangesDialog').open)pendingEventAction=null;});
+// Escape cancels only this prompt, preserving the draft and the current scene.
+$('eventChangesDialog').addEventListener('keydown',event=>event.stopPropagation());
+function finishEventEditing(continueAction){
+ const inlineFinished=finishInlineTextEditing();
+ if(editingNote&&(eventImageLoading||hasEventChanges()||!inlineFinished)){
+  promptEventChanges(continueAction);return false;
+ }
+ return inlineFinished;
+}
+function noteNavigationAllowed(continueAction){
+ if(!finishEventEditing(continueAction))return false;
  if(!eventImageLoading&&(editingNote||(!pendingEventImage&&!hasPendingEventVideo())))return true;
- $('annotationStatus').textContent=eventImageLoading?'Vent, mens billedet gemmes.':'Gem eventet eller fjern billedet/videoen, før du vælger en anden note eller starter præsentationen.';
- return false;
+ promptEventChanges(continueAction);return false;
 }
 function beginNoteEditing(n){
- if(!noteNavigationAllowed())return;
+ if(!noteNavigationAllowed(()=>beginNoteEditing(n)))return;
  restoreNote(n);$('note').scrollIntoView({block:'center'});$('note').focus({preventScroll:true});
 }
 function finishNoteEditing(){
@@ -258,8 +287,7 @@ $('cancelEdit').onclick=()=>{
  const target=editingNote;finishNoteEditing();restoreNote(target);
 };
 function restoreNote(n,{showImage=false,restoreView=true}={}) {
- if(!finishInlineTextEditing())return;
- if(!noteNavigationAllowed())return;
+ if(!noteNavigationAllowed(()=>restoreNote(n,{showImage,restoreView})))return;
  prepareGateTiming(eventGates(n));
  hideMapEventImage();hideEventVideo();
  activePresentationNote=n;
@@ -284,7 +312,7 @@ function showNotes() {
   edit.setAttribute('aria-label',`Redigér note: ${n.text}`);edit.onclick=()=>beginNoteEditing(n);
   const remove=document.createElement('button');remove.className='note-delete';remove.textContent='Slet';
   remove.setAttribute('aria-label',`Slet note: ${n.text}`);
-  remove.onclick=()=>{if(!noteNavigationAllowed())return;const next=notes.filter((_,j)=>j!==i);if(!persistNotes(next))return;notes=next;showNotes();updateTimeline();renderAnnotations();};
+  remove.onclick=()=>{if(!noteNavigationAllowed(()=>remove.onclick()))return;const next=notes.filter(note=>note!==n);if(!persistNotes(next))return;notes=next;showNotes();updateTimeline();renderAnnotations();};
   actions.append(edit,remove);row.append(jump,actions);$('notes').append(row);
  }
  refreshPresentationEvents();
@@ -335,9 +363,10 @@ function updatePresentationControls(){
 }
 function showPresentationEvent(index,{expandPanel=true}={}){
  if(!notes.length)return;
- if(!noteNavigationAllowed())return;
- if(expandPanel)setEventPanelExpanded(true);
- restoreNote(notes[Math.max(0,Math.min(notes.length-1,index))],{showImage:true});
+ const target=notes[Math.max(0,Math.min(notes.length-1,index))];
+ const show=()=>{if(expandPanel)setEventPanelExpanded(true);restoreNote(target,{showImage:true});};
+ if(!noteNavigationAllowed(show))return;
+ show();
 }
 function movePresentationEvent(delta){
  if(delta===1&&document.body.classList.contains('presenting')){playToNextPresentationEvent();return;}
@@ -351,7 +380,7 @@ function nextPresentationNote(){
 }
 function playToNextPresentationEvent(){
  if(hasRenderingFailure())return;
- if(!noteNavigationAllowed())return;
+ if(!noteNavigationAllowed(playToNextPresentationEvent))return;
  const target=nextPresentationNote();if(!target)return;
  setEventPanelExpanded(true);
  const onEvent=notes.some(note=>Math.abs(note.time-currentTime())<1e-6);
@@ -365,9 +394,9 @@ function playToNextPresentationEvent(){
 }
 function setPresentationMode(enabled){
  if(!enabled&&window.SR_READONLY)return;
- if(!finishInlineTextEditing())return;
  if(document.body.classList.contains('presenting')===enabled)return;
- if(enabled&&!noteNavigationAllowed())return;
+ if(enabled&&!noteNavigationAllowed(()=>setPresentationMode(enabled)))return;
+ if(!enabled&&!finishInlineTextEditing())return;
  if(!enabled){hideMapEventImage();hideEventVideo();}
  stopPlayback();cancelPlacement();
  document.body.classList.toggle('presenting',enabled);

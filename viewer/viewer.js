@@ -277,23 +277,25 @@ function renderWindArrows(t=currentTime()) {
 }
 // Keep state changes synchronous, but combine UI paint requests until the next
 // browser frame. Full redraws subsume viewport-only redraws, in either order.
+let viewerModulesReady=false;
 let renderRequest=null,renderRequestKind=null;
 const RENDER_PRIORITY={background:1,viewport:2,full:3};
 function requestRender({viewportOnly=false,backgroundOnly=false}={}){
  const kind=backgroundOnly?'background':viewportOnly?'viewport':'full';
  if(!renderRequestKind||RENDER_PRIORITY[kind]>RENDER_PRIORITY[renderRequestKind])renderRequestKind=kind;
- if(renderRequest===null)renderRequest=requestAnimationFrame(flushRender);
+ if(viewerModulesReady&&renderRequest===null)renderRequest=requestAnimationFrame(flushRender);
 }
 function consumeRenderRequest(){
  if(renderRequest!==null)cancelAnimationFrame(renderRequest);
  const kind=renderRequestKind;renderRequest=null;renderRequestKind=null;return kind;
 }
 function flushRender(){
+ if(!viewerModulesReady)return;
  const kind=consumeRenderRequest();
  if(kind==='full')drawMap();else if(kind==='viewport')drawViewport();else if(kind==='background')webglBackground.render();
 }
 // Retain an immediate path for exports, scene restoration and programmatic use.
-function render(){consumeRenderRequest();drawMap();}
+function render(){if(!viewerModulesReady){requestRender();return;}consumeRenderRequest();drawMap();}
 function drawMap(){if(hasRenderingFailure())return;const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderWindField(t);renderRadar(t);webglBackground.render();status(t);renderWindArrows(t);renderTraffic();renderMilitary();
  renderTracks(t,{includeSpeedPins:false});
  renderAnnotations();
@@ -353,7 +355,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  }
  resizeSymbols();if(includeSpeedPins)renderSpeedPins();updateVisibleBoats(t);
 }
-function step(n){syncTimelineViewport();if(finishEventEditing()&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
+function step(n){syncTimelineViewport();if(finishEventEditing(()=>step(n))&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
 function setMapLayersExpanded(expanded){
  $('mapLayersPanel').hidden=!expanded;
  $('mapLayersToggle').setAttribute('aria-expanded',String(expanded));
@@ -370,6 +372,7 @@ document.addEventListener('pointerdown',event=>{
  if(!$('mapTracks').contains(event.target))setMapTracksExpanded(false);
 });
 document.addEventListener('keydown',event=>{
+ if($('eventChangesDialog').open)return;
  if(event.key==='Escape')for(const name of ['mapLayers','mapTracks'])if(!$(name+'Panel').hidden){
   event.preventDefault();event.stopImmediatePropagation();$(name+'Panel').hidden=true;$(name+'Toggle').setAttribute('aria-expanded','false');$(name+'Toggle').focus();return;
  }
@@ -421,7 +424,7 @@ function advancePlayback(now){
 }
 function startPlayback({target=null}={}){
  if(interval!==null||hasRenderingFailure())return;
- if((!target&&currentTime()>=viewerEndTime())||!finishEventEditing())return;
+ if((!target&&currentTime()>=viewerEndTime())||!finishEventEditing(()=>startPlayback({target})))return;
  prepareSelectedTracks();
  if(playbackGateMeasurement===null){
   const points=currentGateMeasurement().map(point=>[...point]);

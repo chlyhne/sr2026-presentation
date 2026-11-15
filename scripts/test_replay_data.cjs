@@ -29,14 +29,17 @@ test('source encoding rejects precision loss, bad timestamps and unrepresentable
  assert.throws(()=>c.unpackSourceTrack(bytes.subarray(1),1));
  bytes[17]=255;assert.throws(()=>c.unpackSourceTrack(bytes,1),/speed/);
 });
+const packedCodec=vm.runInNewContext(source('prepared-track-codec')+';({packPreparedTracks});',{TextEncoder,TextDecoder});
 function fixture(){
- const fingerprint='a'.repeat(64),c=codec();
+ const fingerprint='a'.repeat(64),c=codec(),timeIndex=new Uint32Array(51);
+ for(let i=0;i<51;i++)timeIndex[i]=[1003,1027,1501].filter(t=>t<1000+i*10).length;
+ const common=packedCodec.packPreparedTracks('common',[{id:'one',record:{timeIndexStart:1000},arrays:{slopeX:new Float64Array([.01/24,.01/24,0]),slopeY:new Float64Array([.02/24,.02/24,0]),timeIndex}}]);
  return {
-  manifest:{version:10,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:fingerprint,
+  manifest:{prepared:{version:1,common:{file:`track-profiles/${fingerprint}/common.bin.gz`,bytes:common.byteLength,compressedBytes:1}},version:10,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:fingerprint,
    dataFile:`track-profiles/${fingerprint}/data.json.gz`,replayFile:`track-profiles/${fingerprint}/source.bin.gz`,replayBytes:54,start:1000,
    boats:[{id:'one',pointCount:3,sourceOffset:0}]},
   data:{start:1000,boats:[{id:'one',trackSegments:[[1003,1027],[1501,1501]]}]},
-  source:c.packSourceTrack([[12,55,1003000],[12.01,55.02,1027000],[13,56,1501000]],[7.4,null,18.5]),bundle:Buffer.alloc(7)
+  common,source:c.packSourceTrack([[12,55,1003000],[12.01,55.02,1027000],[13,56,1501000]],[7.4,null,18.5]),bundle:Buffer.alloc(7)
  };
 }
 function load(input){
@@ -45,6 +48,7 @@ function load(input){
   if(url===input.missing)return new Response('',{status:404});
   if(url.endsWith('manifest.json'))return new Response(JSON.stringify(input.manifest));
   if(url.endsWith('data.json.gz'))return new Response(input.dataGzip??gzipSync(JSON.stringify(input.data)));
+  if(url.endsWith('common.bin.gz'))return new Response(input.commonGzip??gzipSync(input.common));
   return new Response(url.endsWith('source.bin.gz')?(input.sourceGzip??gzipSync(input.source)):gzipSync(input.bundle));
  }});
  const boot=source('boot'),files=boot.match(/const files=\[(.*?)\];/)[1].match(/'[^']+'/g).map(name=>name.slice(1,-1));
@@ -58,11 +62,14 @@ test('gzip source load preserves original times, gaps and native SOG before publ
  assert.deepEqual(Array.from(boat.points,p=>p[2]),[1003,1027,1501]);
  assert.deepEqual(Array.from(boat.points[0]),[12,55,1003]);
  assert.deepEqual(Array.from(boat.speeds),[7.4/1.852,null,18.5/1.852]);
- assert.equal(requests.length,3);assert.ok(requests.includes(input.manifest.replayFile));assert.ok(requests.includes(input.manifest.dataFile));assert.equal(requests.some(url=>url.endsWith('/data.json')),false);
+ assert.equal(requests.length,4);assert.ok(requests.includes(input.manifest.replayFile));assert.ok(requests.includes(input.manifest.dataFile));assert.equal(requests.some(url=>url.endsWith('/data.json')),false);
  assert.equal(vm.runInContext('trackTimeIndexes.has(window.DATA.boats[0].points)',context),true);
  assert.equal(vm.runInContext('trackModelCache.has(window.DATA.boats[0].points)',context),true);
 });
 for(const [name,mutate] of [
+ ['missing prepared files',input=>delete input.manifest.prepared],
+ ['missing common file',input=>input.missing=input.manifest.prepared.common.file],
+ ['broken prepared bundle',input=>input.commonGzip=gzipSync(Buffer.from('invalid'))],
  ['old format',input=>input.manifest.version=8],
  ['wrong encoding',input=>input.manifest.replayEncoding='float32-local-xy-speed'],
  ['wrong compression',input=>input.manifest.compression='none'],

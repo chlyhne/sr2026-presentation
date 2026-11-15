@@ -1,8 +1,9 @@
-// Prepare native source data only; all track/profile mathematics runs on the GPU.
+// Build native source data, both geometries, profiles and every reference colour set.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),vm=require('node:vm');
 const {execFileSync}=require('node:child_process');
+const {gzipSync}=require('node:zlib');
 const ROOT=path.resolve(__dirname,'..'),OUTPUT=path.join(ROOT,'viewer','track-profiles'),MANIFEST=path.join(OUTPUT,'manifest.json');
-const SOURCES=['viewer/data.js','data/tractrac/combined_tracks.json','data/tractrac/speeds_groensund.json','data/tractrac/speeds_boegestroemmen.json','viewer/track-source-codec.js','scripts/prepare_track_profiles.cjs'];
+const SOURCES=['viewer/data.js','data/tractrac/combined_tracks.json','data/tractrac/speeds_groensund.json','data/tractrac/speeds_boegestroemmen.json','viewer/track-source-codec.js','scripts/prepare_track_profiles.cjs','viewer/tracks.js','viewer/track-time.js','viewer/rhumbline-geometry.js','viewer/rhumbline.json','viewer/boat-details.js','viewer/track-preparation-math.js','viewer/prepared-track-codec.js'];
 const digest=value=>crypto.createHash('sha256').update(value).digest('hex');
 const {packSourceTrack,unpackSourceTrack,sourceTrackBytes}=vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer','track-source-codec.js'),'utf8')+'\n({packSourceTrack,unpackSourceTrack,sourceTrackBytes});',vm.createContext(vm.constants.DONT_CONTEXTIFY));
 function sourceState(){
@@ -13,11 +14,15 @@ function sourceState(){
 function currentManifest(state){
  if(!fs.existsSync(MANIFEST))return null;
  let m;try{m=JSON.parse(fs.readFileSync(MANIFEST,'utf8'));}catch(error){if(error instanceof SyntaxError)return null;throw error;}
- if(m?.version!==10||m.sourceFingerprint!==state.sourceFingerprint||m.replayEncoding!=='source-integers-xor-byteplanes-v1'||m.compression!=='gzip'||m.coordinateScale!==1e7||m.speedScaleKmh!==10||m.sourcePointBytes!==18||m.byteOrder!=='little-endian'||!Array.isArray(m.boats))return null;
+ if(m?.version!==10||m.sourceFingerprint!==state.sourceFingerprint||m.replayEncoding!=='source-integers-xor-byteplanes-v1'||m.compression!=='gzip'||m.coordinateScale!==1e7||m.speedScaleKmh!==10||m.sourcePointBytes!==18||m.byteOrder!=='little-endian'||!Array.isArray(m.boats)||m.prepared?.version!==1||!Array.isArray(m.prepared.references))return null;
  const prefix='track-profiles/'+state.sourceFingerprint+'/';
  if(m.replayFile!==prefix+'source.bin.gz'||m.dataFile!==prefix+'data.json.gz'||!Number.isSafeInteger(m.dataBytes)||m.dataBytes<=0||!Number.isSafeInteger(m.dataCompressedBytes)||m.dataCompressedBytes<=0||!fs.existsSync(path.join(ROOT,'viewer',m.dataFile))||fs.statSync(path.join(ROOT,'viewer',m.dataFile)).size!==m.dataCompressedBytes)return null;
  const ids=new Set();let offset=0;
  for(const boat of m.boats){if(typeof boat.id!=='string'||ids.has(boat.id)||!Number.isSafeInteger(boat.pointCount)||boat.pointCount<0||!Number.isSafeInteger(boat.pointCount*18)||boat.sourceOffset!==offset)return null;ids.add(boat.id);offset+=sourceTrackBytes(boat.pointCount);}
+ for(const asset of [m.prepared.common,m.prepared.line,m.prepared.cubic,...m.prepared.references]){
+  if(!asset||!asset.file?.startsWith(prefix)||!Number.isSafeInteger(asset.bytes)||asset.bytes<4||!Number.isSafeInteger(asset.compressedBytes)||asset.compressedBytes<=0)return null;
+  const packed=path.join(ROOT,'viewer',asset.file);if(!fs.existsSync(packed)||fs.statSync(packed).size!==asset.compressedBytes)return null;
+ }
  const file=path.join(ROOT,'viewer',m.replayFile);
  return offset===m.replayBytes&&Number.isSafeInteger(m.replayCompressedBytes)&&m.replayCompressedBytes>0&&fs.existsSync(file)&&fs.statSync(file).size===m.replayCompressedBytes?m:null;
 }
@@ -47,6 +52,36 @@ function nativeSourceTracks(boats){
  });
 }
 
+function prepareArtifacts(context,native,prefix,start){
+ context.TextEncoder=TextEncoder;context.TextDecoder=TextDecoder;
+ for(const name of ['track-time.js','tracks.js','rhumbline-geometry.js','boat-details.js','track-preparation-math.js','prepared-track-codec.js'])vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer',name),'utf8'),context);
+ const api=vm.runInContext('({prepareTrackData,compareTrackData,buildRhumbRoute,packPreparedTracks,getTrackModel,prepareTrackTimeIndex,boatDetails})',context);
+ const definition=JSON.parse(fs.readFileSync(path.join(ROOT,'viewer','rhumbline.json'),'utf8')),route=api.buildRhumbRoute(definition.points),prepared=[];
+ const asset=(name,kind,entries)=>{
+  const bytes=api.packPreparedTracks(kind,entries),compressed=gzipSync(Buffer.from(bytes.buffer,bytes.byteOffset,bytes.byteLength),{level:6,mtime:0}),file=prefix+name+'.bin.gz';
+  writeAtomic(path.join(ROOT,'viewer',file),compressed);return {file,bytes:bytes.byteLength,compressedBytes:compressed.byteLength};
+ };
+ for(const [index,{boat}] of native.entries()){
+  const result=api.prepareTrackData(boat,route,start,false);prepared.push({id:boat.id,model:api.getTrackModel(boat.points),timeIndex:api.prepareTrackTimeIndex(boat.points),handicap:api.boatDetails[boat.id]?.handicapSecondsPerNm||0,...result});
+  if((index+1)%10===0||index+1===native.length)console.log('Prepared source tracks '+(index+1)+'/'+native.length);
+ }
+ const common=asset('common','common',prepared.map(p=>({id:p.id,record:{timeIndexStart:p.timeIndex.start,cubic:p.record,line:{...p.record,geometryFile:'geometry-line',geometryWidth:Math.min(1024,Math.max(2,p.record.pointCount*2)),geometryHeight:p.lineGeometry.length/4/Math.min(1024,Math.max(2,p.record.pointCount*2)),geometryBytes:p.lineGeometry.byteLength,capBytes:0,capCount:0}},arrays:{...p.mirror,speed:p.speed,slopeX:p.model.slopes[0],slopeY:p.model.slopes[1],timeIndex:p.timeIndex.boundaries}})));
+ const line=asset('line','line',prepared.map(p=>({id:p.id,arrays:{geometry:p.lineGeometry}})));
+ const cubic=asset('cubic','cubic',prepared.map(p=>({id:p.id,arrays:{geometry:p.geometry,caps:p.caps}})));
+ for(const p of prepared){p.geometry=null;p.lineGeometry=null;p.caps=null;p.mirror=null;p.speed=null;}
+ const references=[];
+ for(const [index,reference] of prepared.entries()){
+  const entries=prepared.map(p=>{
+   const result=api.compareTrackData(p.knots,p.record.pointCount,reference.profile,p.handicap,reference.handicap,Math.ceil(route.total*1852/10)+1);
+   return {id:p.id,arrays:{absolute:result.colours[0],handicap:result.colours[1],time:result.colours[2]}};
+  });
+  references.push({id:reference.id,...asset('reference-'+String(index).padStart(3,'0'),'reference',entries)});
+  if((index+1)%10===0||index+1===prepared.length)console.log('Prepared reference colours '+(index+1)+'/'+prepared.length);
+ }
+ const result={version:1,routePoints:definition.points,handicaps:prepared.map(p=>({id:p.id,value:p.handicap})),common,line,cubic,references};
+ console.log('Prepared download files: '+([common,line,cubic,...references].reduce((sum,a)=>sum+a.compressedBytes,0)/1048576).toFixed(1)+' MiB total');
+ return result;
+}
 function generate({ifStale=false}={}){
  const started=performance.now(),state=sourceState();if(ifStale&&currentManifest(state)){console.log('Source data are current: '+state.sourceFingerprint);return;}
  const context=vm.createContext(vm.constants.DONT_CONTEXTIFY);context.window={};vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer','data.js'),'utf8'),context);
@@ -63,7 +98,9 @@ function generate({ifStale=false}={}){
  const replayFile=prefix+'source.bin.gz',dataFile=prefix+'data.json.gz';
  const data=Buffer.from(JSON.stringify({...D,boats:metadata})),compressedData=gzip(data);
  writeAtomic(path.join(ROOT,'viewer',replayFile),compressed);writeAtomic(path.join(ROOT,'viewer',dataFile),compressedData);
- const manifest={version:10,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:state.sourceFingerprint,sources:state.sources,start:D.start,dataFile,dataBytes:data.byteLength,dataCompressedBytes:compressedData.byteLength,replayFile,replayBytes:offset,replayCompressedBytes:compressed.byteLength,boats:entries};
+ const prepared=prepareArtifacts(context,native,prefix,D.start);
+ const manifest={prepared,version:10,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:state.sourceFingerprint,sources:state.sources,start:D.start,dataFile,dataBytes:data.byteLength,dataCompressedBytes:compressedData.byteLength,replayFile,replayBytes:offset,replayCompressedBytes:compressed.byteLength,boats:entries};
+ if(sourceState().sourceFingerprint!==state.sourceFingerprint)throw Error('Sources changed during preparation; rebuild before publishing.');
  writeAtomic(MANIFEST,JSON.stringify(manifest,null,2)+'\n');
  console.log(`Source data: ${native.length} boats, ${entries.reduce((n,b)=>n+b.pointCount,0)} original points, ${compressed.byteLength} gzip bytes, ${((performance.now()-started)/1000).toFixed(2)} s`);return manifest;
 }

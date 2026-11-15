@@ -151,8 +151,7 @@ function saveComparison(next){
 function syncNavigationControls(){
  syncReferenceBoatControls();
  $('trackStyle').value=trackUsesBoatColour()?'boat':comparison.enabled?comparison.basis:'speed';
- $('trackStyle').disabled=SIMPLE_IPHONE_TRACKS||handicapTracksEnabled;
- $('trackStyle').title=SIMPLE_IPHONE_TRACKS?'iPhone viser enkle spor i bådenes farver.':'';$('trackLength').value=String(trackLengthSeconds);
+ $('trackStyle').disabled=handicapTracksEnabled;$('trackLength').value=String(trackLengthSeconds);
  $('trackLengthSummary').textContent=trackLengthSeconds?`Spor: seneste ${$('trackLength').selectedOptions[0].textContent}`:'Spor: hele forløbet';
  $('finishMapLine').disabled=!navigationMode||navigationDraft.length<2;
  $('undoMapPoint').disabled=!navigationMode||!navigationDraft.length;

@@ -1,11 +1,15 @@
+const VIEWER_SCRIPT_TIMEOUT_MS=45000;
+function setViewerLoadingStage(stage){document.getElementById('viewerLoadingStage').textContent=stage;}
 function updateViewerLoading(value){
  const progress=document.getElementById('viewerLoadingProgress');
  progress.value=value;progress.setAttribute('aria-valuetext',Math.floor(value)+' % indlæst');
 }
 function showViewerLoadingError(error){
+ window.SRClientDiagnostics?.report('loading-error',error);
  document.getElementById('viewerLoadingProgress').hidden=true;
  const message=document.getElementById('viewerLoadingError');
- message.textContent=error.message||'Siden kunne ikke indlæses. Genindlæs for at prøve igen.';message.hidden=false;
+ const stage=document.getElementById('viewerLoadingStage').textContent;
+ message.textContent=(error.message||'Siden kunne ikke indlæses. Genindlæs for at prøve igen.')+' Trin: '+stage;message.hidden=false;
  document.getElementById('viewerLoadingRetry').hidden=false;
  document.body.setAttribute('aria-busy','false');
 }
@@ -69,14 +73,16 @@ function validatePresentationDocument(document){
   window.SR_DRAFT_KEY=draftKey;
  }
  updateViewerLoading(5);
- const files=['track-time','tracks','track-source-codec','replay-data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','rhumbline-geometry','navigation-math','navigation','gpu-track-shaders','gpu-track-preparation','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
+ const files=['track-time','tracks','track-source-codec','prepared-track-codec','replay-data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','rhumbline-geometry','navigation-math','navigation','track-files','track-preparation','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
  const preparationWeight=60,totalSteps=files.length+preparationWeight;
  let completed=0;
  for(const file of files){
+  setViewerLoadingStage('Indlæser '+file+'.js');
   await new Promise((resolve,reject)=>{
    const script=document.createElement('script');script.src=file+'.js';
+   const timer=setTimeout(()=>{script.remove();finish(Error('Indlæsningen af '+file+'.js svarede ikke inden for 45 sekunder.'));},VIEWER_SCRIPT_TIMEOUT_MS);
    const finish=error=>{
-    window.removeEventListener('error',executionError);script.onload=script.onerror=null;
+    clearTimeout(timer);window.removeEventListener('error',executionError);script.onload=script.onerror=null;
     if(error)reject(error);else resolve();
    };
    const executionError=event=>{if(event.filename===script.src)finish(event.error||Error(event.message));};
@@ -86,6 +92,7 @@ function validatePresentationDocument(document){
    document.body.append(script);
   });
   if(file==='replay-data'){
+   setViewerLoadingStage('Henter færdige spor og kortdata');
    await loadReplayData();
    const data=window.DATA;
    if(!data||!Array.isArray(data.coast)||!data.coast_metadata?.attribution||data.coast_metadata.license!=='ODbL-1.0')throw Error('Kortdata mangler den detaljerede OSM-kystlinje.');
@@ -102,15 +109,32 @@ function validatePresentationDocument(document){
   }
   if(file==='boat-icons')await loadBoatHulls();
   if(file==='track-renderer'){
+   assertRenderingReady();
    await prepareFleetTracks((prepared,total)=>updateViewerLoading(5+90*(completed+preparationWeight*prepared/total)/totalSteps));
-   if(webglTracks.active){webglTracks.prepareComparison();await webglTracks.preparation.ready();}
+   if(webglTracks.active)await webglTracks.preparation.compare(referenceBoat());
+   assertRenderingReady();
    completed+=preparationWeight;
   }
   updateViewerLoading(5+90*++completed/totalSteps);
  }
+ setViewerLoadingStage('Initialiserer kortbaggrunden');
+ webglBackground.initialize();assertRenderingReady();
+ await document.fonts.ready;
+ setViewerLoadingStage('Tegner kortbaggrunden første gang');
+ webglBackground.render(true);assertRenderingReady();
+ await waitForGpu(webglBackground.gl,'Vent på kortbaggrundens første tegning');assertRenderingReady();
+ webglTracks.initialize();assertRenderingReady();
+ await webglTracks.preparation.loadGeometry();assertRenderingReady();
+ await webglTracks.prepareComparison();assertRenderingReady();
+ await webglTracks.preparation.ready('Vent på indlæst sporgeometri');
+ setViewerLoadingStage('Forbereder første kortvisning');
+ viewerModulesReady=true;requestRender();
  await waitForMapReady();
+ await webglTracks.preparation.ready('Vent på sporenes første tegning');assertRenderingReady();
  updateViewerLoading(100);
  await new Promise(resolve=>requestAnimationFrame(resolve));
+ assertRenderingReady();
  $('viewerLoading').hidden=true;document.documentElement.classList.remove('viewer-loading');
  document.body.setAttribute('aria-busy','false');document.querySelector('main').inert=false;
+ window.SRClientDiagnostics?.report('ready','Kortet er klar');
 })().catch(showViewerLoadingError);

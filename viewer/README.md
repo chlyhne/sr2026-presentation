@@ -52,8 +52,13 @@ python3 scripts/serve_viewer.py
   tekst, tidspunkt, billeder, videoer, markør, tegninger, måling, gates, lag, både, filtre,
   sporindstillinger og kortudsnit ved zoom eller afsluttet panorering.
   **Gem ændringer** opdaterer eventet; **Annullér ændringer** genskaber det gemte
-  event. Der kræves ikke et indledende klik på **Redigér**. Med ugemte ændringer
-  bliver du på eventet, indtil kladden er gemt eller annulleret. Mellem events
+  event. Der kræves ikke et indledende klik på **Redigér**. Forsøger du at
+  forlade et event med ugemte ændringer, får du tre valg: **Gem** gemmer og
+  fortsætter den valgte handling, **Gem ikke** kasserer kladden og fortsætter,
+  og **Annullér** eller Escape bliver på eventet med kladden bevaret. Ved
+  ugyldige data eller gemmefejl bliver prompten stående med en fejlbesked.
+  Det gælder eventskift, tidsskift, afspilning, præsentation, sletning,
+  import og udgivelse. Mellem events
   ændres kun visningen og kladden til et nyt event; **Gem event** opretter det.
   `node scripts/test_viewer_event_save.cjs` kontrollerer kladde, eksplicit gemning,
   annullering, eventisolation, gemmefejl og genindlæsning i lokal Firefox på PC.
@@ -455,7 +460,7 @@ linjerne sammenlægges; der afrundes ikke.
   **Flyt / tilføj markør** ændrer placeringen i kladden. Feltet
   **Tidspunkt (dansk tid)** ændrer tidspunktet i kladden. Ved **Gem ændringer**
   flyttes eventets tidspunkt og kortets tid sammen, og eventlisten sorteres.
-  Gem eller annullér kladden, før du forlader eventet.
+  Ved handlinger, som forlader kladden, vises prompten **Gem / Gem ikke / Annullér**.
 - Under redigering kan du vælge **Frihånd**, **Pil**, **Linje** eller **Cirkel**,
   farve og stregbredde. Træk på kortet for at tegne. En cirkel trækkes fra centrum
   til kanten. **Flyt kortet** skifter tilbage til panorering; musehjulet kan stadig
@@ -836,15 +841,10 @@ Sporlaget bruger WebGL 2 i `track-renderer.js`. Hvert kildeinterval gemmes én
 gang som fire RGBA32F-texels med PCHIP-kurvens koefficienter,
 tidsstempler og registrerede fartværdier. Teksturerne forberedes for hele sejladsen
 og hele feltet, før kortets betjening åbnes, og beholdes ved fravalg og
-frem-/tilbagespoling. Alle bådes projicerede kildeprøver og passageprofiler
-bygges offline før opstart med den samme fælles nominelle matematik som visningen.
-Ved opstart og derefter én gang pr. referencevalg beregner GPU'ens transform feedback
-absolut- og handicapforskel samt tidsforskel pr. 100 meter i en genbrugt
-sammenligningsbuffer med tre floats pr. kildeprøve. Resultatet kopieres direkte
-fra GPU-bufferen til en genbrugt RGB32F-tekstur via `PIXEL_UNPACK_BUFFER`, uden
-CPU-tilbagelæsning. Alle tre grundlag er dermed klar før betjening, også når sammenligningen
-er slået fra ved indlæsning. Referencevalg kræver ingen CPU-genberegning eller upload
-af sporgeometri; bådvalg og grundlagsskift genbruger de eksisterende GPU-data.
+frem-/tilbagespoling. Alle projicerede prøver og passageprofiler beregnes på
+buildet før deploy. Alle tre sammenligningsgrundlag for alle referencebåde
+ligger i binære filer før klientens første indlæsning. Kun den aktive
+farvetype uploades som R32F; geometri genbruges ved reference- og farvevalg.
 Afspilning ændrer tidsgrænser og de intervaller, der tegnes, uden at bygge SVG-strenge,
 slå referencepassager op pr. frame eller uploade nye spordata. Vertex-shaderen
 adresserer geometri og sammenligninger med `firstInstance + gl_InstanceID`.
@@ -918,18 +918,109 @@ efter zoomniveau eller geografisk udsnit. Ikoner og interaktive kortlag er forts
 
 På iPhone vælges ved indlæsning en enkel WebGL 2-sporvisning: rette linjer
 mellem kildepunkterne og 2,7 CSS-pixels tykkelse uden mørk kant eller runde ender.
-Sporindstillinger viser kun sporlængde og handicapkompensering; referencebåd
-og sportype er skjult. Bådlisten står direkte under overskriften, da den
-enkle visning ikke har nogen farveskala. Overskrift og bådvælger er hver
-36 pixels høje og flugter med de to ikonrækker med 6 pixels mellemrum.
-GPU-profiler og sammenligningsdata
-oprettes ikke på iPhone; kun en fast vertexbuffer på 32 bytes pr. kildepunkt.
-Hvert sporstykke tegnes med seks vertices, også ved zoom. Ikonrækken vises
-fortsat i tre kolonner og to rækker, og menuer åbner under hele rækken.
-Isolerede punkter vises som små firkanter. Tidsvinduer, femminutters huller,
+Den valgte iPhone-vertexshader indeholder kun linjegeometri og farveopslag;
+desktopkode for kubiske kurver, kapper og heltalsteksturer sendes slet ikke
+til iPhone-kompileren. Valget sker før kompilering, uden en alternativ vej ved fejl.
+Alle sportyper er tilgængelige, inklusive SOG, bådfarver og de tre
+sammenligningsgrundlag. Buildet forbereder profiler, farver, geometri,
+kurvemodeller og tidsindeks. Browseren afkoder kun de færdige filer og bruger
+hverken en worker eller IndexedDB til sporklargøring. Manglende filer giver
+synlig fejl; der er ingen klientberegning som reserve.
+
+GPU'en beholder kun fælles geometri og den valgte farvetype som R32F (fire
+bytes pr. punkt med teksturrækkepadding). Bådfarver kræver ingen farvetekstur
+pr. båd. Ved sportypeskift slettes gamle farveteksturer, inden de allerede
+beregnede filer uploades. Der genberegnes ingen profiler ved type-, tids-,
+kamera- eller bådvalgsskift. Referencevalg henter én færdig referencefil med alle tre farvekanaler.
+CPU-spejle bruges til hover og pins uden GPU-tilbagelæsning under betjening.
+En lagerfejl angiver båd, filtype, byteantal og browserens oprindelige fejl.
+En lagerfejl eller manglende fil vises tydeligt; der skiftes ikke til en anden
+lagrings- eller beregningsvej. Mens filer hentes, vises en status, og sporlaget
+er skjult, så det ikke viser farver fra den foregående type eller reference.
+
+Den enkle geometri bruger to RGBA32F-texels (32 bytes) pr. kildepunkt samt
+padding, og hvert stykke tegnes med seks vertices, også ved zoom. Isolerede
+punkter vises som små firkanter. Tidsvinduer, femminutters huller,
 handicapafspilning og nyere passagers dybde bevares. Bådpositioner og klik
-interpolerer lineært som de synlige spor. Valget er en fast platformstilstand,
-ikke en reserve ved WebGL-fejl. Desktop bruger fortsat de ovenfor beskrevne kurver.
+interpolerer lineært som de synlige spor. Ikonrækken vises i tre kolonner og
+to rækker, og menuer åbner under hele rækken. Overskrift og bådvælger er hver
+36 pixels høje med seks pixels mellemrum. Bådlisten ligger under farveskalaen;
+ved bådfarver flyttes den op under overskriften på iPhone.
+Desktop bruger fortsat de ovenfor beskrevne kurver og kanter.
+
+Den lokale testserver aktiverer automatisk klientdiagnostik via
+`diagnosticsUrl` i dens `config.js`. JavaScript-fejl, ubehandlede promises,
+indlæsningsfejl og renderingsfejl sendes til `/api/client-errors` på samme server.
+Rapporten indeholder fejl/stack, session, browser, sidesti uden query,
+loadtrin/procent og små statusudtræk fra WebGL-rendererne; formularfelter,
+eventindhold og billeder indsamles ikke. Under indlæsning sendes også det
+seneste ændrede trin med fem sekunders mellemrum. Hvis hele browserprocessen
+stopper, er det senest afleverede trin det sidste tilgængelige spor.
+
+Rapporterne gemmes i `/tmp/sr2026-client-errors.jsonl` på denne PC og kan læses
+herfra ved fejlsøgning. Loggen roteres ved 2 MiB med én tidligere log bevaret.
+Klienten viser, om fejlrapporten blev afleveret; afleveringsfejl udløser ikke
+nye fejlrapporter. Gentagelser begrænses pr. sideindlæsning. Funktionen er
+ikke aktiveret i den offentlige sides standardkonfiguration og sender ikke
+til en ekstern tjeneste. `client_diagnostics` kontrollerer i skjult Firefox,
+at de automatiske rapporter faktisk bliver skrevet af testserveren.
+
+Testklienten spørger desuden samme server efter en genindlæsningskommando hvert
+andet sekund. `python3 scripts/reload_clients.py --target iphone` genindlæser
+telefonens åbne testfane én gang. Kommandoen udløber efter fem minutter;
+`--cancel` fjerner den. Før genindlæsning afleveres en rapport med seneste fejl.
+Ugemte eventændringer, nye noter/billeder, tegning og åbne dialoger blokerer
+genindlæsningen, indtil brugeren har afsluttet dem. Igangværende indlæsning
+afventes også. En frisk side får den aktuelle kommandorevision med i `config.js`,
+så en manuel åbning efter browsergenstart ikke udløser en ekstra genindlæsning
+midt i sporklargøringen. Funktionen kræver en åben,
+aktiv fane med den aktuelle klientkode; den kan ikke genstarte browserappen.
+Den lokale server sender `Cache-Control: no-store` for alle filer og svarer
+med aktuelle filer også ved gamle betingede cacheanmodninger. `/test/` er et
+alias til samme viewer og API.
+
+Før en serverstyret genindlæsning afventer klienten eksplicit tab af begge
+WebGL-kontekster, efter at GPU-ejerskab og fillager er lukket. Tab under denne
+oprydning tæller ikke som en renderingsfejl. Oprydningen sker også ved
+`pagehide`, når siden forlades uden at blive gemt i browserens navigationscache;
+en navigationscachet side bevarer sin tilstand. Manglende kvittering for
+GPU-frigivelsen stopper den serverstyrede genindlæsning med synlig status.
+
+`--page probe --probe minimal`, `minimal-no-aa`, `line`, `background`,
+`background-real` eller `upload` vælger en særskilt GPU-diagnoseside. Den tester
+små flader, de nominelle linje- og kortshadere, faktiske kortdata eller 106
+geometri-/R32F-uploads. Den er ikke en alternativ renderingsvej.
+`--page tracker` vender tilbage. Probevalg understøtter `iphone` og `all`;
+almindelig genindlæsning kan også målrettes et sessions-ID.
+`client_reload` og `gpu_probe` er kontrolleret i skjult Firefox på PC.
+
+Geometri, profiler, kurvemodeller, tidsindeks og referencefarver beregnes
+med Node.js under build. `--if-stale` genbruger resultatet ud fra alle numeriske
+kilder, handicapdata og rhumblinen. Den offentlige pakke indeholder kun det
+aktuelle manifests filer; build-matematikken og den tidligere worker publiceres ikke.
+Filerne indeholder justerede typed-array-visninger med Float64-modeller,
+Float32-geometri/farver og Uint32-indeks. Den fælles codec er tabsfri.
+
+Klienten henter fælles opslag, den valgte geometri og den valgte references
+farver. Kun fælles geometri og den aktive R32F-kanal ligger på GPU'en.
+Første baggrundstegning afsluttes inden sporenes upload, og loadskærmen frigives
+efter første bekræftede sportegning. `main` forbliver inert indtil da.
+Modulindlæsning har 45 sekunders ventefrist og GPU-venten 30 sekunder.
+Ved kontekstgenskabelse genindlæses de færdige filer; gamle opgaver afvises af
+deres afsluttede ejer. Der køres ingen beregning eller alternativ rendering ved fejl.
+
+`node scripts/test.cjs --extended track_files startup` kontrollerer i skjult
+Firefox begge geometrier, alle farvetyper, formler fra de færdige referencefiler,
+referenceskift, gentagne opstarter og kontekstgenskabelse. Worker og IndexedDB
+er blokeret i filtesten, og kurve-/indeksberegning må ikke kaldes. Manglende
+eller korrupte filer giver fejl før WebGL-opstart. De hurtige kontroller bruger
+små analytiske profiler og tabsfrie codec-rundture; de genberegner ikke datasættet.
+
+Den lokale Firefox-test gennemfører opstart, alle farvetyper og referenceskift
+på ca. 3 sekunder. Første download er ca. 55 MB på iPhone og 65 MB på desktop
+med Mercutio; referencefilerne er ca. 1–5 MB hver. Hele datasættet er ca. 475 MB.
+Filerne hentes efter behov og har fingerprintede URL'er; den lokale server
+cacher kun disse data længe. Stabilitet på den konkrete iPhone mangler bekræftelse.
 
 WebGL-canvasserne ligger som HTML-lag i samme kortfelt som SVG-lagene.
 En fast CSS-lagrækkefølge placerer WebGL-baggrunden nederst, derefter SVG-kortdetaljer,
@@ -1104,47 +1195,45 @@ punkter skaleres til Float32 før GPU-upload. Pages publicerer kun det aktuelle
 manifest, metadata og kildepakken; `data.js` bruges kun offline. Fejl i format,
 gzip eller GPU vises tydeligt uden fallback.
 
-[`gpu-track-preparation.js`](./gpu-track-preparation.js) er den nominelle beregning
-af kubiske koefficienter, ruteprojektioner, VMG og fart-/tidsprofiler i WebGL 2.
-Shadertrinnene ligger samlet i [`gpu-track-shaders.js`](./gpu-track-shaders.js);
-teksturkanaler og enheder er beskrevet ved klargøringen. Hver båd klargøres som
-en transaktion: kun validerede geometri-/profilteksturer beholdes. Midlertidige
-buffere, teksturer og projektions-VAO frigives også ved fejl; delvise resultater
-indsættes ikke i feltets cache. Konteksttab frigiver ejerskabet af ugyldige handles.
-Kildens intervaldifferencer beregnes før Float32-konvertering, og relative
-koordinater og delt tid bevarer præcisionen. GPU'en sampler PCHIP-kurven efter
-en øvre grænse for kurvelængden med højst cirka otte meter pr. trin.
-Disse midlertidige prøver bruges kun til profilberegningen og frigives bagefter;
-rendereren tegner direkte fra de kubiske koefficienter ved den aktuelle zoom.
+[`prepare_track_profiles.cjs`](../scripts/prepare_track_profiles.cjs) udfører
+beregningen med [`track-preparation-math.js`](./track-preparation-math.js) under
+build. Det er den eneste beregningsvej. [`track-files.js`](./track-files.js)
+henter de færdige filer, mens [`track-preparation.js`](./track-preparation.js)
+forbinder dem med WebGL-rendereren. Den tidligere CPU-worker er fjernet.
+
+Begge geometrier og alle referencevalg beregnes før deploy. Kildens native
+koordinater og Float64-modeller bevares, mens geometri, profiler og farver
+lagres som Float32. Filkodningen og gzip bevarer alle bytes. PCHIP-prøver har
+højst cirka otte meters kurvelængde. Et stationsindeks grupperer relevante
+prøveblokke og bevarer deres kronologiske passagebehandling.
 Ti-meterstationerne gemmer første fremadgående fartpassage og summeret
 tidsforbrug over alle frem- og tilbagepassager. Spring mellem fjerne ruteben
 afbryder passagen, så nære start-/målben ikke skaber en falsk helrutepassage.
 Profiler og sammenligningsværdier er Float32 uden 10-bit-kvantiseringslag eller
 25-knobs-klipning. Manglende data er `-1e20`; uendeligt tidsforbrug har en fælles
 Float32-overflowmarkør.
-Rutens yderste endepunkter har en tolerance på 0,1 meter, så afrunding af lokale
-Float32-koordinater ikke gør et punkt på start-/slutgrænsen til manglende data.
+Ruteprojektionen bruger den fælles sfæriske rhumb-geometri i Float64. De native
+koordinater afrundes ikke før projektionen.
 Passageoptællingen bevarer retningen gennem plateauer og kræver 0,2 meters
 bevægelse fra passagens ekstremum for at tælle en vending; afrundingsstøj
 bliver dermed ikke til flere passager. Overflow bevares eksplicit ved summering.
-Profilteksturens to ekstra kanaler gemmer første passages tidspunkt og samplingens
+Profilfilens to ekstra kanaler gemmer første passages tidspunkt og samplingens
 tidsbredde. De gør afvigelser ved ruteknæk og korte delpassager sporbare uden en
 alternativ beregningsvej. Se [samlet validering](../scripts/track-validation.md).
 
 Hele feltet forberedes før betjening frigives. Tidslinjen og positionsmarkørerne
-beholder deres CPU-model af samme PCHIP-kurver. GPU'ens færdige profiler og
-projektioner læses én gang til Float32-arrays for hover, pins og referenceopslag.
-Der beregnes ingen alternativ CPU-profil. Hoverens omtrentlige referencetid
+beholder deres CPU-model af samme PCHIP-kurver. Buildets færdige profiler og
+projektioner leverer Float32-arrays til hover, pins og referenceopslag. Hoverens omtrentlige referencetid
 findes ved opslag i de forberedte progressioner og originale tidspunkter.
 
-Alle bådes GPU-profiler bevares. Referencevalg bruger eksisterende teksturer og
-beregner absolut-, handicap- og tidsforskel for alle både i eksisterende
-RGBA32F-teksturer. Stationsindekset beregnes én gang af GPU'en og deles med
-CPU-opslagene. Grundlagsskift vælger blot en allerede beregnet kanal.
-Bådvalg genberegner eller uploader ingen faste data. Geometri og profiler bevares
-under zoom og afspilning, og lageret vokser lineært uden cache for alle bådpar.
-Ved tab af WebGL-konteksten genopbygges GPU-ressourcerne fra originalpunkterne,
-inden renderingen fortsætter.
+Alle bådes geometri, profiler og projektioner bevares i lokale binære filer.
+Efter klargøring og baggrundsinitialisering beholder GPU'en den uploadede fælles
+geometri og én valgt farvetype. Referencevalg læser én færdig fil med alle tre
+sammenligningsgrundlag; ingen profiler eller farveværdier beregnes i browseren. Grundlagsskift læser den valgte fil og
+udskifter de aktive R32F-teksturer; ingen profiler genberegnes.
+Bådvalg, zoom og afspilning genberegner eller uploader ingen faste data.
+Ved tab af WebGL-konteksten genopbygges samme nominelle vej, og lager- eller
+GPU-fejl vises tydeligt.
 Referencebådens spor bruger bådens egen farve med 18 % opacitet i sammenligningsvisningerne
 og tegnes under de øvrige spor. Almindelig SOG-visning beholder SOG-paletten.
 Farver uden sammenligningsdata
