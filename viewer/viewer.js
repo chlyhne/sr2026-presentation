@@ -1,4 +1,5 @@
 const $=id=>document.getElementById(id), D=window.DATA, NS='http://www.w3.org/2000/svg';
+document.documentElement.classList.toggle('iphone',SIMPLE_IPHONE_TRACKS);
 const xy=([lon,lat])=>[(lon-9.5)/4.5*1000,(57-lat)/3*1180];
 const timeFormatter=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Copenhagen',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
 const fmt=t=>timeFormatter.format(new Date(t*1000));
@@ -8,7 +9,7 @@ function setAttr(node,name,value){value=String(value);if(node.getAttribute(name)
 function screenGroup(x,y,parent){
  return el('g',{'data-screen-x':x,'data-screen-y':y,transform:`translate(${x} ${y})`},parent);
 }
-function resizeSymbols(root=$('map')){
+function resizeSymbols(root=$('mapSurface')){
  const matrix=mapViewport()?.matrix;
  if(!matrix)return;
  const inverseScale=1/Math.hypot(matrix.a,matrix.b);
@@ -20,11 +21,17 @@ function resizeSymbols(root=$('map')){
   if(group.getAttribute('transform')!==transform)group.setAttribute('transform',transform);
   if(marker)setAttr(group.boatHitTarget,'r',10*inverseScale);
  }
- if(root===$('map'))resizeBoatIcons(matrix);
+ if(root===$('mapSurface'))resizeBoatIcons(matrix);
 }
 function path(points){return points.map((p,i)=>(i?'L':'M')+xy(p).join(',')).join(' ')}
 let mapLayout=null,mapCamera=null;
 function invalidateMapLayout(){mapLayout=null;mapCamera=null;}
+function mapCanvasResolution(rect,requestedRatio=devicePixelRatio||1){
+ // Bound both WebGL drawing buffers independently of display density. In
+ // particular, track supersampling must not multiply a Retina display's DPR.
+ const ratio=Math.min(2,requestedRatio);
+ return {pixelWidth:Math.max(1,Math.round(rect.width*ratio)),pixelHeight:Math.max(1,Math.round(rect.height*ratio))};
+}
 function mapViewport(){
  // The root SVG uses xMidYMid/meet. Derive its projection from the camera and
  // cached CSS layout; never ask SVG to resolve layout for every layer/input.
@@ -33,21 +40,21 @@ function mapViewport(){
  if(!rect.width||!rect.height||!width||!height)return null;
  const key=[x,y,width,height,rect.left,rect.top,rect.width,rect.height,ratio].join(':');
  if(mapCamera?.key===key)return mapCamera;
+ setAttr($('mapBase'),'viewBox',`${x} ${y} ${width} ${height}`);
  const scale=Math.min(rect.width/width,rect.height/height);
  const matrix=new DOMMatrix([scale,0,0,scale,rect.left+(rect.width-width*scale)/2-x*scale,rect.top+(rect.height-height*scale)/2-y*scale]);
  const inverse=matrix.inverse();
  const a=new DOMPoint(rect.left,rect.top).matrixTransform(inverse);
  const b=new DOMPoint(rect.right,rect.bottom).matrixTransform(inverse);
  return mapCamera={key,rect,matrix,inverse,topLeft:a,viewBox:[a.x,a.y,b.x-a.x,b.y-a.y],
-  pixelWidth:Math.max(1,Math.round(rect.width*(devicePixelRatio||1))),pixelHeight:Math.max(1,Math.round(rect.height*(devicePixelRatio||1))),
+  ...mapCanvasResolution(rect),
   bounds:{west:9.5+a.x*4.5/1000,east:9.5+b.x*4.5/1000,south:57-b.y*3/1180,north:57-a.y*3/1180}};
 }
 function visibleMapBounds(){return mapViewport()?.bounds||null;}
-function positionMapCanvas(host,canvas,viewport){
- const {rect,inverse,topLeft,pixelWidth,pixelHeight}=viewport;
- setAttr(host,'x',0);setAttr(host,'y',0);
- setAttr(host,'width',rect.width);setAttr(host,'height',rect.height);
- setAttr(host,'transform',`matrix(${inverse.a} ${inverse.b} ${inverse.c} ${inverse.d} ${topLeft.x} ${topLeft.y})`);
+function positionMapCanvas(canvas,viewport){
+ const {pixelWidth,pixelHeight}=viewport;
+ // HTML layers share the SVG's CSS viewport. Camera projection remains in the
+ // WebGL shaders, without embedding accelerated canvases inside foreignObject.
  if(canvas.width!==pixelWidth)canvas.width=pixelWidth;if(canvas.height!==pixelHeight)canvas.height=pixelHeight;
 }
 function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>=b.south&&a.south<=b.north;}
@@ -76,22 +83,20 @@ function renderMapCredit(){
  const viewport=mapViewport();if(!viewport||mapCreditKey===viewport.key)return;
  mapCreditKey=viewport.key;renderTrackSpeedLegend();
  const {rect,matrix,inverse}=viewport,point=new DOMPoint(rect.right-8,rect.bottom-8).matrixTransform(inverse);
- const {meters,label}=mapGridLevel(viewport),width=meters*MAP_GRID_UNITS_PER_METER[0]*Math.hypot(matrix.a,matrix.b),panelWidth=Math.max(185,width+16);
+ const {meters,label}=mapGridLevel(viewport),width=meters*MAP_GRID_UNITS_PER_METER[0]*Math.hypot(matrix.a,matrix.b);
  if(!mapCreditNodes){
   const group=screenGroup(point.x,point.y,$('mapCredit'));
-  const panel=el('rect',{y:-64,height:70,rx:3,fill:'#ffffff',opacity:.88},group);
   const scale=el('g',{'data-map-scale':'',role:'img'},group);
-  const line=el('path',{fill:'none',stroke:'#173d4c','stroke-width':1.5},scale);
-  const text=el('text',{y:-49,'text-anchor':'middle','font-size':11,fill:'#173d4c'},scale);
-  el('text',{x:-5,y:-12,'text-anchor':'end','font-size':10,fill:'#173d4c'},group).textContent=D.coast_metadata.attribution;
-  el('text',{x:-5,y:1,'text-anchor':'end','font-size':10,fill:'#173d4c'},group).textContent='openstreetmap.org/copyright';
-  mapCreditNodes={group,panel,scale,line,text};
+  const line=el('path',{fill:'none',stroke:'#173d4c','stroke-width':1.25},scale);
+  const text=el('text',{y:-31,'text-anchor':'middle','font-size':10,fill:'#173d4c'},scale);
+  el('text',{x:0,y:-10,'text-anchor':'end','font-size':9,fill:'#173d4c'},group).textContent=D.coast_metadata.attribution;
+  el('text',{x:0,y:1,'text-anchor':'end','font-size':9,fill:'#173d4c'},group).textContent='openstreetmap.org/copyright';
+  mapCreditNodes={group,scale,line,text};
  }
- const {group,panel,scale,line,text}=mapCreditNodes;
+ const {group,scale,line,text}=mapCreditNodes;
  positionScreenGroup(group,point.x,point.y,1/Math.hypot(matrix.a,matrix.b));
- setAttr(panel,'x',-panelWidth);setAttr(panel,'width',panelWidth);
  setAttr(scale,'data-meters',meters);setAttr(scale,'data-pixel-width',width);setAttr(scale,'aria-label',`Målestok: ${label}`);
- setAttr(line,'d',`M${-8-width},-45v7H-8v-7`);setAttr(text,'x',-8-width/2);
+ setAttr(line,'d',`M${-width},-27v5H0v-5`);setAttr(text,'x',-width/2);
  if(text.textContent!==label)text.textContent=label;
 }
 const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff84'};
@@ -451,13 +456,27 @@ const map=$('map');
 // The map owns the gesture, including when it starts on SVG text or an image.
 // Native text selection and image dragging can otherwise cancel pointer events.
 map.ondragstart=e=>e.preventDefault();
+function rebaseMapGesture(){
+ const points=[...drag.pointers.values()];
+ drag.view=[...view];drag.inverse=mapViewport().inverse;
+ drag.pointerId=drag.pointers.keys().next().value;
+ drag.x=points.reduce((sum,p)=>sum+p.x,0)/points.length;
+ drag.y=points.reduce((sum,p)=>sum+p.y,0)/points.length;
+ drag.distance=points.length===2?Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y):0;
+}
 map.onpointerdown=e=>{
- if(e.button!==0||drag)return;
+ if(e.button!==0)return;
+ if(drag){
+  if(e.pointerType!=='touch'||drag.pointerType!=='touch'||drag.pointers.size!==1||drag.pointers.has(e.pointerId))return;
+  e.preventDefault();drag.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});drag.moved=true;
+  rebaseMapGesture();map.setPointerCapture(e.pointerId);return;
+ }
  clearTrackHover();
  if(beginNavigationGesture(e))return;
  if(beginDrawingGesture(e))return;
  e.preventDefault();
- drag={pointerId:e.pointerId,x:e.clientX,y:e.clientY,view:[...view],event:editableSettingsEvent(),
+ drag={pointerId:e.pointerId,pointerType:e.pointerType,pointers:new Map([[e.pointerId,{x:e.clientX,y:e.clientY}]]),
+  x:e.clientX,y:e.clientY,view:[...view],initialView:[...view],event:editableSettingsEvent(),
   boatId:e.target.closest('[data-boat-marker]')?.dataset.boatMarker,
   noteIndex:e.target.closest('[data-note-index]')?.dataset.noteIndex,
   trackBoatId:e.target.closest('[data-track-boat-id]')?.dataset.trackBoatId,
@@ -471,8 +490,19 @@ map.onpointermove=e=>{
  if(moveNavigationGesture(e))return;
  if(moveDrawingGesture(e))return;
  if(!drag){updateTrackHover(e);return;}
- if(e.pointerId!==drag.pointerId)return;
+ if(!drag.pointers.has(e.pointerId))return;
  e.preventDefault();
+ drag.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(drag.pointers.size===2){
+  const [a,b]=[...drag.pointers.values()],distance=Math.hypot(b.x-a.x,b.y-a.y);
+  if(!drag.distance||!distance){rebaseMapGesture();return;}
+  const factor=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,drag.view[2]*drag.distance/distance))/drag.view[2];
+  const anchor=new DOMPoint(drag.x,drag.y).matrixTransform(drag.inverse);
+  const center=new DOMPoint((a.x+b.x)/2,(a.y+b.y)/2).matrixTransform(drag.inverse);
+  // Only distance and midpoint affect the camera; finger angle never rotates it.
+  view=[anchor.x+(drag.view[0]-center.x)*factor,anchor.y+(drag.view[1]-center.y)*factor,drag.view[2]*factor,drag.view[3]*factor];
+  setview();return;
+ }
  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
  if(Math.hypot(dx,dy)>4)drag.moved=true;
  if(!drag.moved)return;
@@ -484,10 +514,16 @@ map.onpointermove=e=>{
 function endPan(e){
  if(endNavigationGesture(e))return;
  if(endDrawingGesture(e))return;
- if(!drag||e.pointerId!==drag.pointerId)return;
+ if(!drag||!drag.pointers.has(e.pointerId))return;
+ drag.pointers.delete(e.pointerId);
+ if(drag.pointers.size){
+  drag.moved=true;rebaseMapGesture();
+  if(map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);
+  return;
+ }
  const click=e.type==='pointerup'&&!drag.moved,{boatId,noteIndex,trackBoatId,speedKey,speedAction}=drag;
  if(drag.moved&&drag.event&&drag.event===editableSettingsEvent()&&!stageEventChanges(drag.event,{view:[...view]})){
-  view=drag.view;setview();
+  view=drag.initialView;setview();
  }
  drag=null;map.classList.remove('panning');
  if(map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);

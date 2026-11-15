@@ -68,6 +68,9 @@ tidsgitter. Kubisk interpolation mellem originalpunkterne er bevaret, også unde
 afspilning; huller over fem minutter forbindes ikke. GPU'ens profilberegning
 sampler kurverne med højst cirka otte meters kurvelængde pr. trin og samler
 referenceprofiler på stationer med ti meters afstand langs rhumblinen.
+GPU-klargøringen opdeler transform feedback i højst 4.096 punkter pr. kald og
+profilberegning i én teksturrække pr. kald. Det begrænser arbejdet i hvert
+GPU-kald under indlæsning uden at ændre data eller beregningsgrundlag.
 
 Alle både, kubiske modeller, tidslinjeindeks og begge profilgrundlag er forberedt,
 før betjening frigives. GPU'ens Float32-profiler spejles én gang til CPU'en til

@@ -37,6 +37,8 @@ const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
    },name);
    assert.ok(available,'Context-loss extension is available');
    await page.waitForFunction(()=>hasRenderingFailure()&&!$('renderingError').hidden);
+   await page.waitForFunction(()=>$('renderingErrorDetails').textContent.includes('Trin:'));
+   assert.match(await page.locator('#renderingErrorDetails').textContent(),/Grafikbuffer: \d+ × \d+/);
    assert.equal(await page.locator('#map').isVisible(),false);assert.equal(await page.locator('#play').isEnabled(),false);
    assert.equal(await page.locator('#land path,#coast path,[data-software-tracks]').count(),0);
    await page.evaluate(()=>nominalContext.restoreContext());
@@ -47,7 +49,7 @@ const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
   // No full-viewport video substitution when the nominated fullscreen path is unavailable.
   await page.route('https://www.youtube-nocookie.com/embed/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Video test</title>'}));
   await page.evaluate(()=>{
-   notes=[{time:D.start+3600,text:'Video',video:parseYouTubeVideo('https://youtu.be/M7lc1UVf-VE')}];showNotes();restoreNote(notes[0]);
+   notes=[{time:D.start+3600,text:'Video',video:parseYouTubeVideo('https://youtu.be/M7lc1UVf-VE')}];showNotes();restoreNote(notes[0]);setEventPanelExpanded(true);
    Object.defineProperty(document,'fullscreenEnabled',{value:false,configurable:true});
   });
   await page.locator('#eventVideoButton').click();assert.equal(await page.locator('#eventVideoOverlay').isVisible(),false);

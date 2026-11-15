@@ -6,6 +6,19 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[],requests=[];
   page.on('pageerror',error=>errors.push(error.message));page.on('request',request=>requests.push(new URL(request.url()).pathname));
+  await page.addInitScript(()=>{
+   window.preparationDraws={feedbackCalls:0,maxFeedbackVertices:0,maxFeedbackOffset:0,profileRows:0,maxProfileRowHeight:0};
+   const draw=WebGL2RenderingContext.prototype.drawArrays;
+   WebGL2RenderingContext.prototype.drawArrays=function(mode,first,count){
+    const stats=preparationDraws;
+    if(this.isEnabled(this.RASTERIZER_DISCARD)){
+     stats.feedbackCalls++;stats.maxFeedbackVertices=Math.max(stats.maxFeedbackVertices,count);stats.maxFeedbackOffset=Math.max(stats.maxFeedbackOffset,first);
+    }else if(this.isEnabled(this.SCISSOR_TEST)&&this.getParameter(this.FRAMEBUFFER_BINDING)){
+     stats.profileRows++;stats.maxProfileRowHeight=Math.max(stats.maxProfileRowHeight,this.getParameter(this.SCISSOR_BOX)[3]);
+    }
+    return draw.call(this,mode,first,count);
+   };
+  });
   await page.goto(url);await page.waitForSelector('main:not([inert])',{timeout:120000});
   const initial=await page.evaluate(()=>{
    stopPlayback();const profiles=boats.map(b=>trackProfileCache.get(b.points)),records=boats.map(b=>webglTracks.buffers.get(b.points));
@@ -17,9 +30,12 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
    const oldReference=referenceBoatId;for(const boat of boats.slice(0,3))if(!saveReferenceBoat(boat.id))throw Error('Reference failed');saveReferenceBoat(oldReference);
    if(uploads!==webglTracks.uploads||boats.some((b,i)=>trackProfileCache.get(b.points)!==profiles[i]||webglTracks.buffers.get(b.points)!==records[i]))throw Error('Interaction recalculated fixed data');
    if(webglTracks.gl.getError())throw Error('WebGL error');
-   return {boats:boats.length,pointCount,uploads,renderer:webglTracks.renderer,start:D.start,route:window.SR_RHUMBLINE};
+   return {boats:boats.length,pointCount,uploads,renderer:webglTracks.renderer,start:D.start,route:window.SR_RHUMBLINE,drawBatches:preparationDraws};
   });
   assert.equal(initial.boats,106);assert.equal(initial.pointCount,730370);assert.equal(initial.uploads,106);
+  assert.ok(initial.drawBatches.feedbackCalls>106&&initial.drawBatches.maxFeedbackOffset>=4096);
+  assert.ok(initial.drawBatches.maxFeedbackVertices<=4096);
+  assert.ok(initial.drawBatches.profileRows>=106*41);assert.equal(initial.drawBatches.maxProfileRowHeight,1);
   assert.equal(requests.filter(p=>p.endsWith('/source.bin.gz')).length,1);assert.equal(requests.some(p=>p.endsWith('/profiles.bin.gz')||p.endsWith('/fleet.bin')||p.endsWith('/data.js')),false);
   const interpolation=await page.evaluate(()=>{
    const boat={...boats[0],points:[[12,55.6,D.start+100000.123],[12.001,55.601,D.start+100060.789],[12.004,55.6014,D.start+100180.567],[12.005,55.603,D.start+100240.321]],speeds:[31.125,32,33,34]};

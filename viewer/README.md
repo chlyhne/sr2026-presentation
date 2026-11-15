@@ -9,6 +9,8 @@ python3 scripts/serve_viewer.py
 
 Åbn derefter http://127.0.0.1:8097/ .
 
+- Flyt kortet med én finger, og zoom med to fingre. To fingre kan også flytte
+  kortet samtidig med zoom. Kortet roterer ikke; nord bliver opad.
 - Ved første indlæsning vises kun en fremdriftsbjælke. Siden bliver tilgængelig,
   når data, hele feltets spor og sammenligninger samt det første vejrkort er klar.
   Den offentlige side åbner direkte i præsentationsvisning uden at vise redigeringen først.
@@ -905,7 +907,7 @@ Tidens høje og lave del gemmes separat, så millisekunder også kan skelnes sen
 i sejladsen. Dybden sættes i vertex-shaderen, så GPU'en kan afvise skjulte
 fragmenter tidligt. Kant og sporfarve tegnes i én passage med samme tidsdybde.
 Overgangen mellem fartfarve og mørk kant udjævnes med `fwidth` og `smoothstep`
-over cirka én rasterpixel. Sporlaget tegnes med 2× rasteropløsning i begge retninger
+over cirka én rasterpixel. Sporlaget tegnes med højst 2 billedpunkter pr. CSS-pixel i begge retninger
 ud over WebGL-kontekstens multisample-antialiasing. Nedskaleringen udjævner også
 den mørke yderkant mod kortet uden at ændre sporbredde eller tidsbaseret dybde.
 Sammenhængende kildeintervaller deler en kant uden runde afslutninger imellem;
@@ -914,10 +916,26 @@ Runde afslutninger bruges ved sporets ender, reelle huller og tidsvinduets klip.
 Huller over fem minutter forbindes fortsat ikke. Der fjernes ingen kildepunkter
 efter zoomniveau eller geografisk udsnit. Ikoner og interaktive kortlag er fortsat SVG.
 
-Canvas ligger i et SVG-`foreignObject` på sporenes oprindelige plads i lagfølgen.
-Det indlejrede HTML-layout bruger skærmpixels og en invers SVG-transformation.
-Dermed afrunder browserens canvas-kompositor ikke placeringen i kortkoordinater
-før zoom; ved tæt zoom ville afrundingen ellers forskyde hele sporlaget.
+På iPhone vælges ved indlæsning en enkel WebGL 2-sporvisning: rette linjer
+mellem kildepunkterne og 2,7 CSS-pixels tykkelse uden mørk kant eller runde ender.
+Sporindstillinger viser kun sporlængde og handicapkompensering; referencebåd
+og sportype er skjult. Bådlisten står direkte under overskriften, da den
+enkle visning ikke har nogen farveskala. Overskrift og bådvælger er hver
+36 pixels høje og flugter med de to ikonrækker med 6 pixels mellemrum.
+GPU-profiler og sammenligningsdata
+oprettes ikke på iPhone; kun en fast vertexbuffer på 32 bytes pr. kildepunkt.
+Hvert sporstykke tegnes med seks vertices, også ved zoom. Ikonrækken vises
+fortsat i tre kolonner og to rækker, og menuer åbner under hele rækken.
+Isolerede punkter vises som små firkanter. Tidsvinduer, femminutters huller,
+handicapafspilning og nyere passagers dybde bevares. Bådpositioner og klik
+interpolerer lineært som de synlige spor. Valget er en fast platformstilstand,
+ikke en reserve ved WebGL-fejl. Desktop bruger fortsat de ovenfor beskrevne kurver.
+
+WebGL-canvasserne ligger som HTML-lag i samme kortfelt som SVG-lagene.
+En fast CSS-lagrækkefølge placerer WebGL-baggrunden nederst, derefter SVG-kortdetaljer,
+WebGL-spor og til sidst SVG-både og annotationer. Begge SVG-lag deler kamera og
+kortudsnit. Canvas indlejres ikke i SVG-`foreignObject`, hvor iPhone kunne vise
+sporene oven på bådene. Canvasplaceringen bruger skærmpixels uden SVG-transformation.
 Zoom, panorering, skærmskalering og ændret vinduesstørrelse opdaterer projektionen.
 `mapViewport()` leverer det synlige kortrektangel og dets geografiske grænser
 til både sporenes projektion og `visibleMapBounds()`. Fuldskærmsskift genopfrisker

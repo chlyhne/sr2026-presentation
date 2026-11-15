@@ -48,13 +48,15 @@ let visibleBoatLayoutKey=null;
 function layoutVisibleBoats(){
  const viewport=mapViewport();if(!viewport)return;
  const {rect}=viewport,layout=trackSpeedLegendLayout();
- const key=[rect.width,rect.height,layout.width,layout.height,$('visibleBoatsPanel').hidden].join(':');
+ // Second icon row starts at 12px + 36px row height + 6px gap.
+ const top=SIMPLE_IPHONE_TRACKS?54:layout.top+layout.height+8;
+ const key=[rect.width,rect.height,layout.width,top,$('visibleBoatsPanel').hidden].join(':');
  if(key===visibleBoatLayoutKey)return;visibleBoatLayoutKey=key;
  $('mapHeading').style.width=layout.width+'px';
  $('visibleBoats').style.width=layout.width+'px';
  $('visibleBoats').style.marginLeft=layout.left+'px';
- $('visibleBoats').style.marginTop=layout.top+layout.height+8+'px';
- const availableHeight=Math.max(32,rect.height-layout.top-layout.height-8);
+ $('visibleBoats').style.marginTop=top+'px';
+ const availableHeight=Math.max(32,rect.height-top);
  $('visibleBoats').style.maxHeight=availableHeight+'px';
  $('visibleBoats').style.height=$('visibleBoatsPanel').hidden?'auto':availableHeight+'px';
 }

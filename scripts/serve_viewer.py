@@ -40,6 +40,16 @@ class ViewerHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT / 'viewer'), **kwargs)
 
+    def parse_request(self):
+        if not super().parse_request():
+            return False
+        self.test_alias = urlsplit(self.path).path.startswith('/test/')
+        if self.test_alias:
+            # Keep /test/ in the browser while using the same handlers and files.
+            self.path = self.path[len('/test'):]
+            del self.headers['If-Modified-Since']
+        return True
+
     def translate_path(self, path):
         route = urlsplit(path).path
         if route == '/rhumbline.html':
@@ -52,7 +62,7 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         return super().translate_path(path)
 
     def end_headers(self):
-        if urlsplit(self.path).path in {'/rhumbline.json', '/track-profiles/manifest.json'}:
+        if getattr(self, 'test_alias', False) or urlsplit(self.path).path in {'/rhumbline.json', '/track-profiles/manifest.json'}:
             self.send_header('Cache-Control', 'no-store')
         super().end_headers()
 

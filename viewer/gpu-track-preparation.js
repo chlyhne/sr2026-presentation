@@ -74,7 +74,7 @@ class GPUTrackPreparation {
   if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));return program;
  }
  uniform(program,name,value){this.gl.uniform1i(this.gl.getUniformLocation(program,name),value);}
- check(label){const error=this.gl.getError();if(error)throw Error(label+': '+error);}
+ check(label){this.stage=label;const error=this.gl.getError();if(error)throw Error(label+': '+error);}
  bind(program,name,texture,unit){const gl=this.gl;gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,texture);this.uniform(program,name,unit);}
  texture(width,height,data=null,integer=false){
   if(!Number.isSafeInteger(width)||!Number.isSafeInteger(height)||width<1||height<1||Math.max(width,height)>this.maxTextureSize)throw Error('Track data exceeds the GPU texture limit.');
@@ -91,7 +91,10 @@ class GPUTrackPreparation {
    gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,bytes,program===this.counts?gl.STREAM_READ:gl.STATIC_COPY);
    gl.bindBuffer(gl.ARRAY_BUFFER,null);gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK,this.feedback);gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER,0,buffer);
    gl.enable(gl.RASTERIZER_DISCARD);gl.beginTransformFeedback(gl.POINTS);begun=true;this.check('Begin feedback');
-   gl.drawArrays(gl.POINTS,0,count);this.check('Draw feedback');return buffer;
+   // Bound each draw, including dense curve projection. Transform feedback
+   // appends each batch into the same output buffer in original source order.
+   for(let first=0;first<count;first+=4096){gl.drawArrays(gl.POINTS,first,Math.min(4096,count-first));gl.flush();}
+   this.check('Draw feedback');return buffer;
   }finally{
    if(begun)gl.endTransformFeedback();gl.disable(gl.RASTERIZER_DISCARD);
    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER,0,null);gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK,null);gl.bindVertexArray(null);
@@ -118,12 +121,19 @@ class GPUTrackPreparation {
  draw(program,target,width,height,setup){
   const gl=this.gl;
   try{return this.withTarget(target,()=>{
-   gl.useProgram(program);gl.bindVertexArray(this.vao);gl.viewport(0,0,width,height);gl.disable(gl.DEPTH_TEST);gl.disable(gl.BLEND);setup();gl.drawArrays(gl.TRIANGLES,0,3);
-  });}finally{gl.bindVertexArray(null);}
+   gl.useProgram(program);gl.bindVertexArray(this.vao);gl.viewport(0,0,width,height);gl.disable(gl.DEPTH_TEST);gl.disable(gl.BLEND);setup();
+   if(program===this.profile){
+    // Every station traverses the voyage. Submit one texture row at a time,
+    // rather than all 41,709 stations in a single long-running GPU draw.
+    gl.enable(gl.SCISSOR_TEST);
+    for(let row=0;row<height;row++){gl.scissor(0,row,width,1);gl.drawArrays(gl.TRIANGLES,0,3);gl.flush();}
+   }else gl.drawArrays(gl.TRIANGLES,0,3);
+  });}finally{gl.disable(gl.SCISSOR_TEST);gl.bindVertexArray(null);}
  }
  prepare(boat){
   if(this.disposed||this.legs!==rhumbRoute.legs)throw Error('GPU preparation route is no longer valid.');
   const transaction=new GPUTrackResources(this.gl);this.scope=transaction;
+  this.currentBoat=boat.name;
   try{
    const record=boat.points.length?this.prepareSource(boat):this.prepareEmpty(),profile=this.readProfile(boat,record);
    this.check('GPU prepare '+boat.name);
@@ -194,6 +204,7 @@ class GPUTrackPreparation {
   });
   const bounds=this.fromBuffer(boundBuffer,Math.ceil(blockCount/2));this.scope.release(boundBuffer);
   const profile=this.texture(1024,Math.ceil(this.stationCount/1024));
+  this.stage='Beregn sammenligningsprofiler';
   this.draw(this.profile,profile,1024,Math.ceil(this.stationCount/1024),()=>{
    this.bind(this.profile,'denseData',dense,5);this.bind(this.profile,'boundsData',bounds,6);
    this.uniform(this.profile,'denseCount',count);this.uniform(this.profile,'blockCount',blockCount);this.uniform(this.profile,'stationCount',this.stationCount);
@@ -243,6 +254,7 @@ class GPUTrackPreparation {
   });this.check('Read comparison');return values;
  }
  async ready(){
+  this.renderer.phase='Vent på færdige GPU-beregninger';
   const gl=this.gl,sync=this.resources.own('Sync',gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0));gl.flush();
   try{
    for(;;){
@@ -253,6 +265,7 @@ class GPUTrackPreparation {
    }
   }finally{this.resources.release(sync);}
   this.check('Finish GPU preparation');
+  this.renderer.phase='GPU-beregninger færdige; afventer kortvisning';
  }
  read(texture,width,height){
   const gl=this.gl,pixels=new Float32Array(width*height*4);

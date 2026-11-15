@@ -54,17 +54,17 @@ class WebGLBackgroundRenderer {
   this.active=false;this.geometry=null;this.uploads=0;this.textureUploads=0;this.draws=0;
   this.sourceNodes=['windField','land','precipitation','coast'].map(id=>$(id));
   for(const node of this.sourceNodes)node.setAttribute('display','none');
-  this.host=el('foreignObject',{'data-webgl-background':'','pointer-events':'none',display:'none'});
-  $('map').insertBefore(this.host,$('windField'));
-  this.canvas=document.createElementNS('http://www.w3.org/1999/xhtml','canvas');
+  this.host=document.createElement('div');this.host.dataset.webglBackground='';this.host.hidden=true;
+  $('mapSurface').insertBefore(this.host,$('mapBase'));
+  this.canvas=document.createElement('canvas');
   this.canvas.style.cssText='display:block;width:100%;height:100%;pointer-events:none';this.host.append(this.canvas);
-  this.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();this.fail(Error('WebGL-konteksten er mistet.'));});
+  this.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();this.fail(Error(`WebGL-konteksten er mistet. Trin: ${this.phase||'initialisering'}. Grafikbuffer: ${this.canvas.width} × ${this.canvas.height}.`));});
   this.canvas.addEventListener('webglcontextrestored',()=>{this.initialize();requestRender();});
   this.initialize();
  }
  setActive(active){
   this.active=active;this.lastKey=null;
-  this.host.setAttribute('display',active?'inline':'none');
+  this.host.hidden=!active;
   if(active){
    clearRenderingFailure('Baggrund');
    if(this.weatherSlots)for(const buffer of [windImageBuffer,radarImageBuffer])for(const entry of [buffer.front,buffer.back])if(entry?.ready)this.prepareWeather(buffer,entry);
@@ -84,6 +84,7 @@ class WebGLBackgroundRenderer {
   }finally{for(const shader of shaders)gl.deleteShader(shader);}
  }
  initialize(){
+  this.phase='Initialisér kortbaggrundens WebGL';
   try{
    const gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,depth:false,stencil:false,premultipliedAlpha:true});
    if(!gl)throw Error('WebGL 2 unavailable');this.gl=gl;
@@ -202,7 +203,8 @@ void main(){
    $('gridSpacing').textContent=gridLevel.label;
    const key=viewportKey+gridEnabled+states.map(s=>`${s.layer.id}:${!!s.visible}:${s.layer.buffer?.front?.key}:${s.opacity}`).join('|');
    if(!force&&key===this.lastKey)return true;this.lastKey=key;
-   if(viewportKey!==this.viewportKey){positionMapCanvas(this.host,this.canvas,viewport);this.viewportKey=viewportKey;}
+   if(viewportKey!==this.viewportKey){this.phase=`Tilpas baggrundens grafikbuffer til ${pixelWidth} × ${pixelHeight}`;positionMapCanvas(this.canvas,viewport);this.viewportKey=viewportKey;}
+   this.phase='Tegn kortbaggrund';
    const gl=this.gl;gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
    gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
    for(const state of states){
@@ -220,7 +222,7 @@ void main(){
     gl.uniform2f(this.gridProgram.uniforms.gridAnchor,...xy([12,55]));
     gl.drawArrays(gl.TRIANGLES,0,6);
    }
-   gl.bindVertexArray(null);this.draws++;return true;
+   gl.bindVertexArray(null);this.draws++;this.phase='Baggrundstegning sendt til GPU';return true;
   }catch(error){this.fail(error);return false;}
  }
 }

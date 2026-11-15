@@ -1,3 +1,5 @@
+// Explicit iPhone presentation, selected before preparation; never a failure fallback.
+const SIMPLE_IPHONE_TRACKS=/iPhone/.test(globalThis.navigator?.userAgent||'');
 // Shape-preserving cubic Hermite interpolation (PCHIP) in source time.
 // Every observation is an interpolation knot. The renderers evaluate the cubic
 // at the current zoom instead of baking a fixed-resolution track image.
@@ -119,8 +121,10 @@ function getTrackModel(points){
  const model={slopes};trackModelCache.set(points,model);return model;
 }
 
-function trackValue(points,index,time,model=getTrackModel(points)){
+function trackValue(points,index,time,model=null){
  const a=points[index],b=points[index+1],h=b[2]-a[2],u=Math.max(0,Math.min(1,(time-a[2])/h));
+ if(SIMPLE_IPHONE_TRACKS)return {point:[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,time],velocity:[(b[0]-a[0])/h,(b[1]-a[1])/h]};
+ model??=getTrackModel(points);
  const u2=u*u,u3=u2*u,point=[0,0,time],velocity=[0,0];
  for(let axis=0;axis<2;axis++){
   const delta=b[axis]-a[axis],m0=model.slopes[axis][index],m1=model.slopes[axis][index+1];

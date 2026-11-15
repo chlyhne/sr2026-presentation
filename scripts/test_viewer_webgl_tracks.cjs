@@ -4,6 +4,15 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
  const browser=await firefox.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
+  await page.addInitScript(()=>{
+   // Model the shader feature implicated in WebKit bug 286297, including
+   // reinitialization after context restoration. No alternate shader is allowed.
+   const shaderSource=WebGL2RenderingContext.prototype.shaderSource;
+   WebGL2RenderingContext.prototype.shaderSource=function(shader,source){
+    if(/\bflat\s+(?:in|out)\b/.test(source))throw Error('Unsupported flat varying on the affected Apple GPU');
+    return shaderSource.call(this,shader,source);
+   };
+  });
   page.on('pageerror',e=>errors.push(e.message));
   await require('./viewer-track-fixtures.cjs')(page);
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');

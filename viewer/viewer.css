@@ -16,12 +16,12 @@ html.viewer-loading body>:not(#viewerLoading){visibility:hidden}
 #viewerLoadingError{margin:0;max-width:560px;white-space:pre-line;text-align:center}
 main{--editor-width:300px;--event-width:clamp(260px,25vw,380px);display:grid;grid-template-columns:var(--editor-width) minmax(0,1fr) var(--event-width);grid-template-rows:minmax(0,1fr) auto;flex:1;min-height:0}
 aside{grid-column:1;grid-row:1/3;padding:20px;overflow:auto;background:#142937}
-#map,#mapEventImage{grid-column:2;grid-row:1}#eventPanel{grid-column:3;grid-row:1}
+#mapSurface,#mapEventImage{grid-column:2;grid-row:1}#eventPanel{grid-column:3;grid-row:1}
 #renderingError{grid-column:2;grid-row:1;z-index:20;min-width:0;overflow:auto;padding:24px;background:#10212d;border:2px solid #ffce5c}
 #renderingError h2{font-size:20px;margin-top:0}
 #renderingError pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px system-ui;color:#ffce5c}
 body.presenting #renderingError{grid-column:1}
-.rendering-failed #map,.rendering-failed #mapEventImage,.rendering-failed #visibleBoats,.rendering-failed #mapTools{visibility:hidden}
+.rendering-failed #mapSurface,.rendering-failed #mapEventImage,.rendering-failed #visibleBoats,.rendering-failed #mapTools{visibility:hidden}
 #mapTools{grid-column:2;grid-row:1;align-self:start;justify-self:end;position:relative;z-index:3;margin:12px;display:flex;align-items:start;gap:6px;color:#173d4c;font-size:13px}
 #eventPanelToggle,#presentationFullscreen,#loginLink,#endPresentation{display:grid;place-items:center;width:38px;height:36px;padding:8px;color:#173d4c;background:#fffffff0;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26;text-decoration:none}
 #eventPanelToggle:hover,#presentationFullscreen:hover,#loginLink:hover,#endPresentation:hover{background:#dcecf0}
@@ -53,7 +53,7 @@ body.rhumbline-setup #mapGates{display:none!important}
 #map.measuring,#map.measuring:active,#map.measuring .boat-marker{cursor:crosshair}
 body.rhumbline-setup #mapHeading,body.rhumbline-setup #presentationFullscreen,body.rhumbline-setup #loginLink,body.rhumbline-setup #endPresentation,body.rhumbline-setup aside,body.rhumbline-setup #onlineStatus,body.rhumbline-setup #eventPanel,body.rhumbline-setup footer,body.rhumbline-setup #visibleBoats,body.rhumbline-setup #trackSpeedLegend,body.rhumbline-setup #mapTracks,body.rhumbline-setup #mapLayers,body.rhumbline-setup #mapMeasureToggle{display:none!important}
 body.rhumbline-setup.presenting main{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
-body.rhumbline-setup #map,body.rhumbline-setup #mapTools,body.rhumbline-setup #renderingError{grid-column:1;grid-row:1}
+body.rhumbline-setup #mapSurface,body.rhumbline-setup #mapTools,body.rhumbline-setup #renderingError{grid-column:1;grid-row:1}
 body.rhumbline-setup #mapTools{display:block}
 body.rhumbline-setup #rhumblineTools h1{font-size:18px;margin-bottom:8px}
 body.rhumbline-setup #finishMapLine{background:#173d4c;color:white}
@@ -112,7 +112,14 @@ select,textarea{width:100%}input[type=range]{width:100%;accent-color:#ffce5c}
 .annotation-tools{border-bottom:1px solid #38505f;padding-bottom:14px}
 .annotation-tools{border-top:1px solid #38505f;padding-top:4px}
 .button-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-#map{display:block;width:100%;height:100%;min-height:0;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;background:#dcecf0;font-family:system-ui,sans-serif}
+/* Explicit HTML stacking keeps accelerated WebGL canvases below SVG boats on iOS. */
+#mapSurface{position:relative;isolation:isolate;display:grid;min-width:0;min-height:0;overflow:hidden;background:#dcecf0}
+#mapSurface>svg,#mapSurface>[data-webgl-background],#mapSurface>[data-webgl-tracks]{grid-area:1/1;display:block;width:100%;height:100%;min-width:0;min-height:0}
+#mapSurface>[data-webgl-background],#mapSurface>[data-webgl-tracks]{position:absolute;inset:0;pointer-events:none}
+#mapSurface>[data-webgl-background]{z-index:0}
+#mapBase{z-index:1;pointer-events:none;font-family:system-ui,sans-serif}
+#mapSurface>[data-webgl-tracks]{z-index:2}
+#map{z-index:3;display:block;width:100%;height:100%;min-height:0;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;font-family:system-ui,sans-serif}
 #map image{pointer-events:none;-webkit-user-drag:none}
 #places{pointer-events:none}
 #map:active,#map.panning{cursor:grabbing}#map.placing,#map.placing:active{cursor:crosshair}
@@ -160,7 +167,7 @@ body.presenting #annotations [data-note-index]{cursor:inherit}
 .military-swatch{border-color:#000;background:repeating-linear-gradient(135deg,#dcecf0 0 4px,#000 4px 5px)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 body.presenting main{--event-width:clamp(280px,28vw,440px);grid-template-columns:minmax(0,1fr) var(--event-width)}
-body.presenting #map,body.presenting #mapEventImage,body.presenting #editingTimeline{grid-column:1}
+body.presenting #mapSurface,body.presenting #mapEventImage,body.presenting #editingTimeline{grid-column:1}
 body.presenting #visibleBoats,body.presenting #mapTools,body.presenting #mapHeading{grid-column:1}
 body.event-panel-collapsed main{--event-width:0px}
 body.event-panel-collapsed #eventPanel,body.event-panel-collapsed #presentationFooter,body.rhumbline-setup #eventPanelToggle{display:none}
@@ -221,6 +228,21 @@ body.presenting aside,body.presenting #onlineStatus{display:none}
 #presentationMessage{margin:6px 0 0}
 #presentationMessage:empty{display:none}
 @media(max-width:1050px){main{--editor-width:240px;--event-width:260px}#eventPanel{padding:16px}#clock{font-size:16px}.controls{gap:6px}}
-@media(max-width:750px){main{grid-template-columns:220px minmax(0,1fr);grid-template-rows:minmax(180px,1fr) auto minmax(0,140px) auto}aside{grid-row:1;padding:10px}#map{grid-column:2;grid-row:1}#editingTimeline{grid-column:1/-1;grid-row:2}#eventPanel{grid-column:1/-1;grid-row:3;border-left:0;border-top:1px solid #38505f}#presentationFooter{grid-column:1/-1;grid-row:4;border-left:0}body.presenting main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(200px,1fr) auto minmax(0,180px) auto}body.presenting #map,body.presenting #editingTimeline,body.presenting #eventPanel,body.presenting #presentationFooter{grid-column:1}.colour-legend{font-size:8px}#eventImage{max-height:230px;width:auto;max-width:100%}}
+@media(max-width:750px){main{grid-template-columns:220px minmax(0,1fr);grid-template-rows:minmax(180px,1fr) auto minmax(0,140px) auto}aside{grid-row:1;padding:10px}#mapSurface{grid-column:2;grid-row:1}#editingTimeline{grid-column:1/-1;grid-row:2}#eventPanel{grid-column:1/-1;grid-row:3;border-left:0;border-top:1px solid #38505f}#presentationFooter{grid-column:1/-1;grid-row:4;border-left:0}body.presenting main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(200px,1fr) auto minmax(0,180px) auto}body.presenting #mapSurface,body.presenting #editingTimeline,body.presenting #eventPanel,body.presenting #presentationFooter{grid-column:1}.colour-legend{font-size:8px}#eventImage{max-height:230px;width:auto;max-width:100%}}
 @media(max-width:750px){body.event-panel-collapsed main{grid-template-rows:minmax(180px,1fr) auto}body.presenting.event-panel-collapsed main{grid-template-rows:minmax(200px,1fr) auto}}
 @media(max-width:600px){#eventText{font-size:16px}.event-navigation button,.event-navigation select{font-size:12px;padding:7px}.event-meta{gap:10px}#eventPanel{padding:12px}.controls{display:grid;grid-template-columns:auto auto auto auto minmax(0,1fr)}#clock{justify-self:end}#timelineTrack{grid-column:1/-1}}
+
+/* iPhone uses two rows; popovers open below the complete toolbar. */
+html.iphone body:not(.rhumbline-setup) #mapTools{display:grid;grid-template-columns:repeat(3,38px)}
+html.iphone #mapTools :is(#mapMeasureToggle,#mapGatesToggle,#mapTracksToggle,#mapLayersToggle){width:38px;height:36px;padding:8px;justify-content:center}
+html.iphone #mapTools :is(#mapTracks,#mapLayers){position:static}
+
+/* Simple tracks offer only length and handicap playback settings. */
+html.iphone #mapTracksPanel :is(label[for="referenceBoat"],#referenceBoat,label[for="trackStyle"],#trackStyle){display:none}
+
+/* Match the two left bars to the iPhone toolbar's 36px rows. */
+html.iphone #mapHeading{height:36px;padding-block:10px}
+html.iphone #visibleBoatsToggle{height:36px;min-height:36px}
+
+/* Keep map attribution readable directly over land and water. */
+#mapCredit text{paint-order:stroke fill;stroke:#fff;stroke-width:2px;stroke-opacity:.9;stroke-linejoin:round}
