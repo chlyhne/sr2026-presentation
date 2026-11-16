@@ -46,7 +46,8 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 
 - **Område:** [filcodec](./viewer/prepared-track-codec.js) og [build](./scripts/prepare_track_profiles.cjs).
 - **Udskudt:** Yderligere tabsfri komprimering, eksempelvis byteplaner eller deltakanaler, af de fælles opslag og kurvemodeller.
-- **Konsekvens/usikkerhed:** Første download er ca. 55 MB på iPhone og 65 MB på desktop med Mercutio. Fællesdelen udgør ca. 38 MB. Efterfølgende referencevalg henter 1–5 MB; fingerprintede URL'er kan caches. Hele buildet er ca. 475 MB og hentes ikke samlet, men første download kan være mærkbar på langsomme forbindelser.
+- **Målt:** Frisk lokal Firefox-opstart på PC med alle 106 både og Mercutio henter 93,65 MB mod 94,86 MB før kortforenklingen. Heraf er fælles sporopslag 67,47 MB, kurvegeometri 18,01 MB, referencefarver 4,29 MB og kildeheltal 2,62 MB. Kort-/metadatapakken faldt fra 2,03 til 0,82 MB. Tallene er overførte, komprimerede payloads; API-kald er udeladt. Telefon er ikke målt igen.
+- **Konsekvens/usikkerhed:** Fællesdelen indeholder opslag for alle både mod begge baner, herunder fart og tid pr. 10 meter langs ruterne. Disse stationsopslag fylder alene 68,70 MB før gzip af i alt 120,21 MB rå fællesdata. Førstegangsdownload domineres derfor af forberedte afledte data. Efterfølgende referencevalg henter 1,2–4,8 MB; fingerprintede URL'er kan caches. Alle forberedte geometri-/profil-/referencefiler fylder samlet ca. 502 MB og hentes ikke samlet.
 - **Færdig når:** Downloadstørrelsen er målt reduceret uden tab af kildeheltal, Float64-modeller eller øvrige lagrede bytes, og uden at indføre ny tung klientberegning.
 
 ### TEST-01 — Tilpas ældre udvidede fixtures til deploy-filer
