@@ -37,7 +37,7 @@ def wind(model='era5'):
     cache.write_text(json.dumps(result),encoding='utf-8');return result
 
 def main():
-    coast_source=json.loads((ROOT/'data/coastline-osm.geojson').read_text(encoding='utf-8'))
+    coast_source=json.loads((ROOT/'data/coastline-adaptive.geojson').read_text(encoding='utf-8'))
     coast_metadata=coast_source['metadata']
     if (coast_metadata.get('source')!='OpenStreetMap natural=coastline'
             or coast_metadata.get('license')!='ODbL-1.0'
@@ -48,7 +48,7 @@ def main():
                 ('traffic_separation','traffic-separation.geojson'),
                 ('military_areas','military-areas.geojson'),
                 ('route_t','route-t.geojson'),
-                ('land','land-osm.geojson'),
+                ('land','land-adaptive.geojson'),
                 ('course_lines','course-lines.geojson'))}
     wind_models={model:wind(model) for model in ('era5','ecmwf_ifs','dmi_harmonie_arome_europe')}
     radar=json.loads((OUT/'radar/manifest.json').read_text(encoding='utf-8'))

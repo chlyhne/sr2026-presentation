@@ -10,6 +10,13 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 
 ## Åbne punkter
 
+### DATA-02 — Undgå genberegning af sporprofiler ved rene kortændringer
+
+- **Område:** [buildets fingerprint](./scripts/prepare_track_profiles.cjs) og kortdata i den fælles datapakke.
+- **Udskudt:** Adskil kortets ændringsnøgle fra sporprofilernes, så et nyt kort kan pakkes uden at genberegne uændrede bådprofiler. Genbrug også det uændrede afstandsfelt, når kun kortets tolerance ændres.
+- **Konsekvens:** En ren kortiteration udløser aktuelt omkring 80 sekunders klargøring af alle spor og referencefarver, fordi hele datapakken indgår i samme fingerprint.
+- **Færdig når:** Kortændringer opdaterer de publicerede kortdata, mens uændrede sporprofiler genbruges med deres eksisterende integritetskontrol.
+
 ### UI-05 — Pinch efter voldsomme eller afbrudte bevægelser på telefon
 
 - **Område:** [kortgestus](./viewer/viewer.js) og [målrettet kontrol](./scripts/test_viewer_pinch_zoom.cjs).

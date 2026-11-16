@@ -715,37 +715,87 @@ Trackhuller over fem minutter forbindes ikke med en linje; bådmarkører skjules
 når sidste position er mere end fem minutter gammel. Trackstart/-slut er ikke
 nødvendigvis løbsstart/målgang.
 
-Kystlinjen bruger **OpenStreetMap** i fuld kildeopløsning: 3.114 kyststrækninger
-med 343.655 koordinater. Der er ingen geometrisk forenkling. Kortlaget viser
-kyster, små kystdetaljer og havnebassiner.
+Kystlinjen bruger **OpenStreetMap**, forenklet på forhånd efter afstanden til
+alle bådenes samlede spor. GEOS' etablerede **Douglas–Peucker-forenkling**
+bruger en lokal geometrisk tolerance:
+`epsilon = r * 0,4π/360` meter ved den valgte faktor på **0,2°**, hvor `r` er den
+mindste bådafstand. Tolerancen begrænser kystens forskydning, ikke længden af
+linjestykkerne. En lige kyst kan derfor repræsenteres med få punkter; bugter og
+havne bevarer de nødvendige detaljer. Kysten opdeles i lokale buestykker, hvis
+tolerancer højst varierer med faktor to; hvert stykke bruger sin mindste
+tolerance. Der håndhæves ingen topologiske begrænsninger mellem kyster og øer,
+og tolerancen sænkes ikke på grund af overlap. Ugyldigt landfyld normaliseres
+med GEOS make-valid, så det kan trianguleres uden at genskabe kystdetaljer.
+Småøer udelades helt, når alle deres punkter ligger inden for en cirkel med
+radius svarende til øens mindste lokale tolerance, og øen ikke rammer kortgrænsen.
+Tæt på bådene bevares flere detaljer, mens fjerne kyster kan tegnes grovere. Afstanden
+beregnes også mellem observationerne med appens PCHIP-model og for telefonens
+rette sporsegmenter. Huller over fem minutter forbindes ikke.
+Trackertransport udelades efter de konkrete regler i
+[map-track-exclusions.json](../data/geography/map-track-exclusions.json).
+Joujou 2 og Andraste udelades helt. NJOY udelades efter 13. juni kl. 10:51;
+Scarlet og Pandora efter 12. juni kl. 11:25; Popeye og Norma efter 12. juni
+kl. 12:00; Rafi efter 12. juni kl. 08:00. Alle klokkeslæt er dansk sommertid
+i 2026 og gemmes med eksplicit dato og UTC-offset. Segmenter klippes ved det
+præcise tidspunkt uden at ændre den oprindelige interpolationskurve før grænsen.
+Denne filtrering ændrer kun kortforenklingen; bådsporene i appen ændres ikke.
 
 Landmasserne fyldes med lys grå `#bdc7cb`; kyststregen bevarer `#365766`.
-De 997 landpolygoner er dannet fra samme detaljerede OSM-kystlinje. Lagrækkefølgen
+Landpolygonerne er dannet fra samme OSM-kystlinje. Lagrækkefølgen
 er vindfarver nederst, derefter landfyld, radar og kystomrids. Vindpile og spor
 ligger over disse lag.
 Kystlinjerne samles til flader
 inden for udtrækkets geografiske grænse, og land/hav bestemmes af OSM-linjernes
 retning (land til venstre). Der lukkes ikke med vilkårlige streger gennem havet.
-Datagrundlaget forenkles ikke; øer og havnebassiner følger den eksisterende kyst.
-Det afledte datasæt er `../data/land-osm.geojson`.
-Genskab med `.venv/bin/python scripts/prepare_land.py` og derefter
-`python3 scripts/prepare_viewer.py`. Shapely står i `scripts/requirements-geography.txt`.
+De oprindelige datasæt [land-osm.geojson](../data/land-osm.geojson) og
+[coastline-osm.geojson](../data/coastline-osm.geojson) bevares uændret.
+Det større grundlag dækker hele Danmark inklusive Skagen, Vestjylland og
+Bornholm samt det tilstødende Sverige og Nordtyskland, inden for
+7,8–15,4° Ø / 54,4–57,9° N. Det ligger separat i
+[land-denmark-osm.geojson](../data/land-denmark-osm.geojson) og
+[coastline-denmark-osm.geojson](../data/coastline-denmark-osm.geojson).
+Visningen bruger [land-adaptive.geojson](../data/land-adaptive.geojson) og
+[coastline-adaptive.geojson](../data/coastline-adaptive.geojson). Landfyld og
+kyststreg bruger præcis samme normaliserede kanter. Overlap og ændret
+topologi er accepteret; små, fjerne øer kan forsvinde.
 
-Kilden er OSM’s `natural=coastline`, hentet 7. november 2026 med Overpass.
-Det regionale udtræk dækker 9,3–14,2 E / 53,8–57,2 N. Hele de udvalgte kystvejes
-geometrier er bevaret. Råsvaret ligger i `../data/geography/osm-coastline.json`,
-og GeoJSON med kilde-/licensmetadata i `../data/coastline-osm.geojson`.
+[prepare_adaptive_map.py](../scripts/prepare_adaptive_map.py) gemmer desuden
+[coast-distance-field.json.gz](../data/geography/coast-distance-field.json.gz):
+minimumsafstande ved alle oprindelige ringpunkter og langs hver hel kant,
+bevarede punktindeks og SHA-256 for kilderne. Afstandsfeltet er minimum over
+alle bådes positioner på alle tidspunkter; der bygges ikke et groft raster.
+Kurvernes afstandsgrundlag har højst 0,1 m fladningsfejl, som trækkes fra
+afstanden før længdegrænsen beregnes. Metermålet bruger en lokal projektion ved 55° N.
+
+Genskab med `python scripts/prepare_adaptive_map.py --angle-degrees 0.2` og
+derefter `python scripts/prepare_viewer.py`. Shapely står i
+[requirements-geography.txt](../scripts/requirements-geography.txt); Node.js
+genbruger appens interpolationsmodel. Alt beregnes før visning; bådvalg og zoom
+ændrer ikke kortgeometrien. Der er ét færdigt detaljeniveau, så zoom ikke
+genberegner geometri eller udløser synlige skift mellem kortversioner.
+
+Kilden er OSM’s `natural=coastline`, hentet med Overpass.
+Det udvidede råsvar ligger i
+[osm-coastline-denmark.json](../data/geography/osm-coastline-denmark.json).
+Det tidligere regionale udtræk med kilde-/licensmetadata bevares sammen med
+de gamle originaler; dets råsvar ligger i
+[osm-coastline.json](../data/geography/osm-coastline.json).
 Data gemmes lokalt; kortet fungerer uden netforbindelse.
 
 Visningen opdeler kysten i bidder med fælles endepunkter og tegner kun dem,
-der rammer det synlige udsnit. Det holder tæt zoom hurtigt uden
-at fjerne kildens detaljer. Kreditering følger med på kortet:
+der rammer det synlige udsnit. Kreditering følger med på kortet:
 © OpenStreetMap contributors · https://www.openstreetmap.org/copyright .
 Det afledte kystdatasæt er tilgængeligt under ODbL-1.0:
 https://opendatacommons.org/licenses/odbl/1-0/ .
 
-Genskab kystdatasættet med `python3 scripts/prepare_coastline.py` og derefter
-`python3 scripts/prepare_viewer.py`. Første kommando genbruger det cachede råsvar.
+Genskab det udvidede grundlag før den adaptive forenkling:
+
+```sh
+python scripts/prepare_coastline.py --bbox 7.8 54.4 15.4 57.9 --cache data/geography/osm-coastline-denmark.json --output data/coastline-denmark-osm.geojson --endpoint https://overpass-api.de/api/interpreter
+python scripts/prepare_land.py --source data/coastline-denmark-osm.geojson --output data/land-denmark-osm.geojson
+```
+
+Første kommando genbruger det cachede råsvar.
 Et allerede hentet Overpass-svar kan indlæses med `--source <fil>`.
 
 ## Genskab data

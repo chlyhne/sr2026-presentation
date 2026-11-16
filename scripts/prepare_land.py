@@ -1,4 +1,5 @@
 """Build land polygons from the viewer's detailed, directed OSM coastlines."""
+import argparse
 import json
 from math import hypot
 from pathlib import Path
@@ -7,7 +8,11 @@ from shapely.ops import polygonize, unary_union
 from shapely.strtree import STRtree
 
 ROOT = Path(__file__).resolve().parents[1]
-source = json.loads((ROOT / 'data/coastline-osm.geojson').read_text())
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--source',type=Path,default=ROOT/'data/coastline-osm.geojson')
+parser.add_argument('--output',type=Path,default=ROOT/'data/land-osm.geojson')
+args=parser.parse_args()
+source = json.loads(args.source.read_text(encoding='utf-8'))
 bounds = box(*source['metadata']['query_bbox'])
 lines = []
 for feature in source['features']:
@@ -44,6 +49,8 @@ for name, position, expected in [
     ('Sjælland', (12, 55.5), True), ('Fyn', (10.4, 55.3), True),
     ('Sverige', (13.2, 55.8), True), ('Øresund', (12.8, 55.8), False),
     ('Storebælt', (11, 55.6), False), ('København hav', (12.7, 55.7), False),
+    ('Vestjylland',(8.5,56.2),True),('Skagen',(10.58,57.72),True),
+    ('Bornholm',(14.93,55.12),True),('Nordsøen',(7.9,56.2),False),
 ]:
     if not bounds.covers(Point(position)):
         continue
@@ -56,5 +63,5 @@ output = {'type': 'FeatureCollection', 'metadata': {
     'land_polygons': len(land), 'sea_faces': len(sea), 'simplified': False,
 }, 'features': [{'type': 'Feature', 'properties': {}, 'geometry': mapping(polygons[i])}
                 for i in sorted(land)]}
-(ROOT / 'data/land-osm.geojson').write_text(json.dumps(output, ensure_ascii=False, separators=(',', ':')))
+args.output.write_text(json.dumps(output, ensure_ascii=False, separators=(',', ':')),encoding='utf-8')
 print(f'Land ready: {len(land)} polygons, no ambiguous faces, reference land/sea checks passed')

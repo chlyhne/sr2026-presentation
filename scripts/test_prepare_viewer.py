@@ -25,7 +25,7 @@ class PrepareViewerTests(unittest.TestCase):
             'traffic_separation': 'traffic-separation.geojson',
             'military_areas': 'military-areas.geojson',
             'route_t': 'route-t.geojson',
-            'land': 'land-osm.geojson',
+            'land': 'land-adaptive.geojson',
             'course_lines': 'course-lines.geojson',
         }
         self.coast = {
@@ -37,7 +37,7 @@ class PrepareViewerTests(unittest.TestCase):
                               'coordinates': [[[12, 56], [13, 57]], [[13, 57], [14, 58]]]}}
             ],
         }
-        self.write('data/coastline-osm.geojson', self.coast)
+        self.write('data/coastline-adaptive.geojson', self.coast)
         for key, filename in self.layers.items():
             self.write('data/' + filename, {'type': 'FeatureCollection', 'features': [],
                                            'metadata': {'source': key, 'attribution': 'Øresund'}})
@@ -89,7 +89,7 @@ class PrepareViewerTests(unittest.TestCase):
         output.write_text('previous output', encoding='utf-8')
         # Even an available legacy coastline must never substitute for OSM.
         self.write('data/coastline.geojson', self.coast)
-        for filename in ['coastline-osm.geojson', *self.layers.values()]:
+        for filename in ['coastline-adaptive.geojson', *self.layers.values()]:
             with self.subTest(filename=filename):
                 source = self.root / 'data' / filename
                 original = source.read_bytes()
@@ -114,7 +114,7 @@ class PrepareViewerTests(unittest.TestCase):
                     del coast['metadata']
                 else:
                     coast['metadata'] = metadata
-                self.write('data/coastline-osm.geojson', coast)
+                self.write('data/coastline-adaptive.geojson', coast)
                 with self.assertRaises((KeyError, ValueError)):
                     self.generate()
                 self.assertFalse((self.out / 'data.js').exists())

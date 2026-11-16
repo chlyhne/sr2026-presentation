@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "scope": "map-simplification-only",
+  "timeZone": "Europe/Copenhagen",
+  "boats": [
+    {"id":"groensund:cf3c32b0-4624-013f-2925-04421a259aad","name":"NJOY","excludeAfter":"2026-06-13T10:51:00+02:00"},
+    {"id":"boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad","name":"Joujou 2","excludeAll":true},
+    {"id":"groensund:cfe5ee70-4624-013f-29c3-04421a259aad","name":"Scarlet","excludeAfter":"2026-06-12T11:25:00+02:00"},
+    {"id":"groensund:cf44cf30-4624-013f-292d-04421a259aad","name":"Pandora","excludeAfter":"2026-06-12T11:25:00+02:00"},
+    {"id":"groensund:cf4cfb40-4624-013f-2933-04421a259aad","name":"Popeye","excludeAfter":"2026-06-12T12:00:00+02:00"},
+    {"id":"boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad","name":"Norma","excludeAfter":"2026-06-12T12:00:00+02:00"},
+    {"id":"groensund:cedc3de0-4624-013f-28e1-04421a259aad","name":"Andraste","excludeAll":true},
+    {"id":"boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad","name":"Rafi","excludeAfter":"2026-06-12T08:00:00+02:00"}
+  ]
+}
