@@ -1260,15 +1260,18 @@ punkter skaleres til Float32 før GPU-upload. Pages publicerer kun det aktuelle
 manifest, metadata og kildepakken; `data.js` bruges kun offline. Fejl i format,
 gzip eller GPU vises tydeligt uden fallback.
 
-[`prepare_track_profiles.cjs`](../scripts/prepare_track_profiles.cjs) udfører
-beregningen med [`track-preparation-math.js`](./track-preparation-math.js) under
-build. Det er den eneste beregningsvej. [`track-files.js`](./track-files.js)
-henter de færdige filer, mens [`track-preparation.js`](./track-preparation.js)
-forbinder dem med WebGL-rendereren. Den tidligere CPU-worker er fjernet.
+[`prepare_track_profiles.cjs`](../scripts/prepare_track_profiles.cjs) beregner
+ruteprojektioner og stationsprofiler med [`track-preparation-math.js`](./track-preparation-math.js)
+under build. Profiler gemmes én gang pr. båd og bane. Der gemmes hverken
+geometri, kurvehældninger, tidsindeks eller referencefarver for alle bådpar.
+[`track-local-data.js`](./track-local-data.js) danner den billige geometri og
+fartbuffer ved opstart; PCHIP-hældninger og tidsindeks beregnes én gang fra kilden.
+Hældninger beregnes i Float64, inden geometrien pakkes til Float32.
+[`track-files.js`](./track-files.js) forbinder de modtagne profiler og lokale
+buffere med [`track-preparation.js`](./track-preparation.js). Ingen worker eller
+IndexedDB indgår. Manglende profiler giver en synlig fejl uden fallback.
 
-Begge geometrier og alle referencevalg beregnes før deploy. Kildens native
-koordinater og Float64-modeller bevares, mens geometri, profiler og farver
-lagres som Float32. Filkodningen og gzip bevarer alle bytes. PCHIP-prøver har
+PCHIP-prøver har
 højst cirka otte meters kurvelængde. Et stationsindeks grupperer relevante
 prøveblokke og bevarer deres kronologiske passagebehandling.
 Ti-meterstationerne gemmer første fremadgående fartpassage og summeret
@@ -1282,23 +1285,25 @@ koordinater afrundes ikke før projektionen.
 Passageoptællingen bevarer retningen gennem plateauer og kræver 0,2 meters
 bevægelse fra passagens ekstremum for at tælle en vending; afrundingsstøj
 bliver dermed ikke til flere passager. Overflow bevares eksplicit ved summering.
-Profilfilens to ekstra kanaler gemmer første passages tidspunkt og samplingens
-tidsbredde. De gør afvigelser ved ruteknæk og korte delpassager sporbare uden en
-alternativ beregningsvej. Se [samlet validering](../scripts/track-validation.md).
+Buildets midlertidige profil har også første passages tidspunkt og samplingens
+tidsbredde til matematisk kontrol; klienten modtager kun de nødvendige fart- og
+tidskanaler. Se [samlet validering](../scripts/track-validation.md).
 
 Hele feltet forberedes før betjening frigives. Tidslinjen og positionsmarkørerne
 beholder deres CPU-model af samme PCHIP-kurver. Buildets færdige profiler og
 projektioner leverer Float32-arrays til hover, pins og referenceopslag. Hoverens omtrentlige referencetid
 findes ved opslag i de forberedte progressioner og originale tidspunkter.
 
-Alle bådes geometri, profiler og projektioner bevares i lokale binære filer.
-Efter klargøring og baggrundsinitialisering beholder GPU'en den uploadede fælles
-geometri og én valgt farvetype. Referencevalg læser én færdig fil med alle tre
-sammenligningsgrundlag; ingen profiler eller farveværdier beregnes i browseren. Grundlagsskift læser den valgte fil og
-udskifter de aktive R32F-teksturer; ingen profiler genberegnes.
+GPU'en beholder geometrien samt sample- og stationsprofiler for begge baner.
+Vertexshaderen slår referencefart og -tid op ved stationen og udfører den billige
+sammenligning. Reference- og grundlagsskift ændrer teksturvalg og uniforms uden
+download, nye profilberegninger eller upload af faste data. CPU-annotationer
+beregner kun de få efterspurgte sammenligningsværdier ved samme stationsopslag.
+Der er ingen kvadratisk samling af bådpar; build, filer og hukommelse er lineære
+ved fast sporlængde og antal baner. Frisk lokal Firefox-opstart på PC henter
+65,37 MB mod tidligere 93,65 MB. Den fælles profilfil udgør fortsat 61,46 MB.
 Bådvalg, zoom og afspilning genberegner eller uploader ingen faste data.
-Ved tab af WebGL-konteksten genopbygges samme nominelle vej, og lager- eller
-GPU-fejl vises tydeligt.
+Ved tab af WebGL-konteksten genopbygges samme nominelle vej, og GPU-fejl vises tydeligt.
 Referencebådens spor bruger bådens egen farve med 18 % opacitet i sammenligningsvisningerne
 og tegnes under de øvrige spor. Almindelig SOG-visning beholder SOG-paletten.
 Farver uden sammenligningsdata

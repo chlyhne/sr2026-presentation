@@ -35,7 +35,7 @@ def build():
         profile_manifest = json.loads((ROOT / 'viewer' / 'track-profiles' / 'manifest.json').read_text(encoding='utf-8'))
         profile_files = {'track-profiles/manifest.json', profile_manifest['replayFile'], profile_manifest['dataFile']}
         prepared = profile_manifest['prepared']
-        profile_files.update(asset['file'] for asset in [prepared['common'], prepared['line'], prepared['cubic'], *prepared['references']])
+        profile_files.update(asset['file'] for asset in [prepared['common']])
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
             if relative.parts[0] == 'track-profiles' and relative.as_posix() not in profile_files:

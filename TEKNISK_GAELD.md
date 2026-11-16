@@ -36,19 +36,19 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 
 - **Område:** [build](./scripts/prepare_track_profiles.cjs), [fillæsning](./viewer/track-files.js) og [renderer](./viewer/track-renderer.js).
 - **Udskudt:** Samlet kontrol på den berørte iPhone af opstart, alle sportyper, referenceskift og 3×2-ikonrækken uden konteksttab.
-- **Aktuel løsning:** Efter brugerens ønske beregnes begge geometrier, modeller, indeks, profiler og alle referencefarver ved build/deploy. Browseren læser tabsfrit kodede filer; der er ingen worker, IndexedDB-lagring eller klientberegning som reserve. WebGL 2 tegner kun fælles geometri og aktiv R32F-farvetype.
-- **Gennemført:** Hurtige analytiske matematiktests og tabsfri codec-kontrol. Skjult Firefox kontrollerer opstart, begge geometrier, alle sportyper, referenceformler/-skift, manglende/korrupte filer samt kontekstgenskabelse. Filtesten blokerer worker, IndexedDB og beregning af kurver/indeks. Opstart inklusive stil- og referenceskift var ca. 3 sekunder på PC. Den konkrete telefon er endnu ikke kontrolleret med deploy-filerne.
-- **Konsekvens/usikkerhed:** GPU-driverens tidligere fejl er ikke alene afkræftet af lokale tests. Residente geometri-/SOG-data efter upload er ca. 50,8 MB på desktop og 27,4 MB for enkle spor, ud over baggrunden.
+- **Aktuel løsning:** Buildet gemmer kun ruteprojektioner og stationsprofiler pr. båd og bane. Klienten danner geometri, Float64-hældninger, tidsindeks og fartbuffer én gang ved opstart. Begge baners profiler uploades før betjening; shaderen sammenligner med den valgte reference uden filer for alle bådpar.
+- **Gennemført:** Hurtig matematisk kontrol af lokal geometri og direkte stationsopslag. Målrettet skjult Firefox-kontrol af begge geometrier, alle tre sammenligninger, faktiske vertexshader-resultater, referenceskift uden download og fejl ved manglende/ødelagt fællesfil. Tidligere kontekstgenskabelsestests er ikke gentaget på den nye sammensætning.
+- **Konsekvens/usikkerhed:** Den nye GPU-repræsentation beholder begge baners grundlag, så referenceskift ikke uploader faste data. Sporenes GPU-data er nu ca. 142,3 MB på desktop og 118,8 MB for enkle spor, ud over baggrunden (tidligere 50,8/27,4 MB). Lageret er lineært, men den konkrete iPhones kapacitet og kontekstgenskabelse er endnu ikke kontrolleret med den nye sammensætning.
 - **Testarbejdsgang:** Automatisk genindlæsningskommando er ryddet efter brugerens ønske. Saml lokale rettelser og kontroller før én aftalt telefontest. Fejl og indlæsningstrin gemmes i `/tmp/sr2026-client-errors.jsonl` uden eventindhold.
 - **Færdig når:** Den berørte iPhone starter og skifter mellem alle farvetyper og referencer stabilt med deploy-filer og WebGL 2-tegning.
 
 ### DATA-01 — Reducer førstegangsdownload af fælles spordata
 
 - **Område:** [filcodec](./viewer/prepared-track-codec.js) og [build](./scripts/prepare_track_profiles.cjs).
-- **Udskudt:** Yderligere tabsfri komprimering, eksempelvis byteplaner eller deltakanaler, af de fælles opslag og kurvemodeller.
-- **Målt:** Frisk lokal Firefox-opstart på PC med alle 106 både og Mercutio henter 93,65 MB mod 94,86 MB før kortforenklingen. Heraf er fælles sporopslag 67,47 MB, kurvegeometri 18,01 MB, referencefarver 4,29 MB og kildeheltal 2,62 MB. Kort-/metadatapakken faldt fra 2,03 til 0,82 MB. Tallene er overførte, komprimerede payloads; API-kald er udeladt. Telefon er ikke målt igen.
-- **Konsekvens/usikkerhed:** Fællesdelen indeholder opslag for alle både mod begge baner, herunder fart og tid pr. 10 meter langs ruterne. Disse stationsopslag fylder alene 68,70 MB før gzip af i alt 120,21 MB rå fællesdata. Førstegangsdownload domineres derfor af forberedte afledte data. Efterfølgende referencevalg henter 1,2–4,8 MB; fingerprintede URL'er kan caches. Alle forberedte geometri-/profil-/referencefiler fylder samlet ca. 502 MB og hentes ikke samlet.
-- **Færdig når:** Downloadstørrelsen er målt reduceret uden tab af kildeheltal, Float64-modeller eller øvrige lagrede bytes, og uden at indføre ny tung klientberegning.
+- **Udskudt:** Yderligere tabsfri komprimering, eksempelvis byteplaner eller deltakanaler, af de fælles stationsprofiler og sampleopslag. Mål kanalerne før valg af kodning; tomme stationer forklarer ikke alene den komprimerede størrelse.
+- **Målt:** Frisk lokal Firefox-opstart på PC henter nu 65,37 MB mod 93,65 MB før flytning af billig klargøring og referencefarver. Fælles profiler fylder 61,46 MB komprimeret (98,00 MB rå), kildeheltal 2,62 MB og kort/metadata 0,82 MB. Overførte payloads, API-kald udeladt. Telefon er ikke målt igen.
+- **Konsekvens/usikkerhed:** Hver båd har fortsat fart- og tidsopslag pr. 10 meter langs begge baner samt sampleopslag. Kanaler gzip-komprimeret enkeltvis fylder ca. 47,9 MB for stationer og 13,4 MB for samples; summen er kun vejledende for den samlede fil. Ingen kvadratiske referencefiler bygges eller publiceres længere. Referencer og sportyper skiftes uden download.
+- **Færdig når:** Den resterende profildownload er målt reduceret med bevarede kildeheltal og profilsemantik, uden tung klientberegning eller nye beregninger under betjening.
 
 ### TEST-01 — Tilpas ældre udvidede fixtures til deploy-filer
 

@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{test}=require('node:test');
-const source=['track-time.js','tracks.js','rhumbline-geometry.js','track-preparation-math.js'].map(name=>fs.readFileSync(path.resolve(__dirname,'../viewer',name),'utf8')).join('\n');
-const api=vm.runInNewContext(source+'\n;({prepareTrackData,compareTrackData,buildRhumbRoute});');
+const source=['track-time.js','tracks.js','track-local-data.js','rhumbline-geometry.js','track-preparation-math.js'].map(name=>fs.readFileSync(path.resolve(__dirname,'../viewer',name),'utf8')).join('\n');
+const api=vm.runInNewContext(source+'\n;({prepareTrackData,prepareLocalTrackData,trackComparisonAt,compareTrackData,buildRhumbRoute});');
 const route=api.buildRhumbRoute([[12,55.6],[12.1,55.6]]),start=1780000000;
 const boat=(points,speeds)=>({id:'fixture',name:'Fixture',points:points.map((p,i)=>[...p,start+i*240]),speeds});
 const straight=speed=>boat([[12,55.6],[12.1,55.6]],[speed,speed]);
@@ -59,4 +59,26 @@ test('CPU comparison prepares all three bases with handicap and overflow semanti
  const noHandicap=api.compareTrackData(own.knots,2,reference.profile,0,500,count);assert.ok(noHandicap.colours[1][0]<-1e19);
  const absent=api.compareTrackData(own.knots,2,new Float32Array(reference.profile.length).fill(-1e20),600,500,count);
  assert.ok(absent.colours.every(values=>values[0]<-1e19));
+});
+
+test('startup geometry preserves gap caps, precision splits and interpolation without route work',()=>{
+ const input=boat([[12,55.6],[12.02,55.61],[12.03,55.62]],[6,7,null]);input.points[2][2]+=600;
+ for(const simple of [false,true]){
+  const local=api.prepareLocalTrackData(input,start,simple);
+  assert.equal(local.record.pointCount,3);assert.equal(local.speed[2],-1);assert.equal(local.speed[3],-1);
+  const stride=simple?8:16,timing=simple?4:12;
+  assert.equal(local.geometry[timing+1],240);assert.equal(local.geometry[stride+timing+1],0);
+  assert.ok(Math.abs(local.geometry[0]+(simple?0:local.geometry[2])-(12-9.5)*1000/4.5)<.0001);
+  assert.equal(local.record.capCount,simple?0:4);
+ }
+});
+test('direct station lookup matches all three former pairwise colour channels',()=>{
+ const input=prepare(straight(7)),reference=prepare(straight(6));
+ const former=api.compareTrackData(input.knots,2,reference.profile,450,500,reference.mirror.stations.length);
+ for(let i=0;i<=2;i++){
+  const direct=api.trackComparisonAt(input.mirror,reference.mirror,i,450,500);
+  for(let mode=0;mode<3;mode++)near(direct[mode],former.colours[mode][i]);
+ }
+ const inf=Math.fround(1e15),own={samples:new Float32Array([0,0,0]),timeSamples:new Float32Array([0,inf])},ref={stations:new Float32Array([0]),timeStations:new Float32Array([inf])};
+ assert.ok(api.trackComparisonAt(own,ref,0,0,0)[2]<-1e19);
 });

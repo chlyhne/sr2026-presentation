@@ -11,7 +11,7 @@ class WebGLTrackRenderer {
   this.canvas.style.cssText='display:block;width:100%;height:100%;pointer-events:none';
   this.host.append(this.canvas);
   window.SRClientDiagnostics?.register('spor',()=>({active:this.active,phase:this.phase,canvas:[this.canvas.width,this.canvas.height],contextLost:this.gl?.isContextLost()??null,
-   simple:this.simpleTracks,shader:this.vertexShaderKind,preparation:'deployed-files-v1',graphicsReady:!!this.graphicsReady,boatsPrepared:this.buffers.size,sourceFinished:!!this.preparation?.sourceFinished,styleLoading:!!this.styleLoading,style:this.loadedMode,
+   simple:this.simpleTracks,shader:this.vertexShaderKind,preparation:'linear-profiles-gpu-comparison-v1',graphicsReady:!!this.graphicsReady,boatsPrepared:this.buffers.size,sourceFinished:!!this.preparation?.sourceFinished,styleLoading:!!this.styleLoading,style:this.loadedMode,
    gpuBytes:[...this.buffers.values()].reduce((sum,record)=>sum+record.bytes,0)}));
   this.canvas.addEventListener('webglcontextlost',e=>{
    e.preventDefault();if(releasingPageGraphics)return;const detail=this.preparation;
@@ -59,11 +59,34 @@ class WebGLTrackRenderer {
    };
    // Select geometry before compilation. The line shader contains no desktop
    // curve/cap code or integer cap sampler, even as an unreachable branch.
+   const comparisonShader=`
+uniform highp sampler2D referenceData;
+uniform vec2 handicaps;
+uniform bool relativeMode;
+uniform int gainComponent;
+float comparisonValue(int index){
+ int width=textureSize(comparisonData,0).x;
+ vec4 own=texelFetch(comparisonData,ivec2(index%width,index/width),0);
+ if(!relativeMode)return own.w;
+ int station=int(own.x);
+ if(station<0)return -1e20;
+ int refWidth=textureSize(referenceData,0).x;
+ vec2 ref=texelFetch(referenceData,ivec2(station%refWidth,station/refWidth),0).rg;
+ if(gainComponent==2){
+  if(own.z<0.0||ref.y<0.0||(own.z>=1e15&&ref.y>=1e15))return -1e20;
+  return 100.0*(ref.y-own.z);
+ }
+ if(own.y< -1e19||ref.x<0.0)return -1e20;
+ if(gainComponent==0)return own.y-ref.x;
+ float factor=1.0+(handicaps.y-handicaps.x)*own.y/3600.0;
+ return handicaps.x>0.0&&handicaps.y>0.0&&factor>0.0?own.y/factor-ref.x:-1e20;
+}`;
    const vertex=shader(gl.VERTEX_SHADER,this.simpleTracks?`#version 300 es
 precision highp float;
 precision highp int;
 uniform highp sampler2D trackData;
 uniform highp sampler2D comparisonData;
+${comparisonShader}
 uniform int firstInstance;
 uniform bool boatColourMode;
 uniform vec4 origin;
@@ -99,8 +122,8 @@ void main(){
  sourceU=u;strokeOffset=vec2(side,0.0);speeds=vec2(-1.0);gainsStart=vec3(-1e20);gainsEnd=vec3(-1e20);
  if(!boatColourMode){
   int colourWidth=textureSize(comparisonData,0).x,nextIndex=sampleIndex+1;
-  float a=texelFetch(comparisonData,ivec2(sampleIndex%colourWidth,sampleIndex/colourWidth),0).r;
-  float b=texelFetch(comparisonData,ivec2(nextIndex%colourWidth,nextIndex/colourWidth),0).r;
+  float a=comparisonValue(sampleIndex);
+  float b=comparisonValue(nextIndex);
   speeds=vec2(a,b);gainsStart=vec3(a);gainsEnd=vec3(b);
  }
 }`:`#version 300 es
@@ -108,11 +131,11 @@ precision highp float;
 precision highp int;
 uniform highp sampler2D trackData;
 uniform highp sampler2D comparisonData;
+${comparisonShader}
 uniform highp isampler2D capData;
 uniform int firstInstance;
 uniform bool boatColourMode;
 const bool simpleMode=${this.simpleTracks?'true':'false'};
-uniform bool relativeMode;
 uniform int subdivisions;
 uniform int capMode;
 uniform int sourceCaps;
@@ -193,14 +216,15 @@ void main(){
  sourceU=u;strokeOffset=shape.yz;speeds=vec2(-1.0);gainsStart=vec3(-1e20);gainsEnd=vec3(-1e20);
  if(!boatColourMode){
   int comparisonWidth=textureSize(comparisonData,0).x;
-  float start=texelFetch(comparisonData,ivec2(sampleIndex%comparisonWidth,sampleIndex/comparisonWidth),0).r;
+  float start=comparisonValue(sampleIndex);
   int nextIndex=sampleIndex+1;
-  float end=texelFetch(comparisonData,ivec2(nextIndex%comparisonWidth,nextIndex/comparisonWidth),0).r;
+  float end=comparisonValue(nextIndex);
   speeds=vec2(start,end);gainsStart=vec3(start);gainsEnd=vec3(end);
  }
 }`);
    const fragment=shader(gl.FRAGMENT_SHADER,`#version 300 es
 precision highp float;
+precision highp int;
 in float sourceU;
 in vec2 strokeOffset;
 in vec2 speeds;
@@ -238,7 +262,7 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
-   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','boatColourMode','boatColour','opacity','gainComponent','gainLimit','trackData','comparisonData','firstInstance','subdivisions','capMode','capData','sourceCaps','boundarySamples'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
+   this.uniforms=Object.fromEntries(['origin','screen','size','windowTime','radius','palette','innerRatio','relativeMode','boatColourMode','boatColour','opacity','gainComponent','gainLimit','trackData','comparisonData','referenceData','handicaps','firstInstance','subdivisions','capMode','capData','sourceCaps','boundarySamples'].map(name=>[name,gl.getUniformLocation(this.program,name)]));
    this.maxTextureSize=gl.getParameter(gl.MAX_TEXTURE_SIZE);
    // Procedural vertices require no mesh buffer or changing attribute bindings.
    this.vao=gl.createVertexArray();gl.bindVertexArray(this.vao);
@@ -360,7 +384,7 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
   gl.uniformMatrix2fv(u.screen,false,new Float32Array([matrix.a,matrix.b,matrix.c,matrix.d]));gl.uniform2f(u.size,rect.width,rect.height);
   gl.uniform1f(u.radius,(this.simpleTracks?TRACK_STROKE_WIDTH:TRACK_OUTLINE_WIDTH)/2);gl.uniform1f(u.innerRatio,TRACK_STROKE_WIDTH/TRACK_OUTLINE_WIDTH);
   gl.uniform1i(u.gainComponent,comparison.basis==='time'?2:comparison.basis==='handicap'?1:0);gl.uniform1f(u.gainLimit,trackGainLimit());
-  gl.uniform1i(u.palette,0);gl.uniform1i(u.trackData,2);gl.uniform1i(u.comparisonData,3);gl.uniform1i(u.capData,4);
+  gl.uniform1i(u.palette,0);gl.uniform1i(u.trackData,2);gl.uniform1i(u.comparisonData,3);gl.uniform1i(u.capData,4);gl.uniform1i(u.referenceData,5);
  }
  drawRange(state,viewport){
   const gl=this.gl,u=this.uniforms,{boat,record,window,first,last,boundaryFirst,isReference,relative,solidColour}=state;
@@ -377,6 +401,8 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
   gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,record.texture);
   gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,record.comparisonTexture||this.neutralStyle);
   gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_2D,record.capTexture);
+  gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,this.preparation.referenceTexture||this.neutralStyle);
+  gl.uniform2f(u.handicaps,boat.handicapSecondsPerNm||0,referenceBoat().handicapSecondsPerNm||0);
   gl.uniform1i(u.firstInstance,first);gl.uniform1i(u.subdivisions,subdivisions);gl.uniform1i(u.capMode,0);
   gl.drawArraysInstanced(gl.TRIANGLES,0,subdivisions*6,last-first);
   if(this.simpleTracks){

@@ -2,17 +2,11 @@
 // Persisted lanes match the WebGL renderer: geometry RGBA32F, scalar colours
 // R32F, knots [local metres, VMG, seconds/metre, leg, time, index, station, leg start].
 const PREP_MISSING=-1e20,PREP_INFINITY=Math.fround(1e15);
-function preparationLayout(texels,channels=4){
- const width=Math.min(1024,Math.max(1,texels)),height=Math.max(1,Math.ceil(texels/width));
- return {width,height,values:new Float32Array(width*height*channels)};
-}
 function prepareTrackData(boat,route,start,simple){
  const points=boat.points,n=points.length,model=getTrackModel(points),stationCount=Math.ceil(route.total*1852/10)+1;
  const connected=i=>i>=0&&i+1<n&&points[i+1][2]>points[i][2]&&points[i+1][2]-points[i][2]<=TRACK_MAX_GAP;
- const xy=p=>[(p[0]-9.5)*1000/4.5,(57-p[1])*1180/3];
- const geometry=preparationLayout(Math.max(simple?2:4,n*(simple?2:4))),lineGeometry=simple?geometry:preparationLayout(Math.max(2,n*2)),knots=preparationLayout(Math.max(2,n*2));
- const colour=preparationLayout(Math.max(1024,n+1),1),speed=colour.values,caps=[],divisions=new Uint32Array(n);
- speed.fill(-1);let curvature=0,denseCount=0;
+ const local=prepareLocalTrackData(boat,start,simple),knots=preparationLayout(Math.max(2,n*2)),divisions=new Uint32Array(n);
+ let denseCount=0;
  const project=(point,direction,sog)=>{
   const p=projectOnRhumbRoute(point,route);
   if(!p||p.outside)return [-1,PREP_MISSING,PREP_MISSING,-1,0];
@@ -24,30 +18,14 @@ function prepareTrackData(boat,route,start,simple){
   return [metres-legStart,vmg,vmg===0?PREP_INFINITY:Math.min(PREP_INFINITY,3600/(1852*Math.abs(vmg))),p.leg,legStart];
  };
  for(let i=0;i<n;i++){
-  const a=points[i],next=connected(i),previous=connected(i-1),b=next?points[i+1]:a,h=next?b[2]-a[2]:0;
-  const position=xy(a),delta=[(b[0]-a[0])*1000/4.5,-(b[1]-a[1])*1180/3],stamp=a[2]-start,high=Math.fround(stamp);
-  const flags=next?Number(!previous)+2*Number(!connected(i+1)):(previous?0:3);
-  if(flags&1)caps.push(i,-1);if(flags&2)caps.push(i,1);
-  speed[i]=boat.speeds[i]??-1;
-  lineGeometry.values.set([...position,...delta,high,h,stamp-high,flags],i*8);
-  const m0=next?[model.slopes[0][i]*h*1000/4.5,-model.slopes[1][i]*h*1180/3]:[0,0];
-  const m1=next?[model.slopes[0][i+1]*h*1000/4.5,-model.slopes[1][i+1]*h*1180/3]:[0,0];
-  if(!simple)geometry.values.set([Math.fround(position[0]),Math.fround(position[1]),position[0]-Math.fround(position[0]),position[1]-Math.fround(position[1]),
-   ...delta,...m0,...m1,boat.speeds[i]??-1,boat.speeds[next?i+1:i]??-1,high,h,stamp-high,flags],i*16);
-  if(next){
-   const bound=3*Math.max(Math.hypot(m0[0]*500.94/3,m0[1]*282.9916/3),
-    Math.hypot((delta[0]-(m0[0]+m1[0])/3)*500.94,(delta[1]-(m0[1]+m1[1])/3)*282.9916),Math.hypot(m1[0]*500.94/3,m1[1]*282.9916/3));
-   divisions[i]=route.legs.length?Math.max(1,Math.ceil(bound/8)):0;denseCount+=divisions[i]?divisions[i]+1:0;
-   curvature=Math.max(curvature,Math.hypot(6*delta[0]-4*m0[0]-2*m1[0],6*delta[1]-4*m0[1]-2*m1[1]),
-    Math.hypot(-6*delta[0]+2*m0[0]+4*m1[0],-6*delta[1]+2*m0[1]+4*m1[1]));
-  }
+  const a=points[i],next=connected(i),previous=connected(i-1),b=next?points[i+1]:a,stamp=a[2]-start;
+  if(next){divisions[i]=route.legs.length?Math.max(1,Math.ceil(local.bounds[i]/8)):0;denseCount+=divisions[i]?divisions[i]+1:0;}
   const direction=next?[b[0]-a[0],b[1]-a[1]]:previous?[a[0]-points[i-1][0],a[1]-points[i-1][1]]:[0,0];
   const p=project(a,direction,boat.speeds[i]);
   if(!next&&!previous)p[1]=p[2]=PREP_MISSING;
   const station=p[3]>=0?Math.floor((p[0]+p[4])/10+.5):-1;
   knots.values.set([p[0],p[1],p[2],p[3],stamp,i,station,p[4]],i*8);
  }
- if(n)speed[n]=speed[n-1];
  if(!Number.isSafeInteger(denseCount)||denseCount>8000000)throw Error('For mange tætte sporprøver: '+boat.name);
  const dense=new Float64Array(denseCount*8);
  for(let i=0,at=0;i<n;i++)if(divisions[i]){
@@ -60,13 +38,7 @@ function prepareTrackData(boat,route,start,simple){
   }
  }
  const profile=prepareTrackStations(dense,stationCount),mirror=trackProfileMirror(n,knots.values,profile,stationCount);
- const capWidth=Math.max(1,Math.min(1024,caps.length/2)),capHeight=Math.max(1,Math.ceil(caps.length/2/capWidth));
- const capValues=simple?null:new Int32Array(capWidth*capHeight*2);if(capValues)capValues.set(caps);
- return {geometry:geometry.values,lineGeometry:lineGeometry.values,knots:knots.values,profile,speed,caps:capValues,mirror,
-  record:{pointCount:n,geometryWidth:geometry.width,geometryHeight:geometry.height,geometryBytes:geometry.values.byteLength,
-   geometryFile:simple?'geometry-line':'geometry-cubic',knotWidth:knots.width,knotHeight:knots.height,
-   comparisonWidth:colour.width,comparisonHeight:colour.height,capWidth,capHeight,capBytes:capValues?.byteLength||0,
-   capCount:simple?0:caps.length/2,curvature,denseSamples:denseCount}};
+ return {...local,knots:knots.values,profile,mirror,record:{...local.record,denseSamples:denseCount}};
 }
 function prepareTrackStations(dense,stationCount){
  const count=dense.length/8,groups=Math.ceil(count/64),ranges=new Int32Array(groups*2),sizes=new Uint32Array(stationCount),offsets=new Uint32Array(stationCount+1);

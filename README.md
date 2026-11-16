@@ -47,7 +47,7 @@ kontrol. GitHub Actions cacher kildepakken under generatorens SHA-256-fingeraftr
 
 Kort- og vejrmetadata hentes som `data.json.gz` og pakkes ud i browseren, ligesom spordata. Det sikrer gzip ved både lokal visning og statisk hosting.
 
-Manifestversion 10 hentes med `cache: 'no-store'` og angiver metadata (`dataFile`),
+Manifestversion 11 hentes med `cache: 'no-store'` og angiver metadata (`dataFile`),
 kildepakken (`replayFile`), kildefingeraftryk og hver båds ID, originale punktantal
 og `sourceOffset`. Filnavne indeholder fingeraftrykket. Browseren kontrollerer
 format, offset, filstørrelse, ID'er, tidsrækkefølge og segmentgrænser, før data frigives.
@@ -57,34 +57,35 @@ uint64 millisekunder og int16 SOG i 0,1 km/t (-32768 betyder manglende SOG).
 Hver kanal XOR-kodes mod forrige native heltal og opdeles i byteplaner inden gzip
 niveau 9. [Kildekodningen](viewer/track-source-codec.js) deles mellem build og klient;
 generatoren verificerer hvert enkelt kildepunkt efter kodning og afkodning.
-Kildepakken fylder cirka 2,62 MB. Der downloades ingen sammenligningsprofiler.
+Kildepakken fylder cirka 2,62 MB. Stationsprofiler hentes i en separat fællespakke.
 Metadata og kildepakke hentes parallelt; gzip afkodes med `DecompressionStream`.
 Den oprindelige `data.js` bruges kun offline og publiceres ikke med Pages.
 
-Buildet beregner sporene med [fælles matematik](viewer/track-preparation-math.js)
-og gemmer komprimerede, færdige filer. Det omfatter begge geometrier, kurvemodeller,
-tidsindeks, profiler samt alle tre farvegrundlag for samtlige referencebåde.
-Browseren henter og afkoder filerne; der køres ingen worker, profilberegning,
-sammenligningsberegning eller IndexedDB-lagring på klienten. WebGL 2 tegner
-fortsat kort og spor. Desktop viser kurver, mens iPhone viser enkle streger.
+Buildet beregner de tunge ruteprojektioner og stationsprofiler med
+[fælles matematik](viewer/track-preparation-math.js). Hver båds fart- og tidsprofil
+gemmes én gang pr. bane. Der bygges ingen filer for par af både.
+Browseren beregner PCHIP-hældninger, tidsindeks, geometri og fartbuffer én gang ved
+opstart med [lokal klargøring](viewer/track-local-data.js). Hældninger beregnes i
+Float64 før geometrien pakkes til Float32. De native kildeheltal bevares tabsfrit.
 
-`python3 scripts/build_pages.py` udfører beregningen automatisk ved deploy;
+WebGL 2 tegner kort og spor og beregner fart-, handicap- og tidsforskel ved opslag
+i den valgte references stationsprofil. Begge baners grundlag og alle bådes
+geometri uploades før betjening. Reference- og sportypeskift ændrer teksturvalg
+og uniforms; de henter ingen nye filer og genberegner ingen profiler.
+Build, filer og CPU-/GPU-lager vokser lineært med antal både ved fast sporlængde
+og antal baner. Desktop viser kurver; iPhone viser enkle streger.
+
+`python3 scripts/build_pages.py` klargør profilerne automatisk ved deploy;
 `python3 scripts/serve_viewer.py` gør det samme før lokal serverstart.
 `node scripts/prepare_track_profiles.cjs --if-stale` genbruger et færdigt build,
 indtil kildedata, matematik, rhumbline eller handicapdata ændres. Manglende eller
-ugyldige filer giver en synlig fejl; klienten beregner dem ikke som reserve.
-Native kildeheltal og Float64-kurvemodeller bevares præcist i filkodningen.
+ugyldige profiler giver en synlig fejl uden alternativ beregningsvej.
 
-Første download med Mercutio som reference er ca. 55 MB på iPhone og 65 MB
-på desktop. Et nyt referencevalg henter én forberedt fil på ca. 1–5 MB.
-Hele den forberedte pakke er ca. 475 MB, men downloades ikke samlet af klienten.
-Filerne har versionsbestemte URL'er og kan caches. Den lokale server giver
-fingerprintede data lang cachelevetid, mens HTML, JavaScript og manifest ikke caches.
-Sportypeskift læser allerede beregnede farvefiler og erstatter de tidligere
-farveteksturer med én R32F-kanal. Bådfarver kræver ingen farvetekstur pr. båd.
-Bådvalg, kamera og afspilning genbruger de aktive GPU-data. Både desktop og
-iPhone har alle farvevalg; iPhone tegner fortsat enkle streger.
-Lagerfejl vises tydeligt uden alternativ lagrings- eller beregningsvej.
+Frisk lokal Firefox-opstart på PC henter ca. 65,37 MB mod tidligere 93,65 MB.
+Heraf er stationsprofiler 61,46 MB, kildepakken 2,62 MB og kort/metadata 0,82 MB.
+De tre datapakker fylder samlet 64,90 MB; resten er manifest, kode og øvrige
+ressourcer. Filerne har fingerprintede URL'er og kan caches. Der bruges ingen
+worker eller IndexedDB. Bådvalg, kamera og afspilning genbruger faste GPU-data.
 
 Tidsprofiler summerer frem- og tilbagepassager efter dækket længde pr. station.
 Manglende værdier markeres med `-1e20`, og uendeligt tidsforbrug repræsenteres af

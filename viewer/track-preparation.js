@@ -24,14 +24,13 @@ class TrackPreparation {
   const descriptor=this.files.descriptor(boat.id),mirror=this.files.mirror(boat.id);
   if(!descriptor||descriptor.pointCount!==boat.points.length)throw Error('Den færdige sporfil har forkert punktantal: '+boat.name);
   if(mirror.samples.length!==(boat.points.length+1)*3||mirror.timeSamples.length!==(boat.points.length+1)*2||mirror.stations.length!==referenceStationCount()||mirror.timeStations.length!==referenceStationCount())throw Error('Sporfilens opslag har forkert størrelse: '+boat.name);
-  const record={...descriptor,boatId:boat.id,texture:null,capTexture:null,comparisonTexture:null,comparisonSamples:new Map(),styleBytes:0,bytes:0};
-  this.records.set(boat.points,record);trackProfileCache.set(boat.points,mirror);this.renderer.uploads++;this.denseSamples+=record.denseSamples;
+  const record={...descriptor,boatId:boat.id,boat,courseTextures:new Map(),stationTextures:new Map(),texture:null,capTexture:null,comparisonTexture:null,comparisonSamples:new Map(),styleBytes:0,bytes:0};
+  this.records.set(boat.points,record);trackProfileCache.set(boat.points,mirror);this.renderer.uploads++;this.denseSamples+=record.denseSamples||0;
  }
  async compare(reference){
-  this.renderer.phase='Henter færdige farver til '+reference.name;setViewerLoadingStage(this.renderer.phase);
-  const entries=await this.files.reference(reference.id);this.assertLive();
+  this.assertLive();await this.files.reference(reference.id);
   for(const boat of boats){
-   const record=this.records.get(boat.points);record.colourValues=entries.get(boat.id).arrays;record.comparisonSamples.clear();
+   const record=this.records.get(boat.points);record.comparisonSamples.clear();
    trackProfileCache.set(boat.points,this.files.mirror(boat.id,reference.course));
   }
   this.renderer.comparisonReference=reference.points;this.renderer.comparisonEpoch=this.renderer.uploads;
@@ -47,26 +46,28 @@ class TrackPreparation {
   return texture;
  }
  check(label){this.stage=label;const error=this.gl.getError();if(error)throw Error(label+': '+error);}
- releaseStyle(){
-  const gl=this.gl;gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,null);
-  for(const record of this.records.values()){
-   if(record.comparisonTexture)this.resources.release(record.comparisonTexture);
-   record.comparisonTexture=null;record.bytes-=record.styleBytes;record.styleBytes=0;
-  }
- }
+ releaseStyle(){}
  async loadStyle(mode,reference){
-  this.releaseStyle();if(mode==='boat')return;
-  const gl=this.gl;
-  for(const boat of boats){
-   const record=this.records.get(boat.points),bytes=record.comparisonWidth*record.comparisonHeight*4;
-   setViewerLoadingStage('Indlæser sportype '+mode+' · '+boat.name);
-   const values=mode==='speed'?await this.files.get(boat.id,'speed',bytes):record.colourValues[mode];this.assertLive();
-   const texture=this.resources.create('Texture');gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,texture);
-   gl.texStorage2D(gl.TEXTURE_2D,1,gl.R32F,record.comparisonWidth,record.comparisonHeight);
+  const referenceRecord=this.records.get(reference.points);
+  this.referenceTexture=referenceRecord.stationTextures.get(reference.course);
+  if(!this.referenceTexture)throw Error('Referenceprofilen er ikke uploadet.');
+  for(const record of this.records.values())record.comparisonTexture=record.courseTextures.get(reference.course);
+ }
+ uploadProfiles(boat,record){
+  const gl=this.gl,speed=this.files.local.get(boat.id).speed;
+  for(const course of Object.keys(this.files.manifest.routePoints)){
+   const mirror=this.files.mirror(boat.id,course),values=new Float32Array(record.comparisonWidth*record.comparisonHeight*4);
+   for(let i=0;i<=boat.points.length;i++)values.set([Math.max(mirror.samples[i*3],mirror.timeSamples[i*2]),mirror.samples[i*3+2],mirror.timeSamples[i*2+1],speed[i]],i*4);
+   const texture=this.texture(record.comparisonWidth,record.comparisonHeight,values);record.courseTextures.set(course,texture);record.bytes+=values.byteLength;
+   const width=Math.min(1024,mirror.stations.length),height=Math.ceil(mirror.stations.length/width),stations=new Float32Array(width*height*2);
+   for(let i=0;i<mirror.stations.length;i++)stations.set([mirror.stations[i],mirror.timeStations[i]],i*2);
+   const stationTexture=this.resources.create('Texture');gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,stationTexture);
+   gl.texStorage2D(gl.TEXTURE_2D,1,gl.RG32F,width,height);
    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
-   gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,record.comparisonWidth,record.comparisonHeight,gl.RED,gl.FLOAT,values);
-   this.check('Load track colour '+boat.name);record.comparisonTexture=texture;record.styleBytes=bytes;record.bytes+=bytes;
+   gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,width,height,gl.RG,gl.FLOAT,stations);
+   record.stationTextures.set(course,stationTexture);record.bytes+=stations.byteLength;
   }
+  this.check('Upload profiles '+boat.name);
  }
  async loadGeometry(){
   const gl=this.gl;
@@ -75,6 +76,7 @@ class TrackPreparation {
    this.renderer.phase='Indlæser sporgeometri · '+boat.name;setViewerLoadingStage(this.renderer.phase);
    const geometry=await this.files.get(boat.id,record.geometryFile,record.geometryBytes);this.assertLive();
    const caps=record.capBytes?await this.files.get(boat.id,'caps',record.capBytes):null;this.assertLive();
+   this.uploadProfiles(boat,record);
    const transaction=new GPUTrackResources(gl,this);this.scope=transaction;
    try{
     const texture=this.texture(record.geometryWidth,record.geometryHeight,geometry);
@@ -87,8 +89,8 @@ class TrackPreparation {
   this.files.releaseGeometry();
  }
  comparisonValues(record,index,connects){
-  const values=new Float32Array(connects?8:4);
-  for(let point=0;point<(connects?2:1);point++)for(const [component,mode] of ['absolute','handicap','time'].entries())values[point*4+component]=record.colourValues[mode][index+point];
+  const values=new Float32Array(connects?8:4),reference=referenceBoat(),own=this.files.mirror(record.boatId,reference.course),ref=this.files.mirror(reference.id,reference.course);
+  for(let point=0;point<(connects?2:1);point++)values.set(trackComparisonAt(own,ref,index+point,record.boat.handicapSecondsPerNm||0,reference.handicapSecondsPerNm||0),point*4);
   return values;
  }
  async ready(label='Vent på GPU-upload'){

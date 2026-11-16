@@ -31,11 +31,10 @@ test('source encoding rejects precision loss, bad timestamps and unrepresentable
 });
 const packedCodec=vm.runInNewContext(source('prepared-track-codec')+';({packPreparedTracks});',{TextEncoder,TextDecoder});
 function fixture(){
- const fingerprint='a'.repeat(64),c=codec(),timeIndex=new Uint32Array(51);
- for(let i=0;i<51;i++)timeIndex[i]=[1003,1027,1501].filter(t=>t<1000+i*10).length;
- const common=packedCodec.packPreparedTracks('common',[{id:'one',record:{timeIndexStart:1000},arrays:{slopeX:new Float64Array([.01/24,.01/24,0]),slopeY:new Float64Array([.02/24,.02/24,0]),timeIndex}}]);
+ const fingerprint='a'.repeat(64),c=codec();
+ const common=packedCodec.packPreparedTracks('common',[{id:'one',arrays:{}}]);
  return {
-  manifest:{prepared:{version:2,common:{file:`track-profiles/${fingerprint}/common.bin.gz`,bytes:common.byteLength,compressedBytes:1}},version:10,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:fingerprint,
+  manifest:{prepared:{version:3,common:{file:`track-profiles/${fingerprint}/common.bin.gz`,bytes:common.byteLength,compressedBytes:1}},version:11,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:fingerprint,
    dataFile:`track-profiles/${fingerprint}/data.json.gz`,replayFile:`track-profiles/${fingerprint}/source.bin.gz`,replayBytes:54,start:1000,
    boats:[{id:'one',pointCount:3,sourceOffset:0}]},
   data:{start:1000,boats:[{id:'one',trackSegments:[[1003,1027],[1501,1501]]}]},
