@@ -482,6 +482,9 @@ function rebaseMapGesture(){
 }
 map.onpointerdown=e=>{
  if(e.button!==0)return;
+ // A new primary touch starts a new contact sequence. Any retained fingers
+ // belong to an interrupted sequence whose final event never reached us.
+ if(e.pointerType==='touch'&&e.isPrimary)cancelPan();
  if(drag){
   if(e.pointerType!=='touch'||drag.pointerType!=='touch'||drag.pointers.size!==1||drag.pointers.has(e.pointerId))return;
   e.preventDefault();drag.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});drag.moved=true;
@@ -517,7 +520,9 @@ map.onpointermove=e=>{
   const center=new DOMPoint((a.x+b.x)/2,(a.y+b.y)/2).matrixTransform(drag.inverse);
   // Only distance and midpoint affect the camera; finger angle never rotates it.
   view=[anchor.x+(drag.view[0]-center.x)*factor,anchor.y+(drag.view[1]-center.y)*factor,drag.view[2]*factor,drag.view[3]*factor];
-  setview();return;
+  // Consume each movement, including clamped zoom. Reversing direction must
+  // respond immediately instead of undoing an accumulated distance overshoot.
+  setview();rebaseMapGesture();return;
  }
  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
  if(Math.hypot(dx,dy)>4)drag.moved=true;
@@ -557,6 +562,12 @@ map.onpointerup=endPan;
 map.onpointercancel=endPan;
 map.onlostpointercapture=endPan;
 map.onpointerleave=()=>clearTrackHover();
+function cancelPan(){
+ if(!drag)return;
+ for(const pointerId of [...drag.pointers.keys()])endPan({type:'pointercancel',pointerId});
+}
+window.addEventListener('blur',cancelPan);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelPan();});
 window.addEventListener('scroll',event=>{if(event.target!==document)return;invalidateMapLayout();requestRender({viewportOnly:true});},true);
 map.addEventListener('keydown',e=>{
  const speedMarker=e.target.closest('[data-speed-key]');

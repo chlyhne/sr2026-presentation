@@ -10,6 +10,13 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 
 ## Åbne punkter
 
+### UI-05 — Pinch efter voldsomme eller afbrudte bevægelser på telefon
+
+- **Område:** [kortgestus](./viewer/viewer.js) og [målrettet kontrol](./scripts/test_viewer_pinch_zoom.cjs).
+- **Gennemført:** Zoomgrundlaget opdateres efter hver pinch-bevægelse, så bevægelse forbi zoomgrænsen ikke ophober en dødzone. Nye primære berøringer, vinduestab af fokus og skjult side rydder afbrudte pan-/pinch-forløb. Skjult Firefox kontrollerer begge zoomgrænser og gentagne afbrydelser med syntetiske touch-pointere.
+- **Udskudt/usikkerhed:** Telefonens faktiske levering af touch- og capture-events ved hurtige bevægelser er endnu ikke kontrolleret på en fysisk enhed.
+- **Færdig når:** Hurtig pinch, løft/genplacering af fingre og afbrydelse/genoptagelse virker på den berørte telefon uden fastlåst zoom.
+
 ### UI-04 — Bane-/løbsfiltre og to permanente rhumblines
 
 - **Område:** [bådvælger](./viewer/boat-list.js), [rutegemning](./scripts/serve_viewer.py) og [build](./scripts/prepare_track_profiles.cjs).
