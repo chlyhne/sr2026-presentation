@@ -24,6 +24,8 @@ function validatePresentationDocument(document){
  const local=!!config.local;
  const routeSetup=local&&location.pathname==='/rhumbline.html';
  window.SR_RHUMBLINE_SETUP=routeSetup;
+ window.SR_SETUP_COURSE=new URLSearchParams(location.search).get('course')||'groensund';
+ if(!['groensund','boegestroemmen'].includes(window.SR_SETUP_COURSE))throw Error('Ukendt bane til rhumbline.');
  window.SR_READONLY=!local;
  window.SRStorage=localStorage;
  if(routeSetup){
@@ -101,11 +103,15 @@ function validatePresentationDocument(document){
    }
   }
   if(file==='rhumbline-geometry'){
-   const response=await fetch('rhumbline.json',{cache:'no-store'});
-   if(!response.ok)throw Error('Den permanente rhumbline kunne ikke indlæses ('+response.status+').');
-   const route=await response.json();
-   if(!validRhumbline(route))throw Error('Den permanente rhumbline indeholder ugyldige punkter.');
-   window.SR_RHUMBLINE=Object.freeze({version:1,points:Object.freeze(route.points.map(p=>Object.freeze(p)))});
+   const definitions=await Promise.all(['groensund','boegestroemmen'].map(async course=>{
+    const response=await fetch(course==='groensund'?'rhumbline.json':'rhumbline-boegestroemmen.json',{cache:'no-store'});
+    if(!response.ok)throw Error('Rhumbline for '+course+' kunne ikke indlæses ('+response.status+').');
+    const route=await response.json();
+    if(!validRhumbline(route))throw Error('Rhumbline for '+course+' indeholder ugyldige punkter.');
+    return [course,Object.freeze({version:1,points:Object.freeze(route.points.map(p=>Object.freeze(p)))})];
+   }));
+   window.SR_RHUMBLINES=Object.freeze(Object.fromEntries(definitions));
+   window.SR_RHUMBLINE=window.SR_RHUMBLINES[routeSetup?window.SR_SETUP_COURSE:'groensund'];
   }
   if(file==='boat-icons')await loadBoatHulls();
   if(file==='track-renderer'){

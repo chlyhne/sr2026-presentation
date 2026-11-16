@@ -28,7 +28,8 @@ python3 scripts/serve_viewer.py
   Den aktuelle afstand vises i lagmenuen, og lagets tilstand gemmes med eventet.
   Grid er forankret ved 55° N, 12° Ø; afstandene er kalibreret ved 55° N
   i kortets eksisterende længde-/breddegradsprojektion.
-- Nederst til højre vises en målestok i sømil eller meter, også når grid er slået
+- Nederst til venstre vises en målestok i sømil eller meter. Den flyttes lige til højre for bådlisten,
+  hvis bådlisten overlapper dens plads. Målestokken vises også, når grid er slået
   fra. Den viser altid gridets aktuelle afstand, og stregen svarer til bredden
   af én gridcelle på kortet.
 - **Start præsentation** skjuler indstillinger. Kortet står til venstre, og det
@@ -220,14 +221,24 @@ python3 scripts/serve_viewer.py
   `node scripts/test_gate_timing.cjs` tester kurvekrydsningerne, og
   `node scripts/test_viewer_gates.cjs` tester interaktion, tider, forberedte opslag
   og eventforløbet i lokal headless Firefox på PC.
-- Den permanente rhumbline tegnes én gang på det separate lokale kort
+- Hver bane har sin egen permanente rhumbline. Referencebådens bane vælger
+  sammenligningsgrundlaget for alle viste spor; profiler for begge ruter bygges
+  på forhånd. Uden en defineret bane er dens sammenligningsvalg utilgængelige.
+  Bådvælgerens **Bane** og **Løb** bruger TracTracs klassenavne og virker sammen
+  med søgning og favoritter. Bane og løb står på én linje ved hjerterne;
+  **Alle baner** og **Alle løb** fjerner de respektive filtre.
+  Bane-/løbsvalg gemmes med eventets øvrige visningsindstillinger.
+  Bøgestrømmens rute tegnes på
+  <http://127.0.0.1:8097/rhumbline.html?course=boegestroemmen> og gemmes i
+  `viewer/rhumbline-boegestroemmen.json`. Grønsunds rhumbline tegnes én gang på det separate lokale kort
   <http://127.0.0.1:18097/rhumbline.html> (start serveren med
   `python3 scripts/serve_viewer.py --port 18097`). Klik punkterne i sejlretningen,
   og vælg **Gem permanent rhumbline**. Punkterne gemmes i projektfilen
   `viewer/rhumbline.json`; et allerede gemt forløb kan ikke overskrives fra kortet.
   Definitionen findes ikke i præsentationen, dens noter, kladde eller eksport,
   og der er ingen rutetegning i præsentationens Mål-menu. Alle visninger henter
-  den samme projektfil. Genindlæs visningen efter den første definition.
+  projektfilerne for begge baner. Gem bygger sporfilerne igen; genindlæs visningen
+  efter den første definition.
 - **Spor** ved siden af **Mål** og **Lag** samler sporlængde, referencebåd og sportype.
   Vælg 15 eller 30 minutter, 1, 2, 4 eller 8 timer, eller hele forløbet.
   Længden gælder både kortet, valg af spor med musen og fartmærker.
@@ -313,9 +324,12 @@ python3 scripts/serve_viewer.py
   Gråt spor betyder manglende fartdata. Sporene har en mørk kant mod vejrkortets farver.
 - **Både** ligger som en lille bjælke lige under fartskalaen med samme bredde.
   Klik på bjælken for at folde den alfabetiske liste ud eller sammen. Den viser
-  bådnavn, skipper, SOG i knob og bådtype, også for både uden et aktuelt ikon i
+  bådnavn, skipper, værdi i den valgte sportypes enhed og bådtype, også for både uden et aktuelt ikon i
   kortudsnittet. Manglende fart angives som “Fart mangler”.
-  Tragtikonet markerer filterfeltet, som filtrerer løbende på bådnavn, skipper
+  Skipper og bådtype deler én kompakt linje. Tekstbredder måles én gang;
+  felterne fordeles, så færrest bogstaver skjules, og lange tekster glider
+  frem og tilbage i deres eget felt med CSS-animation.
+  Søgefeltet filtrerer løbende på bådnavn, skipper
   eller bådtype uden forskel på store og små bogstaver. Tomt felt viser alle både.
   Et fyldt hjerte ved en båd betyder favorit. Hjertet ved filterfeltet begrænser
   listen og kortet til favoritter; teksten filtrerer videre inden for dette udvalg.
@@ -332,8 +346,9 @@ python3 scripts/serve_viewer.py
   Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,
   og skjules, når et eventbillede dækker kortet. I præsentation ændrer bådvalg ikke
   gemte events; i redigering bruges samme eventgemning som det øvrige bådvalg.
-  Når listen er foldet ud,
-  fylder den ned til kortets bund. Hold musen over et bådikon på kortet for at
+  Når listen er foldet ud, følger højden indholdet, med scroll hvis den når
+  kortets bund. Målestokken reagerer på listens faktiske størrelse.
+  Hold musen over et bådikon på kortet for at
   rulle den åbne liste til bådens række og fremhæve den. Det ændrer ikke kortet
   eller tastaturfokus og åbner ikke en sammenfoldet liste.
   En fast farvestribe viser altid bådens farve. Fremhævning bruger baggrund og
@@ -945,7 +960,7 @@ handicapafspilning og nyere passagers dybde bevares. Bådpositioner og klik
 interpolerer lineært som de synlige spor. Ikonrækken vises i tre kolonner og
 to rækker, og menuer åbner under hele rækken. Overskrift og bådvælger er hver
 36 pixels høje med seks pixels mellemrum. Bådlisten ligger under farveskalaen;
-ved bådfarver flyttes den op under overskriften på iPhone.
+ved bådfarver flyttes den op under overskriften på alle skærme.
 Desktop bruger fortsat de ovenfor beskrevne kurver og kanter.
 
 Den lokale testserver aktiverer automatisk klientdiagnostik via

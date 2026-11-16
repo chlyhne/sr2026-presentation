@@ -3,8 +3,10 @@ class TrackFiles {
  constructor(simple=false){this.simple=simple;this.reads=0;}
  async open(){
   this.manifest=window.SR_TRACK_MANIFEST?.prepared;
-  if(this.manifest?.version!==1||!Array.isArray(this.manifest.references)||!Array.isArray(this.manifest.handicaps)||!window.SR_PREPARED_COMMON)throw Error('De færdige sporfiler mangler. Genbyg siden.');
-  if(JSON.stringify(this.manifest.routePoints)!==JSON.stringify(window.SR_RHUMBLINE.points))throw Error('Sporfilerne er bygget til en anden rhumbline. Genbyg siden.');
+  if(this.manifest?.version!==2||!Array.isArray(this.manifest.references)||!Array.isArray(this.manifest.handicaps)||!window.SR_PREPARED_COMMON)throw Error('De færdige sporfiler mangler. Genbyg siden.');
+  for(const [course,definition] of Object.entries(window.SR_RHUMBLINES)){
+   if(JSON.stringify(this.manifest.routePoints[course])!==JSON.stringify(definition.points))throw Error('Sporfilerne er bygget til en anden rhumbline for '+course+'. Genbyg siden.');
+  }
   for(const asset of [this.manifest.line,this.manifest.cubic,...this.manifest.references])validatePreparedAsset(asset,window.SR_TRACK_SOURCE_FINGERPRINT);
   this.common=window.SR_PREPARED_COMMON;this.references=new Map(this.manifest.references.map(entry=>[entry.id,entry]));
   const handicaps=new Map(this.manifest.handicaps.map(entry=>[entry.id,entry.value]));
@@ -22,7 +24,10 @@ class TrackFiles {
   this.reads++;return entries;
  }
  descriptor(id){return this.common.get(id)?.record[this.simple?'line':'cubic'];}
- mirror(id){const a=this.common.get(id).arrays;return {samples:a.samples,stations:a.stations,timeSamples:a.timeSamples,timeStations:a.timeStations};}
+ mirror(id,course=referenceBoat().course){
+  const a=this.common.get(id).arrays;
+  return Object.fromEntries(['samples','stations','timeSamples','timeStations'].map(name=>[name,a[course+'_'+name]]));
+ }
  async reference(id){
   if(this.referenceId===id)return this.referenceEntries;
   const asset=this.references.get(id);if(!asset)throw Error('Referencebådens forberedte farvefil mangler.');

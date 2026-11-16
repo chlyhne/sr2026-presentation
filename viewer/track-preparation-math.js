@@ -1,4 +1,4 @@
-// The sole preparation algorithm. Executed in the client's CPU worker.
+// The sole preparation algorithm. Executed at build time for each course.
 // Persisted lanes match the WebGL renderer: geometry RGBA32F, scalar colours
 // R32F, knots [local metres, VMG, seconds/metre, leg, time, index, station, leg start].
 const PREP_MISSING=-1e20,PREP_INFINITY=Math.fround(1e15);
@@ -37,7 +37,7 @@ function prepareTrackData(boat,route,start,simple){
   if(next){
    const bound=3*Math.max(Math.hypot(m0[0]*500.94/3,m0[1]*282.9916/3),
     Math.hypot((delta[0]-(m0[0]+m1[0])/3)*500.94,(delta[1]-(m0[1]+m1[1])/3)*282.9916),Math.hypot(m1[0]*500.94/3,m1[1]*282.9916/3));
-   divisions[i]=Math.max(1,Math.ceil(bound/8));denseCount+=divisions[i]+1;
+   divisions[i]=route.legs.length?Math.max(1,Math.ceil(bound/8)):0;denseCount+=divisions[i]?divisions[i]+1:0;
    curvature=Math.max(curvature,Math.hypot(6*delta[0]-4*m0[0]-2*m1[0],6*delta[1]-4*m0[1]-2*m1[1]),
     Math.hypot(-6*delta[0]+2*m0[0]+4*m1[0],-6*delta[1]+2*m0[1]+4*m1[1]));
   }

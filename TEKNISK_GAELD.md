@@ -10,6 +10,14 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 
 ## Åbne punkter
 
+### UI-04 — Bane-/løbsfiltre og to permanente rhumblines
+
+- **Område:** [bådvælger](./viewer/boat-list.js), [rutegemning](./scripts/serve_viewer.py) og [build](./scripts/prepare_track_profiles.cjs).
+- **Udskudt:** Samlet browserkontrol af bane/løb, eventgemning/-gendannelse og referenceskift mellem banerne efter indtegning af Bøgestrømmens rhumbline. Kontroller også den kompakte skipper-/bådtype-linje og streaming af lange felter.
+- **Gennemført:** Hurtige kontroller af filterkombinationer, banespecifikke projiceringer, manglende rute og valg af færdige profilopslag. Begge rutedefinitioner indgår i buildets fingerprint. Bøgestrømmens tegnekort er åbnet og starter med den rigtige bane. Målrettet skjult Firefox-kontrol bekræfter naturlig listehøjde, scroll ved mange både og målestokkens placering nederst til venstre eller lige ved siden af listen ved faktisk overlap, også efter filtrering og sammenklapning.
+- **Konsekvens/usikkerhed:** Bøgestrømmens rute er nu indtegnet med 26 punkter; første punkt ligger midt på startlinjen. Ingen automatisk erstatning med Grønsunds rute. Browser- og telefonforløbet for referenceskift er endnu ikke valideret.
+- **Færdig når:** Den rigtige profil vælges ved referenceskift, og bane-/løbsvalg (inklusive Alle baner/løb) virker i redigering og offentlig visning med eksisterende events.
+
 ### GPU-01 — Bekræft deploy-klargjorte spor og alle farvevalg på iPhone
 
 - **Område:** [build](./scripts/prepare_track_profiles.cjs), [fillæsning](./viewer/track-files.js) og [renderer](./viewer/track-renderer.js).

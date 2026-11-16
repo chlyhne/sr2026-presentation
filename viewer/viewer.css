@@ -72,10 +72,14 @@ body.rhumbline-setup #rhumblineSaveStatus:empty{display:none}
 .boat-list-chevron{font-size:17px;line-height:1;transition:transform .15s}
 #visibleBoatsToggle[aria-expanded=true] .boat-list-chevron{transform:rotate(180deg)}
 #visibleBoatsPanel{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin;scrollbar-gutter:stable;overflow-anchor:none;border-top:1px solid #b8cbd5}
-#boatSearch{position:sticky;top:0;z-index:1;height:86px;padding:9px 10px;background:#f7fafb;border-bottom:1px solid #b8cbd5}
+#boatSearch{position:sticky;top:0;z-index:1;padding:9px 10px;background:#f7fafb;border-bottom:1px solid #b8cbd5}
+.boat-race-filters{display:flex;flex:1;min-width:0;gap:4px}
+.boat-race-filters label{flex:1;min-width:0}
+#boatSearch select{width:100%;min-width:0;height:28px;margin:0;padding:4px 14px 4px 5px;border:1px solid #b8cbd5;border-radius:4px;background-color:white;color:#365766;font:inherit;font-size:11px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='m3 4.5 3 3 3-3' fill='none' stroke='%23365766' stroke-width='1.4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 2px center;background-size:12px;text-overflow:ellipsis}
+#boatSearch select:hover{background-color:#dcecf0}
 #boatSearch label{display:flex;align-items:center;margin:0;color:#365766;cursor:text}
 .boat-search-heading{display:flex;align-items:center;justify-content:space-between;gap:4px;height:28px;margin-bottom:4px}
-.boat-selection-actions{display:flex;gap:4px}
+.boat-selection-actions{display:flex;gap:4px;flex-shrink:0}
 .boat-search-field{display:flex;gap:4px}
 #boatSearchInput{width:100%;min-width:0;padding:6px;border:1px solid #607e90;border-radius:4px;background:white;color:#173d4c;font-size:12px}
 #boatFavouritesOnly,#boatClearFavourites{display:grid;place-items:center;padding:4px;border:1px solid #b8cbd5;background:white;color:#365766;border-radius:4px;cursor:pointer}
@@ -85,18 +89,23 @@ body.rhumbline-setup #rhumblineSaveStatus:empty{display:none}
 #boatFavouritesOnly[aria-pressed=true] svg{fill:currentColor}
 #boatClearFavourites:disabled{cursor:default}
 #visibleBoatsList{margin:0;padding:0;list-style:none}
-.visible-boat{height:72px;padding:9px 10px;border-left:4px solid var(--boat-colour);border-bottom:1px solid #d5e1e7;overflow-wrap:anywhere;outline:none;cursor:pointer;scroll-margin-top:86px}
+.visible-boat{height:54px;padding:7px 10px;border-left:4px solid var(--boat-colour);border-bottom:1px solid #d5e1e7;overflow-wrap:anywhere;outline:none;cursor:pointer;scroll-margin-top:86px}
 .visible-boat:last-child{border-bottom-color:transparent}
-.visible-boat:hover,.visible-boat:focus,.visible-boat.highlighted{background:#dcecf0;box-shadow:inset 0 0 0 1px #173d4c}
+.visible-boat:hover,.visible-boat:focus,.visible-boat.highlighted{background:color-mix(in srgb,var(--boat-colour) 20%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--boat-colour) 55%,transparent)}
 .visible-boat:focus-visible{outline:2px solid #173d4c;outline-offset:-2px}
 .visible-boat-heading{position:relative;display:flex;justify-content:space-between;align-items:center;gap:6px;margin:0;cursor:pointer}
 .boat-heart-choice{position:absolute;left:0;top:50%;transform:translateY(-50%);width:20px;height:20px;margin:0;opacity:0;cursor:pointer}
-.boat-heart-icon{pointer-events:none;display:block;flex-shrink:0;color:#607e90}
+.boat-heart-icon{pointer-events:none;display:block;flex-shrink:0;width:17px;height:17px;color:#607e90}
 .boat-heart-choice:checked+.boat-heart-icon{fill:#bc3154;color:#bc3154}
 .boat-heart-choice:focus-visible+.boat-heart-icon{outline:2px solid #173d4c;outline-offset:2px;border-radius:3px}
 .visible-boat-name{flex:1;font-size:12px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .visible-boat-speed{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
-.visible-boat-skipper,.visible-boat-type{display:block;margin-top:3px;font-size:11px;line-height:1.35;color:#365766;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.visible-boat-details{display:grid;grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr);margin-top:3px;font-size:11px;line-height:1.35;color:#365766}
+.visible-boat-skipper,.visible-boat-type{display:block;min-width:0;white-space:nowrap;overflow:hidden}
+.boat-detail-separator{text-align:center}
+.boat-detail-text{display:inline-block;white-space:nowrap;vertical-align:top}
+.boat-detail-text.streaming{animation:boat-detail-stream var(--detail-duration) linear infinite alternate}
+@keyframes boat-detail-stream{0%,15%{transform:translateX(0)}85%,100%{transform:translateX(var(--detail-travel))}}
 #visibleBoatsEmpty{padding:10px;margin:0;font-size:12px;color:#365766}
 #map .boat-list-highlighted .boat-hull{stroke:#ffce5c;stroke-width:2}
 #editingTimeline{grid-column:2;grid-row:2}#presentationFooter{grid-column:3;grid-row:2}

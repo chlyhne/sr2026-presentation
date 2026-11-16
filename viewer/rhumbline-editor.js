@@ -1,8 +1,9 @@
 // Local, one-time setup. It reuses the presentation's nominal WebGL map.
 document.body.classList.add('rhumbline-setup');document.title='Tegn permanent rhumbline';
 $('wind').checked=$('rain').checked=$('traffic').checked=$('military').checked=false;
+boatCourseFilter=window.SR_SETUP_COURSE;boatClassFilter='';boatFavouritesOnly=false;boatSearchQuery='';
 chosen.clear();$('rhumblineTools').hidden=false;
-const setupTitle=document.createElement('h1');setupTitle.textContent='Tegn rhumbline';
+const setupTitle=document.createElement('h1');setupTitle.textContent='Tegn rhumbline · '+BOAT_COURSE_NAMES[window.SR_SETUP_COURSE];
 $('rhumblineTools').prepend(setupTitle);
 const setupStatus=document.createElement('p');setupStatus.id='rhumblineSaveStatus';setupStatus.setAttribute('role','status');
 $('rhumblineTools').append(setupStatus);
@@ -30,7 +31,7 @@ async function savePermanentRhumbline(){
  $('finishMapLine').disabled=$('undoMapPoint').disabled=reverseRoute.disabled=restartRoute.disabled=true;
  setupStatus.textContent='Gemmer rhumbline og klargør sporfiler på serveren …';
  try{
-  const response=await fetch('/api/rhumbline',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(definition)});
+  const response=await fetch('/api/rhumbline?course='+window.SR_SETUP_COURSE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(definition)});
   const result=await response.json();if(!response.ok)throw Error(result.error||'Rhumbline kunne ikke gemmes.');
   lockRhumblineEditor(result.points);
   $('measurementHelp').textContent='Rhumbline og sporfiler er gemt. Genindlæs præsentationen for at bruge den nye rute.';

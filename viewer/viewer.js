@@ -78,7 +78,7 @@ function positionScreenGroup(group,x,y,scale){
  setAttr(group,'data-screen-x',x);setAttr(group,'data-screen-y',y);
  setAttr(group,'transform',`translate(${x} ${y}) scale(${scale})`);
 }
-let mapCreditKey=null,mapCreditNodes=null;
+let mapCreditKey=null,mapCreditNodes=null,visibleBoatOverlayBounds=null;
 function renderMapCredit(){
  const viewport=mapViewport();if(!viewport||mapCreditKey===viewport.key)return;
  mapCreditKey=viewport.key;renderTrackSpeedLegend();
@@ -94,6 +94,12 @@ function renderMapCredit(){
   mapCreditNodes={group,scale,line,text};
  }
  const {group,scale,line,text}=mapCreditNodes;
+ const list=visibleBoatOverlayBounds;
+ const covered=list&&list.width>0&&list.left<rect.left+8+width&&list.right>rect.left+8
+  &&list.top<rect.bottom-6&&list.bottom>rect.bottom-30;
+ const scaleLeft=covered?list.right+8:rect.left+8;
+ setAttr(scale,'transform',`translate(${scaleLeft+width-(rect.right-8)} 22)`);
+ setAttr(scale,'data-placement',covered?'beside-list':'left');
  positionScreenGroup(group,point.x,point.y,1/Math.hypot(matrix.a,matrix.b));
  setAttr(scale,'data-meters',meters);setAttr(scale,'data-pixel-width',width);setAttr(scale,'aria-label',`Målestok: ${label}`);
  setAttr(line,'d',`M${-width},-27v5H0v-5`);setAttr(text,'x',-width/2);
@@ -130,11 +136,18 @@ $('referenceBoat').onchange=async()=>{
  try{if(!await saveReferenceBoat($('referenceBoat').value))syncReferenceBoatControls();}
  catch(error){comparisonMessage('Referencebåden kunne ikke ændres: '+error.message);syncReferenceBoatControls();}
 };
-let boatSearchQuery='',boatFavouritesOnly=false;
+const BOAT_COURSE_NAMES={groensund:'Grønsund',boegestroemmen:'Bøgestrømmen'};
+const boatRaceClasses=new Map(Object.keys(BOAT_COURSE_NAMES).map(course=>[course,new Map(boats.filter(b=>b.course===course).map(b=>[b.raceClassId,b.raceClassName]))]));
+let boatSearchQuery='',boatFavouritesOnly=false,boatCourseFilter='',boatClassFilter='';
+function validBoatRaceFilters(course,raceClass){
+ return (course===''||Object.hasOwn(BOAT_COURSE_NAMES,course))&&typeof raceClass==='string'
+  &&(!raceClass||(course?boatRaceClasses.get(course).has(raceClass):[...boatRaceClasses.values()].some(classes=>classes.has(raceClass))));
+}
 function isBoatSearchActive(){return boatSearchQuery.length>0;}
-function isBoatFilterActive(){return boatFavouritesOnly||isBoatSearchActive();}
+function isBoatFilterActive(){return boatFavouritesOnly||isBoatSearchActive()||!!boatCourseFilter||!!boatClassFilter;}
 function boatIsDisplayed(boat){
- return (!boatFavouritesOnly||chosen.has(boat.name))&&(!isBoatSearchActive()
+ return (!boatCourseFilter||boat.course===boatCourseFilter)&&(!boatClassFilter||boat.raceClassId===boatClassFilter)
+  &&(!boatFavouritesOnly||chosen.has(boat.name))&&(!isBoatSearchActive()
   ||[boat.name,boat.skipper,boat.boatType||boat.metadata?.boatType].some(value=>String(value||'').toLocaleLowerCase('da').includes(boatSearchQuery)));
 }
 function createBoatHeartChoice(boat,className=''){
@@ -303,8 +316,8 @@ function drawMap(){if(hasRenderingFailure())return;const t=currentTime();$('cloc
  renderMapCredit();
 }
 function drawViewport(){
- if(hasRenderingFailure())return;webglBackground.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderSpeedPins();renderNoteDrawings();renderMapCredit();
- layoutVisibleBoats();
+ if(hasRenderingFailure())return;webglBackground.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderSpeedPins();renderNoteDrawings();
+ layoutVisibleBoats();renderMapCredit();
 }
 const boatMarkerNodes=new Map();
 function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){

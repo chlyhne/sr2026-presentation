@@ -30,7 +30,10 @@ class TrackPreparation {
  async compare(reference){
   this.renderer.phase='Henter færdige farver til '+reference.name;setViewerLoadingStage(this.renderer.phase);
   const entries=await this.files.reference(reference.id);this.assertLive();
-  for(const boat of boats){const record=this.records.get(boat.points);record.colourValues=entries.get(boat.id).arrays;record.comparisonSamples.clear();}
+  for(const boat of boats){
+   const record=this.records.get(boat.points);record.colourValues=entries.get(boat.id).arrays;record.comparisonSamples.clear();
+   trackProfileCache.set(boat.points,this.files.mirror(boat.id,reference.course));
+  }
   this.renderer.comparisonReference=reference.points;this.renderer.comparisonEpoch=this.renderer.uploads;
  }
  texture(width,height,data=null,integer=false){

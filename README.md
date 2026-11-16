@@ -99,6 +99,10 @@ Den permanente rhumbline tegnes én gang på det separate lokale kort
 `/rhumbline.html`, fx <http://127.0.0.1:8097/rhumbline.html>. **Gem permanent
 rhumbline** skriver punkterne til `viewer/rhumbline.json`. Rutedefinitionen
 indgår ikke i præsentationsdata og kan ikke overskrives fra tegnekortet.
+Bøgestrømmens separate rhumbline tegnes på
+<http://127.0.0.1:8097/rhumbline.html?course=boegestroemmen> og gemmes i
+`viewer/rhumbline-boegestroemmen.json`. Referencebådens bane bestemmer
+sammenligningsruten; bådvælgeren filtrerer på bane og TracTrac-løb.
 Se [viewerens vejledning](viewer/README.md) for kortets betjening og datakilder.
 
 ## Mapper

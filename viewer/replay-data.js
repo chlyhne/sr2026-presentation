@@ -23,7 +23,7 @@ async function loadReplayData(){
   ||!Number.isSafeInteger(manifest.dataBytes)||manifest.dataBytes<=0
   ||!Number.isFinite(manifest.start)
   ||!Number.isSafeInteger(manifest.replayBytes)||manifest.replayBytes<0||!Array.isArray(manifest.boats))fail('ugyldigt manifest. Genbyg dataene.');
- if(manifest.prepared?.version!==1)fail('færdige sporfiler mangler. Genbyg siden.');
+ if(manifest.prepared?.version!==2)fail('færdige sporfiler mangler. Genbyg siden.');
  validatePreparedAsset(manifest.prepared.common,manifest.sourceFingerprint);
  const [dataBytes,source,commonBytes]=await Promise.all([
   fetchReplayGzip(manifest.dataFile,manifest.dataBytes),fetchReplayGzip(manifest.replayFile,manifest.replayBytes),fetchReplayGzip(manifest.prepared.common.file,manifest.prepared.common.bytes)

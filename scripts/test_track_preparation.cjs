@@ -6,6 +6,14 @@ const boat=(points,speeds)=>({id:'fixture',name:'Fixture',points:points.map((p,i
 const straight=speed=>boat([[12,55.6],[12.1,55.6]],[speed,speed]);
 const prepare=(value,simple=false)=>api.prepareTrackData(value,route,start,simple);
 const near=(actual,expected,tolerance=1e-5)=>assert.ok(Math.abs(actual-expected)<=tolerance,actual+' != '+expected);
+
+test('different course directions have distinct projections; an undefined route stays missing',()=>{
+ const input=straight(6),forward=prepare(input),reverse=api.prepareTrackData(input,api.buildRhumbRoute([[12.1,55.6],[12,55.6]]),start,false);
+ near(forward.knots[1],6);near(reverse.knots[1],-6);
+ const absent=api.prepareTrackData(input,api.buildRhumbRoute([]),start,false);
+ assert.equal(absent.record.denseSamples,0);assert.ok(absent.knots[1]<-1e19);assert.equal(absent.speed[0],6);
+ assert.deepEqual([...absent.geometry],[...forward.geometry],'The display geometry is independent of the comparison route');
+});
 test('CPU preparation preserves straight-line VMG, time density and source SOG',()=>{
  const result=prepare(straight(6)),station=Math.floor((result.mirror.stations.length-1)/2);
  near(result.profile[station*4],6);near(result.profile[station*4+1],3600/(1852*6));

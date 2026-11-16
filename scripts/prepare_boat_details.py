@@ -29,7 +29,9 @@ def build():
         if not 0 < handicap < 10000:
             raise ValueError(f'Invalid ToD handicap for {boat_id}')
         race = source['races'][competitor['source_course']]
+        race_class = race['classes'][competitor['classId']]
         details[boat_id] = {'skipper': competitor.get('description', '').strip(), 'boatType': boat_type.strip(),
+                            'raceClassId': competitor['classId'], 'raceClassName': race_class['Name'],
                             'handicapSecondsPerNm': handicap, 'raceStartTime': official_start(race, competitor),
                             'raceFinishTime': official_finish(competitor),
                             'courseLengthNm': OFFICIAL_COURSE_LENGTHS_NM[competitor['source_course']]}

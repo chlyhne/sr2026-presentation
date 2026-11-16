@@ -70,8 +70,8 @@ function nearestTrackSpeed(clientX,clientY,boatId,topmost=false){
 function matchingSpeedPin(sample){
  return visibleSpeedPins().find(p=>p.boatId===sample.boatId&&Math.abs(p.time-sample.time)<.05);
 }
-function trackPinValue(boat,sample){
- if(trackUsesComparison()&&referenceBoat()?.id!==boat.id){
+function trackPinValue(boat,sample,{includeReference=false}={}){
+ if(trackUsesComparison()&&(includeReference||referenceBoat()?.id!==boat.id)){
   const gains=webglTracks.comparisonSample(boat,sample.time),timeMode=comparison.basis==='time';
   const value=gains?.[timeMode?'timeGain':comparison.basis==='handicap'?'handicapGain':'absoluteGain']??null;
   const unit=timeMode?'s/100 m':'kn';

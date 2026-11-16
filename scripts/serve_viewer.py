@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 from build_pages import prepare_track_profiles
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,6 +62,8 @@ class ViewerHandler(SimpleHTTPRequestHandler):
             return str(ROOT / 'viewer' / 'index.html')
         if route == '/rhumbline.json':
             return str(RHUMBLINE_FILE)
+        if route == '/rhumbline-boegestroemmen.json':
+            return str(RHUMBLINE_FILE.with_name('rhumbline-boegestroemmen.json'))
         if route.startswith('/event-images/'):
             name = route.removeprefix('/event-images/')
             return str(IMAGE_DIR / name) if IMAGE_NAME.fullmatch(name) else str(IMAGE_DIR / '_not_found')
@@ -192,6 +194,11 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         self.json_response(201, {'id': entry['id']})
 
     def save_rhumbline(self):
+        course = parse_qs(urlsplit(self.path).query).get('course', ['groensund'])[0]
+        if course not in {'groensund', 'boegestroemmen'}:
+            self.json_response(400, {'error': 'Ukendt bane.'})
+            return
+        route_file = RHUMBLINE_FILE if course == 'groensund' else RHUMBLINE_FILE.with_name('rhumbline-boegestroemmen.json')
         if self.headers.get('Origin') != f'http://{self.headers.get("Host")}':
             self.json_response(403, {'error': 'Gem rhumblinen fra kortet på denne lokale server.'})
             return
@@ -209,19 +216,19 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         with RHUMBLINE_LOCK:
             temporary = None
             try:
-                existing = json.loads(RHUMBLINE_FILE.read_text(encoding='utf-8'))
+                existing = json.loads(route_file.read_text(encoding='utf-8'))
                 if existing != {'version': 1, 'points': []} and not valid_rhumbline(existing):
                     raise ValueError('Invalid permanent rhumbline')
                 if existing.get('points') and existing != definition:
                     self.json_response(409, {'error': 'Rhumbline er allerede gemt permanent og kan ikke overskrives fra kortet.'})
                     return
-                with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=RHUMBLINE_FILE.parent, delete=False) as target:
+                with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=route_file.parent, delete=False) as target:
                     temporary = Path(target.name)
                     target.write(json.dumps(definition, ensure_ascii=False, indent=2) + '\n')
                     target.flush()
                     os.fsync(target.fileno())
                 temporary.chmod(0o644)
-                temporary.replace(RHUMBLINE_FILE)
+                temporary.replace(route_file)
             except (OSError, ValueError, AttributeError):
                 if temporary is not None:
                     temporary.unlink(missing_ok=True)

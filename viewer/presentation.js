@@ -47,16 +47,16 @@ function persistNotes(next){
 function sceneSettings() {
  return {wind:$('wind').checked,windModel:$('windModel').value,windNumbers:$('windNumbers').checked,
   rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,grid:$('grid').checked,traffic:$('traffic').checked,military:$('military').checked,annotationsVisible:$('annotationsVisible').checked,boats:[...chosen],boatNames:boats.map(boat=>boat.id),
-  mapVersion:1,comparison:{...comparison},referenceBoatId,trackLengthSeconds,handicapTracksEnabled,boatSearchQuery,boatFavouritesOnly};
+  mapVersion:1,comparison:{...comparison},referenceBoatId,trackLengthSeconds,handicapTracksEnabled,boatSearchQuery,boatFavouritesOnly,boatCourseFilter,boatClassFilter};
 }
 function eventSettings(settings={}){
  if(!settings||typeof settings!=='object'||Array.isArray(settings))throw Error('Eventets kortkonfiguration er ugyldig.');
  if(settings.mapVersion!==undefined&&settings.mapVersion!==1)throw Error('Eventets kortkonfiguration har en ukendt version.');
- const next=settings.mapVersion===1?settings:{wind:false,windModel:'dmi_harmonie_arome_europe',windNumbers:false,rain:false,rainOpacity:.75,
+ const next={boatCourseFilter:'',boatClassFilter:'',...(settings.mapVersion===1?settings:{wind:false,windModel:'dmi_harmonie_arome_europe',windNumbers:false,rain:false,rainOpacity:.75,
   grid:true,traffic:true,military:true,annotationsVisible:true,boats:[],boatNames:boats.map(boat=>boat.id),
   comparison:{enabled:false,basis:'absolute',boatColour:false},referenceBoatId:boats.find(boat=>boat.name==='Mercutio').id,
-  trackLengthSeconds:7200,handicapTracksEnabled:false,boatSearchQuery:'',boatFavouritesOnly:Array.isArray(settings.boats),...settings,mapVersion:1};
- if(!validComparison(next.comparison)||!TRACK_LENGTHS.has(next.trackLengthSeconds)||!boats.some(boat=>boat.id===next.referenceBoatId)
+  trackLengthSeconds:7200,handicapTracksEnabled:false,boatSearchQuery:'',boatFavouritesOnly:Array.isArray(settings.boats),...settings,mapVersion:1})};
+ if(!validBoatRaceFilters(next.boatCourseFilter,next.boatClassFilter)||!validComparison(next.comparison)||!TRACK_LENGTHS.has(next.trackLengthSeconds)||!boats.some(boat=>boat.id===next.referenceBoatId)
   ||typeof next.handicapTracksEnabled!=='boolean'||typeof next.boatFavouritesOnly!=='boolean'||typeof next.boatSearchQuery!=='string'
   ||!['boats','boatNames'].every(key=>Array.isArray(next[key])&&next[key].every(value=>typeof value==='string'))
   ||!['wind','windNumbers','rain','grid','traffic','military','annotationsVisible'].every(key=>typeof next[key]==='boolean')
@@ -69,11 +69,13 @@ function applySceneSettings(settings){
  applyLayerSettings(next);
  chosen.clear();next.boats.forEach(name=>chosen.add(name));
  boatSearchQuery=next.boatSearchQuery;boatFavouritesOnly=next.boatFavouritesOnly;
+ boatCourseFilter=next.boatCourseFilter;boatClassFilter=next.boatClassFilter;
  $('boatSearchInput').value=boatSearchQuery;$('boatFavouritesOnly').setAttribute('aria-pressed',String(boatFavouritesOnly));
  comparison={...next.comparison};trackLengthSeconds=next.trackLengthSeconds;handicapTracksEnabled=next.handicapTracksEnabled;
  if(referenceBoatId!==next.referenceBoatId){
   referenceBoatId=next.referenceBoatId;comparisonRevision++;webglTracks.prepareComparison();
  }
+ syncComparisonRoute();
  clearTrackHover();syncBoatChoices();syncHandicapTracks();syncNavigationControls();renderTrackSpeedLegend();
  lastLayerSettings=layerSettings();
 }

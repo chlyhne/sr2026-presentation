@@ -4,6 +4,8 @@ const boatDetails={
  "groensund:cefbcb60-4624-013f-2900-04421a259aad": {
   "skipper": "Hans Jacobsson",
   "boatType": "Hanse 320",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781357573.0,
@@ -12,6 +14,8 @@ const boatDetails={
  "groensund:cf9e9de0-4624-013f-2981-04421a259aad": {
   "skipper": "Morten Kirkelund",
   "boatType": "IMX 40",
+  "raceClassId": "cf865420-4624-013f-296b-04421a259aad",
+  "raceClassName": "Start 3 - Løb 5 Two-Racing",
   "handicapSecondsPerNm": 519.4,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781319940.0,
@@ -20,6 +24,8 @@ const boatDetails={
  "groensund:cf40a610-4624-013f-2929-04421a259aad": {
   "skipper": "Niklas Joensen",
   "boatType": "FAURBY 36",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -28,6 +34,8 @@ const boatDetails={
  "groensund:cf0732e0-4624-013f-290a-04421a259aad": {
   "skipper": "Lars Møller Larsen",
   "boatType": "Bianca 107",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781388485.0,
@@ -36,6 +44,8 @@ const boatDetails={
  "groensund:d01fd840-4624-013f-29f6-04421a259aad": {
   "skipper": "Jan Madsen",
   "boatType": "XP 38",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 534.4,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781310179.0,
@@ -44,6 +54,8 @@ const boatDetails={
  "groensund:ceff8000-4624-013f-2903-04421a259aad": {
   "skipper": "Peter Bisgaard-Frantzen",
   "boatType": "SunFast 32",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781332610.0,
@@ -52,6 +64,8 @@ const boatDetails={
  "groensund:cf0ae510-4624-013f-290d-04421a259aad": {
   "skipper": "Anders Ellers",
   "boatType": "Hanse 430",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781314985.0,
@@ -60,6 +74,8 @@ const boatDetails={
  "groensund:cf2ecd90-4624-013f-2921-04421a259aad": {
   "skipper": "Peter Lillelund",
   "boatType": "J105",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781309681.0,
@@ -68,6 +84,8 @@ const boatDetails={
  "groensund:cf1f8dd0-4624-013f-291a-04421a259aad": {
   "skipper": "Nils Rømer",
   "boatType": "Hanse 400e",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781324583.0,
@@ -76,6 +94,8 @@ const boatDetails={
  "groensund:cf186800-4624-013f-2916-04421a259aad": {
   "skipper": "Ole Ertmann Nielsen",
   "boatType": "Hallberg-Rassy 37",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781345715.0,
@@ -84,6 +104,8 @@ const boatDetails={
  "groensund:cf267bd0-4624-013f-291d-04421a259aad": {
   "skipper": "Peter Skov",
   "boatType": "Dufour 44",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781308468.0,
@@ -92,6 +114,8 @@ const boatDetails={
  "groensund:cf44cf30-4624-013f-292d-04421a259aad": {
   "skipper": "Bent Knudsen",
   "boatType": "Bavaria 42C",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -100,6 +124,8 @@ const boatDetails={
  "groensund:cf48fde0-4624-013f-2930-04421a259aad": {
   "skipper": "Henrik Kim Christensen",
   "boatType": "Hanse 385",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -108,6 +134,8 @@ const boatDetails={
  "groensund:cf8a8000-4624-013f-296f-04421a259aad": {
   "skipper": "Kåre Gibsholm-Madsen",
   "boatType": "Seascape 27",
+  "raceClassId": "cf865420-4624-013f-296b-04421a259aad",
+  "raceClassName": "Start 3 - Løb 5 Two-Racing",
   "handicapSecondsPerNm": 580.6,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781303164.0,
@@ -116,6 +144,8 @@ const boatDetails={
  "groensund:cf0e8b80-4624-013f-2910-04421a259aad": {
   "skipper": "Sune Johansson",
   "boatType": "Dufour 40",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781326408.0,
@@ -124,6 +154,8 @@ const boatDetails={
  "groensund:d0156a30-4624-013f-29ed-04421a259aad": {
   "skipper": "Frederik Zacho",
   "boatType": "ARCONA 380/385",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 538.6,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781305082.0,
@@ -132,6 +164,8 @@ const boatDetails={
  "groensund:cf512990-4624-013f-2937-04421a259aad": {
   "skipper": "Nichlas Jordt-Rasmussen",
   "boatType": "40 fods Ketch",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781393085.0,
@@ -140,6 +174,8 @@ const boatDetails={
  "groensund:cf4cfb40-4624-013f-2933-04421a259aad": {
   "skipper": "Tim DuBois",
   "boatType": "Hallberg Rassy 37",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -148,6 +184,8 @@ const boatDetails={
  "groensund:cf67f030-4624-013f-294c-04421a259aad": {
   "skipper": "Henrik Thystrup",
   "boatType": "Bavaria C42",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781339101.0,
@@ -156,6 +194,8 @@ const boatDetails={
  "groensund:cf608a70-4624-013f-2946-04421a259aad": {
   "skipper": "Thomas Lindum",
   "boatType": "Luffe 40 one off",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781327851.0,
@@ -164,6 +204,8 @@ const boatDetails={
  "groensund:cf5cb670-4624-013f-2942-04421a259aad": {
   "skipper": "Andreas Heyn Fallesen",
   "boatType": "Faurby 424",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -172,6 +214,8 @@ const boatDetails={
  "groensund:cf590bf0-4624-013f-293f-04421a259aad": {
   "skipper": "Lasse Hinke",
   "boatType": "SAGITTA 35",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -180,6 +224,8 @@ const boatDetails={
  "groensund:cf774910-4624-013f-295b-04421a259aad": {
   "skipper": "Christian Tolstrup",
   "boatType": "Malö 50",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -188,6 +234,8 @@ const boatDetails={
  "groensund:cf6bd310-4624-013f-2950-04421a259aad": {
   "skipper": "Peter Bjerring",
   "boatType": "Dehler 34",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -196,6 +244,8 @@ const boatDetails={
  "groensund:cfde6e50-4624-013f-29bb-04421a259aad": {
   "skipper": "Kristian Mikkelsen",
   "boatType": "X-99",
+  "raceClassId": "cfc77690-4624-013f-29a6-04421a259aad",
+  "raceClassName": "Start 4 - Løb 7 Multi-Racing",
   "handicapSecondsPerNm": 571.2,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781305114.0,
@@ -204,6 +254,8 @@ const boatDetails={
  "groensund:cf9742f0-4624-013f-297b-04421a259aad": {
   "skipper": "Göran Artman",
   "boatType": "X-382",
+  "raceClassId": "cf865420-4624-013f-296b-04421a259aad",
+  "raceClassName": "Start 3 - Løb 5 Two-Racing",
   "handicapSecondsPerNm": 551.2,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781310859.0,
@@ -212,6 +264,8 @@ const boatDetails={
  "groensund:d0448170-4624-013f-2a18-04421a259aad": {
   "skipper": "Michael Mollmann",
   "boatType": "ELLIOT 35 SS",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 476.2,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781286201.0,
@@ -220,6 +274,8 @@ const boatDetails={
  "groensund:cf9aff90-4624-013f-297e-04421a259aad": {
   "skipper": "Kasper Wedersøe",
   "boatType": "DEHLER 30 OD",
+  "raceClassId": "cf865420-4624-013f-296b-04421a259aad",
+  "raceClassName": "Start 3 - Løb 5 Two-Racing",
   "handicapSecondsPerNm": 545.6,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781307506.0,
@@ -228,6 +284,8 @@ const boatDetails={
  "groensund:cfcfc630-4624-013f-29af-04421a259aad": {
   "skipper": "Tillmann Frank",
   "boatType": "ALBIN STRATUS",
+  "raceClassId": "cfc77690-4624-013f-29a6-04421a259aad",
+  "raceClassName": "Start 4 - Løb 7 Multi-Racing",
   "handicapSecondsPerNm": 592.6,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": null,
@@ -236,6 +294,8 @@ const boatDetails={
  "groensund:cfcbd0d0-4624-013f-29ab-04421a259aad": {
   "skipper": "Jonas Nilsson",
   "boatType": "CORBY 25",
+  "raceClassId": "cfc77690-4624-013f-29a6-04421a259aad",
+  "raceClassName": "Start 4 - Løb 7 Multi-Racing",
   "handicapSecondsPerNm": 619.8,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781320688.0,
@@ -244,6 +304,8 @@ const boatDetails={
  "groensund:cfdad3d0-4624-013f-29b8-04421a259aad": {
   "skipper": "Lars Henrik Nielsen",
   "boatType": "X-332",
+  "raceClassId": "cfc77690-4624-013f-29a6-04421a259aad",
+  "raceClassName": "Start 4 - Løb 7 Multi-Racing",
   "handicapSecondsPerNm": 580.2,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781328904.0,
@@ -252,6 +314,8 @@ const boatDetails={
  "groensund:cfe5ee70-4624-013f-29c3-04421a259aad": {
   "skipper": "Martin Ottesen",
   "boatType": "JEANNEAU SUN FAST 36",
+  "raceClassId": "cfe57500-4624-013f-29c2-04421a259aad",
+  "raceClassName": "Start 4 - Løb 8 Multi-Racing",
   "handicapSecondsPerNm": 565.0,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": null,
@@ -260,6 +324,8 @@ const boatDetails={
  "groensund:cfe1fae0-4624-013f-29be-04421a259aad": {
   "skipper": "Filip Stål",
   "boatType": "Seascape 27",
+  "raceClassId": "cfc77690-4624-013f-29a6-04421a259aad",
+  "raceClassName": "Start 4 - Løb 7 Multi-Racing",
   "handicapSecondsPerNm": 571.0,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": null,
@@ -268,6 +334,8 @@ const boatDetails={
  "groensund:cff53330-4624-013f-29d0-04421a259aad": {
   "skipper": "Christian Sørensen",
   "boatType": "X-362 SPORT",
+  "raceClassId": "cfe57500-4624-013f-29c2-04421a259aad",
+  "raceClassName": "Start 4 - Løb 8 Multi-Racing",
   "handicapSecondsPerNm": 554.4,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781307844.0,
@@ -276,6 +344,8 @@ const boatDetails={
  "groensund:cff8d1b0-4624-013f-29d3-04421a259aad": {
   "skipper": "Bo Laybourn",
   "boatType": "J105",
+  "raceClassId": "cfe57500-4624-013f-29c2-04421a259aad",
+  "raceClassName": "Start 4 - Løb 8 Multi-Racing",
   "handicapSecondsPerNm": 551.8,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781320882.0,
@@ -284,6 +354,8 @@ const boatDetails={
  "groensund:cfed4030-4624-013f-29ca-04421a259aad": {
   "skipper": "Per Oskarsson",
   "boatType": "FIRST 36.7",
+  "raceClassId": "cfe57500-4624-013f-29c2-04421a259aad",
+  "raceClassName": "Start 4 - Løb 8 Multi-Racing",
   "handicapSecondsPerNm": 557.2,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781306264.0,
@@ -292,6 +364,8 @@ const boatDetails={
  "groensund:d00726f0-4624-013f-29e0-04421a259aad": {
   "skipper": "Flemming Eske Hansen",
   "boatType": "DEHLER 38",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 546.0,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781313517.0,
@@ -300,6 +374,8 @@ const boatDetails={
  "groensund:d0039c60-4624-013f-29dd-04421a259aad": {
   "skipper": "Gorm Arildsen",
   "boatType": "BANNER 41",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 546.0,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781320249.0,
@@ -308,6 +384,8 @@ const boatDetails={
  "groensund:d00aa040-4624-013f-29e3-04421a259aad": {
   "skipper": "Anders Steenfeldt-Jensen",
   "boatType": "EXPLORER 38",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 543.8,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781305618.0,
@@ -316,6 +394,8 @@ const boatDetails={
  "groensund:d023a320-4624-013f-29fa-04421a259aad": {
   "skipper": "Gustav Johansson",
   "boatType": "ARCONA 380/385",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 528.2,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781305877.0,
@@ -324,6 +404,8 @@ const boatDetails={
  "groensund:d04b5ff0-4624-013f-2a1e-04421a259aad": {
   "skipper": "Anders Bogason",
   "boatType": "HH 42",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 466.6,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781281524.0,
@@ -332,6 +414,8 @@ const boatDetails={
  "groensund:d011b3e0-4624-013f-29e9-04421a259aad": {
   "skipper": "Claus Poulsen",
   "boatType": "JEANNEAU SUN FAST 3600",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 540.2,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781329275.0,
@@ -340,6 +424,8 @@ const boatDetails={
  "groensund:d01c6220-4624-013f-29f3-04421a259aad": {
   "skipper": "Karsten Normand",
   "boatType": "ARCONA 400",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 537.4,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781319398.0,
@@ -348,6 +434,8 @@ const boatDetails={
  "groensund:d02f3110-4624-013f-2a05-04421a259aad": {
   "skipper": "Søren Pedersen",
   "boatType": "GRAND SOLEIL 43",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 517.6,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781302839.0,
@@ -356,6 +444,8 @@ const boatDetails={
  "groensund:ced83f10-4624-013f-28dd-04421a259aad": {
   "skipper": "Erik Andersen",
   "boatType": "Møn 431",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781374325.0,
@@ -364,6 +454,8 @@ const boatDetails={
  "groensund:d032b8e0-4624-013f-2a08-04421a259aad": {
   "skipper": "Richard Tøpholm",
   "boatType": "DUFOUR 45",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 510.4,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": null,
@@ -372,6 +464,8 @@ const boatDetails={
  "groensund:d018e3c0-4624-013f-29f0-04421a259aad": {
   "skipper": "Christian Rømer",
   "boatType": "ARCONA 400",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 538.2,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781308559.0,
@@ -380,6 +474,8 @@ const boatDetails={
  "groensund:d0410370-4624-013f-2a15-04421a259aad": {
   "skipper": "Jean Mørck",
   "boatType": "DEHLER 46",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 490.4,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781298650.0,
@@ -388,6 +484,8 @@ const boatDetails={
  "groensund:cfd38280-4624-013f-29b2-04421a259aad": {
   "skipper": "Maria Westeman",
   "boatType": "RIDAS 31 racer",
+  "raceClassId": "cfc77690-4624-013f-29a6-04421a259aad",
+  "raceClassName": "Start 4 - Løb 7 Multi-Racing",
   "handicapSecondsPerNm": 590.4,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": null,
@@ -396,6 +494,8 @@ const boatDetails={
  "groensund:d04eccd0-4624-013f-2a21-04421a259aad": {
   "skipper": "Søren Due Olsen",
   "boatType": "",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 415.8,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781288124.0,
@@ -404,6 +504,8 @@ const boatDetails={
  "groensund:d039c5a0-4624-013f-2a0e-04421a259aad": {
   "skipper": "Peter Michael Wøldike",
   "boatType": "KER 11.3",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 504.0,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781305183.0,
@@ -412,6 +514,8 @@ const boatDetails={
  "groensund:d047e6d0-4624-013f-2a1b-04421a259aad": {
   "skipper": "Tomas Toft",
   "boatType": "Soto 40",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 467.4,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781287853.0,
@@ -420,6 +524,8 @@ const boatDetails={
  "groensund:d03d5f50-4624-013f-2a11-04421a259aad": {
   "skipper": "Jacob Guhle",
   "boatType": "STIMSON IRC 42",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 500.6,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781300363.0,
@@ -428,6 +534,8 @@ const boatDetails={
  "groensund:cfffdb60-4624-013f-29d9-04421a259aad": {
   "skipper": "Lars Lindqvist",
   "boatType": "FIRST 36.7",
+  "raceClassId": "cfe57500-4624-013f-29c2-04421a259aad",
+  "raceClassName": "Start 4 - Løb 8 Multi-Racing",
   "handicapSecondsPerNm": 543.4,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781310956.0,
@@ -436,6 +544,8 @@ const boatDetails={
  "groensund:cfd73960-4624-013f-29b5-04421a259aad": {
   "skipper": "Andreas Elkjær",
   "boatType": "First 31.7",
+  "raceClassId": "cfc77690-4624-013f-29a6-04421a259aad",
+  "raceClassName": "Start 4 - Løb 7 Multi-Racing",
   "handicapSecondsPerNm": 583.8,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781352764.0,
@@ -444,6 +554,8 @@ const boatDetails={
  "groensund:ceb43140-4624-013f-28bd-04421a259aad": {
   "skipper": "Kai Schneider",
   "boatType": "Dehler 343",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781378416.0,
@@ -452,6 +564,8 @@ const boatDetails={
  "groensund:d0363810-4624-013f-2a0b-04421a259aad": {
   "skipper": "Henrik Jørgensen",
   "boatType": "XR 41",
+  "raceClassId": "d02eb5f0-4624-013f-2a04-04421a259aad",
+  "raceClassName": "Start 5 - Løb 10 Multi-Racing",
   "handicapSecondsPerNm": 504.4,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781295240.0,
@@ -460,6 +574,8 @@ const boatDetails={
  "groensund:cff0fff0-4624-013f-29cd-04421a259aad": {
   "skipper": "Anders Hansen",
   "boatType": "FIRST 36.7",
+  "raceClassId": "cfe57500-4624-013f-29c2-04421a259aad",
+  "raceClassName": "Start 4 - Løb 8 Multi-Racing",
   "handicapSecondsPerNm": 557.0,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781306385.0,
@@ -468,6 +584,8 @@ const boatDetails={
  "groensund:cf8e6940-4624-013f-2973-04421a259aad": {
   "skipper": "Janne Magnusson",
   "boatType": "Seascape 27",
+  "raceClassId": "cf865420-4624-013f-296b-04421a259aad",
+  "raceClassName": "Start 3 - Løb 5 Two-Racing",
   "handicapSecondsPerNm": 572.6,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781303562.0,
@@ -476,6 +594,8 @@ const boatDetails={
  "groensund:d00e2f90-4624-013f-29e6-04421a259aad": {
   "skipper": "Morten Munch",
   "boatType": "SCANDINAVIAN MATCH RACER",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 543.0,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781311688.0,
@@ -484,6 +604,8 @@ const boatDetails={
  "groensund:cf643a90-4624-013f-2949-04421a259aad": {
   "skipper": "Søren Johannesen",
   "boatType": "Delphia 37",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781344877.0,
@@ -492,6 +614,8 @@ const boatDetails={
  "groensund:cf86cb90-4624-013f-296c-04421a259aad": {
   "skipper": "Henrik Alstrøm",
   "boatType": "FIRST 27.7",
+  "raceClassId": "cf865420-4624-013f-296b-04421a259aad",
+  "raceClassName": "Start 3 - Løb 5 Two-Racing",
   "handicapSecondsPerNm": 615.8,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781342657.0,
@@ -500,6 +624,8 @@ const boatDetails={
  "groensund:cf6fb6c0-4624-013f-2954-04421a259aad": {
   "skipper": "Kenneth Bjergsted",
   "boatType": "Møn 341",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781328236.0,
@@ -508,6 +634,8 @@ const boatDetails={
  "groensund:cffc5650-4624-013f-29d6-04421a259aad": {
   "skipper": "Christian de Lichtenberg",
   "boatType": "X-362 SPORT",
+  "raceClassId": "cfe57500-4624-013f-29c2-04421a259aad",
+  "raceClassName": "Start 4 - Løb 8 Multi-Racing",
   "handicapSecondsPerNm": 551.6,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781305230.0,
@@ -516,6 +644,8 @@ const boatDetails={
  "groensund:cf552280-4624-013f-293b-04421a259aad": {
   "skipper": "Rasmus Højring",
   "boatType": "",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -524,6 +654,8 @@ const boatDetails={
  "groensund:ce9ba240-4624-013f-28b0-04421a259aad": {
   "skipper": "Rikard Roth",
   "boatType": "XP-44",
+  "raceClassId": "ce9ab120-4624-013f-28af-04421a259aad",
+  "raceClassName": "Start 1 - Løb 1 Single-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": 1781318984.0,
@@ -532,6 +664,8 @@ const boatDetails={
  "groensund:cef7b8f0-4624-013f-28fc-04421a259aad": {
   "skipper": "Ludvig Schrøder",
   "boatType": "SunFast 32",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -540,6 +674,8 @@ const boatDetails={
  "groensund:cee42c80-4624-013f-28e9-04421a259aad": {
   "skipper": "Kim Kristensen",
   "boatType": "Omega 42",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -548,6 +684,8 @@ const boatDetails={
  "groensund:ced44e40-4624-013f-28d9-04421a259aad": {
   "skipper": "Troels Engell",
   "boatType": "Bianca 107",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781357198.0,
@@ -556,6 +694,8 @@ const boatDetails={
  "groensund:cf123d90-4624-013f-2913-04421a259aad": {
   "skipper": "Rebekka Rudolph",
   "boatType": "Jeanneau sun magic",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781332928.0,
@@ -564,6 +704,8 @@ const boatDetails={
  "groensund:d0275120-4624-013f-29fd-04421a259aad": {
   "skipper": "Remi Provost",
   "boatType": "J 112",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 528.0,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781302201.0,
@@ -572,6 +714,8 @@ const boatDetails={
  "groensund:cedc3de0-4624-013f-28e1-04421a259aad": {
   "skipper": "Karl Friedrich Bachmann",
   "boatType": "Sloop, \"One off\"",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -580,6 +724,8 @@ const boatDetails={
  "groensund:cee02030-4624-013f-28e5-04421a259aad": {
   "skipper": "Jan Bisp",
   "boatType": "Banner 41 R",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781307142.0,
@@ -588,6 +734,8 @@ const boatDetails={
  "groensund:cfe976c0-4624-013f-29c6-04421a259aad": {
   "skipper": "Flemming Andersen",
   "boatType": "OMEGA 42",
+  "raceClassId": "cfe57500-4624-013f-29c2-04421a259aad",
+  "raceClassName": "Start 4 - Løb 8 Multi-Racing",
   "handicapSecondsPerNm": 561.0,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": 1781305881.0,
@@ -596,6 +744,8 @@ const boatDetails={
  "groensund:ceec1b50-4624-013f-28f1-04421a259aad": {
   "skipper": "Michael Jørgensen",
   "boatType": "Banholm 35",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -604,6 +754,8 @@ const boatDetails={
  "groensund:cef01130-4624-013f-28f5-04421a259aad": {
   "skipper": "Thomas Krarup",
   "boatType": "Luffe 40",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781320323.0,
@@ -612,6 +764,8 @@ const boatDetails={
  "groensund:cee826e0-4624-013f-28ed-04421a259aad": {
   "skipper": "Niels Stillhoff Nielsen",
   "boatType": "Bavaria 42",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781337967.0,
@@ -620,6 +774,8 @@ const boatDetails={
  "groensund:cf73a4d0-4624-013f-2958-04421a259aad": {
   "skipper": "Flemming Wiberg",
   "boatType": "Hanse 371",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781327623.0,
@@ -628,6 +784,8 @@ const boatDetails={
  "groensund:cf3c32b0-4624-013f-2925-04421a259aad": {
   "skipper": "Oliver Sellmann",
   "boatType": "Bavaria 34",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": null,
@@ -636,6 +794,8 @@ const boatDetails={
  "groensund:cef3cca0-4624-013f-28f8-04421a259aad": {
   "skipper": "Jan Møller",
   "boatType": "Frers 49'",
+  "raceClassId": "ced3d6c0-4624-013f-28d8-04421a259aad",
+  "raceClassName": "Start 2 - Løb 3 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781165700.0,
   "raceFinishTime": 1781295225.0,
@@ -644,6 +804,8 @@ const boatDetails={
  "groensund:cf92fb10-4624-013f-2977-04421a259aad": {
   "skipper": "Peder Edman",
   "boatType": "Seascape 27",
+  "raceClassId": "cf865420-4624-013f-296b-04421a259aad",
+  "raceClassName": "Start 3 - Løb 5 Two-Racing",
   "handicapSecondsPerNm": 568.6,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781308481.0,
@@ -652,6 +814,8 @@ const boatDetails={
  "groensund:cfc7fa20-4624-013f-29a7-04421a259aad": {
   "skipper": "Mads Bonde",
   "boatType": "X-99",
+  "raceClassId": "cfc77690-4624-013f-29a6-04421a259aad",
+  "raceClassName": "Start 4 - Løb 7 Multi-Racing",
   "handicapSecondsPerNm": 620.2,
   "raceStartTime": 1781167500.0,
   "raceFinishTime": null,
@@ -660,6 +824,8 @@ const boatDetails={
  "groensund:d02b1920-4624-013f-2a00-04421a259aad": {
   "skipper": "Lars Schmidt Larsen",
   "boatType": "MAX FUN 35",
+  "raceClassId": "d0031b00-4624-013f-29dc-04421a259aad",
+  "raceClassName": "Start 5 - Løb 9 Multi-Racing",
   "handicapSecondsPerNm": 518.8,
   "raceStartTime": 1781168400.0,
   "raceFinishTime": 1781305700.0,
@@ -668,6 +834,8 @@ const boatDetails={
  "boegestroemmen:cfaa12d0-4624-013f-298c-04421a259aad": {
   "skipper": "Sten Brogaard",
   "boatType": "BALLAD",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 636.6,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781361603.0,
@@ -676,6 +844,8 @@ const boatDetails={
  "boegestroemmen:ceb96650-4624-013f-28c1-04421a259aad": {
   "skipper": "Erik Svennevig",
   "boatType": "Sunwind 31",
+  "raceClassId": "ceaca2f0-4624-013f-28b8-04421a259aad",
+  "raceClassName": "Start 1 - Løb 2 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": 1781359624.0,
@@ -684,6 +854,8 @@ const boatDetails={
  "boegestroemmen:cfb55f60-4624-013f-2996-04421a259aad": {
   "skipper": "Jan Lauridsen",
   "boatType": "Scan-Kap 99",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 608.4,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781319756.0,
@@ -692,6 +864,8 @@ const boatDetails={
  "boegestroemmen:cfc41960-4624-013f-29a3-04421a259aad": {
   "skipper": "Jakob Iversen",
   "boatType": "DRABANT 38",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 572.6,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781309395.0,
@@ -700,6 +874,8 @@ const boatDetails={
  "boegestroemmen:cf0329b0-4624-013f-2906-04421a259aad": {
   "skipper": "Troels Wohlfeldt",
   "boatType": "Trio 92",
+  "raceClassId": "ceaca2f0-4624-013f-28b8-04421a259aad",
+  "raceClassName": "Start 1 - Løb 2 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": 1781338823.0,
@@ -708,6 +884,8 @@ const boatDetails={
  "boegestroemmen:cf7b28b0-4624-013f-295f-04421a259aad": {
   "skipper": "Simon Svenstrup",
   "boatType": "ALBIN NOVA",
+  "raceClassId": "cf7aa8e0-4624-013f-295e-04421a259aad",
+  "raceClassName": "Start 3 - Løb 4 Two-Racing",
   "handicapSecondsPerNm": 615.8,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781336817.0,
@@ -716,6 +894,8 @@ const boatDetails={
  "boegestroemmen:cfb16760-4624-013f-2992-04421a259aad": {
   "skipper": "Birk Münster-Swendsen",
   "boatType": "Aphrodite 101",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 610.8,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781308821.0,
@@ -724,6 +904,8 @@ const boatDetails={
  "boegestroemmen:cf7f0000-4624-013f-2963-04421a259aad": {
   "skipper": "Kasper Worsøe",
   "boatType": "X-372",
+  "raceClassId": "cf7aa8e0-4624-013f-295e-04421a259aad",
+  "raceClassName": "Start 3 - Løb 4 Two-Racing",
   "handicapSecondsPerNm": 560.0,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781321293.0,
@@ -732,6 +914,8 @@ const boatDetails={
  "boegestroemmen:cfa65dc0-4624-013f-2989-04421a259aad": {
   "skipper": "Ulf Brandt",
   "boatType": "EXPRESS",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 650.6,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781311598.0,
@@ -740,6 +924,8 @@ const boatDetails={
  "boegestroemmen:cfa2a780-4624-013f-2986-04421a259aad": {
   "skipper": "Emil Midé Erichsen",
   "boatType": "LYNÆS SENIOR",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 788.2,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": null,
@@ -748,6 +934,8 @@ const boatDetails={
  "boegestroemmen:cfadb6a0-4624-013f-298f-04421a259aad": {
   "skipper": "Per Rosenkilde",
   "boatType": "MAMBA 31/311",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 634.2,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781344022.0,
@@ -756,6 +944,8 @@ const boatDetails={
  "boegestroemmen:cfb90450-4624-013f-2999-04421a259aad": {
   "skipper": "Michael Frank Hansen",
   "boatType": "BB 10 METER",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 598.0,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781306244.0,
@@ -764,6 +954,8 @@ const boatDetails={
  "boegestroemmen:cfbca5e0-4624-013f-299c-04421a259aad": {
   "skipper": "Lars Schaldemose",
   "boatType": "BB 10 METER",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 597.4,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781305741.0,
@@ -772,6 +964,8 @@ const boatDetails={
  "boegestroemmen:cf82ce40-4624-013f-2967-04421a259aad": {
   "skipper": "Erik Hechmann",
   "boatType": "HR 31/310",
+  "raceClassId": "cf7aa8e0-4624-013f-295e-04421a259aad",
+  "raceClassName": "Start 3 - Løb 4 Two-Racing",
   "handicapSecondsPerNm": 647.4,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781361034.0,
@@ -780,6 +974,8 @@ const boatDetails={
  "boegestroemmen:cead8140-4624-013f-28b9-04421a259aad": {
   "skipper": "Folmer Teilmann",
   "boatType": "Kosterbåd/spidsgatter",
+  "raceClassId": "ceaca2f0-4624-013f-28b8-04421a259aad",
+  "raceClassName": "Start 1 - Løb 2 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": 1781346882.0,
@@ -788,6 +984,8 @@ const boatDetails={
  "boegestroemmen:cec0e510-4624-013f-28c7-04421a259aad": {
   "skipper": "Frank Maar",
   "boatType": "Mamba 29",
+  "raceClassId": "ceaca2f0-4624-013f-28b8-04421a259aad",
+  "raceClassName": "Start 1 - Løb 2 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": null,
@@ -796,6 +994,8 @@ const boatDetails={
  "boegestroemmen:cebd1f50-4624-013f-28c4-04421a259aad": {
   "skipper": "Olivier Plas",
   "boatType": "Najad 340",
+  "raceClassId": "ceaca2f0-4624-013f-28b8-04421a259aad",
+  "raceClassName": "Start 1 - Løb 2 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": 1781349921.0,
@@ -804,6 +1004,8 @@ const boatDetails={
  "boegestroemmen:cec4e3f0-4624-013f-28cb-04421a259aad": {
   "skipper": "Mikkel Walmod Hyttel",
   "boatType": "Solus 29",
+  "raceClassId": "ceaca2f0-4624-013f-28b8-04421a259aad",
+  "raceClassName": "Start 1 - Løb 2 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": 1781367171.0,
@@ -812,6 +1014,8 @@ const boatDetails={
  "boegestroemmen:cec8a9f0-4624-013f-28ce-04421a259aad": {
   "skipper": "Claus Rørbech",
   "boatType": "Hunter 33",
+  "raceClassId": "ceaca2f0-4624-013f-28b8-04421a259aad",
+  "raceClassName": "Start 1 - Løb 2 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": null,
@@ -820,6 +1024,8 @@ const boatDetails={
  "boegestroemmen:cea4f9c0-4624-013f-28b4-04421a259aad": {
   "skipper": "David Ipsen",
   "boatType": "Luffe 37",
+  "raceClassId": "ce9ab120-4624-013f-28af-04421a259aad",
+  "raceClassName": "Start 1 - Løb 1 Single-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": null,
@@ -828,6 +1034,8 @@ const boatDetails={
  "boegestroemmen:cfc03600-4624-013f-299f-04421a259aad": {
   "skipper": "Jonas Mathiasen",
   "boatType": "J 80",
+  "raceClassId": "cfa231e0-4624-013f-2985-04421a259aad",
+  "raceClassName": "Start 3 - Løb 6 Multi-Racing",
   "handicapSecondsPerNm": 595.4,
   "raceStartTime": 1781166600.0,
   "raceFinishTime": 1781318111.0,
@@ -836,6 +1044,8 @@ const boatDetails={
  "boegestroemmen:cecc9650-4624-013f-28d2-04421a259aad": {
   "skipper": "Kent Nielsen",
   "boatType": "Bianca 27",
+  "raceClassId": "ceaca2f0-4624-013f-28b8-04421a259aad",
+  "raceClassName": "Start 1 - Løb 2 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": null,
@@ -844,6 +1054,8 @@ const boatDetails={
  "boegestroemmen:ced053c0-4624-013f-28d5-04421a259aad": {
   "skipper": "August Taankvist",
   "boatType": "",
+  "raceClassId": "ceaca2f0-4624-013f-28b8-04421a259aad",
+  "raceClassName": "Start 1 - Løb 2 Two/Multi-Cruising",
   "handicapSecondsPerNm": 100.0,
   "raceStartTime": 1781164800.0,
   "raceFinishTime": 1781349652.0,

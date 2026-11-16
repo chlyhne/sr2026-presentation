@@ -73,8 +73,13 @@ try{
  const stored=localStorage.getItem(TRACK_LENGTH_KEY);
  if(stored!==null){const value=JSON.parse(stored);if(!TRACK_LENGTHS.has(value))throw Error('Ugyldig sporlængde.');trackLengthSeconds=value;}
 }catch(error){comparisonMessage('Sporlængde kunne ikke indlæses: '+error.message);}
-const rhumbRoute=buildRhumbRoute(window.SR_RHUMBLINE.points);
-if(comparison.enabled&&!rhumbRoute.legs.length){comparison.enabled=false;comparisonMessage('Den permanente rhumbline er endnu ikke defineret.');}
+const courseRhumbRoutes=Object.fromEntries(Object.entries(window.SR_RHUMBLINES).map(([course,definition])=>[course,buildRhumbRoute(definition.points)]));
+let rhumbRoute=courseRhumbRoutes[referenceBoat().course];
+function syncComparisonRoute(){
+ rhumbRoute=courseRhumbRoutes[referenceBoat().course];
+ comparisonMessage(rhumbRoute.legs.length?'':'Rhumbline for '+BOAT_COURSE_NAMES[referenceBoat().course]+' er endnu ikke defineret.');
+}
+syncComparisonRoute();
 function referenceAtProgress(progress,stations=trackProfileCache.get(referenceBoat()?.points)?.stations){
  if(!stations)throw Error('Referencebådens sporprofil er ikke forberedt.');
  return referenceProfileAtProgress(progress,stations);
@@ -123,10 +128,11 @@ function saveReferenceBoat(id){
   try{localStorage.setItem(REFERENCE_BOAT_KEY,id);}
   catch{comparisonMessage('Referencebåden kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
   referenceBoatId=id;comparisonRevision++;
+  syncComparisonRoute();
   clearTrackHover();
   try{webglTracks.prepareComparison();}
   catch(error){webglTracks.fail(error);comparisonMessage(error.message);return false;}
-  comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
+  syncComparisonRoute();syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
  });
 }
 function trackGainColour(value,limit=TRACK_GAIN_LIMIT){
@@ -141,7 +147,7 @@ function saveComparison(next){
  return changeEventConfiguration(()=>{
   if(handicapTracksEnabled){comparisonMessage('Handicapkompenseret spor bruger bådfarver.');syncNavigationControls();return false;}
   if(!validComparison(next)){comparisonMessage('Ugyldigt sammenligningsvalg.');return false;}
-  if(next.enabled&&!rhumbRoute.legs.length){comparisonMessage('Den permanente rhumbline er endnu ikke defineret.');return false;}
+  if(next.enabled&&!rhumbRoute.legs.length){syncComparisonRoute();syncNavigationControls();return false;}
   try{localStorage.setItem(TRACK_COMPARISON_KEY,JSON.stringify(next));}
   catch{comparisonMessage('Sammenligningsvalget kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
   comparison=next;
@@ -150,6 +156,8 @@ function saveComparison(next){
 }
 function syncNavigationControls(){
  syncReferenceBoatControls();
+ $('referenceBoat').title='Rhumbline: '+BOAT_COURSE_NAMES[referenceBoat().course]+(rhumbRoute.legs.length?'':' · endnu ikke tegnet');
+ for(const basis of ['absolute','handicap','time'])$('trackStyle').querySelector(`option[value="${basis}"]`).disabled=!rhumbRoute.legs.length;
  $('trackStyle').value=trackUsesBoatColour()?'boat':comparison.enabled?comparison.basis:'speed';
  $('trackStyle').disabled=handicapTracksEnabled;$('trackLength').value=String(trackLengthSeconds);
  $('trackLengthSummary').textContent=trackLengthSeconds?`Spor: seneste ${$('trackLength').selectedOptions[0].textContent}`:'Spor: hele forløbet';
