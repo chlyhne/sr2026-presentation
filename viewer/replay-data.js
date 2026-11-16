@@ -15,7 +15,7 @@ async function loadReplayData(){
  const response=await fetch('track-profiles/manifest.json',{cache:'no-store'});
  if(!response.ok)fail('manifest ('+response.status+').');
  const manifest=await response.json();
- if(manifest?.version!==11||manifest.replayEncoding!=='source-integers-xor-byteplanes-v1'
+ if(manifest?.version!==12||manifest.replayEncoding!=='source-integers-xor-byteplanes-v1'
   ||manifest.compression!=='gzip'||manifest.coordinateScale!==1e7||manifest.speedScaleKmh!==10||manifest.sourcePointBytes!==SOURCE_POINT_BYTES
   ||manifest.byteOrder!=='little-endian'||!/^[a-f0-9]{64}$/.test(manifest.sourceFingerprint)
   ||manifest.dataFile!==`track-profiles/${manifest.sourceFingerprint}/data.json.gz`
@@ -23,7 +23,7 @@ async function loadReplayData(){
   ||!Number.isSafeInteger(manifest.dataBytes)||manifest.dataBytes<=0
   ||!Number.isFinite(manifest.start)
   ||!Number.isSafeInteger(manifest.replayBytes)||manifest.replayBytes<0||!Array.isArray(manifest.boats))fail('ugyldigt manifest. Genbyg dataene.');
- if(manifest.prepared?.version!==3)fail('færdige sporfiler mangler. Genbyg siden.');
+ if(manifest.prepared?.version!==4)fail('færdige sporfiler mangler. Genbyg siden.');
  validatePreparedAsset(manifest.prepared.common,manifest.sourceFingerprint);
  const [dataBytes,source,commonBytes]=await Promise.all([
   fetchReplayGzip(manifest.dataFile,manifest.dataBytes),fetchReplayGzip(manifest.replayFile,manifest.replayBytes),fetchReplayGzip(manifest.prepared.common.file,manifest.prepared.common.bytes)
@@ -49,6 +49,8 @@ async function loadReplayData(){
   for(const point of raw.points){if(!segments.length||point[2]-segments.at(-1)[1]>TRACK_MAX_GAP)segments.push([point[2],point[2]]);else segments.at(-1)[1]=point[2];}
   if(JSON.stringify(segments)!==JSON.stringify(boat.trackSegments))fail('kildedata stemmer ikke med sporsegmenterne.');
   if(!common.has(boat.id))fail('manglende stationsprofil.');
+  const arrays=common.get(boat.id).arrays;
+  for(const course of ['groensund','boegestroemmen'])arrays[course+'_timeSamples']=restoreTrackTimeSamples(arrays[course+'_samples']);
   getTrackModel(raw.points);prepareTrackTimeIndex(raw.points);
   prepared.push({...boat,...raw});
  }

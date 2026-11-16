@@ -3,7 +3,7 @@ class TrackFiles {
  constructor(simple=false){this.simple=simple;this.reads=0;}
  async open(){
   this.manifest=window.SR_TRACK_MANIFEST?.prepared;
-  if(this.manifest?.version!==3||!Array.isArray(this.manifest.handicaps)||!window.SR_PREPARED_COMMON)throw Error('De nye sporprofiler mangler. Genbyg siden.');
+  if(this.manifest?.version!==4||!Array.isArray(this.manifest.handicaps)||!window.SR_PREPARED_COMMON)throw Error('De nye sporprofiler mangler. Genbyg siden.');
   for(const [course,definition] of Object.entries(window.SR_RHUMBLINES)){
    if(JSON.stringify(this.manifest.routePoints[course])!==JSON.stringify(definition.points))throw Error('Sporprofilerne matcher ikke rhumblinen for '+course+'.');
   }

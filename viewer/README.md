@@ -1262,7 +1262,9 @@ gzip eller GPU vises tydeligt uden fallback.
 
 [`prepare_track_profiles.cjs`](../scripts/prepare_track_profiles.cjs) beregner
 ruteprojektioner og stationsprofiler med [`track-preparation-math.js`](./track-preparation-math.js)
-under build. Profiler gemmes én gang pr. båd og bane. Der gemmes hverken
+under build. Profiler gemmes én gang pr. båd og bane med tabsfri XOR-kodning pr. kanal, byteplaner
+og gzip. Sample-tidsopslag gendannes én gang ved indlæsning fra VMG; stationsprofilernes
+summerede tidsforbrug bevares separat. Der gemmes hverken
 geometri, kurvehældninger, tidsindeks eller referencefarver for alle bådpar.
 [`track-local-data.js`](./track-local-data.js) danner den billige geometri og
 fartbuffer ved opstart; PCHIP-hældninger og tidsindeks beregnes én gang fra kilden.
@@ -1301,7 +1303,9 @@ download, nye profilberegninger eller upload af faste data. CPU-annotationer
 beregner kun de få efterspurgte sammenligningsværdier ved samme stationsopslag.
 Der er ingen kvadratisk samling af bådpar; build, filer og hukommelse er lineære
 ved fast sporlængde og antal baner. Frisk lokal Firefox-opstart på PC henter
-65,37 MB mod tidligere 93,65 MB. Den fælles profilfil udgør fortsat 61,46 MB.
+42,49 MB mod 65,37 MB før den nye profilkodning (oprindeligt 93,65 MB). Den fælles
+profilfil udgør 38,58 MB. Dens codec er bytepræcis; gendannet sample-tid afviger
+højst cirka 1,20e-7 relativt på det aktuelle datasæt på grund af Float32-afrunding.
 Bådvalg, zoom og afspilning genberegner eller uploader ingen faste data.
 Ved tab af WebGL-konteksten genopbygges samme nominelle vej, og GPU-fejl vises tydeligt.
 Referencebådens spor bruger bådens egen farve med 18 % opacitet i sammenligningsvisningerne

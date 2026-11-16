@@ -14,7 +14,7 @@ function sourceState(){
 function currentManifest(state){
  if(!fs.existsSync(MANIFEST))return null;
  let m;try{m=JSON.parse(fs.readFileSync(MANIFEST,'utf8'));}catch(error){if(error instanceof SyntaxError)return null;throw error;}
- if(m?.version!==11||m.sourceFingerprint!==state.sourceFingerprint||m.replayEncoding!=='source-integers-xor-byteplanes-v1'||m.compression!=='gzip'||m.coordinateScale!==1e7||m.speedScaleKmh!==10||m.sourcePointBytes!==18||m.byteOrder!=='little-endian'||!Array.isArray(m.boats)||m.prepared?.version!==3)return null;
+ if(m?.version!==12||m.sourceFingerprint!==state.sourceFingerprint||m.replayEncoding!=='source-integers-xor-byteplanes-v1'||m.compression!=='gzip'||m.coordinateScale!==1e7||m.speedScaleKmh!==10||m.sourcePointBytes!==18||m.byteOrder!=='little-endian'||!Array.isArray(m.boats)||m.prepared?.version!==4)return null;
  const prefix='track-profiles/'+state.sourceFingerprint+'/';
  if(m.replayFile!==prefix+'source.bin.gz'||m.dataFile!==prefix+'data.json.gz'||!Number.isSafeInteger(m.dataBytes)||m.dataBytes<=0||!Number.isSafeInteger(m.dataCompressedBytes)||m.dataCompressedBytes<=0||!fs.existsSync(path.join(ROOT,'viewer',m.dataFile))||fs.statSync(path.join(ROOT,'viewer',m.dataFile)).size!==m.dataCompressedBytes)return null;
  const ids=new Set();let offset=0;
@@ -69,8 +69,8 @@ function prepareArtifacts(context,native,prefix,start){
   for(const result of Object.values(byCourse)){result.geometry=null;result.lineGeometry=null;result.caps=null;result.knots=null;result.profile=null;result.speed=null;result.bounds=null;}
   if((index+1)%10===0||index+1===native.length)console.log('Prepared source tracks '+(index+1)+'/'+native.length);
  }
- const common=asset('common','common',prepared.map(p=>({id:p.id,arrays:Object.fromEntries(Object.entries(p.byCourse).flatMap(([course,result])=>Object.entries(result.mirror).map(([name,value])=>[course+'_'+name,value])))})));
- const result={version:3,routePoints,handicaps:prepared.map(p=>({id:p.id,value:p.handicap})),common};
+ const common=asset('common','common',prepared.map(p=>({id:p.id,arrays:Object.fromEntries(Object.entries(p.byCourse).flatMap(([course,result])=>Object.entries(result.mirror).filter(([name])=>name!=='timeSamples').map(([name,value])=>[course+'_'+name,value])))})));
+ const result={version:4,routePoints,handicaps:prepared.map(p=>({id:p.id,value:p.handicap})),common};
  console.log('Prepared profiles: '+(common.compressedBytes/1048576).toFixed(1)+' MiB; no pairwise reference files');
  return result;
 }
@@ -91,7 +91,7 @@ function generate({ifStale=false}={}){
  const data=Buffer.from(JSON.stringify({...D,boats:metadata})),compressedData=gzip(data);
  writeAtomic(path.join(ROOT,'viewer',replayFile),compressed);writeAtomic(path.join(ROOT,'viewer',dataFile),compressedData);
  const prepared=prepareArtifacts(context,native,prefix,D.start);
- const manifest={prepared,version:11,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:state.sourceFingerprint,sources:state.sources,start:D.start,dataFile,dataBytes:data.byteLength,dataCompressedBytes:compressedData.byteLength,replayFile,replayBytes:offset,replayCompressedBytes:compressed.byteLength,boats:entries};
+ const manifest={prepared,version:12,replayEncoding:'source-integers-xor-byteplanes-v1',compression:'gzip',coordinateScale:1e7,speedScaleKmh:10,sourcePointBytes:18,byteOrder:'little-endian',sourceFingerprint:state.sourceFingerprint,sources:state.sources,start:D.start,dataFile,dataBytes:data.byteLength,dataCompressedBytes:compressedData.byteLength,replayFile,replayBytes:offset,replayCompressedBytes:compressed.byteLength,boats:entries};
  if(sourceState().sourceFingerprint!==state.sourceFingerprint)throw Error('Sources changed during preparation; rebuild before publishing.');
  writeAtomic(MANIFEST,JSON.stringify(manifest,null,2)+'\n');
  console.log(`Source data: ${native.length} boats, ${entries.reduce((n,b)=>n+b.pointCount,0)} original points, ${compressed.byteLength} gzip bytes, ${((performance.now()-started)/1000).toFixed(2)} s`);return manifest;

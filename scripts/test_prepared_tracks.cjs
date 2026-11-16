@@ -24,3 +24,14 @@ test('prepared asset paths are bound to the exact source fingerprint',()=>{
  context.validatePreparedAsset(asset,fingerprint);
  for(const value of [{...asset,file:'track-profiles/'+fingerprint+'/../common.bin.gz'},{...asset,bytes:-1},{...asset,file:asset.file.replace(fingerprint,'b'.repeat(64))}])assert.throws(()=>context.validatePreparedAsset(value,fingerprint));
 });
+
+test('XOR byte planes preserve interleaved lanes and exact NaN payload bits',()=>{
+ const words=new Uint32Array([0x7fc00012,0x80000000,0x3f800000,0xffc00034,0,0x3f800001]),samples=new Float32Array(words.buffer);
+ const packed=api.packPreparedTracks('common',[{id:'one',arrays:{groensund_samples:samples,empty:new Uint32Array()}}]);
+ const header=JSON.parse(new TextDecoder().decode(packed.subarray(4,4+new DataView(packed.buffer).getUint32(0,true))));
+ assert.equal(header.version,2);assert.equal(header.encoding,'xor-byteplanes-v1');assert.equal(header.entries[0].arrays.groensund_samples.lanes,3);
+ const decoded=api.unpackPreparedTracks(packed.buffer,'common').get('one').arrays;
+ assert.deepEqual(Buffer.from(decoded.groensund_samples.buffer,decoded.groensund_samples.byteOffset,decoded.groensund_samples.byteLength),Buffer.from(words.buffer));
+ assert.equal(decoded.empty.length,0);
+ assert.throws(()=>api.packPreparedTracks('common',[{id:'bad',arrays:{groensund_samples:new Float32Array(2)}}]),/lane/);
+});

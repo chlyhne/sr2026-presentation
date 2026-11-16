@@ -47,7 +47,7 @@ kontrol. GitHub Actions cacher kildepakken under generatorens SHA-256-fingeraftr
 
 Kort- og vejrmetadata hentes som `data.json.gz` og pakkes ud i browseren, ligesom spordata. Det sikrer gzip ved både lokal visning og statisk hosting.
 
-Manifestversion 11 hentes med `cache: 'no-store'` og angiver metadata (`dataFile`),
+Manifestversion 12 hentes med `cache: 'no-store'` og angiver metadata (`dataFile`),
 kildepakken (`replayFile`), kildefingeraftryk og hver båds ID, originale punktantal
 og `sourceOffset`. Filnavne indeholder fingeraftrykket. Browseren kontrollerer
 format, offset, filstørrelse, ID'er, tidsrækkefølge og segmentgrænser, før data frigives.
@@ -63,7 +63,13 @@ Den oprindelige `data.js` bruges kun offline og publiceres ikke med Pages.
 
 Buildet beregner de tunge ruteprojektioner og stationsprofiler med
 [fælles matematik](viewer/track-preparation-math.js). Hver båds fart- og tidsprofil
-gemmes én gang pr. bane. Der bygges ingen filer for par af både.
+gemmes én gang pr. bane. Der bygges ingen filer for par af både. Profilfilen
+XOR-koder på hinanden følgende ord pr. kanal, opdeler i byteplaner og gzip-komprimerer.
+Kodningen bevarer de lagrede Float32-bytes tabsfrit, inklusive overflowmarkører.
+Sample-opslagets tidsforbrug og stationsnummer sendes ikke dobbelt: klienten
+gendanner dem fra VMG som `3600/(1852*abs(VMG))` med eksplicit nul/manglende-håndtering.
+Det gendannede tidsforbrug kan afvige med Float32-afrunding. Stationsprofilernes
+summerede tidsforbrug over flere passager bevares som selvstændige data.
 Browseren beregner PCHIP-hældninger, tidsindeks, geometri og fartbuffer én gang ved
 opstart med [lokal klargøring](viewer/track-local-data.js). Hældninger beregnes i
 Float64 før geometrien pakkes til Float32. De native kildeheltal bevares tabsfrit.
@@ -81,11 +87,18 @@ og antal baner. Desktop viser kurver; iPhone viser enkle streger.
 indtil kildedata, matematik, rhumbline eller handicapdata ændres. Manglende eller
 ugyldige profiler giver en synlig fejl uden alternativ beregningsvej.
 
-Frisk lokal Firefox-opstart på PC henter ca. 65,37 MB mod tidligere 93,65 MB.
-Heraf er stationsprofiler 61,46 MB, kildepakken 2,62 MB og kort/metadata 0,82 MB.
-De tre datapakker fylder samlet 64,90 MB; resten er manifest, kode og øvrige
-ressourcer. Filerne har fingerprintede URL'er og kan caches. Der bruges ingen
-worker eller IndexedDB. Bådvalg, kamera og afspilning genbruger faste GPU-data.
+Frisk lokal Firefox-opstart på PC henter ca. 42,49 MB mod 65,37 MB før XOR/byteplaner
+og gendannelse af tidsopslag (oprindeligt 93,65 MB før lokal geometri og GPU-sammenligning).
+Heraf er stationsprofiler og sampleopslag 38,58 MB, kildepakken 2,62 MB og kort/metadata
+0,82 MB; resten er manifest, kode og øvrige ressourcer. Filerne har fingerprintede URL'er
+og kan caches. Der bruges ingen worker eller IndexedDB. Bådvalg, kamera og afspilning
+genbruger faste GPU-data.
+
+Forsøget med tidsopslag fjernet gav 56,55 MB med almindelig gzip, 41,28 MB med
+byteplaner og 38,58 MB med XOR + byteplaner. XOR-udpakning tog ca. 0,18 sekund i Node
+på lokal PC. Alle 636 overførte arrays blev kontrolleret bytepræcist mod de tidligere
+profiler. Gendannede tidsopslag blev kontrolleret på hele feltet med højst 1,20e-7
+relativ afvigelse og uændrede stationer, manglende værdier og overflowmarkører.
 
 Tidsprofiler summerer frem- og tilbagepassager efter dækket længde pr. station.
 Manglende værdier markeres med `-1e20`, og uendeligt tidsforbrug repræsenteres af

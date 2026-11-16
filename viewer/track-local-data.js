@@ -47,3 +47,15 @@ function trackComparisonAt(own,reference,index,handicap,referenceHandicap){
  if(timeStation>=0&&cost>=0&&time>=0&&!(cost>=infinity&&time>=infinity))values[2]=100*(time-cost);
  return values;
 }
+
+// Time density at a source knot is a reciprocal of its VMG; no route work.
+function restoreTrackTimeSamples(samples){
+ if(!(samples instanceof Float32Array)||samples.length%3)throw Error('Ugyldige VMG-opslag.');
+ const result=new Float32Array(samples.length/3*2),infinity=Math.fround(1e15);
+ for(let i=0;i<samples.length/3;i++){
+  const station=samples[i*3],vmg=samples[i*3+2],valid=station>=0&&vmg>-1e19;
+  result[i*2]=valid?station:-1;
+  result[i*2+1]=valid?(vmg===0?infinity:Math.min(infinity,3600/(1852*Math.abs(vmg)))):-1e20;
+ }
+ return result;
+}
