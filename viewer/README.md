@@ -24,14 +24,14 @@ python3 scripts/serve_viewer.py
   redigér og fuld skærm.
 - **Lag → Grid** viser et antialiaseret afstandsgrid oven på kortbaggrunden,
   under sporene. Afstanden skifter automatisk mellem **15 sømil, 5 sømil,
-  2 sømil, 1 sømil, 400 m og 100 m**, så cellerne normalt er mindst 80 skærmpixel brede.
+  2 sømil, 1 sømil, 0,5 sømil, 400 m, 200 m og 100 m**, så cellerne normalt er mindst 80 skærmpixel brede.
   Den aktuelle afstand vises i lagmenuen, og lagets tilstand gemmes med eventet.
   Grid er forankret ved 55° N, 12° Ø; afstandene er kalibreret ved 55° N
   i kortets eksisterende længde-/breddegradsprojektion.
 - Nederst til venstre vises en målestok i sømil eller meter. Den flyttes lige til højre for bådlisten,
   hvis bådlisten overlapper dens plads. Målestokken vises også, når grid er slået
-  fra. Den viser altid gridets aktuelle afstand, og stregen svarer til bredden
-  af én gridcelle på kortet.
+  fra. Den følger gridets afstandstrin og fortsætter ved tæt zoom med
+  **50, 20, 10, 5, 2 og 1 meter**; gridets mindste afstand er fortsat 100 m.
 - **Start præsentation** skjuler indstillinger. Kortet står til venstre, og det
   valgte events tekst og eventuelle billede vises i panelet til højre.
   På smalle skærme ligger eventpanelet under kortet og kan rulles.
@@ -145,7 +145,7 @@ python3 scripts/serve_viewer.py
 - Playbaren har den klassiske rækkefølge `|<` · `<<` · `>`/`||` · `>>` · `>|`:
   Forrige event, lavere hastighed, afspil/pause, højere hastighed og næste event.
   `<<` og `>>` vælger ét niveau ad gangen blandt 1×, 2×, 5×, 10×, 20×, 100×,
-  200× og 400×. Standardhastigheden er 100×. Begge knapper starter også
+  200×, 400× og 1000×. Standardhastigheden er 100×. Begge knapper starter også
   afspilningen, hvis den er pauset; der afspilles altid fremad. Knapperne deaktiveres ved laveste/højeste niveau. Hastighedsvælgeren
   viser det aktuelle niveau. Eventlisten ligger fortsat under eventpanelet.
 - Den samlede tidsperiode udledes af hele spordatasættet med margen før start
@@ -164,7 +164,7 @@ python3 scripts/serve_viewer.py
   inklusive målophold, uafhængigt af bådfilteret.
 - Tiden kan flyttes i **1-sekunds trin** med skyderen eller piletasterne.
   Shift+piletast flytter 1 minut. Afspilning opdaterer 20 gange pr. sekund og kan køre med 1×, 2×, 5×, 10×,
-  20×, 100×, 200× eller 400×. Ved 1× svarer ét sekund til ét sekund i sejladsen.
+  20×, 100×, 200×, 400× eller 1000×. Ved 1× svarer ét sekund til ét sekund i sejladsen.
   Bådpositionerne interpoleres også mellem hele sekunder under afspilning.
   Piletaster på selve skyderen snapper ikke, så du kan flytte
   tiden væk fra et event i små trin. Piletaster uden for skyderen skifter events

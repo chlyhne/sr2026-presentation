@@ -1,14 +1,17 @@
 // The sole background renderer:
 // wind texture -> land triangles -> radar texture -> coastline triangles.
 const MAP_GRID_LEVELS=[{meters:15*1852,label:'15 sømil'},{meters:5*1852,label:'5 sømil'},
- {meters:2*1852,label:'2 sømil'},{meters:1852,label:'1 sømil'},{meters:400,label:'400 m'},{meters:100,label:'100 m'}];
+ {meters:2*1852,label:'2 sømil'},{meters:1852,label:'1 sømil'},{meters:.5*1852,label:'0,5 sømil'},{meters:400,label:'400 m'},{meters:200,label:'200 m'},{meters:100,label:'100 m'}];
+const MAP_SCALE_LEVELS=[...MAP_GRID_LEVELS,...[50,20,10,5,2,1].map(meters=>({meters,label:`${meters} m`}))];
 const MAP_GRID_METERS_PER_DEGREE=6371000*Math.PI/180;
 const MAP_GRID_UNITS_PER_METER=[1000/(4.5*MAP_GRID_METERS_PER_DEGREE*Math.cos(55*Math.PI/180)),1180/(3*MAP_GRID_METERS_PER_DEGREE)];
-function mapGridLevel(viewport){
+function mapDistanceLevel(viewport,levels){
  const {matrix}=viewport;
  const pixelsPerMeter=Math.min(Math.hypot(matrix.a,matrix.b)*MAP_GRID_UNITS_PER_METER[0],Math.hypot(matrix.c,matrix.d)*MAP_GRID_UNITS_PER_METER[1]);
- return [...MAP_GRID_LEVELS].reverse().find(level=>level.meters*pixelsPerMeter>=80)||MAP_GRID_LEVELS[0];
+ return [...levels].reverse().find(level=>level.meters*pixelsPerMeter>=80)||levels[0];
 }
+function mapGridLevel(viewport){return mapDistanceLevel(viewport,MAP_GRID_LEVELS);}
+function mapScaleLevel(viewport){return mapDistanceLevel(viewport,MAP_SCALE_LEVELS);}
 function prepareBackgroundGeometry(polygons,chunks){
  const landCount=polygons.reduce((n,p)=>n+p.rings.reduce((s,r)=>s+r.length,0),0);
  const holeCount=polygons.reduce((n,p)=>n+p.rings.length-1,0);

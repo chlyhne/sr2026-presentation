@@ -83,7 +83,7 @@ function renderMapCredit(){
  const viewport=mapViewport();if(!viewport||mapCreditKey===viewport.key)return;
  mapCreditKey=viewport.key;renderTrackSpeedLegend();
  const {rect,matrix,inverse}=viewport,point=new DOMPoint(rect.right-8,rect.bottom-8).matrixTransform(inverse);
- const {meters,label}=mapGridLevel(viewport),width=meters*MAP_GRID_UNITS_PER_METER[0]*Math.hypot(matrix.a,matrix.b);
+ const {meters,label}=mapScaleLevel(viewport),width=meters*MAP_GRID_UNITS_PER_METER[0]*Math.hypot(matrix.a,matrix.b);
  if(!mapCreditNodes){
   const group=screenGroup(point.x,point.y,$('mapCredit'));
   const scale=el('g',{'data-map-scale':'',role:'img'},group);
