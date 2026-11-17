@@ -10,6 +10,13 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 
 ## Åbne punkter
 
+### UI-06 — SOG-sammenligning i browseren
+
+- **Område:** [sammenligningspanel](./viewer/boat-compare.js).
+- **Udskudt:** Visuel kontrol af panel, farver og gateforløb i lokal Firefox samt øvrige sportyper efter aftale.
+- **Konsekvens/usikkerhed:** Fart over 20 knob samles ved skalaens højre kant; tempo over 7200 sekunder pr. sømil vises ikke. Gateafgrænsningen af rhumbline-stationer er ikke browserkontrolleret. Browserforløbet er endnu ikke kontrolleret.
+- **Færdig når:** Panel og gateafgrænsning er visuelt kontrolleret, og eventuelle øvrige målinger er afklaret.
+
 ### DATA-02 — Undgå genberegning af sporprofiler ved rene kortændringer
 
 - **Område:** [buildets fingerprint](./scripts/prepare_track_profiles.cjs) og kortdata i den fælles datapakke.

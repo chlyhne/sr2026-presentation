@@ -125,6 +125,7 @@
     <label title="Afstandsgrid tilpasset kortets zoom"><input id="grid" type="checkbox" checked> Grid <span id="gridSpacing"></span></label>
   </div>
 </section>
+<button id="boatCompareToggle" type="button" aria-label="Sammenlign både" title="Sammenlign både" aria-expanded="false" aria-controls="boatComparePanel">A/B</button>
 <button id="eventPanelToggle" type="button" aria-label="Vis eventpanel" title="Vis eventpanel" aria-expanded="false" aria-controls="eventPanel presentationFooter"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5.5C9 3.5 5.5 3.5 2 4.5v15c3.5-1 7-1 10 1 3-2 6.5-2 10-1v-15c-3.5-1-7-1-10 1Z"/><path d="M12 5.5v15M5 8l4 .5M5 12l4 .5m6-4 4-.5m-4 4.5 4-.5"/></svg></button>
 <p id="comparisonStatus" role="status" hidden></p>
 <p id="trackDataStatus" role="status" hidden></p>
@@ -162,6 +163,7 @@
   </div>
 </section>
 
+<section id="boatComparePanel" aria-label="Sammenlign både" hidden><h2>Sammenlign både</h2><label for="boatCompareReference">Referencebåd</label><select id="boatCompareReference"><option value="">Ingen referencebåd</option></select><label for="boatCompareMetric">Måling</label><select id="boatCompareMetric"><option value="speed">Hastighed · knob</option><option value="pace">Tempo · sekunder pr. sømil</option></select><button id="boatCompareResetZoom" type="button" title="Vis hele skalaen" hidden>1:1</button><p id="boatCompareScope"></p><div id="boatComparePlots"></div></section>
 <section id="eventPanel" aria-label="Valgt event">
   <div class="event-summary" aria-live="polite" aria-atomic="true">
     <div class="event-meta"><span id="eventCounter"></span><time id="eventTime"></time></div>

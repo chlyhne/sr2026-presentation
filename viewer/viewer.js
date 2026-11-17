@@ -313,6 +313,7 @@ function drawMap(){if(hasRenderingFailure())return;const t=currentTime();$('cloc
  renderTracks(t,{includeSpeedPins:false});
  renderAnnotations();
  renderNavigation();
+ if(!SIMPLE_IPHONE_TRACKS)renderBoatCompare();
  renderMapCredit();
 }
 function drawViewport(){

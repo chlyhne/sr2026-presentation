@@ -3,7 +3,8 @@ const context=vm.createContext({window:{},$:()=>({addEventListener(){}})});
 vm.runInContext(`const D={start:0,end:10000},boats=[],ghostClocks=new Map();
 function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>=b.south&&a.south<=b.north;}
 function eventToolPoints(note,field,count){const p=note[field]??[];if(![0,count].includes(p.length))throw Error('Invalid gate');return p;}
-function displayedTrackTime(boat,time){return time;}`,context);
+function displayedTrackTime(boat,time){return time;}
+function prepareBoatCompareGates(){}`,context);
 for(const file of ['track-time','tracks','rhumbline-geometry','timeline','gate-timing'])vm.runInContext(fs.readFileSync('viewer/'+file+'.js','utf8'),context);
 const api=vm.runInContext('({boats,prepareGateTrack,gateCurveCrossings,prepareGateTiming,preparedGateTiming,gatePassageAtTime,gateResultsAtTime,formatGateDuration,gatePolynomialRoots,trackValue,getTrackModel})',context);
 const near=(a,b,tolerance=1e-6)=>assert.ok(Math.abs(a-b)<tolerance,`${a} ~= ${b}`);

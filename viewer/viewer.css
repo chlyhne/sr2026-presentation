@@ -265,3 +265,22 @@ html.iphone #visibleBoatsToggle{height:36px;min-height:36px}
 #trackDataStatus{position:absolute;right:0;top:calc(100% + 6px);width:230px;margin:0;padding:10px;border-radius:5px;background:#fff;color:#173d4c;box-shadow:0 2px 8px #10212d26}
 
 #viewerLoadingStage{max-width:min(90vw,560px);margin:0;color:#b8cbd5;font-size:13px;text-align:center;overflow-wrap:anywhere}
+#boatCompareToggle{display:grid;place-items:center;width:38px;height:36px;padding:0;color:#173d4c;background:#fffffff0;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26;font-weight:700}
+#boatCompareToggle:hover,#boatCompareToggle[aria-expanded=true]{background:#dcecf0}
+html.iphone #boatCompareToggle,body.rhumbline-setup #boatCompareToggle{display:none}
+body.boat-compare-open main{--event-width:clamp(260px,25vw,380px)}
+body.presenting.boat-compare-open main{--event-width:clamp(280px,28vw,440px)}
+#boatComparePanel{grid-column:3;grid-row:1;padding:22px;overflow:auto;min-width:0;min-height:0;background:#142937;border-left:1px solid #38505f}
+body.presenting #boatComparePanel{grid-column:2}
+#boatComparePanel h2{font-size:18px;margin:0 0 16px}
+#boatComparePanel label{display:block;font-size:12px;margin-bottom:5px}
+#boatComparePanel select{width:100%;margin-bottom:12px}
+#boatCompareResetZoom{padding:4px 10px;border:1px solid #b8cbd5;border-radius:4px;background:#fff;color:#173d4c;font-weight:650}
+#boatComparePlots svg{cursor:crosshair;user-select:none}
+#boatCompareScope{font-size:12px;color:#b8cbd5}
+#boatComparePlots>div{margin:18px 0;font-size:13px}
+#boatComparePlots svg{display:block;width:100%;height:auto}
+.boat-compare-axis{display:flex;justify-content:space-between;font-size:10px;color:#b8cbd5;white-space:nowrap;overflow:hidden}
+#boatComparePlots small{color:#ffce5c}
+.boat-compare-readout{font-size:11px;color:#fff;line-height:1.4;margin-top:4px;font-variant-numeric:tabular-nums}
+@media(max-width:750px){#boatComparePanel{grid-column:1/-1;grid-row:3}body.presenting #boatComparePanel{grid-column:1}body.boat-compare-open main{grid-template-rows:minmax(180px,1fr) auto minmax(0,140px) auto}body.presenting.boat-compare-open main{grid-template-rows:minmax(200px,1fr) auto minmax(0,180px) auto}}

@@ -96,7 +96,9 @@ function prepareGateTiming(gates){
   for(const passage of passages)result.ranking.push({boat,passage,duration:formatGateDuration(passage.elapsed)});
  }
  result.ranking.sort((a,b)=>a.passage.elapsed-b.passage.elapsed);
- gateTimingCache.set(key,result);return result;
+ gateTimingCache.set(key,result);
+ if(!SIMPLE_IPHONE_TRACKS)prepareBoatCompareGates(key,result);
+ return result;
 }
 function preparedGateTiming(gates){
  if(!gates.length)return null;

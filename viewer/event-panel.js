@@ -1,4 +1,5 @@
 function setEventPanelExpanded(expanded){
+ if(expanded&&!SIMPLE_IPHONE_TRACKS)closeBoatCompare();
  if(expanded===!document.body.classList.contains('event-panel-collapsed'))return;
  if(!expanded&&!finishInlineTextEditing())return;
  const viewport=mapViewport();
