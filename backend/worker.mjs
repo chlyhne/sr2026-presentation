@@ -105,7 +105,7 @@ export function validateDocument(doc) {
       if (s.boatSearchQuery !== undefined && !string(s.boatSearchQuery, 10000)) fail(400, 'Ugyldigt bådfilter.');
       if (s.boatCourseFilter !== undefined && (typeof s.boatCourseFilter!=='string'||(s.boatCourseFilter!==''&&!/^[a-z0-9_-]{1,64}$/.test(s.boatCourseFilter)))) fail(400, 'Ugyldig bane.');
       if (s.boatClassFilter !== undefined && !string(s.boatClassFilter, 200)) fail(400, 'Ugyldigt løb.');
-      if (s.trackLengthSeconds !== undefined && ![0,900,1800,3600,7200,14400,28800].includes(s.trackLengthSeconds)) fail(400, 'Ugyldig sporlængde.');
+      if (s.trackLengthSeconds !== undefined && ![-1,0,900,1800,3600,7200,14400,28800].includes(s.trackLengthSeconds)) fail(400, 'Ugyldig sporlængde.');
       if (s.comparison !== undefined) {
         const c = s.comparison;
         if (!object(c) || typeof c.enabled !== 'boolean' || !['absolute','handicap','time'].includes(c.basis)

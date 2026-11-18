@@ -49,6 +49,7 @@ function displayBoatPosition(boat,time){
  const position=trackPosition(boat.points,time);return position?{...position,replayTime:time}:null;
 }
 function displayTrackWindow(boat,time){
+ if(!tracksAreVisible())return null;
  const from=time-trackWindowSeconds();
  if(!handicapTracksEnabled)return {from,to:time};
  const clock=ghostClocks.get(boat.id);

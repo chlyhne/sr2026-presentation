@@ -117,7 +117,7 @@ new ResizeObserver(updateBoatOverlayBounds).observe($('visibleBoats'));
 function layoutVisibleBoats(){
  const viewport=mapViewport();if(!viewport)return;
  const {rect}=viewport,layout=trackSpeedLegendLayout();
- const top=trackUsesBoatColour()?50:layout.top+layout.height+8;
+ const top=!tracksAreVisible()||trackUsesBoatColour()?50:layout.top+layout.height+8;
  const key=[rect.width,rect.height,layout.width,top,$('visibleBoatsPanel').hidden].join(':');
  if(key===visibleBoatLayoutKey)return;visibleBoatLayoutKey=key;
  $('mapHeading').style.width=layout.width+'px';

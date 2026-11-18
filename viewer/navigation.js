@@ -2,9 +2,10 @@
 const TRACK_GAIN_LIMIT=2,TRACK_GAIN_MISSING=-1e20,TRACK_COMPARISON_KEY='sr2026-track-comparison';
 const TRACK_TIME_GAIN_LIMIT=120;
 const TRACK_GAIN_UNDERFLOW_COLOUR='rgb(255,196,61)',TRACK_GAIN_OVERFLOW_COLOUR='rgb(255,0,255)';
-const TRACK_LENGTH_KEY='sr2026-track-length',TRACK_LENGTHS=new Set([0,900,1800,3600,7200,14400,28800]);
+const NO_TRACKS=-1,TRACK_LENGTH_KEY='sr2026-track-length',TRACK_LENGTHS=new Set([NO_TRACKS,0,900,1800,3600,7200,14400,28800]);
 const TRACK_FULL_WINDOW=boats.reduce((span,boat)=>boat.points.length?Math.max(span,D.end-boat.points[0][2]+1):span,D.end-D.start+1);
 let trackLengthSeconds=7200;
+function tracksAreVisible(){return trackLengthSeconds!==NO_TRACKS;}
 function trackWindowSeconds(){return trackLengthSeconds===0?TRACK_FULL_WINDOW:trackLengthSeconds;}
 function validComparison(value){
  return value&&typeof value.enabled==='boolean'&&['absolute','handicap','time'].includes(value.basis)
@@ -177,7 +178,9 @@ function syncNavigationControls(){
  for(const basis of ['absolute','handicap','time'])$('trackStyle').querySelector(`option[value="${basis}"]`).disabled=!rhumbRoute.legs.length;
  $('trackStyle').value=trackUsesBoatColour()?'boat':comparison.enabled?comparison.basis:'speed';
  $('trackStyle').disabled=handicapTracksEnabled;$('trackLength').value=String(trackLengthSeconds);
- $('trackLengthSummary').textContent=trackLengthSeconds?`Spor: seneste ${$('trackLength').selectedOptions[0].textContent}`:'Spor: hele forløbet';
+ const lengthLabel=$('trackLength').selectedOptions[0].textContent;
+ $('trackLengthSummary').textContent=trackLengthSeconds>0?`Spor: seneste ${lengthLabel}`:trackLengthSeconds===0?'Spor: hele forløbet':lengthLabel;
+ setAttr($('trackSpeedLegend'),'visibility',tracksAreVisible()?'visible':'hidden');
  $('finishMapLine').disabled=!navigationMode||navigationDraft.length<2;
  $('undoMapPoint').disabled=!navigationMode||!navigationDraft.length;
  $('map').classList.toggle('measuring',!!navigationMode);

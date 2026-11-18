@@ -31,7 +31,8 @@ test('event map settings survive validation while legacy documents remain valid'
  Object.assign(doc.notes[0].settings,{mapVersion:1,grid:true,referenceBoatId:'reference',trackLengthSeconds:900,
   handicapTracksEnabled:false,boatSearchQuery:'vera',boatFavouritesOnly:true,comparison:{enabled:true,basis:'time',boatColour:false}});
  assert.equal(validateDocument(doc),doc);assert.equal(validateDocument(document),document);
- for(const change of [{mapVersion:2},{grid:1},{referenceBoatId:7},{trackLengthSeconds:1},{handicapTracksEnabled:1},
+ for(const length of [-1,0]){doc.notes[0].settings.trackLengthSeconds=length;assert.equal(validateDocument(doc),doc);}
+ for(const change of [{mapVersion:2},{grid:1},{referenceBoatId:7},{trackLengthSeconds:1},{trackLengthSeconds:-2},{handicapTracksEnabled:1},
   {boatSearchQuery:[]},{boatFavouritesOnly:1},{comparison:{enabled:true,basis:'unknown'}},{comparison:{enabled:true,basis:'time',boatColour:true}}]){
   const invalid=structuredClone(doc);Object.assign(invalid.notes[0].settings,change);assert.throws(()=>validateDocument(invalid));
  }
