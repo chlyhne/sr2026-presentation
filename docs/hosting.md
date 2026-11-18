@@ -11,8 +11,9 @@ Workflowet bygger kun de offentlige filer i `dist/`. Forskningsnoter, rådata,
 backendkode og øvrige projektfiler medtages ikke i Pages-artifaktet.
 Repositoryets synlighed bestemmer separat, hvem der kan læse selve kildekoden.
 
-`presentation/presentation.json` er den fælles udgivne præsentation. Mangler den
-ved første build, bliver der udgivet en tom eventliste. Dine gamle browsernoter
+Hvert stævne har sit eget præsentationsdokument. `presentation/presentation.json`
+er fortsat Sjælland Rundts dokument; Silverrudder bruger
+`presentation/silverrudder-2025.json`. Buildet kræver de konfigurerede dokumenter. Dine gamle browsernoter
 ændres ikke af et build. [Importér dem](migration.md), før du deler den færdige præsentation.
 
 Online gemninger sker gennem GitHub App på brugerens vegne og kan udløse Pages-workflowet.

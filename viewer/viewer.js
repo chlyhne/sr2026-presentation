@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id), D=window.DATA, NS='http://www.w3.org/2000/svg';
 document.documentElement.classList.toggle('iphone',SIMPLE_IPHONE_TRACKS);
 const xy=([lon,lat])=>[(lon-9.5)/4.5*1000,(57-lat)/3*1180];
-const timeFormatter=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Copenhagen',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+const timeFormatter=new Intl.DateTimeFormat('en-GB',{timeZone:window.SR_EVENT.timezone,hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
 const fmt=t=>timeFormatter.format(new Date(t*1000));
 function el(tag,attrs={},parent){const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(parent)parent.append(n);return n;}
 function setAttr(node,name,value){value=String(value);if(node.getAttribute(name)!==value)node.setAttribute(name,value);}
@@ -110,9 +110,9 @@ const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
 const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set();
 const boats=D.boats.map(b=>({...b,...boatDetails[b.id],metadata:boatMetadata(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
 const REFERENCE_BOAT_KEY='sr2026-reference-boat';
-let referenceBoatId=boats.find(boat=>boat.name==='Mercutio').id,referencePreferenceError='';
+let referenceBoatId=window.SR_EVENT.defaultReference,referencePreferenceError='';
 try{
- const stored=localStorage.getItem(REFERENCE_BOAT_KEY);
+ const stored=eventStorage.getItem(REFERENCE_BOAT_KEY);
  if(stored!==null){
   if(!boats.some(boat=>boat.id===stored))throw Error('Ugyldig referencebåd.');
   referenceBoatId=stored;
@@ -123,7 +123,7 @@ function syncReferenceBoatControls(){
  const boat=referenceBoat();
  $('referenceBoat').value=boat.id;
  $('referenceBoatHeading').textContent=` / ${boat.name}`;
- $('mapHeading').title='Sjælland Rundt 2026 / '+boat.name;
+ $('mapHeading').title=window.SR_EVENT.title+' / '+boat.name;
  for(const basis of ['absolute','handicap'])$('trackStyle').querySelector(`option[value="${basis}"]`).textContent=`Mod ${boat.name} · ${basis==='absolute'?'absolut':'handicap'}`;
  $('trackStyle').querySelector('option[value="time"]').textContent=`Mod ${boat.name} · tid / 100 m ref.`;
 }
@@ -136,7 +136,8 @@ $('referenceBoat').onchange=async()=>{
  try{if(!await saveReferenceBoat($('referenceBoat').value))syncReferenceBoatControls();}
  catch(error){comparisonMessage('Referencebåden kunne ikke ændres: '+error.message);syncReferenceBoatControls();}
 };
-const BOAT_COURSE_NAMES={groensund:'Grønsund',boegestroemmen:'Bøgestrømmen'};
+const BOAT_COURSE_NAMES=Object.fromEntries(Object.entries(window.SR_EVENT.courses).map(([id,course])=>[id,course.name]));
+$('boatCourseSelect').replaceChildren(new Option('Alle baner',''),...Object.entries(BOAT_COURSE_NAMES).map(([id,name])=>new Option(name,id)));
 const boatRaceClasses=new Map(Object.keys(BOAT_COURSE_NAMES).map(course=>[course,new Map(boats.filter(b=>b.course===course).map(b=>[b.raceClassId,b.raceClassName]))]));
 let boatSearchQuery='',boatFavouritesOnly=false,boatCourseFilter='',boatClassFilter='';
 function validBoatRaceFilters(course,raceClass){
@@ -180,12 +181,9 @@ for(const [i,name] of [...new Set(boats.map(b=>b.name))].sort().entries()){
  if(!Object.hasOwn(colours,name))colours[name]=`hsl(${((18+i*137.507764)%360).toFixed(3)},78%,${42+i%3*7}%)`;
 }
 for(const b of boats){const label=document.createElement('label');label.className='boat';const {choice,heart}=createBoatHeartChoice(b);const dot=document.createElement('span');dot.className='dot';dot.style.background=colours[b.name];label.append(choice,heart,dot,document.createTextNode(b.name));$('choices').append(label)}
-for(const [name,lon,lat] of [['Helsingør',12.61,56.04],['København',12.57,55.67],['Stevns',12.45,55.28],['Møn',12.3,54.98],['Farø',11.99,54.95],['Agersø',11.2,55.21],['Storebæltsbroen',11.03,55.33],['Røsnæs',10.87,55.74],['Sj. Odde',11.3,55.97],['Gilleleje',12.31,56.13]]){const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('places'));el('circle',{cx:0,cy:0,r:2,fill:'#173d4c'},group);const n=el('text',{x:4,y:-4,fill:'#173d4c','font-size':11,stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);n.textContent=name}
+for(const [name,lon,lat] of window.SR_EVENT.places){const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('places'));el('circle',{cx:0,cy:0,r:2,fill:'#173d4c'},group);const n=el('text',{x:4,y:-4,fill:'#173d4c','font-size':11,stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);n.textContent=name}
 // User-supplied mandatory marks; preserve the original decimal minutes.
-for(const [id,lon,lat,title] of [
- ['snekkeloebRedMark',11+16.523/60,56+2.391/60,'Rød i Snekkeløb · 56° 2.391′ N 11° 16.523′ E'],
- ['mandatoryRedMark',12+11.358/60,54+49.783/60,'Bøje, der skal overholdes · 54° 49.783′ N 12° 11.358′ E']
-]){
+for(const [id,lon,lat,title] of window.SR_EVENT.marks){
  const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('seamarks'));
  el('circle',{id,cx:0,cy:0,r:5,fill:'#e02020',stroke:'#ffffff','stroke-width':1},group);
  el('title',{},group).textContent=title;
@@ -193,9 +191,9 @@ for(const [id,lon,lat,title] of [
 // Rute T is an open line through the user's waypoints, in the base map layer.
 for(const feature of D.course_lines.features){
  const {kind,name,reference_boat,reference_utc}=feature.properties,coordinates=feature.geometry.coordinates;
- const colour=kind==='start'?'#087b3d':'#c62738';
+ const colour=kind==='start'||kind==='start-finish'?'#087b3d':'#c62738';
  const group=el('g',{'data-course-line':kind},$('courseLines'));
- el('title',{},group).textContent=`${name} · TracTrac${reference_utc?` · ${reference_boat} · start ${fmt(Date.parse(reference_utc)/1000)}`:''}`;
+ el('title',{},group).textContent=`${name} · TracTrac${reference_boat?` · ${reference_boat}`:''}${reference_utc?` · start ${fmt(Date.parse(reference_utc)/1000)}`:''}`;
  el('path',{d:path(coordinates),fill:'none',stroke:'#ffffff','stroke-width':5,'vector-effect':'non-scaling-stroke'},group);
  el('path',{'data-line-geometry':kind,d:path(coordinates),fill:'none',stroke:colour,'stroke-width':2.5,
   'stroke-dasharray':kind==='finish'?'6 4':'none','vector-effect':'non-scaling-stroke'},group);
@@ -249,7 +247,8 @@ function renderRadar(time){
 }
 
 function status(t){
- const model=$('windModel').value,hour=Math.floor(t/3600)*3600,windAvailable=D.wind_models[model][0].hourly.time.includes(hour);
+ const model=$('windModel').value,hour=Math.floor(t/3600)*3600,windAvailable=!!D.wind_models[model][0]?.hourly.time.includes(hour);
+ if(!window.SR_EVENT.features.weather){$('status').textContent=`Tracks: ${fmt(t)} · Vejrdata er ikke importeret for dette stævne`;return;}
  $('status').textContent=`Vind: ${windLabels[model]} ${windAvailable?fmt(hour):'data mangler ved '+fmt(hour)} ${$('rain').checked?' · Radar DMI: '+radarStatus:''} · Tracks: interpoleret ved ${fmt(t)} · Noter gemmes i denne browser`;
 }
 const WIND_ARROW_SPACING=90;
@@ -455,7 +454,7 @@ $('play').onclick=()=>{
 };
 $('playbackSpeed').onchange=updatePlaybackSpeed;
 document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
-let view=[230,250,620,760];
+let view=[...window.SR_EVENT.initialView];
 function setview(){
  setAttr($('map'),'viewBox',view.join(' '));
  invalidateTimelineViewport();requestRender({viewportOnly:true});
@@ -465,7 +464,7 @@ function changeMapView(next){
  if(target&&!stageEventChanges(target,{view:[...next]}))return false;
  view=next;setview();return true;
 }
-$('reset').onclick=()=>changeMapView([230,250,620,760]);
+$('reset').onclick=()=>changeMapView(window.SR_EVENT.initialView);
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
 $('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture||navigationGesture||(!e.deltaY&&!e.deltaX))return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*((e.deltaY||e.deltaX)>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);changeMapView([anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f])},{passive:false});
 let drag=null;
@@ -580,3 +579,7 @@ map.addEventListener('keydown',e=>{
   e.preventDefault();e.stopPropagation();activateBoatMarker(marker.dataset.boatMarker,true);
  }
 });
+
+$('map').setAttribute('viewBox',window.SR_EVENT.initialView.join(' '));
+$('mapBase').setAttribute('viewBox',window.SR_EVENT.initialView.join(' '));
+if(!window.SR_EVENT.features.weather){for(const id of ['wind','windModel','windNumbers','rain']){$(id).disabled=true;$(id).title='Vejrdata er ikke importeret for dette stævne';} $('wind').checked=false;$('rain').checked=false;}

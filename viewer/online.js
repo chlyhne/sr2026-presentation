@@ -6,7 +6,7 @@
  const button=(label,action)=>{const b=document.createElement('button');b.textContent=label;b.onclick=action;bar.append(b);return b;};
  if(window.SR_READONLY){
   setPresentationMode(true);$('endPresentation').hidden=true;
-  if(config.apiBase){$('loginLink').href=config.apiBase+'/auth/login';$('loginLink').hidden=false;}
+  if(config.apiBase){$('loginLink').href=config.apiBase+eventAPI('/auth/login');$('loginLink').hidden=false;}
   status.textContent=notes.length?'':'Der er endnu ingen udgivne events.';
   return;
  }
@@ -14,17 +14,17 @@
   status.textContent=window.SR_RESTORED?'Din lokale kladde er gendannet. Klik Udgiv, når den er klar.':'Redigering · ændringer udgives først med Udgiv.';
   if(window.SR_PREVIOUS_DRAFT){
    status.textContent+=' Der findes en ældre kladde fra før en anden udgivelse.';
-   button('Hent tidligere kladde',()=>download(new Blob([JSON.stringify(window.SR_PREVIOUS_DRAFT.document,null,2)],{type:'application/json'}),'sr2026-tidligere-kladde.json'));
+   button('Hent tidligere kladde',()=>download(new Blob([JSON.stringify(window.SR_PREVIOUS_DRAFT.document,null,2)],{type:'application/json'}),window.SR_EVENT.id+'-tidligere-kladde.json'));
   }
   button('Log ud',async()=>{try{const r=await fetch(config.apiBase+'/api/logout',{method:'POST'});if(!r.ok)throw Error('Kunne ikke logge ud.');location.reload();}catch(e){status.textContent=e.message;}});
   const publish=button('Udgiv',async()=>{
    if(!noteNavigationAllowed(()=>publish.click()))return;
    publish.disabled=true;
    try{
-    const response=await fetch(config.apiBase+'/api/presentation',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha:window.SR_SHA,document:{version:1,notes,speedPins}})});
+    const response=await fetch(config.apiBase+eventAPI('/api/presentation'),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha:window.SR_SHA,document:{version:1,notes,speedPins}})});
     const result=await response.json();
     if(!response.ok)throw Error(response.status===409?'En anden version er gemt. Eksportér din kladde, og genindlæs før du fortsætter.':result.error||'Udgivelsen mislykkedes.');
-    window.SR_SHA=result.sha;localStorage.removeItem(window.SR_DRAFT_KEY);
+    window.SR_SHA=result.sha;eventStorage.removeItem(window.SR_DRAFT_KEY);
     status.textContent='Gemt i GitHub. Den offentlige side opdateres, når udgivelsen er færdig.';
    }catch(e){status.textContent=e.message;}finally{publish.disabled=false;}
   });

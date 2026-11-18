@@ -1,5 +1,52 @@
 # Sjælland Rundt 2026 — præsentation
 
+## Flere stævner
+
+Trackeren vælger stævne i overskriftens dropdown. Direkte links bruger
+`?event=sjaelland-rundt-2026` eller `?event=silverrudder-2025`. Et skift genindlæser
+siden og frigiver det tidligere stævnes GPU-data. Kun det valgte stævnes pakke hentes.
+
+[Kataloget](viewer/events/catalog.json) angiver stævnerne. Hvert stævnes
+[event.json](viewer/events/silverrudder-2025/event.json) indeholder titel, tidsrum,
+baner/rhumblines, referencebåd, mærker, kortudsnit og tilgængelige funktioner.
+Spor, bådmetadata og baggrund ligger som separate native inputs under
+[data/events](data/events). Buildet publicerer hver pakke under
+`events/<stævne>/track-profiles/`; præsentationen ligger under
+`events/<stævne>/presentation.json` i det publicerede site.
+
+Silverrudder 2025 samler alle syv offentlige TracTrac-løb med 411 trackere og
+1.402.271 observationer på én fælles tidslinje. De deler Fyn-banen og kan vælges
+enkeltvis i løbsfilteret eller vises sammen. Originale UTC-tider og kildeidentiteter
+bevares; løbene forskydes ikke for at gøre starterne samtidige. Navnet rettes
+udtrykkeligt til 2025, fordi TracTracs interne eventmetadata fejlagtigt siger 2026.
+Mærker og foreløbig rhumbline kommer fra TracTracs kontrolpunkter. Handicap og vejr
+er utilgængelige for dette stævne, da der ikke er importeret et gyldigt grundlag.
+Kun brugerens polygon ved Storebæltsbroen er overført fra Sjælland Rundt.
+
+Genimport af den konfigurerede Silverrudder-kilde:
+
+```sh
+python scripts/import_tractrac_event.py --event silverrudder-2025
+# --refresh henter JSON-metadata og de lagrede GPS-filer igen.
+python scripts/prepare_adaptive_map.py --event silverrudder-2025 --angle-degrees 0.2
+node scripts/prepare_track_profiles.cjs --if-stale
+```
+
+Importen ændrer ikke manuelle stævneindstillinger, mærker eller rhumbline.
+Kortbygget bruger samme detaljerede Danmarkskilde og samme algoritme som Sjælland
+Rundt, men måler afstand til Silverrudders spor og skriver kun Silverrudders kort.
+Ændres sporgrundlaget eller kortets tolerance, køres kortbygget før profilbygget.
+`--event ID` på profilbygget begrænser det til ét stævne; standarden bygger kataloget.
+
+Noter, gates, favoritter, visningsvalg og kladder holdes adskilt pr. stævne.
+Eksisterende Sjælland Rundt-browserdata kopieres én gang til det nye namespace;
+de oprindelige nøgler bevares. De udgivne Sjælland Rundt-events ligger fortsat i
+[presentation.json](presentation/presentation.json); Silverrudder har sin egen
+[præsentation](presentation/silverrudder-2025.json). Backendens læsning og udgivelse
+vælger dokument med `?event=<id>` og afviser ukendte stævner.
+
+
+
 Selvstændig webapp med kort, bådspor, vind, radar og events fra Sjælland Rundt.
 Beretning, magasin og LaTeX/PDF-dokumenter ligger i det separate projekt `../SR 2026/`.
 
@@ -47,7 +94,7 @@ kontrol. GitHub Actions cacher kildepakken under generatorens SHA-256-fingeraftr
 
 Kort- og vejrmetadata hentes som `data.json.gz` og pakkes ud i browseren, ligesom spordata. Det sikrer gzip ved både lokal visning og statisk hosting.
 
-Manifestversion 12 hentes med `cache: 'no-store'` og angiver metadata (`dataFile`),
+Manifestversion 13 hentes med `cache: 'no-store'` og angiver metadata (`dataFile`),
 kildepakken (`replayFile`), kildefingeraftryk og hver båds ID, originale punktantal
 og `sourceOffset`. Filnavne indeholder fingeraftrykket. Browseren kontrollerer
 format, offset, filstørrelse, ID'er, tidsrækkefølge og segmentgrænser, før data frigives.
@@ -59,7 +106,8 @@ niveau 9. [Kildekodningen](viewer/track-source-codec.js) deles mellem build og k
 generatoren verificerer hvert enkelt kildepunkt efter kodning og afkodning.
 Kildepakken fylder cirka 2,62 MB. Stationsprofiler hentes i en separat fællespakke.
 Metadata og kildepakke hentes parallelt; gzip afkodes med `DecompressionStream`.
-Den oprindelige `data.js` bruges kun offline og publiceres ikke med Pages.
+Den oprindelige `data.js` er et ældre offline-eksportformat og publiceres ikke.
+Det nominelle build læser nu det valgte stævnes native- og baggrundssnapshots.
 
 Buildet beregner de tunge ruteprojektioner og stationsprofiler med
 [fælles matematik](viewer/track-preparation-math.js). Hver båds fart- og tidsprofil

@@ -10,6 +10,14 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 
 ## Åbne punkter
 
+### UI-07 — Samlet stævneskift og Silverrudder-metadata
+
+- **Område:** [stævnevælger](./viewer/event-selection.js), [Silverrudder](./viewer/events/silverrudder-2025/event.json), [import](./scripts/import_tractrac_event.py) og online redigering.
+- **Gennemført:** Alle syv TracTrac-løb er hentet direkte fra JSON/lagrede filer og samlet med deres UTC-starttider, kilde-ID'er og 411 trackere. Et separat 0,2°-kort er bygget fra den detaljerede Danmarkskilde og Silverrudder-sporene; kun Storebæltsbroens TSS er overført. Hurtige tests kontrollerer browserlagringens adskillelse/migrering, stævneskiftets navigation, ukendte ID'er samt backendens separate læse- og skriveveje. Begge deploypakker bygges uden fejl.
+- **Udskudt/usikkerhed:** Visuel kontrol af det samlede stævneskift, genoprettede Sjælland Rundt-events og Silverrudders filtre på PC/iPhone samt autentificeret udgivelse med det valgte stævne. Silverrudders rhumbline er foreløbigt TracTracs kontrolpunktsrute; den er ikke manuelt finjusteret. Ny import opdaterer native spor, bådmetadata og kildefastsatte start-/mållinjer (fast snapshot ved første løbsstart), mens manuelle mærke-/ruteindstillinger bevares i konfigurationen; ændringer i kildegrupperingen kræver en eksplicit opdatering af konfigurationen.
+- **Færdig når:** Begge stævner kan åbnes/skiftes med deres egne noter og valg, alle syv løb kan vises samlet eller filtreres, og rhumbline/mærker er accepteret. Online redigering læser og skriver samme valgte stævne efter login.
+
+
 ### UI-06 — SOG-sammenligning i browseren
 
 - **Område:** [sammenligningspanel](./viewer/boat-compare.js).

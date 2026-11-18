@@ -66,11 +66,11 @@ function resetMapMeasurement(){
 }
 function comparisonMessage(message){$('comparisonStatus').textContent=message;$('comparisonStatus').hidden=!message;}
 try{
- const stored=localStorage.getItem(TRACK_COMPARISON_KEY);
+ const stored=eventStorage.getItem(TRACK_COMPARISON_KEY);
  if(stored){const value=JSON.parse(stored);if(!validComparison(value))throw Error('Ugyldigt sammenligningsvalg.');comparison=value;}
 }catch(error){comparisonMessage('Sammenligning kunne ikke indlæses: '+error.message);}
 try{
- const stored=localStorage.getItem(TRACK_LENGTH_KEY);
+ const stored=eventStorage.getItem(TRACK_LENGTH_KEY);
  if(stored!==null){const value=JSON.parse(stored);if(!TRACK_LENGTHS.has(value))throw Error('Ugyldig sporlængde.');trackLengthSeconds=value;}
 }catch(error){comparisonMessage('Sporlængde kunne ikke indlæses: '+error.message);}
 const courseRhumbRoutes=Object.fromEntries(Object.entries(window.SR_RHUMBLINES).map(([course,definition])=>[course,buildRhumbRoute(definition.points)]));
@@ -125,7 +125,7 @@ function saveReferenceBoat(id){
  return changeEventConfiguration(()=>{
   if(!boats.some(boat=>boat.id===id)){comparisonMessage('Ugyldig referencebåd.');return false;}
   if(id===referenceBoatId)return true;
-  try{localStorage.setItem(REFERENCE_BOAT_KEY,id);}
+  try{eventStorage.setItem(REFERENCE_BOAT_KEY,id);}
   catch{comparisonMessage('Referencebåden kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
   referenceBoatId=id;comparisonRevision++;
   syncComparisonRoute();
@@ -148,7 +148,7 @@ function saveComparison(next){
   if(handicapTracksEnabled){comparisonMessage('Handicapkompenseret spor bruger bådfarver.');syncNavigationControls();return false;}
   if(!validComparison(next)){comparisonMessage('Ugyldigt sammenligningsvalg.');return false;}
   if(next.enabled&&!rhumbRoute.legs.length){syncComparisonRoute();syncNavigationControls();return false;}
-  try{localStorage.setItem(TRACK_COMPARISON_KEY,JSON.stringify(next));}
+  try{eventStorage.setItem(TRACK_COMPARISON_KEY,JSON.stringify(next));}
   catch{comparisonMessage('Sammenligningsvalget kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
   comparison=next;
   comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
@@ -314,7 +314,7 @@ $('trackStyle').onchange=()=>{
 $('trackLength').onchange=()=>{
  changeEventConfiguration(()=>{
   const length=+$('trackLength').value;
-  try{if(!TRACK_LENGTHS.has(length))throw Error('Ugyldig sporlængde.');localStorage.setItem(TRACK_LENGTH_KEY,JSON.stringify(length));}
+  try{if(!TRACK_LENGTHS.has(length))throw Error('Ugyldig sporlængde.');eventStorage.setItem(TRACK_LENGTH_KEY,JSON.stringify(length));}
   catch{comparisonMessage('Sporlængden kunne ikke gemmes.');syncNavigationControls();return;}
   trackLengthSeconds=length;comparisonMessage('');syncNavigationControls();requestRender();
  });

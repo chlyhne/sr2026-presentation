@@ -1,0 +1,310 @@
+{
+  "event": {
+    "id": "45d5c330-0975-013e-8ee0-1c6b0055db37",
+    "name": "Silverrudder 2026",
+    "database": "event_20250919_Silverrudd",
+    "starttime": "2025-09-16 00:00:00",
+    "endtime": "2025-09-21 21:00:00",
+    "type": "a1b74ca0-fdd8-11dc-8811-005056c00008",
+    "enable_notifier": false,
+    "notifier_client_name": null,
+    "subscriber_service": "https://em.historical1.tractrac.com/api/v1/events/45d5c330-0975-013e-8ee0-1c6b0055db37/mobile_subscriptions",
+    "url_scheme": "tractrac://open.app/3196",
+    "db_replica_enabled": false,
+    "high_load": false,
+    "web_url": "https://www.tractrac.com/event-page/event_20250919_Silverrudd/3196",
+    "dataservers": {
+      "stored": [
+        "tcp://historical1.tractrac.com:4401"
+      ],
+      "live": [
+        "tcp://historical1.tractrac.com:4400"
+      ],
+      "ws": [
+        "ws://historical1.tractrac.com:8891",
+        "ws://historical1.tractrac.com:8892",
+        "ws://historical1.tractrac.com:8893",
+        "ws://historical1.tractrac.com:8894"
+      ]
+    },
+    "server_update_uri": "https://em.historical1.tractrac.com",
+    "sap_url": null,
+    "sap_event_url": null,
+    "sap_leaderboard_name": null,
+    "server": "historical1.tractrac.com",
+    "location": {
+      "lat": 55.33008020561808,
+      "lon": 10.360991308593725
+    },
+    "scoreboards": [],
+    "notification_message": null
+  },
+  "races": [
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20250919_Silverrudd/9399c4e0-7502-013e-29fc-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9399c4e0-7502-013e-29fc-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=45d5c330-0975-013e-8ee0-1c6b0055db37&event_name=Silverrudder 2026&race_name=test&publish_time=&server_url=em.historical1.tractrac.com&web_id=3196&race_id=9399c4e0-7502-013e-29fc-04421a259aad&race_web_id=29",
+      "url_scheme": "tractrac://open.app/3196/9399c4e0-7502-013e-29fc-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9399c4e0-7502-013e-29fc-04421a259aad.json",
+      "id": "9399c4e0-7502-013e-29fc-04421a259aad",
+      "name": "test",
+      "tracking_starttime": "2025-09-16 00:00:00",
+      "tracking_endtime": "2025-09-21 21:00:00",
+      "race_starttime": "",
+      "expected_race_startdate": "2025-09-16",
+      "map_publication_time": null,
+      "initialized": "0",
+      "status": "UNOFFICIAL",
+      "status_time": "2025-09-22 03:05:24",
+      "visibility": "HIDDEN",
+      "classes": "",
+      "classes_list": [],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2025-09-16"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20250919_Silverrudd/b67892a0-75f9-013e-4b87-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/b67892a0-75f9-013e-4b87-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=45d5c330-0975-013e-8ee0-1c6b0055db37&event_name=Silverrudder 2026&race_name=SOS test race&publish_time=&server_url=em.historical1.tractrac.com&web_id=3196&race_id=b67892a0-75f9-013e-4b87-04421a259aad&race_web_id=45",
+      "url_scheme": "tractrac://open.app/3196/b67892a0-75f9-013e-4b87-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/b67892a0-75f9-013e-4b87-04421a259aad.json",
+      "id": "b67892a0-75f9-013e-4b87-04421a259aad",
+      "name": "SOS test race",
+      "tracking_starttime": "2025-09-16 22:00:00",
+      "tracking_endtime": "2025-09-21 21:00:00",
+      "race_starttime": "",
+      "expected_race_startdate": "2025-09-17",
+      "map_publication_time": null,
+      "initialized": "0",
+      "status": "UNOFFICIAL",
+      "status_time": "2025-09-22 03:05:28",
+      "visibility": "HIDDEN",
+      "classes": "Keelboats Extra Large",
+      "classes_list": [
+        {
+          "id": "5acc1250-7511-013e-3648-04421a259aad",
+          "name": "Keelboats Extra Large",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2025-09-17"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20250919_Silverrudd/7213b200-750f-013e-2d1f-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/7213b200-750f-013e-2d1f-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=45d5c330-0975-013e-8ee0-1c6b0055db37&event_name=Silverrudder 2026&race_name=Keelboats Mini&publish_time=&server_url=em.historical1.tractrac.com&web_id=3196&race_id=7213b200-750f-013e-2d1f-04421a259aad&race_web_id=31",
+      "url_scheme": "tractrac://open.app/3196/7213b200-750f-013e-2d1f-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/7213b200-750f-013e-2d1f-04421a259aad.json",
+      "id": "7213b200-750f-013e-2d1f-04421a259aad",
+      "name": "Keelboats Mini",
+      "tracking_starttime": "2025-09-19 07:30:00",
+      "tracking_endtime": "2025-09-21 07:28:14",
+      "race_starttime": "2025-09-19 08:00:00",
+      "expected_race_startdate": "2025-09-19",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2025-09-21 07:28:14",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Mini",
+      "classes_list": [
+        {
+          "id": "5497dc60-7511-013e-32b1-04421a259aad",
+          "name": "Keelboats Mini",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2025-09-19"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20250919_Silverrudd/9a807850-750f-013e-2d2c-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a807850-750f-013e-2d2c-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=45d5c330-0975-013e-8ee0-1c6b0055db37&event_name=Silverrudder 2026&race_name=Keelboats Small&publish_time=&server_url=em.historical1.tractrac.com&web_id=3196&race_id=9a807850-750f-013e-2d2c-04421a259aad&race_web_id=33",
+      "url_scheme": "tractrac://open.app/3196/9a807850-750f-013e-2d2c-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a807850-750f-013e-2d2c-04421a259aad.json",
+      "id": "9a807850-750f-013e-2d2c-04421a259aad",
+      "name": "Keelboats Small",
+      "tracking_starttime": "2025-09-19 08:00:00",
+      "tracking_endtime": "2025-09-21 07:28:18",
+      "race_starttime": "2025-09-19 08:30:00",
+      "expected_race_startdate": "2025-09-19",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2025-09-21 03:30:43",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Small",
+      "classes_list": [
+        {
+          "id": "557a9930-7511-013e-332f-04421a259aad",
+          "name": "Keelboats Small",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2025-09-19"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20250919_Silverrudd/9a8e6b10-750f-013e-2d39-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a8e6b10-750f-013e-2d39-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=45d5c330-0975-013e-8ee0-1c6b0055db37&event_name=Silverrudder 2026&race_name=Keelboats Medium&publish_time=&server_url=em.historical1.tractrac.com&web_id=3196&race_id=9a8e6b10-750f-013e-2d39-04421a259aad&race_web_id=35",
+      "url_scheme": "tractrac://open.app/3196/9a8e6b10-750f-013e-2d39-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a8e6b10-750f-013e-2d39-04421a259aad.json",
+      "id": "9a8e6b10-750f-013e-2d39-04421a259aad",
+      "name": "Keelboats Medium",
+      "tracking_starttime": "2025-09-19 08:30:00",
+      "tracking_endtime": "2025-09-21 03:30:50",
+      "race_starttime": "2025-09-19 09:00:00",
+      "expected_race_startdate": "2025-09-19",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2025-09-21 03:30:50",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Medium",
+      "classes_list": [
+        {
+          "id": "56212160-7511-013e-3387-04421a259aad",
+          "name": "Keelboats Medium",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2025-09-19"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20250919_Silverrudd/9a969c90-750f-013e-2d46-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a969c90-750f-013e-2d46-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=45d5c330-0975-013e-8ee0-1c6b0055db37&event_name=Silverrudder 2026&race_name=Keelboats Large&publish_time=&server_url=em.historical1.tractrac.com&web_id=3196&race_id=9a969c90-750f-013e-2d46-04421a259aad&race_web_id=37",
+      "url_scheme": "tractrac://open.app/3196/9a969c90-750f-013e-2d46-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a969c90-750f-013e-2d46-04421a259aad.json",
+      "id": "9a969c90-750f-013e-2d46-04421a259aad",
+      "name": "Keelboats Large",
+      "tracking_starttime": "2025-09-19 09:00:00",
+      "tracking_endtime": "2025-09-21 03:30:59",
+      "race_starttime": "2025-09-19 09:30:00",
+      "expected_race_startdate": "2025-09-19",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2025-09-21 03:30:59",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Large",
+      "classes_list": [
+        {
+          "id": "59f7a2c0-7511-013e-35c0-04421a259aad",
+          "name": "Keelboats Large",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2025-09-19"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20250919_Silverrudd/9a9ecb60-750f-013e-2d53-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a9ecb60-750f-013e-2d53-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=45d5c330-0975-013e-8ee0-1c6b0055db37&event_name=Silverrudder 2026&race_name=Keelboats Extra Large&publish_time=&server_url=em.historical1.tractrac.com&web_id=3196&race_id=9a9ecb60-750f-013e-2d53-04421a259aad&race_web_id=39",
+      "url_scheme": "tractrac://open.app/3196/9a9ecb60-750f-013e-2d53-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a9ecb60-750f-013e-2d53-04421a259aad.json",
+      "id": "9a9ecb60-750f-013e-2d53-04421a259aad",
+      "name": "Keelboats Extra Large",
+      "tracking_starttime": "2025-09-19 09:30:00",
+      "tracking_endtime": "2025-09-20 20:59:54",
+      "race_starttime": "2025-09-19 10:00:00",
+      "expected_race_startdate": "2025-09-19",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2025-09-20 20:59:54",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Extra Large",
+      "classes_list": [
+        {
+          "id": "5acc1250-7511-013e-3648-04421a259aad",
+          "name": "Keelboats Extra Large",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2025-09-19"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20250919_Silverrudd/b94b80c0-750f-013e-2d60-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/b94b80c0-750f-013e-2d60-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=45d5c330-0975-013e-8ee0-1c6b0055db37&event_name=Silverrudder 2026&race_name=Multihulls Small&publish_time=&server_url=em.historical1.tractrac.com&web_id=3196&race_id=b94b80c0-750f-013e-2d60-04421a259aad&race_web_id=41",
+      "url_scheme": "tractrac://open.app/3196/b94b80c0-750f-013e-2d60-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/b94b80c0-750f-013e-2d60-04421a259aad.json",
+      "id": "b94b80c0-750f-013e-2d60-04421a259aad",
+      "name": "Multihulls Small",
+      "tracking_starttime": "2025-09-19 10:00:00",
+      "tracking_endtime": "2025-09-20 21:16:54",
+      "race_starttime": "2025-09-19 10:30:00",
+      "expected_race_startdate": "2025-09-19",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2025-09-20 21:16:54",
+      "visibility": "REPLAY",
+      "classes": "Multihulls Small",
+      "classes_list": [
+        {
+          "id": "5c2bcfa0-7511-013e-3749-04421a259aad",
+          "name": "Multihulls Small",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2025-09-19"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20250919_Silverrudd/c28fd520-750f-013e-2d6d-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/c28fd520-750f-013e-2d6d-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=45d5c330-0975-013e-8ee0-1c6b0055db37&event_name=Silverrudder 2026&race_name=Multihulls Large&publish_time=&server_url=em.historical1.tractrac.com&web_id=3196&race_id=c28fd520-750f-013e-2d6d-04421a259aad&race_web_id=43",
+      "url_scheme": "tractrac://open.app/3196/c28fd520-750f-013e-2d6d-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/c28fd520-750f-013e-2d6d-04421a259aad.json",
+      "id": "c28fd520-750f-013e-2d6d-04421a259aad",
+      "name": "Multihulls Large",
+      "tracking_starttime": "2025-09-19 10:30:00",
+      "tracking_endtime": "2025-09-20 12:56:03",
+      "race_starttime": "2025-09-19 11:00:00",
+      "expected_race_startdate": "2025-09-19",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2025-09-20 12:56:03",
+      "visibility": "REPLAY",
+      "classes": "Multihulls Large",
+      "classes_list": [
+        {
+          "id": "5c5267a0-7511-013e-3768-04421a259aad",
+          "name": "Multihulls Large",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2025-09-19"
+    }
+  ],
+  "banners": [],
+  "banners_url": "https://em.historical1.tractrac.com/api/v2/events/45d5c330-0975-013e-8ee0-1c6b0055db37/banners.json"
+}

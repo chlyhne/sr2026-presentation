@@ -97,18 +97,21 @@ def renderable_polygons(polygon):
     return []
 
 
-def build(angle):
+def build(angle,event=None):
     if not 0 < angle < 45:
         raise ValueError('Angle must be between 0 and 45 degrees')
     inputs = ['data/land-denmark-osm.geojson','data/coastline-denmark-osm.geojson',
               'data/tractrac/combined_tracks.json','viewer/tracks.js','data/geography/map-track-exclusions.json',
               'scripts/export_map_tracks.cjs','scripts/prepare_adaptive_map.py']
+    if event:
+        inputs[2]=f'data/events/{event}/native.json.gz'
+        inputs.remove('data/geography/map-track-exclusions.json')
     hashes = {name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in inputs}
     land = json.loads((ROOT/inputs[0]).read_text(encoding='utf-8'))
     coast = json.loads((ROOT/inputs[1]).read_text(encoding='utf-8'))
     with tempfile.TemporaryDirectory(prefix='sr2026-map-') as temporary:
         filename = Path(temporary)/'tracks.bin'
-        subprocess.run(['node',str(ROOT/'scripts/export_map_tracks.cjs'),str(filename)],check=True,cwd=ROOT)
+        subprocess.run(['node',str(ROOT/'scripts/export_map_tracks.cjs'),str(filename)]+([str(ROOT/inputs[2])] if event else []),check=True,cwd=ROOT)
         segments = np.fromfile(filename,dtype='<f8').reshape(-1,2,2)
     # Deduplication is spatial only: the minimum distance ignores passage time.
     segments = np.unique(segments,axis=0)
@@ -190,7 +193,7 @@ def build(angle):
               'resolution_method':'GEOS Douglas-Peucker on local arcs; geometric tolerance = minimum boat distance * radians(angle)',
               'preserve_global_topology':False,'omitted_small_islands':len(dropped),'normalized_fills':repairs,
               'distance_field':'minimum over included boat intervals, PCHIP and phone segments',
-              'track_exclusions':json.loads((ROOT/'data/geography/map-track-exclusions.json').read_text(encoding='utf-8')),
+              'track_exclusions':({'version':1,'scope':'map-simplification-only','boats':[]} if event else json.loads((ROOT/'data/geography/map-track-exclusions.json').read_text(encoding='utf-8'))),
               'curve_distance_uncertainty_metres':CURVE_ERROR,'original_vertices':before,
               'simplified_vertices':after,'sources_sha256':hashes,
               'verified_max_geometric_tolerance_ratio':max_ratio,'verified_max_displacement_metres':max_displacement}
@@ -207,13 +210,23 @@ def build(angle):
     # refer to those arrays and the source hashes bind them unambiguously.
     if any(hashlib.sha256((ROOT/name).read_bytes()).hexdigest()!=value for name,value in hashes.items()):
         raise ValueError('Map sources changed during preparation')
+    output=ROOT/'data'/'events'/event/'map' if event else ROOT/'data'
+    output.mkdir(parents=True,exist_ok=True)
     for name,value in [('land-adaptive.geojson',new_land),('coastline-adaptive.geojson',new_coast)]:
-        (ROOT/'data'/name).write_text(json.dumps(value,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
-    (ROOT/'data/geography/coast-distance-field.json.gz').write_bytes(gzip.compress(json.dumps(field,separators=(',',':')).encode(),mtime=0))
+        (output/name).write_text(json.dumps(value,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+    ((output/'coast-distance-field.json.gz') if event else (ROOT/'data/geography/coast-distance-field.json.gz')).write_bytes(gzip.compress(json.dumps(field,separators=(',',':')).encode(),mtime=0))
+    if event:
+        # Publish the new geometry into this event's background input only.
+        background_file=ROOT/'data/events'/event/'background.json.gz'
+        background=json.loads(gzip.decompress(background_file.read_bytes()))
+        background.update(land=new_land,coast_metadata=new_coast['metadata'],coast=lines)
+        background_file.write_bytes(gzip.compress(json.dumps(background,ensure_ascii=False,separators=(',',':')).encode(),mtime=0))
     print(f'GEOS adaptive map ({angle:g} degrees): {before:,} -> {after:,} vertices ({100*(1-after/before):.1f}% removed); originals untouched',flush=True)
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--angle-degrees',type=float,default=.2)
-    build(parser.parse_args().angle_degrees)
+    parser.add_argument('--event')
+    args=parser.parse_args()
+    build(args.angle_degrees,args.event)

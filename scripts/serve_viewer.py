@@ -60,17 +60,20 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         route = urlsplit(path).path
         if route == '/rhumbline.html':
             return str(ROOT / 'viewer' / 'index.html')
-        if route == '/rhumbline.json':
-            return str(RHUMBLINE_FILE)
-        if route == '/rhumbline-boegestroemmen.json':
-            return str(RHUMBLINE_FILE.with_name('rhumbline-boegestroemmen.json'))
+        if route.startswith('/events/') and route.endswith('/presentation.json'):
+            event_id=route.split('/')[2]
+            catalog=json.loads((ROOT/'viewer/events/catalog.json').read_text(encoding='utf-8'))
+            if event_id not in {event['id'] for event in catalog['events']}:
+                return str(ROOT/'viewer/_not_found')
+            definition=json.loads((ROOT/'viewer/events'/event_id/'event.json').read_text(encoding='utf-8'))
+            return str(ROOT/definition['presentationFile'])
         if route.startswith('/event-images/'):
             name = route.removeprefix('/event-images/')
             return str(IMAGE_DIR / name) if IMAGE_NAME.fullmatch(name) else str(IMAGE_DIR / '_not_found')
         return super().translate_path(path)
 
     def end_headers(self):
-        immutable = re.fullmatch(r'/track-profiles/[a-f0-9]{64}/[a-zA-Z0-9_.-]+\.gz', urlsplit(self.path).path)
+        immutable = re.fullmatch(r'/events/[a-z0-9-]+/track-profiles/[a-f0-9]{64}/[a-zA-Z0-9_.-]+\.gz', urlsplit(self.path).path)
         self.send_header('Cache-Control', 'public, max-age=31536000, immutable' if immutable else 'no-store')
         super().end_headers()
 
@@ -194,11 +197,16 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         self.json_response(201, {'id': entry['id']})
 
     def save_rhumbline(self):
-        course = parse_qs(urlsplit(self.path).query).get('course', ['groensund'])[0]
-        if course not in {'groensund', 'boegestroemmen'}:
-            self.json_response(400, {'error': 'Ukendt bane.'})
-            return
-        route_file = RHUMBLINE_FILE if course == 'groensund' else RHUMBLINE_FILE.with_name('rhumbline-boegestroemmen.json')
+        query=parse_qs(urlsplit(self.path).query)
+        event_id=query.get('event',['sjaelland-rundt-2026'])[0]
+        catalog=json.loads((ROOT/'viewer/events/catalog.json').read_text(encoding='utf-8'))
+        if event_id not in {event['id'] for event in catalog['events']}:
+            self.json_response(400, {'error':'Ukendt stævne.'});return
+        route_file=ROOT/'viewer/events'/event_id/'event.json'
+        event=json.loads(route_file.read_text(encoding='utf-8'))
+        course=query.get('course',[next(iter(event['courses']))])[0]
+        if course not in event['courses']:
+            self.json_response(400, {'error':'Ukendt bane.'});return
         if self.headers.get('Origin') != f'http://{self.headers.get("Host")}':
             self.json_response(403, {'error': 'Gem rhumblinen fra kortet på denne lokale server.'})
             return
@@ -216,7 +224,7 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         with RHUMBLINE_LOCK:
             temporary = None
             try:
-                existing = json.loads(route_file.read_text(encoding='utf-8'))
+                existing = {'version':1,'points':event['courses'][course]['points']}
                 if existing != {'version': 1, 'points': []} and not valid_rhumbline(existing):
                     raise ValueError('Invalid permanent rhumbline')
                 if existing.get('points') and existing != definition:
@@ -224,7 +232,8 @@ class ViewerHandler(SimpleHTTPRequestHandler):
                     return
                 with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=route_file.parent, delete=False) as target:
                     temporary = Path(target.name)
-                    target.write(json.dumps(definition, ensure_ascii=False, indent=2) + '\n')
+                    event['courses'][course]['points']=definition['points']
+                    target.write(json.dumps(event, ensure_ascii=False, indent=2) + '\n')
                     target.flush()
                     os.fsync(target.fileno())
                 temporary.chmod(0o644)

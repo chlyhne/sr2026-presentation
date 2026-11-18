@@ -228,3 +228,21 @@ test('static proxy uses manual redirects and rejects them without following',asy
  const response=await request('/admin/boot.js');assert.equal(response.status,502);
  assert.equal(calls,1);assert.match((await response.json()).error,/SITE_URL/);
 });
+
+test('presentation reads use the selected stævne and reject unknown identities',async()=>{
+ const calls=mockGithub('write',(url)=>{assert.match(url,/contents\/presentation\/silverrudder-2025\.json/);return reply({sha,content:Buffer.from(JSON.stringify({version:1,notes:[],speedPins:[]})).toString('base64')});});
+ const response=await request('/api/presentation?event=silverrudder-2025');assert.equal(response.status,200);assert.equal((await response.json()).document.notes.length,0);
+ assert.ok(calls.some(call=>call.url.includes('/presentation/silverrudder-2025.json')));
+ const unknown=await request('/api/presentation?event=unknown');assert.equal(unknown.status,400);
+});
+
+test('publishing Silverrudder writes its own presentation without touching Sjælland Rundt',async()=>{
+ const silver={version:1,notes:[],speedPins:[]};
+ const calls=mockGithub('write',(url,options)=>{
+  assert.match(url,/contents\/presentation\/silverrudder-2025\.json/);
+  return options.method==='PUT'?reply({content:{sha:'b'.repeat(40)},commit:{sha}}):reply({sha,content:Buffer.from(JSON.stringify(silver)).toString('base64')});
+ });
+ const response=await request('/api/presentation?event=silverrudder-2025',{method:'PUT',body:JSON.stringify({document:silver,sha})});
+ assert.equal(response.status,200);assert.equal(calls.filter(c=>c.options.method==='PUT').length,1);
+ assert.ok(calls.every(c=>!c.url.includes('/presentation/presentation.json')));
+});

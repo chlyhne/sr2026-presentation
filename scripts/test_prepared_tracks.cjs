@@ -21,8 +21,8 @@ test('prepared bundles reject wrong type, truncation, trailing bytes and invalid
 test('prepared asset paths are bound to the exact source fingerprint',()=>{
  const context=vm.createContext({});vm.runInContext(source('replay-data'),context);
  const fingerprint='a'.repeat(64),asset={file:'track-profiles/'+fingerprint+'/common.bin.gz',bytes:8,compressedBytes:20};
- context.validatePreparedAsset(asset,fingerprint);
- for(const value of [{...asset,file:'track-profiles/'+fingerprint+'/../common.bin.gz'},{...asset,bytes:-1},{...asset,file:asset.file.replace(fingerprint,'b'.repeat(64))}])assert.throws(()=>context.validatePreparedAsset(value,fingerprint));
+ context.validatePreparedAsset(asset,fingerprint,'track-profiles/');
+ for(const value of [{...asset,file:'track-profiles/'+fingerprint+'/../common.bin.gz'},{...asset,bytes:-1},{...asset,file:asset.file.replace(fingerprint,'b'.repeat(64))}])assert.throws(()=>context.validatePreparedAsset(value,fingerprint,'track-profiles/'));
 });
 
 test('XOR byte planes preserve interleaved lanes and exact NaN payload bits',()=>{

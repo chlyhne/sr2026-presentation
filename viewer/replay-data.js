@@ -1,5 +1,5 @@
-function validatePreparedAsset(asset,fingerprint){
- const prefix='track-profiles/'+fingerprint+'/';
+function validatePreparedAsset(asset,fingerprint,profileRoot){
+ const prefix=profileRoot+fingerprint+'/';
  if(!asset||typeof asset.file!=='string'||!asset.file.startsWith(prefix)||!/^common\.bin\.gz$/.test(asset.file.slice(prefix.length))||!Number.isSafeInteger(asset.bytes)||asset.bytes<8||!Number.isSafeInteger(asset.compressedBytes)||asset.compressedBytes<=0)throw Error('De forberedte sporfilers manifest er ugyldigt. Genbyg siden.');
 }
 async function fetchReplayGzip(file,expectedBytes){
@@ -12,19 +12,19 @@ async function fetchReplayGzip(file,expectedBytes){
 }
 async function loadReplayData(){
  const fail=message=>{throw Error('Sporenes kildedata kunne ikke indlæses: '+message);};
- const response=await fetch('track-profiles/manifest.json',{cache:'no-store'});
+ const response=await fetch(window.SR_EVENT.profileRoot+'manifest.json',{cache:'no-store'});
  if(!response.ok)fail('manifest ('+response.status+').');
  const manifest=await response.json();
- if(manifest?.version!==12||manifest.replayEncoding!=='source-integers-xor-byteplanes-v1'
+ if(manifest?.version!==13||manifest.eventId!==window.SR_EVENT.id||manifest.replayEncoding!=='source-integers-xor-byteplanes-v1'
   ||manifest.compression!=='gzip'||manifest.coordinateScale!==1e7||manifest.speedScaleKmh!==10||manifest.sourcePointBytes!==SOURCE_POINT_BYTES
   ||manifest.byteOrder!=='little-endian'||!/^[a-f0-9]{64}$/.test(manifest.sourceFingerprint)
-  ||manifest.dataFile!==`track-profiles/${manifest.sourceFingerprint}/data.json.gz`
-  ||manifest.replayFile!==`track-profiles/${manifest.sourceFingerprint}/source.bin.gz`
+  ||manifest.dataFile!==`${window.SR_EVENT.profileRoot}${manifest.sourceFingerprint}/data.json.gz`
+  ||manifest.replayFile!==`${window.SR_EVENT.profileRoot}${manifest.sourceFingerprint}/source.bin.gz`
   ||!Number.isSafeInteger(manifest.dataBytes)||manifest.dataBytes<=0
   ||!Number.isFinite(manifest.start)
   ||!Number.isSafeInteger(manifest.replayBytes)||manifest.replayBytes<0||!Array.isArray(manifest.boats))fail('ugyldigt manifest. Genbyg dataene.');
  if(manifest.prepared?.version!==4)fail('færdige sporfiler mangler. Genbyg siden.');
- validatePreparedAsset(manifest.prepared.common,manifest.sourceFingerprint);
+ validatePreparedAsset(manifest.prepared.common,manifest.sourceFingerprint,window.SR_EVENT.profileRoot);
  const [dataBytes,source,commonBytes]=await Promise.all([
   fetchReplayGzip(manifest.dataFile,manifest.dataBytes),fetchReplayGzip(manifest.replayFile,manifest.replayBytes),fetchReplayGzip(manifest.prepared.common.file,manifest.prepared.common.bytes)
  ]);
@@ -50,7 +50,7 @@ async function loadReplayData(){
   if(JSON.stringify(segments)!==JSON.stringify(boat.trackSegments))fail('kildedata stemmer ikke med sporsegmenterne.');
   if(!common.has(boat.id))fail('manglende stationsprofil.');
   const arrays=common.get(boat.id).arrays;
-  for(const course of ['groensund','boegestroemmen'])arrays[course+'_timeSamples']=restoreTrackTimeSamples(arrays[course+'_samples']);
+  for(const course of Object.keys(manifest.prepared.routePoints))arrays[course+'_timeSamples']=restoreTrackTimeSamples(arrays[course+'_samples']);
   getTrackModel(raw.points);prepareTrackTimeIndex(raw.points);
   prepared.push({...boat,...raw});
  }

@@ -9,3 +9,6 @@ viewer/track-profiles/
 .env
 .env.*
 !.env.example
+
+viewer/events/*/track-profiles/
+data/events/*/tractrac/speeds_*.json

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "default": "sjaelland-rundt-2026",
+  "events": [
+    {
+      "id": "sjaelland-rundt-2026",
+      "title": "Sjælland Rundt 2026"
+    },
+    {
+      "id": "silverrudder-2025",
+      "title": "Silverrudder 2025"
+    }
+  ]
+}

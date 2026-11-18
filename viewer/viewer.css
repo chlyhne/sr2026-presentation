@@ -284,3 +284,7 @@ body.presenting #boatComparePanel{grid-column:2}
 #boatComparePlots small{color:#ffce5c}
 .boat-compare-readout{font-size:11px;color:#fff;line-height:1.4;margin-top:4px;font-variant-numeric:tabular-nums}
 @media(max-width:750px){#boatComparePanel{grid-column:1/-1;grid-row:3}body.presenting #boatComparePanel{grid-column:1}body.boat-compare-open main{grid-template-rows:minmax(180px,1fr) auto minmax(0,140px) auto}body.presenting.boat-compare-open main{grid-template-rows:minmax(200px,1fr) auto minmax(0,180px) auto}}
+
+#mapHeading{display:flex;align-items:center;gap:3px;}
+#eventSelect{flex:1;min-width:0;max-width:100%;border:0;background:transparent;color:inherit;padding:0;font:inherit;pointer-events:auto;}
+#referenceBoatHeading{flex:0 1 auto;max-width:100px;overflow:hidden;text-overflow:ellipsis;}

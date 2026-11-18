@@ -15,7 +15,7 @@ for(const boat of boats){
 }
 const VIEWER_DATA_END=Math.ceil(Math.max(D.end,...[...ghostClocks.values()].filter(clock=>!clock.error).map(clock=>clock.end+GHOST_FINISH_HOLD)));
 try{
- const stored=JSON.parse(localStorage.getItem(HANDICAP_TRACKS_KEY)??'false');
+ const stored=JSON.parse(eventStorage.getItem(HANDICAP_TRACKS_KEY)??'false');
  if(typeof stored!=='boolean')throw Error('Ugyldigt valg.');
  handicapTracksEnabled=stored;
 }catch(error){handicapPreferenceError='Handicapkompenseret spor kunne ikke indlæses: '+error.message;}
@@ -30,7 +30,7 @@ function syncHandicapTracks(){
 }
 function setHandicapTracks(enabled){
  return changeEventConfiguration(()=>{
-  try{localStorage.setItem(HANDICAP_TRACKS_KEY,JSON.stringify(enabled));}
+  try{eventStorage.setItem(HANDICAP_TRACKS_KEY,JSON.stringify(enabled));}
   catch{handicapPreferenceError='Handicapkompenseret spor kunne ikke gemmes.';syncHandicapTracks();return false;}
   handicapTracksEnabled=enabled;handicapPreferenceError='';syncHandicapTracks();
   clearTrackHover();comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();
@@ -65,3 +65,5 @@ function viewerEndTime(){
  return handicapTracksEnabled?VIEWER_DATA_END:D.end;
 }
 syncNavigationControls();
+
+if(!window.SR_EVENT.features.handicap){handicapTracksEnabled=false;$('trackStyle').querySelector('option[value="handicap"]').disabled=true;$('handicapCompensatedTracks').checked=false;$('handicapCompensatedTracks').disabled=true;$('handicapCompensatedTracks').title='Stævnet har ikke handicapdata';}

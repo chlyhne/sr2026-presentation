@@ -19,15 +19,17 @@ function validatePresentationDocument(document){
  return document;
 }
 (async()=>{
+ await loadEventSelection();
+ const event=window.SR_EVENT;
  const config=window.SR_CONFIG;
  if(!config)throw Error('Viewerens konfiguration mangler.');
  const local=!!config.local;
  const routeSetup=local&&location.pathname==='/rhumbline.html';
  window.SR_RHUMBLINE_SETUP=routeSetup;
- window.SR_SETUP_COURSE=new URLSearchParams(location.search).get('course')||'groensund';
- if(!['groensund','boegestroemmen'].includes(window.SR_SETUP_COURSE))throw Error('Ukendt bane til rhumbline.');
+ window.SR_SETUP_COURSE=new URLSearchParams(location.search).get('course')||Object.keys(event.courses)[0];
+ if(!Object.hasOwn(event.courses,window.SR_SETUP_COURSE))throw Error('Ukendt bane til rhumbline.');
  window.SR_READONLY=!local;
- window.SRStorage=localStorage;
+ window.SRStorage=eventStorage;
  if(routeSetup){
   window.SR_READONLY=true;
   const isolated=new Map([['sr2026-notes','[]'],['sr2026-speed-pins','[]']]);
@@ -40,12 +42,12 @@ function validatePresentationDocument(document){
     const session=await fetch(config.apiBase+'/api/session',{cache:'no-store'}).then(r=>r.json());
     if(!session.canEdit){
      const message=Object.assign(document.createElement('p'),{textContent:'Log ind med en GitHub-konto med skriverettighed til præsentationens repository.'});
-     const link=Object.assign(document.createElement('a'),{href:config.apiBase+'/auth/login',textContent:'Log ind med GitHub'});
+     const link=Object.assign(document.createElement('a'),{href:config.apiBase+eventAPI('/auth/login'),textContent:'Log ind med GitHub'});
      document.body.replaceChildren(message,link);document.documentElement.classList.remove('viewer-loading');document.body.setAttribute('aria-busy','false');return;
     }
     window.SR_READONLY=false;window.SR_LOGIN=session.login;
    }
-   const url=config.admin?config.apiBase+'/api/presentation':'presentation.json';
+   const url=config.admin?config.apiBase+eventAPI('/api/presentation'):'events/'+event.id+'/presentation.json';
    const response=await fetch(url,{cache:'no-store'});
    if(!response.ok)throw new Error('Præsentationen kunne ikke indlæses ('+response.status+').');
    const result=await response.json();initial=validatePresentationDocument(config.admin?result.document:result);sha=result.sha||null;
@@ -56,20 +58,20 @@ function validatePresentationDocument(document){
   window.SR_SHA=sha;
   const draftKey='sr2026-draft:'+location.pathname+':'+(window.SR_LOGIN||'');
   if(config.admin){
-   const draft=JSON.parse(localStorage.getItem(draftKey));
+   const draft=JSON.parse(eventStorage.getItem(draftKey));
    if(draft){
     validatePresentationDocument(draft.document);
     if(draft.sha===sha){initial=draft.document;window.SR_RESTORED=true;}
-    else localStorage.setItem(draftKey+':previous',JSON.stringify(draft));
+    else eventStorage.setItem(draftKey+':previous',JSON.stringify(draft));
    }
-   window.SR_PREVIOUS_DRAFT=JSON.parse(localStorage.getItem(draftKey+':previous')??'null');
+   window.SR_PREVIOUS_DRAFT=JSON.parse(eventStorage.getItem(draftKey+':previous')??'null');
    if(window.SR_PREVIOUS_DRAFT)validatePresentationDocument(window.SR_PREVIOUS_DRAFT.document);
   }
   const memory=new Map([['sr2026-notes',JSON.stringify(initial.notes)],['sr2026-speed-pins',JSON.stringify(initial.speedPins)]]);
   window.SRStorage={getItem:key=>memory.get(key)??null,setItem:(key,value)=>{
    if(window.SR_READONLY)return;
    const next=new Map(memory);next.set(key,value);
-   if(config.admin){localStorage.setItem(draftKey,JSON.stringify({sha:window.SR_SHA,document:{version:1,notes:JSON.parse(next.get('sr2026-notes')),speedPins:JSON.parse(next.get('sr2026-speed-pins'))}}));}
+   if(config.admin){eventStorage.setItem(draftKey,JSON.stringify({sha:window.SR_SHA,document:{version:1,notes:JSON.parse(next.get('sr2026-notes')),speedPins:JSON.parse(next.get('sr2026-speed-pins'))}}));}
    memory.set(key,value);
   }};
   window.SR_DRAFT_KEY=draftKey;
@@ -103,15 +105,13 @@ function validatePresentationDocument(document){
    }
   }
   if(file==='rhumbline-geometry'){
-   const definitions=await Promise.all(['groensund','boegestroemmen'].map(async course=>{
-    const response=await fetch(course==='groensund'?'rhumbline.json':'rhumbline-boegestroemmen.json',{cache:'no-store'});
-    if(!response.ok)throw Error('Rhumbline for '+course+' kunne ikke indlæses ('+response.status+').');
-    const route=await response.json();
-    if(!validRhumbline(route))throw Error('Rhumbline for '+course+' indeholder ugyldige punkter.');
+   const definitions=Object.entries(event.courses).map(([course,definition])=>{
+    const route={version:1,points:definition.points};
+    if(!validRhumbline(route))throw Error('Rhumbline for '+course+' er ugyldig.');
     return [course,Object.freeze({version:1,points:Object.freeze(route.points.map(p=>Object.freeze(p)))})];
-   }));
+   });
    window.SR_RHUMBLINES=Object.freeze(Object.fromEntries(definitions));
-   window.SR_RHUMBLINE=window.SR_RHUMBLINES[routeSetup?window.SR_SETUP_COURSE:'groensund'];
+   window.SR_RHUMBLINE=window.SR_RHUMBLINES[routeSetup?window.SR_SETUP_COURSE:Object.keys(event.courses)[0]];
   }
   if(file==='boat-icons')await loadBoatHulls();
   if(file==='track-renderer'){

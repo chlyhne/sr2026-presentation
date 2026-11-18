@@ -18,12 +18,13 @@ function prefixCurve(a,b,c,d,u){
  const mix=(p,q)=>p.map((v,i)=>v+(q[i]-v)*u),ab=mix(a,b),bc=mix(b,c),cd=mix(c,d),abc=mix(ab,bc),bcd=mix(bc,cd);
  return [a,ab,abc,mix(abc,bcd)];
 }
-function exportMapTracks(filename,error=.1){
+function exportMapTracks(filename,error=.1,nativeFile=null){
  const context=vm.createContext({});
  vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer/tracks.js'),'utf8'),context);
  const {getTrackModel,TRACK_MAX_GAP}=vm.runInContext('({getTrackModel,TRACK_MAX_GAP})',context);
- const source=JSON.parse(fs.readFileSync(path.join(ROOT,'data/tractrac/combined_tracks.json'),'utf8'));
- const config=JSON.parse(fs.readFileSync(path.join(ROOT,'data/geography/map-track-exclusions.json'),'utf8'));
+ const native=nativeFile?JSON.parse(require('node:zlib').gunzipSync(fs.readFileSync(nativeFile))):null;
+ const source=native?{tracks:Object.fromEntries(native.boats.map(b=>[b.id,b.points.map(p=>p.slice(0,3))])),competitors:Object.fromEntries(native.boats.map(b=>[b.id,{nameShort:b.name}]))}:JSON.parse(fs.readFileSync(path.join(ROOT,'data/tractrac/combined_tracks.json'),'utf8'));
+ const config=native?{version:1,scope:'map-simplification-only',boats:[]}:JSON.parse(fs.readFileSync(path.join(ROOT,'data/geography/map-track-exclusions.json'),'utf8'));
  const limits=mapTrackLimits(source,config);
  const segments=[],project=p=>[p[0]*SCALE[0],p[1]*SCALE[1]],mid=(a,b)=>a.map((v,i)=>(v+b[i])/2);
  const distance=(p,a,b)=>{
@@ -61,5 +62,5 @@ function exportMapTracks(filename,error=.1){
  const values=new Float64Array(segments);fs.writeFileSync(filename,Buffer.from(values.buffer));
  console.log(`Distance index: ${values.length/4} track segments; curve error <= ${error} m; ${excludedPoints} source observations excluded by explicit rules`);
 }
-if(require.main===module)exportMapTracks(process.argv[2]);
+if(require.main===module)exportMapTracks(process.argv[2],.1,process.argv[3]);
 module.exports={exportMapTracks,mapTrackLimits,prefixCurve};

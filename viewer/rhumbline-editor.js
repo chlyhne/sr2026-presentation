@@ -31,7 +31,7 @@ async function savePermanentRhumbline(){
  $('finishMapLine').disabled=$('undoMapPoint').disabled=reverseRoute.disabled=restartRoute.disabled=true;
  setupStatus.textContent='Gemmer rhumbline og klargør sporfiler på serveren …';
  try{
-  const response=await fetch('/api/rhumbline?course='+window.SR_SETUP_COURSE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(definition)});
+  const response=await fetch('/api/rhumbline?event='+encodeURIComponent(window.SR_EVENT.id)+'&course='+window.SR_SETUP_COURSE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(definition)});
   const result=await response.json();if(!response.ok)throw Error(result.error||'Rhumbline kunne ikke gemmes.');
   lockRhumblineEditor(result.points);
   $('measurementHelp').textContent='Rhumbline og sporfiler er gemt. Genindlæs præsentationen for at bruge den nye rute.';

@@ -1,3 +1,4 @@
+import eventCatalog from '../viewer/events/catalog.json' with {type:'json'};
 const encoder = new TextEncoder(), decoder = new TextDecoder();
 const SESSION = '__Host-sr-session', OAUTH = '__Host-sr-oauth';
 const DOCUMENT_PATH = 'presentation/presentation.json';
@@ -102,7 +103,7 @@ export function validateDocument(doc) {
       if (s.mapVersion !== undefined && s.mapVersion !== 1) fail(400, 'Ukendt kortkonfiguration.');
       if (s.referenceBoatId !== undefined && !string(s.referenceBoatId, 200)) fail(400, 'Ugyldig referencebåd.');
       if (s.boatSearchQuery !== undefined && !string(s.boatSearchQuery, 10000)) fail(400, 'Ugyldigt bådfilter.');
-      if (s.boatCourseFilter !== undefined && !['', 'groensund', 'boegestroemmen'].includes(s.boatCourseFilter)) fail(400, 'Ugyldig bane.');
+      if (s.boatCourseFilter !== undefined && (typeof s.boatCourseFilter!=='string'||(s.boatCourseFilter!==''&&!/^[a-z0-9_-]{1,64}$/.test(s.boatCourseFilter)))) fail(400, 'Ugyldig bane.');
       if (s.boatClassFilter !== undefined && !string(s.boatClassFilter, 200)) fail(400, 'Ugyldigt løb.');
       if (s.trackLengthSeconds !== undefined && ![0,900,1800,3600,7200,14400,28800].includes(s.trackLengthSeconds)) fail(400, 'Ugyldig sporlængde.');
       if (s.comparison !== undefined) {
@@ -123,11 +124,11 @@ export function validateDocument(doc) {
 }
 const contentsPath = (env, path) => `${repo(env)}/contents/${path}`;
 const branch = env => env.GITHUB_BRANCH || 'main';
-async function getDocument(env, token) {
-  const metadata = await (await github(`${contentsPath(env, DOCUMENT_PATH)}?ref=${encodeURIComponent(branch(env))}`, token)).json();
+async function getDocument(env, token, documentPath=DOCUMENT_PATH) {
+  const metadata = await (await github(`${contentsPath(env, documentPath)}?ref=${encodeURIComponent(branch(env))}`, token)).json();
   let raw;
   if (metadata.content) raw = decoder.decode(unb64(metadata.content.replace(/\s/g, '')));
-  else raw = await (await github(`${contentsPath(env, DOCUMENT_PATH)}?ref=${encodeURIComponent(branch(env))}`, token, {headers: {Accept: 'application/vnd.github.raw+json'}})).text();
+  else raw = await (await github(`${contentsPath(env, documentPath)}?ref=${encodeURIComponent(branch(env))}`, token, {headers: {Accept: 'application/vnd.github.raw+json'}})).text();
   return {document: JSON.parse(raw), sha: metadata.sha};
 }
 async function putContent(env, token, path, content, message, sha) {
@@ -138,11 +139,12 @@ async function routes(request, env) {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) checkOrigin(request);
   if (method === 'GET' && path === '/auth/login') {
     if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) fail(503, 'GitHub-login er ikke konfigureret.');
-    const state = random(), verifier = random();
+    const state = random(), verifier = random(), eventId=url.searchParams.get('event');
+    if(eventId&&!eventCatalog.events.some(event=>event.id===eventId))fail(400,'Ukendt stævne.');
     const challenge = url64(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier))));
     const destination = new URL('https://github.com/login/oauth/authorize');
     destination.search = new URLSearchParams({client_id: env.GITHUB_CLIENT_ID, redirect_uri: `${url.origin}/auth/callback`, state, code_challenge: challenge, code_challenge_method: 'S256'});
-    return new Response(null, {status: 302, headers: {Location: destination.href, 'Set-Cookie': cookie(OAUTH, await seal({state, verifier, exp: now() + 600}, env, 'oauth'), 600), 'Cache-Control': 'no-store'}});
+    return new Response(null, {status: 302, headers: {Location: destination.href, 'Set-Cookie': cookie(OAUTH, await seal({state, verifier, ...(eventId?{eventId}:{}), exp: now() + 600}, env, 'oauth'), 600), 'Cache-Control': 'no-store'}});
   }
   if (method === 'GET' && path === '/auth/callback') {
     const pending = await unseal(cookies(request)[OAUTH], env, 'oauth');
@@ -155,7 +157,7 @@ async function routes(request, env) {
     const maxAge = Math.max(1, Math.min(8 * 3600, Number(token.expires_in) || 8 * 3600));
     const value = await seal({id: user.id, token: token.access_token, exp: now() + maxAge}, env, 'session');
     if (value.length > 3800) fail(502, 'GitHub-sessionen kunne ikke oprettes.');
-    const headers = new Headers({Location: '/admin/', 'Cache-Control': 'no-store'});
+    const headers = new Headers({Location: pending.eventId?'/admin/?event='+encodeURIComponent(pending.eventId):'/admin/', 'Cache-Control': 'no-store'});
     headers.append('Set-Cookie', cookie(SESSION, value, maxAge)); headers.append('Set-Cookie', cookie(OAUTH, '', 0));
     return new Response(null, {status: 302, headers});
   }
@@ -166,12 +168,15 @@ async function routes(request, env) {
   }
   if (path === '/api/presentation' && ['GET', 'PUT'].includes(method)) {
     const user = await authorize(request, env);
-    if (method === 'GET') return json(await getDocument(env, user.token));
+    const eventId=url.searchParams.get('event')||eventCatalog.default;
+    if(!eventCatalog.events.some(event=>event.id===eventId))fail(400,'Ukendt stævne.');
+    const documentPath=eventId===eventCatalog.default?DOCUMENT_PATH:`presentation/${eventId}.json`;
+    if (method === 'GET') return json(await getDocument(env, user.token, documentPath));
     let input; try { input = JSON.parse(decoder.decode(await readBody(request, MAX_DOCUMENT))); } catch (e) { if (e.status) throw e; fail(400, 'Ugyldig JSON.'); }
     if (!object(input)) fail(400, 'Ugyldig JSON.');
     const doc = validateDocument(input.document);
     if (!/^[a-f0-9]{40}$/.test(input.sha || '')) fail(400, 'Den indlæste versions SHA mangler.');
-    const current = await getDocument(env, user.token);
+    const current = await getDocument(env, user.token, documentPath);
     if (current.sha !== input.sha) fail(409, 'En anden version er udgivet. Eksportér din kladde og genindlæs før du udgiver igen.');
     const imageURLs = [...new Set(doc.notes.filter(n => n.image).map(n => n.image.url))];
     if (imageURLs.length) {
@@ -181,7 +186,7 @@ async function routes(request, env) {
       const paths = new Set(tree.tree.filter(entry => entry.type === 'blob').map(entry => entry.path));
       if (imageURLs.some(imagePath => !paths.has(`viewer/${imagePath}`))) fail(400, 'Et af præsentationens billeder mangler. Upload det igen før udgivelse.');
     }
-    const saved = await putContent(env, user.token, DOCUMENT_PATH, encoder.encode(JSON.stringify(doc, null, 2) + '\n'), `Update presentation by ${user.login}`, input.sha);
+    const saved = await putContent(env, user.token, documentPath, encoder.encode(JSON.stringify(doc, null, 2) + '\n'), `Update presentation by ${user.login}`, input.sha);
     return json({sha: saved.content.sha, commit: saved.commit.sha});
   }
   if (method === 'POST' && path === '/api/event-images') {

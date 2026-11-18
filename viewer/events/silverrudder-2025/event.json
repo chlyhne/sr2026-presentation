@@ -1,0 +1,211 @@
+{
+  "version": 1,
+  "id": "silverrudder-2025",
+  "title": "Silverrudder 2025",
+  "timezone": "Europe/Copenhagen",
+  "start": 1758266700,
+  "end": 1758439998,
+  "courses": {
+    "fyn": {
+      "name": "Fyn rundt",
+      "points": [
+        [
+          10.632346,
+          55.0578885
+        ],
+        [
+          10.716219,
+          55.030137
+        ],
+        [
+          10.853119,
+          55.299583
+        ],
+        [
+          10.61707,
+          55.620662
+        ],
+        [
+          10.162642,
+          55.646146
+        ],
+        [
+          9.758434,
+          55.542731
+        ],
+        [
+          9.74158,
+          55.519806
+        ],
+        [
+          9.677067,
+          55.51386
+        ],
+        [
+          9.977854,
+          55.133241
+        ],
+        [
+          10.325775,
+          55.037467
+        ],
+        [
+          10.632346,
+          55.0578885
+        ]
+      ]
+    }
+  },
+  "defaultReference": "7213b200-750f-013e-2d1f-04421a259aad:54e8d0a0-7511-013e-32e0-04421a259aad",
+  "initialView": [
+    20,
+    465,
+    345,
+    365
+  ],
+  "places": [
+    [
+      "Svendborg",
+      10.61,
+      55.06
+    ],
+    [
+      "Nyborg",
+      10.8,
+      55.31
+    ],
+    [
+      "Middelfart",
+      9.73,
+      55.51
+    ],
+    [
+      "Assens",
+      9.9,
+      55.27
+    ]
+  ],
+  "marks": [
+    [
+      "480f11e0-0975-013e-8ee1-1c6b0055db37",
+      10.716219,
+      55.030137,
+      "Thurø"
+    ],
+    [
+      "480f04c0-0975-013e-8ee1-1c6b0055db37",
+      10.853119,
+      55.299583,
+      "Knudshoved"
+    ],
+    [
+      "480f06c0-0975-013e-8ee1-1c6b0055db37",
+      10.61707,
+      55.620662,
+      "Fynshoved"
+    ],
+    [
+      "480f1ad0-0975-013e-8ee1-1c6b0055db37",
+      10.162642,
+      55.646146,
+      "Æbelø"
+    ],
+    [
+      "480f0a90-0975-013e-8ee1-1c6b0055db37",
+      9.758434,
+      55.542731,
+      "Strib"
+    ],
+    [
+      "480f1020-0975-013e-8ee1-1c6b0055db37",
+      9.74158,
+      55.519806,
+      "Ny Lillebæltsbro"
+    ],
+    [
+      "480f0c60-0975-013e-8ee1-1c6b0055db37",
+      9.677067,
+      55.51386,
+      "Hindsgavl"
+    ],
+    [
+      "480f08d0-0975-013e-8ee1-1c6b0055db37",
+      9.977854,
+      55.133241,
+      "Helnæs"
+    ],
+    [
+      "480f0e50-0975-013e-8ee1-1c6b0055db37",
+      10.325775,
+      55.037467,
+      "Svelmø"
+    ]
+  ],
+  "features": {
+    "weather": false,
+    "handicap": false
+  },
+  "nativeFile": "data/events/silverrudder-2025/native.json.gz",
+  "backgroundFile": "data/events/silverrudder-2025/background.json.gz",
+  "presentationFile": "presentation/silverrudder-2025.json",
+  "profileRoot": "events/silverrudder-2025/track-profiles/",
+  "source": {
+    "eventPage": "https://www.tractrac.com/event-page/event_20250919_Silverrudd/3196",
+    "races": [
+      {
+        "id": "7213b200-750f-013e-2d1f-04421a259aad",
+        "name": "Keelboats Mini",
+        "start": "2025-09-19T08:00:00.000Z",
+        "boats": 41,
+        "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/7213b200-750f-013e-2d1f-04421a259aad.json"
+      },
+      {
+        "id": "9a807850-750f-013e-2d2c-04421a259aad",
+        "name": "Keelboats Small",
+        "start": "2025-09-19T08:30:00.000Z",
+        "boats": 85,
+        "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a807850-750f-013e-2d2c-04421a259aad.json"
+      },
+      {
+        "id": "9a8e6b10-750f-013e-2d39-04421a259aad",
+        "name": "Keelboats Medium",
+        "start": "2025-09-19T09:00:00.000Z",
+        "boats": 134,
+        "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a8e6b10-750f-013e-2d39-04421a259aad.json"
+      },
+      {
+        "id": "9a969c90-750f-013e-2d46-04421a259aad",
+        "name": "Keelboats Large",
+        "start": "2025-09-19T09:30:00.000Z",
+        "boats": 98,
+        "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a969c90-750f-013e-2d46-04421a259aad.json"
+      },
+      {
+        "id": "9a9ecb60-750f-013e-2d53-04421a259aad",
+        "name": "Keelboats Extra Large",
+        "start": "2025-09-19T10:00:00.000Z",
+        "boats": 31,
+        "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a9ecb60-750f-013e-2d53-04421a259aad.json"
+      },
+      {
+        "id": "b94b80c0-750f-013e-2d60-04421a259aad",
+        "name": "Multihulls Small",
+        "start": "2025-09-19T10:30:00.000Z",
+        "boats": 10,
+        "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/b94b80c0-750f-013e-2d60-04421a259aad.json"
+      },
+      {
+        "id": "c28fd520-750f-013e-2d6d-04421a259aad",
+        "name": "Multihulls Large",
+        "start": "2025-09-19T11:00:00.000Z",
+        "boats": 12,
+        "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/c28fd520-750f-013e-2d6d-04421a259aad.json"
+      }
+    ]
+  },
+  "metadataNotes": [
+    "TracTracs interne stævnenavn siger 2026; løbenes datoer og den offentlige side er 2025.",
+    "Kun trafiksepareringen ved Storebæltsbroen overføres fra Sjælland Rundt efter brugerens valg.",
+    "Mærker og foreløbig rhumbline er importeret fra TracTrac. Vejr og handicap er ikke importeret."
+  ]
+}

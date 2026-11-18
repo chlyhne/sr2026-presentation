@@ -97,13 +97,13 @@ function changeEventConfiguration(change){
  const before=sceneSettings(),time=currentTime(),active=activePresentationNote,target=editableSettingsEvent();
  if(!finishInlineTextEditing()){applySceneSettings(before);requestRender();return false;}
  const keys=[REFERENCE_BOAT_KEY,TRACK_COMPARISON_KEY,TRACK_LENGTH_KEY,HANDICAP_TRACKS_KEY];
- const preferences=keys.map(key=>localStorage.getItem(key));
+ const preferences=keys.map(key=>eventStorage.getItem(key));
  const result=change();
  const next=sceneSettings(),changes=Object.fromEntries(Object.keys(next).filter(key=>JSON.stringify(next[key])!==JSON.stringify(before[key])).map(key=>[key,next[key]]));
  if(!Object.keys(changes).length)return result;
  if(result===false||!stageEventSettings(target,changes)){
   applySceneSettings(before);
-  keys.forEach((key,index)=>{if(preferences[index]===null)localStorage.removeItem(key);else localStorage.setItem(key,preferences[index]);});
+  keys.forEach((key,index)=>{if(preferences[index]===null)eventStorage.removeItem(key);else eventStorage.setItem(key,preferences[index]);});
   updateTimeline();selectedTime=time;$('time').value=offsetAtTime(time);activePresentationNote=active;
   requestRender();return false;
  }

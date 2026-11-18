@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{test}=require('node:test');
 const read=name=>fs.readFileSync('viewer/'+name+'.js','utf8');
 test('course and race filters combine with favourites and search, and support all boats',()=>{
- const source=read('viewer'),context=vm.createContext({boats:[
+ const source=read('viewer'),context=vm.createContext({window:{SR_EVENT:{courses:{groensund:{name:'Grønsund'},boegestroemmen:{name:'Bøgestrømmen'}}}},Option:class{},$:()=>({replaceChildren(){}}),boats:[
   {id:'g1',name:'Alpha',course:'groensund',raceClassId:'race1',raceClassName:'Two-Racing'},
   {id:'g2',name:'Beta',course:'groensund',raceClassId:'race2',raceClassName:'Multi-Cruising'},
   {id:'b1',name:'Gamma',course:'boegestroemmen',raceClassId:'race1',raceClassName:'Two-Racing'}

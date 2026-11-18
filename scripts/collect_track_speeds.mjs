@@ -18,13 +18,13 @@ async function collect(course){
   synchronizeTimes:true,controlPoints:{},forceToLoadAllData:true,classes:null,competitorIds:null,
   syncData:{routes:{},controls:{},competitors:[{}],timeOffsets:[0]},sensorData:false};
  return await new Promise((resolve,reject)=>{
-  const worker=new Worker(path.join(dir,'worker_node.mjs'),{type:'module'}),tracks={};
+  const worker=new Worker(path.join(root,'data/tractrac/worker_node.mjs'),{type:'module'}),tracks={},controls=[];
   let finished=false,endTimer;
   const timeout=setTimeout(()=>finish('timeout'),240000);
   function finish(reason){
    if(finished)return;finished=true;clearTimeout(timeout);clearTimeout(endTimer);worker.terminate();
    if(!['stored-end','connection-stopped'].includes(reason)){reject(new Error(`${course}: ${reason}`));return;}
-   const output={reason,point_columns:['longitude','latitude','timestamp_ms','speed_raw','direction_raw'],tracks};
+   const output={reason,controls,point_columns:['longitude','latitude','timestamp_ms','speed_raw','direction_raw'],tracks};
    fs.writeFileSync(path.join(dir,`speeds_${course}.json`),JSON.stringify(output));
    console.log(`${course}: ${Object.keys(tracks).length} tracks; ${Object.values(tracks).reduce((n,p)=>n+p.length,0)} speed records`);
    resolve(output);
@@ -36,10 +36,12 @@ async function collect(course){
     if(![p.longitude,p.latitude,p.timestamp].every(Number.isFinite))continue;
     (tracks[id]??=[]).push([p.longitude,p.latitude,p.timestamp,Number.isFinite(p.speed)?p.speed:null,Number.isFinite(p.direction)?p.direction:null]);
    }
+   if(msg.message==='k')controls.push(...msg.positions||[]);
    if(msg.message==='c')endTimer=setTimeout(()=>finish('stored-end'),500);
    if(msg.message==='h')finish('connection-stopped');
    if(msg.message==='d')console.error(msg.error);
   });
  });
 }
-for(const course of ['groensund','boegestroemmen'])await collect(course);
+const courses=fs.readdirSync(dir).filter(name=>/^race_.+\.json$/.test(name)).map(name=>name.slice(5,-5));
+for(let i=0;i<courses.length;i+=3)await Promise.all(courses.slice(i,i+3).map(collect));

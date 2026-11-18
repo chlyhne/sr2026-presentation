@@ -32,13 +32,20 @@ def build():
     with tempfile.TemporaryDirectory(prefix='sr2026-pages-') as temporary:
         stage = Path(temporary) / 'public'
         stage.mkdir()
-        profile_manifest = json.loads((ROOT / 'viewer' / 'track-profiles' / 'manifest.json').read_text(encoding='utf-8'))
-        profile_files = {'track-profiles/manifest.json', profile_manifest['replayFile'], profile_manifest['dataFile']}
-        prepared = profile_manifest['prepared']
-        profile_files.update(asset['file'] for asset in [prepared['common']])
+        catalog=json.loads((ROOT/'viewer/events/catalog.json').read_text(encoding='utf-8'))
+        profile_files=set()
+        for event in catalog['events']:
+            config=json.loads((ROOT/'viewer/events'/event['id']/'event.json').read_text(encoding='utf-8'))
+            manifest_file=config['profileRoot']+'manifest.json'
+            profile_manifest=json.loads((ROOT/'viewer'/manifest_file).read_text(encoding='utf-8'))
+            profile_files.update([manifest_file,profile_manifest['replayFile'],profile_manifest['dataFile'],profile_manifest['prepared']['common']['file']])
+            event_document=json.loads((ROOT/config['presentationFile']).read_text(encoding='utf-8'))
+            event_target=stage/'events'/event['id']/'presentation.json'
+            event_target.parent.mkdir(parents=True,exist_ok=True)
+            event_target.write_text(json.dumps(event_document,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
-            if relative.parts[0] == 'track-profiles' and relative.as_posix() not in profile_files:
+            if 'track-profiles' in relative.parts and relative.as_posix() not in profile_files:
                 continue
             if any(part.startswith('.') for part in relative.parts) or path.name in {'rhumbline-editor.js', 'data.js', 'track-preparation-math.js', 'gpu-probe.html', 'gpu-probe.js'}:
                 continue
