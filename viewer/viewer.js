@@ -317,7 +317,7 @@ function drawMap(){if(hasRenderingFailure())return;const t=currentTime();$('cloc
 }
 function drawViewport(){
  if(hasRenderingFailure())return;webglBackground.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderSpeedPins();renderNoteDrawings();
- layoutVisibleBoats();renderMapCredit();
+ layoutVisibleBoats();if(!SIMPLE_IPHONE_TRACKS)renderBoatCompare();renderMapCredit();
 }
 const boatMarkerNodes=new Map();
 function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){

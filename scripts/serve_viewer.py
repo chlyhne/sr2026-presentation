@@ -212,9 +212,12 @@ class ViewerHandler(SimpleHTTPRequestHandler):
             return
         try:
             length = int(self.headers.get('Content-Length', '0'))
-            if not 0 < length <= 16384:
+            if not 0 < length <= 32768:
                 raise ValueError('size')
-            definition = json.loads(self.rfile.read(length))
+            payload = json.loads(self.rfile.read(length))
+            if not isinstance(payload, dict):
+                raise ValueError('object')
+            definition = {key: payload.get(key) for key in ('version', 'points')}
         except (ValueError, UnicodeDecodeError):
             self.json_response(400, {'error': 'Rhumbline blev ikke modtaget som gyldige punkter.'})
             return
@@ -224,10 +227,14 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         with RHUMBLINE_LOCK:
             temporary = None
             try:
+                event=json.loads(route_file.read_text(encoding='utf-8'))
                 existing = {'version':1,'points':event['courses'][course]['points']}
                 if existing != {'version': 1, 'points': []} and not valid_rhumbline(existing):
                     raise ValueError('Invalid permanent rhumbline')
-                if existing.get('points') and existing != definition:
+                if existing != definition and event_id == 'silverrudder-2025' and payload.get('previousPoints') != existing['points']:
+                    self.json_response(409, {'error': 'Den gemte rhumbline er ændret. Genindlæs tegnekortet, før du gemmer.'})
+                    return
+                if existing['points'] and existing != definition and event_id != 'silverrudder-2025':
                     self.json_response(409, {'error': 'Rhumbline er allerede gemt permanent og kan ikke overskrives fra kortet.'})
                     return
                 with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=route_file.parent, delete=False) as target:
@@ -243,11 +250,11 @@ class ViewerHandler(SimpleHTTPRequestHandler):
                     temporary.unlink(missing_ok=True)
                 self.json_response(500, {'error': 'Rhumbline kunne ikke gemmes i projektet.'})
                 return
-        try:
-            prepare_track_profiles()
-        except (OSError, subprocess.CalledProcessError):
-            self.json_response(500, {'error': 'Rhumbline er gemt, men sporfilerne kunne ikke bygges. Gem den samme rute igen for at prøve klargøringen igen.'})
-            return
+            try:
+                prepare_track_profiles()
+            except (OSError, subprocess.CalledProcessError):
+                self.json_response(500, {'error': 'Rhumbline er gemt, men sporfilerne kunne ikke bygges. Gem den samme rute igen for at prøve klargøringen igen.'})
+                return
         self.json_response(201, definition)
 
 

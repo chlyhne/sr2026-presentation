@@ -56,7 +56,6 @@ function prepareBoatCompareGates(key,timing){
 if(!SIMPLE_IPHONE_TRACKS){
  const all=new Map();for(const boat of boats)all.set(boat.id,boatCompareDistribution(boat,null));boatCompareCache.set('',all);
  const select=$('boatCompareReference');
- for(const boat of boats){const option=document.createElement('option');option.value=boat.id;option.textContent=boat.name;select.append(option);}
  select.onchange=()=>{boatCompareRenderKey='';renderBoatCompare();};
  $('boatCompareMetric').onchange=()=>{boatCompareZoom=null;boatCompareRenderKey='';renderBoatCompare();};
  $('boatCompareResetZoom').onclick=()=>{boatCompareZoom=null;boatCompareRenderKey='';renderBoatCompare();};
@@ -67,13 +66,32 @@ if(!SIMPLE_IPHONE_TRACKS){
   invalidateMapLayout();requestRender();
  };
 }
-let boatCompareRenderKey='',boatCompareZoom=null;
+let boatCompareRenderKey='',boatCompareReferenceKey='',boatCompareZoom=null;
 function closeBoatCompare(){
  if($('boatComparePanel').hidden)return;
  $('boatComparePanel').hidden=true;document.body.classList.remove('boat-compare-open');$('boatCompareToggle').setAttribute('aria-expanded','false');invalidateMapLayout();requestRender();
 }
+function syncBoatCompareReference(){
+ const select=$('boatCompareReference'),viewport=mapViewport();
+ if(!viewport)return;
+ const [left,top,width,height]=viewport.viewBox;
+ const visible=boats.filter(boat=>{
+  const marker=boatMarkerNodes.get(boat.id)?.group;
+  if(!marker?.isConnected)return false;
+  const x=+marker.dataset.screenX,y=+marker.dataset.screenY;
+  return x>=left&&x<=left+width&&y>=top&&y<=top+height;
+ });
+ const key=JSON.stringify(visible.map(boat=>boat.id));
+ if(key===boatCompareReferenceKey)return;
+ boatCompareReferenceKey=key;
+ const previous=select.value;
+ select.replaceChildren(select.options[0],...visible.map(boat=>new Option(boat.name,boat.id)));
+ select.value=visible.some(boat=>boat.id===previous)?previous:'';
+ select.disabled=!visible.length;
+}
 function renderBoatCompare(){
  if($('boatComparePanel').hidden)return;
+ syncBoatCompareReference();
  const gates=currentGateMeasurement(),key=gates.length?JSON.stringify(gates):'',data=boatCompareCache.get(key);
  if(!data)throw Error('SOG-fordelingerne for gates er ikke forberedt.');
  const reference=boats.find(boat=>boat.id===$('boatCompareReference').value),selected=boats.filter(boat=>boatIsDisplayed(boat)&&boat.id!==reference?.id);

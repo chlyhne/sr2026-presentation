@@ -23,9 +23,9 @@ async function check(readonly){
   assert.equal(await page.locator('#rain').isChecked(),false);
   assert.equal(await page.locator('#eventPanel').isVisible(),false);
   assert.equal(await page.locator('#eventPanelToggle').getAttribute('aria-expanded'),'false');
-  const toolIds=['eventPanelToggle','mapLayersToggle','mapTracksToggle','mapMeasureToggle',readonly?'loginLink':'endPresentation','presentationFullscreen'];
+  const toolIds=['eventPanelToggle','mapRhumblineToggle','mapLayersToggle','mapTracksToggle','mapMeasureToggle',readonly?'loginLink':'endPresentation','presentationFullscreen'];
   assert.deepEqual(await page.locator('#mapTools > *').evaluateAll(nodes=>nodes.map(node=>node.id)),
-   ['presentationFullscreen','loginLink','endPresentation','mapMeasure','rhumblineTools','mapTracks','mapLayers','eventPanelToggle','comparisonStatus']);
+   ['presentationFullscreen','loginLink','endPresentation','mapMeasure','mapGates','rhumblineTools','mapTracks','mapLayers','boatCompareToggle','mapRhumblineToggle','eventPanelToggle','comparisonStatus','trackDataStatus']);
   const toolPositions=await page.evaluate(ids=>ids.map(id=>$(id).getBoundingClientRect()).filter(rect=>rect.width).map(rect=>rect.x),toolIds);
   assert.deepEqual(toolPositions,[...toolPositions].sort((a,b)=>b-a),'Toolbar reads from right to left');
   await page.evaluate(()=>{
