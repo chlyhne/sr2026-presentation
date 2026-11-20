@@ -12,3 +12,5 @@ viewer/track-profiles/
 
 viewer/events/*/track-profiles/
 data/events/*/tractrac/speeds_*.json
+
+data/geography/bridge-source/

@@ -24,7 +24,7 @@ function validatePresentationDocument(document){
  const config=window.SR_CONFIG;
  if(!config)throw Error('Viewerens konfiguration mangler.');
  const local=!!config.local;
- const routeSetup=local&&location.pathname==='/rhumbline.html';
+ const routeSetup=local&&new URLSearchParams(location.search).get('editRoute')==='1';
  window.SR_RHUMBLINE_SETUP=routeSetup;
  window.SR_SETUP_COURSE=new URLSearchParams(location.search).get('course')||Object.keys(event.courses)[0];
  if(!Object.hasOwn(event.courses,window.SR_SETUP_COURSE))throw Error('Ukendt bane til rhumbline.');
@@ -56,7 +56,7 @@ function validatePresentationDocument(document){
    showViewerLoadingError(error);return;
   }
   window.SR_SHA=sha;
-  const draftKey='sr2026-draft:'+location.pathname+':'+(window.SR_LOGIN||'');
+  const draftKey='sr2026-draft:admin:'+(window.SR_LOGIN||'');
   if(config.admin){
    const draft=JSON.parse(eventStorage.getItem(draftKey));
    if(draft){
@@ -77,7 +77,7 @@ function validatePresentationDocument(document){
   window.SR_DRAFT_KEY=draftKey;
  }
  updateViewerLoading(5);
- const files=['track-time','tracks','track-local-data','track-source-codec','prepared-track-codec','replay-data','boat-measurements','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','rhumbline-geometry','navigation-math','navigation','track-files','track-preparation','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','boat-compare','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
+ const files=['track-time','tracks','track-local-data','track-source-codec','prepared-track-codec','replay-data','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','rhumbline-geometry','navigation-math','navigation','track-files','track-preparation','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','boat-compare','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
  const preparationWeight=60,totalSteps=files.length+preparationWeight;
  let completed=0;
  for(const file of files){

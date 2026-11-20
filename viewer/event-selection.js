@@ -1,25 +1,59 @@
-// One selected stævne per page; a reload releases the previous GPU resources.
+// All event-specific behaviour and metadata live in the event registry.
 let eventStorage;
+function eventURL(id){return new URL('events/'+encodeURIComponent(id)+'/',document.baseURI);}
+async function loadEventCatalog(){
+ const response=await fetch('events/catalog.json',{cache:'no-store'});
+ if(!response.ok)throw Error('Stævnekonfiguration kunne ikke hentes ('+response.status+').');
+ const catalog=await response.json(),ids=new Set();
+ if(catalog.version!==1||!Array.isArray(catalog.events)||!catalog.events.length)throw Error('Ugyldig stævnekonfiguration.');
+ for(const event of catalog.events){
+  if(!/^[a-z0-9-]+$/.test(event.id)||ids.has(event.id)||!event.title||!Object.keys(event.courses||{}).length
+   ||event.profileRoot!=='events/'+event.id+'/track-profiles/'||!event.boatStyle||!event.nameDisplay||!event.routeEditor||!event.storage||!event.layers)throw Error('Ugyldig stævnekonfiguration.');
+  ids.add(event.id);
+ }
+ return catalog;
+}
+async function loadEventBridgeFeatures(catalog,id){
+ const layer=catalog.mapLayers?.bridges,groups=layer?.events?.[id];
+ if(typeof layer?.file!=='string'||!Array.isArray(groups))throw Error('Bro-konfiguration mangler for '+id+'.');
+ const response=await fetch(layer.file);
+ if(!response.ok)throw Error('Brogeometri kunne ikke hentes ('+response.status+').');
+ const collection=await response.json();
+ if(collection.type!=='FeatureCollection'||!Array.isArray(collection.features))throw Error('Ugyldig brogeometri.');
+ const found=new Set();
+ const features=collection.features.filter(feature=>groups.includes(feature.properties?.bridge));
+ for(const feature of features){
+  const geometry=feature.geometry,isSupport=['support','deck'].includes(feature.properties.source_kind);
+  const rings=isSupport?geometry?.coordinates:[geometry?.coordinates];
+  if(geometry?.type!==(isSupport?'Polygon':'LineString')||!Array.isArray(rings)||!rings.length||rings.some(ring=>!Array.isArray(ring)||ring.length<(isSupport?4:2)||ring.some(p=>!Array.isArray(p)||p.length!==2||!p.every(Number.isFinite)||Math.abs(p[0])>180||Math.abs(p[1])>=85)
+   ||isSupport&&(ring[0][0]!==ring.at(-1)[0]||ring[0][1]!==ring.at(-1)[1])))throw Error('Ugyldig brogeometri.');
+  if(!isSupport)found.add(feature.properties.bridge);
+ }
+ if(groups.some(group=>!found.has(group)))throw Error('En konfigureret bro mangler geometri.');
+ return features;
+}
 async function loadEventSelection(){
- const get=async file=>{const r=await fetch(file,{cache:'no-store'});if(!r.ok)throw Error('Stævnedata kunne ikke hentes: '+file+' ('+r.status+').');return r.json();};
- const catalog=await get('events/catalog.json'),id=new URLSearchParams(location.search).get('event')||catalog.default;
- if(catalog.version!==1||!catalog.events.some(event=>event.id===id)||!/^[a-z0-9-]+$/.test(id))throw Error('Ukendt stævne: '+id);
- const event=await get('events/'+id+'/event.json');
- if(event.version!==1||event.id!==id||!Object.keys(event.courses||{}).length||event.profileRoot!=='events/'+id+'/track-profiles/')throw Error('Ugyldig stævnekonfiguration.');
+ const catalog=await loadEventCatalog(),id=document.documentElement.dataset.eventId;
+ const event=catalog.events.find(event=>event.id===id);
+ if(!event)throw Error('Ukendt stævne: '+id);
  window.SR_EVENT=event;
- const prefix='sr-event:'+id+':';
- // Explicit one-time migration preserves existing Sjælland Rundt browser data.
- if(id==='sjaelland-rundt-2026'&&!localStorage.getItem(prefix+'migrated')){
-  for(const key of Object.keys(localStorage))if(key.startsWith('sr2026-')&&localStorage.getItem(prefix+key)===null)localStorage.setItem(prefix+key,localStorage.getItem(key));
+ window.SR_BRIDGE_FEATURES=await loadEventBridgeFeatures(catalog,id);
+ const prefix='sr-event:'+id+':',legacy=event.storage.legacyPrefix;
+ if(legacy&&!localStorage.getItem(prefix+'migrated')){
+  for(const key of Object.keys(localStorage))if(key.startsWith(legacy)&&localStorage.getItem(prefix+key)===null)localStorage.setItem(prefix+key,localStorage.getItem(key));
   localStorage.setItem(prefix+'migrated','1');
+ }
+ // The draft key is stable across URL changes; preserve drafts from old links.
+ for(const path of new Set([new URL(document.baseURI).pathname,event.storage.legacyAdminPath].filter(Boolean))){
+  const old=prefix+'sr2026-draft:'+path+':',next=prefix+'sr2026-draft:admin:';
+  for(const key of Object.keys(localStorage))if(key.startsWith(old)&&localStorage.getItem(next+key.slice(old.length))===null)localStorage.setItem(next+key.slice(old.length),localStorage.getItem(key));
  }
  eventStorage={getItem:key=>localStorage.getItem(prefix+key),setItem:(key,value)=>localStorage.setItem(prefix+key,value),removeItem:key=>localStorage.removeItem(prefix+key)};
  const select=document.getElementById('eventSelect');
  select.replaceChildren(...catalog.events.map(item=>new Option(item.title,item.id)));select.value=id;
  select.onchange=()=>{
   const next=select.value;select.value=id;if(next===id)return;
-  const url=new URL(location.href);url.searchParams.set('event',next);url.searchParams.delete('course');
-  const navigate=()=>{location.href=url.href;};
+  const navigate=()=>{location.href=eventURL(next).href;};
   if(!noteNavigationAllowed(navigate))return;navigate();
  };
  document.title=event.title+' · tracker';

@@ -1,14 +1,93 @@
 # Sjælland Rundt 2026 — præsentation
 
+## Broer
+
+[Brogeometrien](viewer/bridges.geojson) er et fælles OSM-udtræk med 17 sektioner
+og 133 uforenklede kildepunkter samt 12 kortlagte pille-/pylonomrids og 62 rekonstruerede omrids på Vestbroen. `mapLayers.bridges` i
+[konfigurationen](viewer/events/catalog.json) angiver fil og brogrupper pr. stævne.
+Storebælts øst-/vestbro vises på alle stævner. Silverrudder viser også de to
+Lillebæltsbroer og Svendborgsundbroen. Sjælland Rundt viser begge Storstrømsbroer,
+Masnedsundbroen, de to Farøbroer, Guldborgbroen og Frederik IX’s Bro.
+
+Udtrækket følger OSM's broafsnit frem for tilkørselsveje og tunneler. En kørebane
+repræsenterer dobbelte vejbaner; den gamle Storstrømsbro bruger jernbaneaksen,
+og Guldborgbroen bruger det kortlagte brodæks omrids. Alle kildekoordinater og
+links til OSM-objekterne ligger i filen. Data er hentet fra OpenStreetMap API 0.6
+og er omfattet af ODbL og tilskrivning til OpenStreetMap contributors.
+
+Geometrien uploades én gang til baggrundens WebGL 2-renderer og tegnes under
+spor og bådikoner med en mørk kant og et lyst dæk. Piller/pyloner tegnes som
+mørke, udfyldte polygoner i deres geografiske størrelse, også via WebGL.
+OSM har omrids ved Østbroen (4), gamle Lillebæltsbro (4), nye Lillebæltsbro (2)
+og Farøs Sydbro (2); dækningen er ufuldstændig. Vestbroens 62 piller er efter aftale
+rekonstrueret med brugerens mål: 6 m langs broen og 42 m på tværs.
+Dækkene tegnes som udfyldte geografiske polygoner: 40 m på Vestbroen og 25 m
+på Østbroen. Begge Lillebæltsbroers dæk bruger gennemsnittet af den længste
+side på hver af deres sekskantede piller; pilleomridsene bevares.
+Den nye Lillebæltsbros lige dæk roteres/forskydes samlet gennem begge
+pyloners arealmidtpunkter med lige lange endestrækninger uden at ændre længde
+eller bredde. Denne tilpasning har en direkte geometrisk løsning.
+De forberedes sammen med pillerne og skalerer med kortet;
+en fast skærmbredde bruges kun til kanten.
+[Generatoren](scripts/prepare_bridge_supports.py) bruger brugerens 62 satellitpunkter
+fra [målefilen](data/geography/vestbroen-piers.json), ordnet fra Sprogø mod Fyn.
+Hvert punkt fastholdes midt på syd/sydøst-endefladen; pillen går 42 m mod
+nord/nordvest, vinkelret på det nærmeste segment af broens OSM-akse. De 6 m
+langs broen fordeles med 3 m på hver side af punktet. Vestbroens dæk tilpasses derefter samlet med én rotation (maks. ±2°)
+og forskydning (maks. ±20 m øst/nord), der minimerer summen af kvadrerede
+afstande fra pillernes midtpunkter til dækkets centerlinje. Bredde og form
+bevares; pillerne flyttes ikke. Offlinegeneratoren kræver
+[NumPy/SciPy](scripts/requirements-bridges.txt). Resultat og residualer gemmes
+i dækkets GeoJSON-egenskaber. Omridsene er fortsat tilnærmede; punkternes præcision
+følger den manuelle satellitaflæsning.
+Filen hentes først efter
+stævnevalg; forsiden henter ingen kortgeometri. Brovalg er adskilt fra de
+beregningstunge sporinputs, så en broændring ikke genberegner bådprofiler.
+
+## GPS-outliers
+
+Profilbygget fitter en todimensional Kalman-model med konstant hastighedsvektor
+pr. båd. Robuste lokale residualer estimerer GPS-støj og processtøj inden for de
+fysiske grænser i stævnets `trackFilter`-konfiguration. Frem- og baglæns filtrering
+skal begge afvise en måling, før den fjernes: innovationen skal overstige både
+80 meter og en kvadreret Mahalanobis-afstand på 100. Processtøj tillader normale
+fart-/kursændringer; tidsintervaller bruges eksplicit, også i de sparsomme spor.
+Modellen nulstilles ved huller over 300 sekunder. Segmenter med færre end fem
+punkter bevares, fordi evidensen er utilstrækkelig.
+
+Rå native snapshots ændres aldrig. Gyldige koordinater, tider og kildefart bevares
+uændret; der indsættes ingen Kalman-udglattede koordinater. Filtreringen sker før
+komprimering, interpolation og profilberegning, så positioner, spor og gates bruger
+samme punkter. Der er ingen ekstra beregning under afspilning. Manifestets
+`filtering` angiver optællingen. En lokal `filter-report.json` ved hver genereret
+profilpakke indeholder modelparametre og de afviste målinger og publiceres ikke.
+
+Modellen udpeger store afvigelser fra bevægelsesforløbet; den er ikke en
+land-/bilklassifikator. Sammenhængende forkerte forløb kan ikke sikkert afgøres
+ud fra positioner alene. Den nuværende indstilling afviser 53/37/114/48 punkter
+for hhv. Sjælland Rundt 2026 og Silverrudder 2025/2024/2026.
+
+Modelgrundlag: [konstant-hastighedsmodellen og innovation](https://www.mathworks.com/help/fusion/ug/linear-kalman-filters.html).
+
 ## Flere stævner
 
-Trackeren vælger stævne i overskriftens dropdown. Direkte links bruger
-`?event=sjaelland-rundt-2026` eller `?event=silverrudder-2025`. Et skift genindlæser
-siden og frigiver det tidligere stævnes GPU-data. Kun det valgte stævnes pakke hentes.
+Forsiden er en let stævnevælger og henter ingen spor eller GPU-data. Hvert stævne
+har et symmetrisk direkte link: `/events/sjaelland-rundt-2026/` og
+`/events/silverrudder-2025/`. Links virker også under et Pages-repository-præfiks.
+Admin bruger samme struktur under `/admin/events/<id>/`. Et stævneskift genindlæser
+siden og frigiver det tidligere stævnes GPU-data. Gamle `?event=<id>`-links
+omdirigeres eksplicit til det nye link.
 
-[Kataloget](viewer/events/catalog.json) angiver stævnerne. Hvert stævnes
-[event.json](viewer/events/silverrudder-2025/event.json) indeholder titel, tidsrum,
-baner/rhumblines, referencebåd, mærker, kortudsnit og tilgængelige funktioner.
+[Kataloget](viewer/events/catalog.json) er den eneste stævnekonfiguration.
+Hver post indeholder titel, beskrivelse, tidsrum, baner/rhumblines, referencebåd,
+mærker, kortudsnit, datakilder og præsentationsdokument. `nameDisplay` styrer
+importens startnummer-/modelnavneformat; `boatStyle` samler farver, fremhævede både,
+navneplacering og kildebelagte/manuelle ikonmål. `routeEditor.allowReplace` styrer
+om en gemt rhumbline kan erstattes med versionskontrol. `features` og `layers`
+beskriver tilgængelige funktioner/lag, og `storage` angiver eksplicit migrering.
+Det fælles [tracker-layout](viewer/tracker.html) får et lille, genereret HTML-indgangspunkt
+pr. stævne ved build; der er ingen separat trackerimplementering pr. stævne.
+
 Spor, bådmetadata og baggrund ligger som separate native inputs under
 [data/events](data/events). Buildet publicerer hver pakke under
 `events/<stævne>/track-profiles/`; præsentationen ligger under
@@ -23,10 +102,21 @@ Mærker og foreløbig rhumbline kommer fra TracTracs kontrolpunkter. Handicap og
 er utilgængelige for dette stævne, da der ikke er importeret et gyldigt grundlag.
 Kun brugerens polygon ved Storebæltsbroen er overført fra Sjælland Rundt.
 
+Silverrudder 2024 og 2026 ligger på `/events/silverrudder-2024/` og
+`/events/silverrudder-2026/`. De genbruger 2025-kortet, rhumblinen, mærkerne og
+start-/mållinjen. 2024 samler syv løb (420 spor); 2026 importerer ét samlet løb
+med syv klasser og klassernes egne UTC-starter (428 spor). Præsentationer og
+spor er adskilt pr. årgang. `boatStyle.featuredModelPattern` udvælger Seascape 27
+og First 27 SE ved import, også kildens kombinerede modelnavne; First 27.7 er ikke med.
+2024/2026-kilden har enkelte fartsopdateringer til samme koordinat og tidsstempel.
+Den eksplicitte `duplicateSpeedPolicy: latest` beholder den sidst leverede fart;
+forskellige koordinater med samme tidsstempel afvises fortsat.
+
 Genimport af den konfigurerede Silverrudder-kilde:
 
 ```sh
 python scripts/import_tractrac_event.py --event silverrudder-2025
+# Brug silverrudder-2024 eller silverrudder-2026 for de andre årgange.
 # --refresh henter JSON-metadata og de lagrede GPS-filer igen.
 python scripts/prepare_adaptive_map.py --event silverrudder-2025 --angle-degrees 0.2
 node scripts/prepare_track_profiles.cjs --if-stale
@@ -157,13 +247,12 @@ Genstart den lokale server efter ændringer af kildedata eller generatoren.
 Åbn <http://127.0.0.1:8097/>. Brug samme browser og adresse som før flytningen;
 browserens eksisterende noter følger adressen, ikke mappens placering.
 Lokalt uploadede billeder ligger i `data/event-images/`.
-Den permanente rhumbline tegnes én gang på det separate lokale kort
-`/rhumbline.html`, fx <http://127.0.0.1:8097/rhumbline.html>. **Gem permanent
-rhumbline** skriver punkterne til `viewer/rhumbline.json`. Rutedefinitionen
-indgår ikke i præsentationsdata og kan ikke overskrives fra tegnekortet.
-Bøgestrømmens separate rhumbline tegnes på
-<http://127.0.0.1:8097/rhumbline.html?course=boegestroemmen> og gemmes i
-`viewer/rhumbline-boegestroemmen.json`. Referencebådens bane bestemmer
+Rhumbline tegnes på stævnets lokale direkte link med `?editRoute=1&course=<bane>`,
+fx <http://127.0.0.1:8097/events/sjaelland-rundt-2026/?editRoute=1&course=boegestroemmen>
+eller <http://127.0.0.1:8097/events/silverrudder-2025/?editRoute=1&course=fyn>.
+**Gem permanent rhumbline** opdaterer den valgte banes punkter i
+[kataloget](viewer/events/catalog.json) og klargør sporfilerne.
+Referencebådens bane bestemmer
 sammenligningsruten; bådvælgeren filtrerer på bane og TracTrac-løb.
 Se [viewerens vejledning](viewer/README.md) for kortets betjening og datakilder.
 

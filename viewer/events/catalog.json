@@ -3,12 +3,2792 @@
   "default": "sjaelland-rundt-2026",
   "events": [
     {
+      "version": 1,
       "id": "sjaelland-rundt-2026",
-      "title": "Sjælland Rundt 2026"
+      "title": "Sjælland Rundt 2026",
+      "timezone": "Europe/Copenhagen",
+      "start": 1781161679,
+      "end": 1781394026,
+      "courses": {
+        "groensund": {
+          "name": "Grønsund",
+          "points": [
+            [
+              12.60973296314664,
+              56.05095346571909
+            ],
+            [
+              12.626239091329277,
+              56.039128980406765
+            ],
+            [
+              12.670170703038574,
+              55.72025635954687
+            ],
+            [
+              12.688717998232693,
+              55.63601439595854
+            ],
+            [
+              12.685743323393165,
+              55.590272366350234
+            ],
+            [
+              12.557519991558046,
+              54.957598315065695
+            ],
+            [
+              12.533230755001306,
+              54.94023033680426
+            ],
+            [
+              12.19166297383979,
+              54.86153906918431
+            ],
+            [
+              12.132457895252854,
+              54.878478085584305
+            ],
+            [
+              12.122210862420499,
+              54.89177199718937
+            ],
+            [
+              12.091469763923437,
+              54.89777569920456
+            ],
+            [
+              12.024423179119825,
+              54.909709449964815
+            ],
+            [
+              11.999743634112178,
+              54.91668107284833
+            ],
+            [
+              11.987403861608357,
+              54.93192136473322
+            ],
+            [
+              11.978794718001037,
+              54.94245986444086
+            ],
+            [
+              11.946079972293228,
+              54.950728533442245
+            ],
+            [
+              11.86314530384913,
+              54.97131911991637
+            ],
+            [
+              11.240553264975548,
+              55.19427943507493
+            ],
+            [
+              11.203402558684349,
+              55.25199945897369
+            ],
+            [
+              11.145354580104351,
+              55.290698111360356
+            ],
+            [
+              11.067838694613426,
+              55.34566917603488
+            ],
+            [
+              10.854979841962457,
+              55.74234872096676
+            ],
+            [
+              11.066542284056544,
+              55.926846385608286
+            ],
+            [
+              11.268448307529091,
+              56.04339739399946
+            ],
+            [
+              12.281489424288273,
+              56.134654361034855
+            ],
+            [
+              12.51555830039829,
+              56.09413946765333
+            ],
+            [
+              12.603658500939607,
+              56.05393099464097
+            ],
+            [
+              12.61977948692441,
+              56.04305297454219
+            ]
+          ]
+        },
+        "boegestroemmen": {
+          "name": "Bøgestrømmen",
+          "points": [
+            [
+              12.611771000000001,
+              56.050287499999996
+            ],
+            [
+              12.625376235470638,
+              56.03896205588398
+            ],
+            [
+              12.697192330556796,
+              55.58858500603198
+            ],
+            [
+              12.454398964392865,
+              55.27776356459148
+            ],
+            [
+              12.148977117091778,
+              55.06516993147783
+            ],
+            [
+              12.161190054589294,
+              55.03993577490508
+            ],
+            [
+              12.189105363494134,
+              54.99695885354542
+            ],
+            [
+              12.15665384385788,
+              54.988284612223545
+            ],
+            [
+              12.130832056736079,
+              54.97113339843374
+            ],
+            [
+              12.111640297811412,
+              54.96423343374588
+            ],
+            [
+              12.084073953174165,
+              54.96541628483523
+            ],
+            [
+              12.034873262112747,
+              54.958713461995586
+            ],
+            [
+              11.986370540919246,
+              54.964824814179366
+            ],
+            [
+              11.956710549853852,
+              54.97349905550125
+            ],
+            [
+              11.874709454666077,
+              54.965219086363064
+            ],
+            [
+              11.234879411699955,
+              55.20492993494095
+            ],
+            [
+              11.200702577511363,
+              55.25009906567434
+            ],
+            [
+              11.071929248280993,
+              55.34526451100484
+            ],
+            [
+              10.857742525241898,
+              55.74399670591036
+            ],
+            [
+              11.067213814038448,
+              55.92390206816869
+            ],
+            [
+              11.274406947099987,
+              56.04111813300636
+            ],
+            [
+              12.283531007779558,
+              56.13030462770927
+            ],
+            [
+              12.310422883476576,
+              56.130823418200876
+            ],
+            [
+              12.498284396760717,
+              56.09400600471682
+            ],
+            [
+              12.549735278266917,
+              56.079546409220306
+            ],
+            [
+              12.61995325167054,
+              56.042943425180376
+            ]
+          ]
+        }
+      },
+      "defaultReference": "groensund:cf8a8000-4624-013f-296f-04421a259aad",
+      "initialView": [
+        230,
+        250,
+        620,
+        760
+      ],
+      "places": [
+        [
+          "Helsingør",
+          12.61,
+          56.04
+        ],
+        [
+          "København",
+          12.57,
+          55.67
+        ],
+        [
+          "Stevns",
+          12.45,
+          55.28
+        ],
+        [
+          "Møn",
+          12.3,
+          54.98
+        ],
+        [
+          "Farø",
+          11.99,
+          54.95
+        ],
+        [
+          "Agersø",
+          11.2,
+          55.21
+        ],
+        [
+          "Storebæltsbroen",
+          11.03,
+          55.33
+        ],
+        [
+          "Røsnæs",
+          10.87,
+          55.74
+        ],
+        [
+          "Sj. Odde",
+          11.3,
+          55.97
+        ],
+        [
+          "Gilleleje",
+          12.31,
+          56.13
+        ]
+      ],
+      "marks": [
+        [
+          "snekkeloebRedMark",
+          11.275383333333334,
+          56.03985,
+          "Rød i Snekkeløb"
+        ],
+        [
+          "mandatoryRedMark",
+          12.1893,
+          54.82971666666667,
+          "Bøje, der skal overholdes"
+        ]
+      ],
+      "features": {
+        "weather": true,
+        "handicap": true
+      },
+      "nativeFile": "data/events/sjaelland-rundt-2026/native.json.gz",
+      "backgroundFile": "data/events/sjaelland-rundt-2026/background.json.gz",
+      "presentationFile": "presentation/presentation.json",
+      "profileRoot": "events/sjaelland-rundt-2026/track-profiles/",
+      "description": "To baner rundt om Sjælland · Grønsund og Bøgestrømmen",
+      "storage": {
+        "legacyPrefix": "sr2026-",
+        "legacyAdminPath": "/admin/"
+      },
+      "routeEditor": {
+        "allowReplace": false
+      },
+      "nameDisplay": {
+        "startNumberPrefix": false,
+        "removeModelParentheses": false,
+        "duplicateSuffix": "startNumber"
+      },
+      "boatStyle": {
+        "colours": {
+          "Mercutio": "#ffdc42",
+          "Vera": "#ff4dac",
+          "My": "#6cffff",
+          "THE HULK": "#65ff84"
+        },
+        "featured": [
+          "Mercutio",
+          "Vera",
+          "My",
+          "THE HULK",
+          "Rosa-Lux"
+        ],
+        "labelOffsets": {
+          "Mercutio": -12,
+          "Vera": 15,
+          "My": -4,
+          "THE HULK": 27
+        },
+        "overrides": {
+          "mercutio": {
+            "lengthM": 8,
+            "beamM": 2.54,
+            "hull": "modern"
+          },
+          "vera": {
+            "lengthM": 8,
+            "beamM": 2.54,
+            "hull": "modern"
+          },
+          "my": {
+            "lengthM": 8,
+            "beamM": 2.54,
+            "hull": "modern"
+          },
+          "saltamalin": {
+            "lengthM": 8,
+            "beamM": 2.54,
+            "hull": "modern"
+          },
+          "the hulk": {
+            "lengthM": 10.3,
+            "beamM": 3.18,
+            "hull": "modern"
+          },
+          "rosa-lux": {
+            "lengthM": 10,
+            "beamM": 3,
+            "hull": "common"
+          },
+          "xbox": {
+            "lengthM": 12.75,
+            "beamM": 4.18,
+            "hull": "modern"
+          },
+          "quinta light": {
+            "lengthM": 12.55,
+            "beamM": 4.3,
+            "hull": "modern"
+          },
+          "hansen 3.5": {
+            "lengthM": 10.65,
+            "beamM": 3.53
+          },
+          "munje": {
+            "lengthM": 13.35,
+            "beamM": 4.25,
+            "hull": "common"
+          },
+          "vi ses": {
+            "lengthM": 10.21,
+            "beamM": 3.21,
+            "hull": "common"
+          },
+          "dream on": {
+            "lengthM": 15.88,
+            "beamM": 3.86,
+            "hull": "common"
+          },
+          "norma": {
+            "lengthM": 9.96,
+            "beamM": 3.1,
+            "hull": "common"
+          },
+          "tjørn": {
+            "lengthM": 12.25,
+            "beamM": 3.3,
+            "hull": "common"
+          },
+          "sabrina": {
+            "lengthM": 11.8872,
+            "beamM": 3.784314606741573,
+            "hull": "common"
+          },
+          "laolao": {
+            "hull": "modern"
+          },
+          "alice": {
+            "lengthM": 8,
+            "beamM": 2.51
+          },
+          "moster": {
+            "lengthM": 7.77,
+            "beamM": 2.5
+          },
+          "slipstik": {
+            "lengthM": 10,
+            "beamM": 2.3,
+            "hull": "classic"
+          },
+          "ambra": {
+            "lengthM": 10,
+            "beamM": 2.3,
+            "hull": "classic"
+          }
+        },
+        "dimensions": {
+          "alex": {
+            "lengthM": 10.11,
+            "beamM": 3.43,
+            "source": "https://websejler.dk/da/baadtype/285",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "DEHLER 34/343",
+            "sailNumber": "DEN 435",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "alice": {
+            "lengthM": 8,
+            "beamM": 2.51,
+            "source": "https://websejler.dk/da/certifikat/37529",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "J 80",
+            "sailNumber": "DEN 468",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "allegra": {
+            "lengthM": 10.69,
+            "beamM": 3.16,
+            "source": "https://websejler.dk/da/baadtype/161",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "BIANCA 107",
+            "sailNumber": "DEN 53",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "alvilda": {
+            "lengthM": 9.86,
+            "beamM": 2.61,
+            "source": "https://websejler.dk/da/certifikat/11532",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "SCAN-KAP 99",
+            "sailNumber": "DEN 127",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "amalie": {
+            "lengthM": 12.8,
+            "beamM": 3.87,
+            "source": "https://websejler.dk/da/baadtype/10016",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "MØN 431",
+            "sailNumber": "DEN 101",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "ambra": {
+            "lengthM": 10.02,
+            "beamM": 2.3,
+            "source": "https://websejler.dk/da/certifikat/3461",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "BB 10 METER",
+            "sailNumber": "DEN 68",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "andrea": {
+            "lengthM": 10.72,
+            "beamM": 3.47,
+            "source": "https://websejler.dk/da/certifikat/37461",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "X-362 SPORT",
+            "sailNumber": "DEN 245",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "annibeth": {
+            "lengthM": 13.6,
+            "beamM": 4.3,
+            "source": "https://websejler.dk/da/certifikat/33195",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "DUFOUR 45",
+            "sailNumber": "DEN 45",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "banner viking": {
+            "lengthM": 12.33,
+            "beamM": 3.25,
+            "source": "https://websejler.dk/da/certifikat/9243",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "BANNER 41",
+            "sailNumber": "DEN 6",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "bibs": {
+            "lengthM": 12.88,
+            "beamM": 3.1,
+            "source": "https://websejler.dk/da/baadtype/248",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "OMEGA 42",
+            "sailNumber": "DEN 110",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "blacq magic": {
+            "lengthM": 10.58,
+            "beamM": 3.21,
+            "source": "https://websejler.dk/da/certifikat/37022",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "MAX FUN 35",
+            "sailNumber": "DEN 7",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "blue bird": {
+            "lengthM": 9.31,
+            "beamM": 2.92,
+            "source": "https://websejler.dk/da/baadtype/251",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "SUNWIND 31",
+            "sailNumber": "DEN 145",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "blåregn": {
+            "lengthM": 10,
+            "beamM": 3,
+            "source": "https://websejler.dk/da/certifikat/7169",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "X-99",
+            "sailNumber": "DEN 56",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "buksesnedkeren": {
+            "lengthM": 19.24,
+            "beamM": 4.91,
+            "source": "https://websejler.dk/da/certifikat/9852",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "ONE OFF",
+            "sailNumber": "DEN 1239",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "casa bent": {
+            "lengthM": 13.89,
+            "beamM": 4.32,
+            "source": "https://websejler.dk/da/certifikat/37834",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "DEHLER 46",
+            "sailNumber": "DEN 103",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "charlotte": {
+            "lengthM": 9.29,
+            "beamM": 3.06,
+            "source": "https://websejler.dk/da/certifikat/8646",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "MAMBA 31/311",
+            "sailNumber": "DEN 271",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "delizia": {
+            "lengthM": 9.16,
+            "beamM": 2.97,
+            "source": "https://websejler.dk/da/certifikat/37862",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "BALLAD",
+            "sailNumber": "DEN 531",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "denanden": {
+            "lengthM": 12.83,
+            "beamM": 3.99,
+            "source": "https://websejler.dk/da/baadtype/10301",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "BAVARIA 42",
+            "sailNumber": "DEN 1",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "dina 2": {
+            "lengthM": 10.62,
+            "beamM": 3.3,
+            "source": "https://sailboatdata.com/sailboat/bandholm-35/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "Banholm 35",
+            "sailNumber": "BA 35",
+            "measurementFields": [
+              "LOA",
+              "Beam"
+            ]
+          },
+          "dorthea": {
+            "lengthM": 12.17,
+            "beamM": 3.28,
+            "source": "https://websejler.dk/da/certifikat/11517",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "LUFFE 40 NY KØL",
+            "sailNumber": "DEN 45",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "ds37": {
+            "lengthM": 11.25,
+            "beamM": 3.23,
+            "source": "https://sailboatdata.com/sailboat/ds-37-match-racer/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "SCANDINAVIAN MATCH RACER",
+            "sailNumber": "DEN 25",
+            "measurementFields": [
+              "LOA",
+              "Beam"
+            ]
+          },
+          "easy l♥️ver": {
+            "lengthM": 12.3,
+            "beamM": 3.76,
+            "source": "https://websejler.dk/da/baadtype/10683",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "SOTO 40",
+            "sailNumber": "DEN 28",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "eldkvarn": {
+            "lengthM": 9.35,
+            "beamM": 3.12,
+            "source": "https://websejler.dk/da/certifikat/37905",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "RIDAS 31",
+            "sailNumber": "SWE 10172",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "enjoy life": {
+            "lengthM": 11.3,
+            "beamM": 3.63,
+            "source": "https://websejler.dk/da/certifikat/34294",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "KER 11.3",
+            "sailNumber": "DEN 1100",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "esmeralda": {
+            "lengthM": 9.62,
+            "beamM": 3.3,
+            "source": "https://websejler.dk/da/certifikat/37912",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "HR 31/310",
+            "sailNumber": "DEN 318",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "farr-well ii": {
+            "lengthM": 8.3,
+            "beamM": 3,
+            "source": "https://websejler.dk/da/certifikat/37289",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "FIRST 27.7",
+            "sailNumber": "DEN 414",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "festina": {
+            "lengthM": 11.28,
+            "beamM": 3.79,
+            "source": "https://websejler.dk/da/certifikat/37630",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "ARCONA 380/385",
+            "sailNumber": "DEN 5",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "fifty": {
+            "lengthM": 12.33,
+            "beamM": 3.25,
+            "source": "https://websejler.dk/da/certifikat/11252",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "BANNER 41",
+            "sailNumber": "DEN 15",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "freja": {
+            "lengthM": 9.5,
+            "beamM": 3.3,
+            "source": "https://sailboatdata.com/sailboat/sun-fast-32-jeanneau/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "SunFast 32",
+            "sailNumber": "DEN 384",
+            "measurementFields": [
+              "LOA",
+              "Beam"
+            ]
+          },
+          "frida ii": {
+            "lengthM": 9.55,
+            "beamM": 3.3,
+            "source": "https://websejler.dk/da/baadtype/10466",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "HANSE 320",
+            "sailNumber": "SWE 432",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "friendship 2": {
+            "lengthM": 9.92,
+            "beamM": 2.42,
+            "source": "https://websejler.dk/da/baadtype/12",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "APHRODITE 101",
+            "sailNumber": "DEN 11",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "frigg": {
+            "lengthM": 9.5,
+            "beamM": 3.3,
+            "source": "https://sailboatdata.com/sailboat/sun-fast-32-jeanneau/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "SunFast 32",
+            "sailNumber": "DEN 693",
+            "measurementFields": [
+              "LOA",
+              "Beam"
+            ]
+          },
+          "gaia": {
+            "lengthM": 10.1,
+            "beamM": 3.47,
+            "source": "https://websejler.dk/da/baadtype/2294",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "NAJAD 340",
+            "sailNumber": "-- --",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "grand delice": {
+            "lengthM": 10.62,
+            "beamM": 3.45,
+            "source": "https://websejler.dk/da/certifikat/36100",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "FIRST 36.7",
+            "sailNumber": "DEN 1",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "guldfisken": {
+            "lengthM": 10.64,
+            "beamM": 3.45,
+            "source": "https://websejler.dk/da/certifikat/37484",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "FIRST 36.7",
+            "sailNumber": "SWE 399",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "hansen 3.5": {
+            "lengthM": 10.65,
+            "beamM": 3.53,
+            "source": "https://websejler.dk/da/certifikat/35938",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "ELLIOT 35 SS",
+            "sailNumber": "DEN 35551",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "irma": {
+            "lengthM": 9.2,
+            "beamM": 3.2,
+            "source": "https://websejler.dk/da/baadtype/1971",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "TRIO 92",
+            "sailNumber": "DEN 92",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "irmgard ii": {
+            "lengthM": 11.28,
+            "beamM": 3.76,
+            "source": "https://websejler.dk/da/certifikat/36980",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "DEHLER 38 (2014)",
+            "sailNumber": "DEN 322",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "joujou 2": {
+            "lengthM": 11.16,
+            "beamM": 2.73,
+            "source": "https://websejler.dk/da/certifikat/3984",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "LUFFE 37",
+            "sailNumber": "DEN 35",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "joy": {
+            "lengthM": 10.97,
+            "beamM": 3.58,
+            "source": "https://websejler.dk/da/certifikat/35884",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "J 112",
+            "sailNumber": "DEN 1",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "julianehåb": {
+            "lengthM": 10.69,
+            "beamM": 3.16,
+            "source": "https://websejler.dk/da/baadtype/161",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "BIANCA 107",
+            "sailNumber": "DEN 107",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "lacee bee": {
+            "lengthM": 13.15,
+            "beamM": 4.18,
+            "source": "https://websejler.dk/da/baadtype/10423",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "HANSE 430",
+            "sailNumber": "SWE 12430",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "laguna": {
+            "lengthM": 8.9,
+            "beamM": 2.93,
+            "source": "https://websejler.dk/da/certifikat/31936",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "MAMBA 29",
+            "sailNumber": "DEN 61",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "laolao": {
+            "lengthM": 10.8,
+            "beamM": 3.56,
+            "source": "https://websejler.dk/da/certifikat/36240",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "JEANNEAU SUN FAST 3600",
+            "sailNumber": "DEN 3601",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "little wing": {
+            "lengthM": 11.99,
+            "beamM": 3.91,
+            "source": "https://websejler.dk/da/baadtype/10254",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "DUFOUR 40",
+            "sailNumber": "DEN 121",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "luna": {
+            "lengthM": 8.72,
+            "beamM": 2.92,
+            "source": "https://websejler.dk/da/baadtype/190",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "SOLUS 29",
+            "sailNumber": "D 26",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "margrethe": {
+            "lengthM": 13.34,
+            "beamM": 4.24,
+            "source": "https://sailboatdata.com/sailboat/sun-magic-44-jeanneau/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "Jeanneau sun magic",
+            "sailNumber": "XXX xxx",
+            "measurementFields": [
+              "LOA",
+              "Beam"
+            ]
+          },
+          "mary": {
+            "lengthM": 11.32,
+            "beamM": 3.55,
+            "source": "https://sailboatdata.com/sailboat/hallberg-rassy-37/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "Hallberg-Rassy 37",
+            "sailNumber": "44 DEN",
+            "measurementFields": [
+              "LOA",
+              "Beam"
+            ]
+          },
+          "mercutio": {
+            "lengthM": 7.99,
+            "beamM": 2.54,
+            "source": "https://websejler.dk/da/baadtype/10637",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "SEASCAPE 27",
+            "sailNumber": "DEN 162",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "mette": {
+            "lengthM": 11.99,
+            "beamM": 4.04,
+            "source": "https://sailboatdata.com/sailboat/hanse-400-2006-2007/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "Hanse 400e",
+            "sailNumber": "SWE 307",
+            "measurementFields": [
+              "LOD",
+              "Beam"
+            ]
+          },
+          "miss-x": {
+            "lengthM": 10.05,
+            "beamM": 3.29,
+            "source": "https://websejler.dk/da/certifikat/35567",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "X-332",
+            "sailNumber": "DEN 362",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "morgrethe": {
+            "lengthM": 12.88,
+            "beamM": 3.1,
+            "source": "https://websejler.dk/da/certifikat/9534",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "OMEGA 42",
+            "sailNumber": "DEN 60",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "moster": {
+            "lengthM": 7.78,
+            "beamM": 2.5,
+            "source": "https://websejler.dk/da/certifikat/31195",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "EXPRESS",
+            "sailNumber": "DEN 705",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "munje": {
+            "lengthM": 13.35,
+            "beamM": 4.25,
+            "source": "https://websejler.dk/da/certifikat/32924",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "DUFOUR 44",
+            "sailNumber": "DK 44",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "my": {
+            "lengthM": 7.99,
+            "beamM": 2.54,
+            "source": "https://websejler.dk/da/certifikat/37019",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "SEASCAPE 27",
+            "sailNumber": "SWE 27",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "neptun": {
+            "lengthM": 10.57,
+            "beamM": 3.34,
+            "source": "https://websejler.dk/da/baadtype/10255",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "J105",
+            "sailNumber": "DEN 452",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "nini": {
+            "lengthM": 11.5,
+            "beamM": 3.03,
+            "source": "https://websejler.dk/da/certifikat/37831",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "DRABANT 38",
+            "sailNumber": "DEN 21",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "njoy": {
+            "lengthM": 10.36,
+            "beamM": 3.5,
+            "source": "https://websejler.dk/da/baadtype/2406",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "BAVARIA 34",
+            "sailNumber": "BV 34",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "nordstjernen": {
+            "lengthM": 11.1,
+            "beamM": 3,
+            "source": "https://websejler.dk/da/certifikat/6708",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "FAURBY 36",
+            "sailNumber": "DEN 20",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "pandora": {
+            "lengthM": 12.85,
+            "beamM": 3.98,
+            "source": "https://websejler.dk/da/certifikat/36099",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "BAVARIA 42",
+            "sailNumber": "DEN 269",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "petrix": {
+            "lengthM": 10.99,
+            "beamM": 3.92,
+            "source": "https://websejler.dk/da/baadtype/10629",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "HANSE 385",
+            "sailNumber": "DEN 385",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "ping": {
+            "lengthM": 11.98,
+            "beamM": 3.82,
+            "source": "https://websejler.dk/da/certifikat/36066",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "ARCONA 400",
+            "sailNumber": "DEN 121",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "pixie": {
+            "lengthM": 11.6,
+            "beamM": 3.7,
+            "source": "https://websejler.dk/da/certifikat/35621",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "XP 38",
+            "sailNumber": "DEN 76",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "popeye": {
+            "lengthM": 11.32,
+            "beamM": 3.55,
+            "source": "https://sailboatdata.com/sailboat/hallberg-rassy-37/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "Hallberg Rassy 37",
+            "sailNumber": "HR 37",
+            "measurementFields": [
+              "LOA",
+              "Beam"
+            ]
+          },
+          "quinta light": {
+            "lengthM": 12.55,
+            "beamM": 4.3,
+            "source": "https://websejler.dk/da/certifikat/36449",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "HH 42",
+            "sailNumber": "DEN 5",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "quokka": {
+            "lengthM": 12.95,
+            "beamM": 3.91,
+            "source": "https://websejler.dk/da/certifikat/36624",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "GRAND SOLEIL 43",
+            "sailNumber": "DEN 2215",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "rafi": {
+            "lengthM": 8.25,
+            "beamM": 2.43,
+            "source": "https://websejler.dk/da/baadtype/118",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "BIANCA 27",
+            "sailNumber": "221 Bianca",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "rosa-lux": {
+            "lengthM": 10,
+            "beamM": 3,
+            "source": "https://websejler.dk/da/certifikat/34325",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "X-99",
+            "sailNumber": "DEN 520",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "sagitta": {
+            "lengthM": 10.76,
+            "beamM": 3.28,
+            "source": "https://websejler.dk/da/certifikat/33871",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "ALBIN STRATUS",
+            "sailNumber": "GER 6540",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "saltamalin": {
+            "lengthM": 7.99,
+            "beamM": 2.54,
+            "source": "https://websejler.dk/da/certifikat/34933",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "SEASCAPE 27",
+            "sailNumber": "SWE 237",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "sanne": {
+            "lengthM": 10.47,
+            "beamM": 3.05,
+            "source": "https://websejler.dk/da/certifikat/8591",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "SAGITTA 35",
+            "sailNumber": "DEN 477",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "scarlet": {
+            "lengthM": 11.09,
+            "beamM": 3.5,
+            "source": "https://websejler.dk/da/certifikat/35796",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "JEANNEAU SUN FAST 36",
+            "sailNumber": "DEN 11",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "siroque": {
+            "lengthM": 9.5,
+            "beamM": 3.23,
+            "source": "https://websejler.dk/da/certifikat/37895",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "FIRST 31.7",
+            "sailNumber": "DEN 2606",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "slipstik": {
+            "lengthM": 10.02,
+            "beamM": 2.3,
+            "source": "https://websejler.dk/da/baadtype/43",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "BB 10 METER",
+            "sailNumber": "DEN 42",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "sneppen": {
+            "lengthM": 12.62,
+            "beamM": 3.4,
+            "source": "https://websejler.dk/da/baadtype/10064",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "FAURBY 424",
+            "sailNumber": "DEN 15",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "solhverv": {
+            "lengthM": 11.98,
+            "beamM": 3.82,
+            "source": "https://websejler.dk/da/certifikat/37252",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "ARCONA 400",
+            "sailNumber": "DEN 67",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "sonja fra sydhavnen": {
+            "lengthM": 5.71,
+            "beamM": 2.36,
+            "source": "https://websejler.dk/da/certifikat/37910",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "LYNÆS SENIOR",
+            "sailNumber": "DEN 66",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "spider pig": {
+            "lengthM": 7.7,
+            "beamM": 2.47,
+            "source": "https://websejler.dk/da/certifikat/37889",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "CORBY 25",
+            "sailNumber": "SWE 65",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "stormy": {
+            "lengthM": 12.88,
+            "beamM": 3.93,
+            "source": "https://websejler.dk/da/certifikat/36595",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "STIMSON IRC 42",
+            "sailNumber": "DEN 1",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "the hulk": {
+            "lengthM": 9.12,
+            "beamM": 3.26,
+            "source": "https://websejler.dk/da/certifikat/37374",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "DEHLER 30 OD",
+            "sailNumber": "DEN 48",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "thermidor": {
+            "lengthM": 10.64,
+            "beamM": 3.45,
+            "source": "https://websejler.dk/da/certifikat/36170",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "FIRST 36.7",
+            "sailNumber": "SWE 102",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "tignanello": {
+            "lengthM": 11.05,
+            "beamM": 3.57,
+            "source": "https://websejler.dk/da/certifikat/37494",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "X-372",
+            "sailNumber": "DEN 79",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "triumph": {
+            "lengthM": 10.74,
+            "beamM": 3.61,
+            "source": "https://websejler.dk/da/baadtype/10376",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "DELPHIA 37",
+            "sailNumber": "SWE 73",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "vaiana - den": {
+            "lengthM": 11.98,
+            "beamM": 4.29,
+            "source": "https://sailboatdata.com/sailboat/c42-bavaria/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "Bavaria C42",
+            "sailNumber": "B 42",
+            "measurementFields": [
+              "LOD",
+              "Beam"
+            ]
+          },
+          "vaiana - no": {
+            "lengthM": 11.1,
+            "beamM": 3.35,
+            "source": "https://sailboatdata.com/sailboat/malo-50/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "Malö 50",
+            "sailNumber": "NO Name",
+            "measurementFields": [
+              "LOA",
+              "Beam"
+            ]
+          },
+          "valkyria": {
+            "lengthM": 11.28,
+            "beamM": 3.8,
+            "source": "https://websejler.dk/da/certifikat/36073",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "ARCONA 380/385",
+            "sailNumber": "SWE 134",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "veloce": {
+            "lengthM": 11.62,
+            "beamM": 3.58,
+            "source": "https://websejler.dk/da/certifikat/34776",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "EXPLORER 38",
+            "sailNumber": "DEN 17",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "vera": {
+            "lengthM": 7.99,
+            "beamM": 2.54,
+            "source": "https://websejler.dk/da/certifikat/35355",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "SEASCAPE 27",
+            "sailNumber": "SWE 73",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "viento": {
+            "lengthM": 10.32,
+            "beamM": 3.2,
+            "source": "https://websejler.dk/da/baadtype/2318",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "MØN 341",
+            "sailNumber": "DEN 7",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "voador": {
+            "lengthM": 10.55,
+            "beamM": 3.34,
+            "source": "https://websejler.dk/da/certifikat/36507",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "J105",
+            "sailNumber": "GBR 722r",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "xanadu": {
+            "lengthM": 11.25,
+            "beamM": 3.63,
+            "source": "https://websejler.dk/da/baadtype/10072",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "HANSE 371",
+            "sailNumber": "DEN 35",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "xar": {
+            "lengthM": 13.29,
+            "beamM": 4.07,
+            "source": "https://sailboatdata.com/sailboat/xp-44/",
+            "measurementBasis": "type",
+            "estimated": true,
+            "boatType": "XP-44",
+            "sailNumber": "SWE 129",
+            "measurementFields": [
+              "Hull length in notes",
+              "Beam"
+            ]
+          },
+          "xavia": {
+            "lengthM": 10.72,
+            "beamM": 3.47,
+            "source": "https://websejler.dk/da/certifikat/36710",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "X-362 SPORT",
+            "sailNumber": "DEN 1130",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "xbox": {
+            "lengthM": 12.75,
+            "beamM": 4.18,
+            "source": "https://websejler.dk/da/certifikat/37673",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "XR 41",
+            "sailNumber": "DEN 41",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "xilje": {
+            "lengthM": 12.1,
+            "beamM": 3.77,
+            "source": "https://websejler.dk/da/certifikat/36114",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "IMX 40",
+            "sailNumber": "DEN 9",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "xusidus": {
+            "lengthM": 11.45,
+            "beamM": 3.72,
+            "source": "https://websejler.dk/da/certifikat/37406",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "X-382",
+            "sailNumber": "SWE 74",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          },
+          "zenobia": {
+            "lengthM": 9.86,
+            "beamM": 3.15,
+            "source": "https://websejler.dk/da/certifikat/5907",
+            "measurementBasis": "certificate",
+            "estimated": false,
+            "boatType": "ALBIN NOVA",
+            "sailNumber": "DEN 338",
+            "measurementFields": [
+              "LOA",
+              "Bmax"
+            ]
+          }
+        }
+      },
+      "layers": {
+        "traffic": true,
+        "military": true
+      },
+      "trackFilter": {
+        "method": "bidirectional-kalman-v1",
+        "gapSeconds": 300,
+        "minInnovationMetres": 80,
+        "gateSquared": 100,
+        "minNoiseMetres": 3,
+        "maxNoiseMetres": 50,
+        "minProcessNoise": 0.02,
+        "maxProcessNoise": 0.5
+      }
     },
     {
+      "version": 1,
       "id": "silverrudder-2025",
-      "title": "Silverrudder 2025"
+      "title": "Silverrudder 2025",
+      "timezone": "Europe/Copenhagen",
+      "start": 1758266700,
+      "end": 1758439998,
+      "courses": {
+        "fyn": {
+          "name": "Fyn rundt",
+          "points": [
+            [
+              10.632346,
+              55.0578885
+            ],
+            [
+              10.639543086239112,
+              55.05285320520665
+            ],
+            [
+              10.649463017878132,
+              55.037244754746744
+            ],
+            [
+              10.659510137945691,
+              55.03579390582367
+            ],
+            [
+              10.667800109841,
+              55.02833578200481
+            ],
+            [
+              10.724283388304933,
+              55.02653575969023
+            ],
+            [
+              10.777807597802065,
+              55.10099731382671
+            ],
+            [
+              10.824738101834448,
+              55.176488894087896
+            ],
+            [
+              10.889384029397341,
+              55.30721394811653
+            ],
+            [
+              10.752378478932604,
+              55.49711287988076
+            ],
+            [
+              10.707722419400081,
+              55.542010886012406
+            ],
+            [
+              10.627888438608045,
+              55.63026212462339
+            ],
+            [
+              10.161025670376894,
+              55.65102077137487
+            ],
+            [
+              9.754104333792892,
+              55.54414486675846
+            ],
+            [
+              9.742233105548074,
+              55.517266067908935
+            ],
+            [
+              9.724834049015401,
+              55.516856408216135
+            ],
+            [
+              9.68622989640726,
+              55.5196210885175
+            ],
+            [
+              9.675627354510477,
+              55.51685645595273
+            ],
+            [
+              9.67245565407744,
+              55.491411137622414
+            ],
+            [
+              9.695898116508378,
+              55.46263683179507
+            ],
+            [
+              9.791418813393495,
+              55.29438126038974
+            ],
+            [
+              9.97385171558701,
+              55.13129457376771
+            ],
+            [
+              10.071951488102709,
+              55.07379026277509
+            ],
+            [
+              10.144658913734917,
+              55.067816390059136
+            ],
+            [
+              10.326338358781047,
+              55.025601231366394
+            ],
+            [
+              10.524424588256908,
+              55.02385668138987
+            ],
+            [
+              10.589004193223525,
+              55.04260087034394
+            ],
+            [
+              10.612644220109297,
+              55.050769210079544
+            ],
+            [
+              10.62011309611463,
+              55.05615030044776
+            ],
+            [
+              10.632346,
+              55.0578885
+            ]
+          ]
+        }
+      },
+      "defaultReference": "7213b200-750f-013e-2d1f-04421a259aad:54e8d0a0-7511-013e-32e0-04421a259aad",
+      "initialView": [
+        20,
+        465,
+        345,
+        365
+      ],
+      "places": [
+        [
+          "Svendborg",
+          10.61,
+          55.06
+        ],
+        [
+          "Nyborg",
+          10.8,
+          55.31
+        ],
+        [
+          "Middelfart",
+          9.73,
+          55.51
+        ],
+        [
+          "Assens",
+          9.9,
+          55.27
+        ]
+      ],
+      "marks": [
+        [
+          "480f11e0-0975-013e-8ee1-1c6b0055db37",
+          10.716219,
+          55.030137,
+          "Thurø"
+        ],
+        [
+          "480f04c0-0975-013e-8ee1-1c6b0055db37",
+          10.853119,
+          55.299583,
+          "Knudshoved"
+        ],
+        [
+          "480f06c0-0975-013e-8ee1-1c6b0055db37",
+          10.61707,
+          55.620662,
+          "Fynshoved"
+        ],
+        [
+          "480f1ad0-0975-013e-8ee1-1c6b0055db37",
+          10.162642,
+          55.646146,
+          "Æbelø"
+        ],
+        [
+          "480f0a90-0975-013e-8ee1-1c6b0055db37",
+          9.758434,
+          55.542731,
+          "Strib"
+        ],
+        [
+          "480f1020-0975-013e-8ee1-1c6b0055db37",
+          9.74158,
+          55.519806,
+          "Ny Lillebæltsbro"
+        ],
+        [
+          "480f0c60-0975-013e-8ee1-1c6b0055db37",
+          9.677067,
+          55.51386,
+          "Hindsgavl"
+        ],
+        [
+          "480f08d0-0975-013e-8ee1-1c6b0055db37",
+          9.977854,
+          55.133241,
+          "Helnæs"
+        ],
+        [
+          "480f0e50-0975-013e-8ee1-1c6b0055db37",
+          10.325775,
+          55.037467,
+          "Svelmø"
+        ]
+      ],
+      "features": {
+        "weather": false,
+        "handicap": false
+      },
+      "nativeFile": "data/events/silverrudder-2025/native.json.gz",
+      "backgroundFile": "data/events/silverrudder-2025/background.json.gz",
+      "presentationFile": "presentation/silverrudder-2025.json",
+      "profileRoot": "events/silverrudder-2025/track-profiles/",
+      "source": {
+        "eventPage": "https://www.tractrac.com/event-page/event_20250919_Silverrudd/3196",
+        "races": [
+          {
+            "id": "7213b200-750f-013e-2d1f-04421a259aad",
+            "name": "Keelboats Mini",
+            "start": "2025-09-19T08:00:00.000Z",
+            "boats": 41,
+            "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/7213b200-750f-013e-2d1f-04421a259aad.json"
+          },
+          {
+            "id": "9a807850-750f-013e-2d2c-04421a259aad",
+            "name": "Keelboats Small",
+            "start": "2025-09-19T08:30:00.000Z",
+            "boats": 85,
+            "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a807850-750f-013e-2d2c-04421a259aad.json"
+          },
+          {
+            "id": "9a8e6b10-750f-013e-2d39-04421a259aad",
+            "name": "Keelboats Medium",
+            "start": "2025-09-19T09:00:00.000Z",
+            "boats": 134,
+            "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a8e6b10-750f-013e-2d39-04421a259aad.json"
+          },
+          {
+            "id": "9a969c90-750f-013e-2d46-04421a259aad",
+            "name": "Keelboats Large",
+            "start": "2025-09-19T09:30:00.000Z",
+            "boats": 98,
+            "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a969c90-750f-013e-2d46-04421a259aad.json"
+          },
+          {
+            "id": "9a9ecb60-750f-013e-2d53-04421a259aad",
+            "name": "Keelboats Extra Large",
+            "start": "2025-09-19T10:00:00.000Z",
+            "boats": 31,
+            "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/9a9ecb60-750f-013e-2d53-04421a259aad.json"
+          },
+          {
+            "id": "b94b80c0-750f-013e-2d60-04421a259aad",
+            "name": "Multihulls Small",
+            "start": "2025-09-19T10:30:00.000Z",
+            "boats": 10,
+            "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/b94b80c0-750f-013e-2d60-04421a259aad.json"
+          },
+          {
+            "id": "c28fd520-750f-013e-2d6d-04421a259aad",
+            "name": "Multihulls Large",
+            "start": "2025-09-19T11:00:00.000Z",
+            "boats": 12,
+            "source": "https://em.historical1.tractrac.com/events/45d5c330-0975-013e-8ee0-1c6b0055db37/races/c28fd520-750f-013e-2d6d-04421a259aad.json"
+          }
+        ],
+        "grouping": "races",
+        "courseLines": "source",
+        "duplicateSpeedPolicy": "reject"
+      },
+      "metadataNotes": [
+        "TracTracs interne stævnenavn siger 2026; løbenes datoer og den offentlige side er 2025.",
+        "Kun trafiksepareringen ved Storebæltsbroen overføres fra Sjælland Rundt efter brugerens valg.",
+        "Mærker og foreløbig rhumbline er importeret fra TracTrac. Vejr og handicap er ikke importeret."
+      ],
+      "description": "Fyn rundt · syv løb i én samlet tracker",
+      "storage": {
+        "legacyPrefix": null,
+        "legacyAdminPath": null
+      },
+      "routeEditor": {
+        "allowReplace": true
+      },
+      "nameDisplay": {
+        "startNumberPrefix": true,
+        "removeModelParentheses": true,
+        "duplicateSuffix": "startNumber"
+      },
+      "boatStyle": {
+        "colours": {},
+        "featured": [
+          "Mercutio",
+          "Let's Sea",
+          "BOLT",
+          "Aegir 2.0",
+          "Gladys",
+          "Sweet Escape",
+          "Saga",
+          "My",
+          "Rocksteady",
+          "moana",
+          "Chaya",
+          "SAMBA",
+          "JuLia",
+          "Vera",
+          "Nordri",
+          "Lets Sea"
+        ],
+        "labelOffsets": {},
+        "overrides": {},
+        "dimensions": {},
+        "featuredModelPattern": "\\b(?:Seascape\\s*27(?![\\d.])|First\\s*27\\s*SE\\b)"
+      },
+      "layers": {
+        "traffic": true,
+        "military": false
+      },
+      "trackFilter": {
+        "method": "bidirectional-kalman-v1",
+        "gapSeconds": 300,
+        "minInnovationMetres": 80,
+        "gateSquared": 100,
+        "minNoiseMetres": 3,
+        "maxNoiseMetres": 50,
+        "minProcessNoise": 0.02,
+        "maxProcessNoise": 0.5
+      }
+    },
+    {
+      "version": 1,
+      "id": "silverrudder-2024",
+      "title": "Silverrudder 2024",
+      "timezone": "Europe/Copenhagen",
+      "start": 1726817642.0,
+      "end": 1727013904.0,
+      "courses": {
+        "fyn": {
+          "name": "Fyn rundt",
+          "points": [
+            [
+              10.632346,
+              55.0578885
+            ],
+            [
+              10.639543086239112,
+              55.05285320520665
+            ],
+            [
+              10.649463017878132,
+              55.037244754746744
+            ],
+            [
+              10.659510137945691,
+              55.03579390582367
+            ],
+            [
+              10.667800109841,
+              55.02833578200481
+            ],
+            [
+              10.724283388304933,
+              55.02653575969023
+            ],
+            [
+              10.777807597802065,
+              55.10099731382671
+            ],
+            [
+              10.824738101834448,
+              55.176488894087896
+            ],
+            [
+              10.889384029397341,
+              55.30721394811653
+            ],
+            [
+              10.752378478932604,
+              55.49711287988076
+            ],
+            [
+              10.707722419400081,
+              55.542010886012406
+            ],
+            [
+              10.627888438608045,
+              55.63026212462339
+            ],
+            [
+              10.161025670376894,
+              55.65102077137487
+            ],
+            [
+              9.754104333792892,
+              55.54414486675846
+            ],
+            [
+              9.742233105548074,
+              55.517266067908935
+            ],
+            [
+              9.724834049015401,
+              55.516856408216135
+            ],
+            [
+              9.68622989640726,
+              55.5196210885175
+            ],
+            [
+              9.675627354510477,
+              55.51685645595273
+            ],
+            [
+              9.67245565407744,
+              55.491411137622414
+            ],
+            [
+              9.695898116508378,
+              55.46263683179507
+            ],
+            [
+              9.791418813393495,
+              55.29438126038974
+            ],
+            [
+              9.97385171558701,
+              55.13129457376771
+            ],
+            [
+              10.071951488102709,
+              55.07379026277509
+            ],
+            [
+              10.144658913734917,
+              55.067816390059136
+            ],
+            [
+              10.326338358781047,
+              55.025601231366394
+            ],
+            [
+              10.524424588256908,
+              55.02385668138987
+            ],
+            [
+              10.589004193223525,
+              55.04260087034394
+            ],
+            [
+              10.612644220109297,
+              55.050769210079544
+            ],
+            [
+              10.62011309611463,
+              55.05615030044776
+            ],
+            [
+              10.632346,
+              55.0578885
+            ]
+          ]
+        }
+      },
+      "defaultReference": "c1545e70-570b-013d-9fc2-04421a259aad:2896ea90-570c-013d-a181-04421a259aad",
+      "initialView": [
+        20,
+        465,
+        345,
+        365
+      ],
+      "places": [
+        [
+          "Svendborg",
+          10.61,
+          55.06
+        ],
+        [
+          "Nyborg",
+          10.8,
+          55.31
+        ],
+        [
+          "Middelfart",
+          9.73,
+          55.51
+        ],
+        [
+          "Assens",
+          9.9,
+          55.27
+        ]
+      ],
+      "marks": [
+        [
+          "480f11e0-0975-013e-8ee1-1c6b0055db37",
+          10.716219,
+          55.030137,
+          "Thurø"
+        ],
+        [
+          "480f04c0-0975-013e-8ee1-1c6b0055db37",
+          10.853119,
+          55.299583,
+          "Knudshoved"
+        ],
+        [
+          "480f06c0-0975-013e-8ee1-1c6b0055db37",
+          10.61707,
+          55.620662,
+          "Fynshoved"
+        ],
+        [
+          "480f1ad0-0975-013e-8ee1-1c6b0055db37",
+          10.162642,
+          55.646146,
+          "Æbelø"
+        ],
+        [
+          "480f0a90-0975-013e-8ee1-1c6b0055db37",
+          9.758434,
+          55.542731,
+          "Strib"
+        ],
+        [
+          "480f1020-0975-013e-8ee1-1c6b0055db37",
+          9.74158,
+          55.519806,
+          "Ny Lillebæltsbro"
+        ],
+        [
+          "480f0c60-0975-013e-8ee1-1c6b0055db37",
+          9.677067,
+          55.51386,
+          "Hindsgavl"
+        ],
+        [
+          "480f08d0-0975-013e-8ee1-1c6b0055db37",
+          9.977854,
+          55.133241,
+          "Helnæs"
+        ],
+        [
+          "480f0e50-0975-013e-8ee1-1c6b0055db37",
+          10.325775,
+          55.037467,
+          "Svelmø"
+        ]
+      ],
+      "features": {
+        "weather": false,
+        "handicap": false
+      },
+      "nativeFile": "data/events/silverrudder-2024/native.json.gz",
+      "backgroundFile": "data/events/silverrudder-2025/background.json.gz",
+      "presentationFile": "presentation/silverrudder-2024.json",
+      "profileRoot": "events/silverrudder-2024/track-profiles/",
+      "source": {
+        "eventPage": "https://www.tractrac.com/event-page/event_20240920_Silverrudd/2932",
+        "grouping": "races",
+        "courseLines": "shared",
+        "races": [
+          {
+            "id": "78698bf0-570b-013d-9fb5-04421a259aad",
+            "name": "Keelboats Mini",
+            "start": "2024-09-20T08:00:00.000Z",
+            "boats": 44,
+            "source": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/78698bf0-570b-013d-9fb5-04421a259aad.json"
+          },
+          {
+            "id": "c1545e70-570b-013d-9fc2-04421a259aad",
+            "name": "Keelboats Small",
+            "start": "2024-09-20T08:30:00.000Z",
+            "boats": 95,
+            "source": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c1545e70-570b-013d-9fc2-04421a259aad.json"
+          },
+          {
+            "id": "c1607cf0-570b-013d-9fcf-04421a259aad",
+            "name": "Keelboats Medium",
+            "start": "2024-09-20T09:00:00.000Z",
+            "boats": 130,
+            "source": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c1607cf0-570b-013d-9fcf-04421a259aad.json"
+          },
+          {
+            "id": "c16834d0-570b-013d-9fdc-04421a259aad",
+            "name": "Keelboats Large",
+            "start": "2024-09-20T09:30:00.000Z",
+            "boats": 95,
+            "source": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c16834d0-570b-013d-9fdc-04421a259aad.json"
+          },
+          {
+            "id": "c16dc980-570b-013d-9fe9-04421a259aad",
+            "name": "Keelboats Extra Large",
+            "start": "2024-09-20T10:00:00.000Z",
+            "boats": 35,
+            "source": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c16dc980-570b-013d-9fe9-04421a259aad.json"
+          },
+          {
+            "id": "c17355c0-570b-013d-9ff6-04421a259aad",
+            "name": "Multihulls Small",
+            "start": "2024-09-20T10:30:00.000Z",
+            "boats": 10,
+            "source": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c17355c0-570b-013d-9ff6-04421a259aad.json"
+          },
+          {
+            "id": "c178dc60-570b-013d-a003-04421a259aad",
+            "name": "Multihulls Large",
+            "start": "2024-09-20T11:00:00.000Z",
+            "boats": 11,
+            "source": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c178dc60-570b-013d-a003-04421a259aad.json"
+          }
+        ],
+        "duplicateSpeedPolicy": "latest"
+      },
+      "metadataNotes": [
+        "Kort, rhumbline, mærker og start-/mållinje genbruges fra Silverrudder 2025 efter brugerens valg.",
+        "Vejr og handicap er ikke importeret."
+      ],
+      "description": "Fyn rundt · syv løb i én samlet tracker",
+      "storage": {
+        "legacyPrefix": null,
+        "legacyAdminPath": null
+      },
+      "routeEditor": {
+        "allowReplace": true
+      },
+      "nameDisplay": {
+        "startNumberPrefix": true,
+        "removeModelParentheses": true,
+        "duplicateSuffix": "startNumber"
+      },
+      "boatStyle": {
+        "colours": {},
+        "featured": [
+          "BOLT",
+          "Vera",
+          "Rocksteady",
+          "moana",
+          "Nordri",
+          "Ashika I",
+          "Saga",
+          "Aegir 2.0",
+          "Mercutio",
+          "NO TIME TO LOSE",
+          "Let's Sea",
+          "JuLia",
+          "My",
+          "Gladys",
+          "Sweet Escape",
+          "HEARTBEAT",
+          "Republika Palma d",
+          "NoName"
+        ],
+        "labelOffsets": {},
+        "overrides": {},
+        "dimensions": {},
+        "featuredModelPattern": "\\b(?:Seascape\\s*27(?![\\d.])|First\\s*27\\s*SE\\b)"
+      },
+      "layers": {
+        "traffic": true,
+        "military": false
+      },
+      "trackFilter": {
+        "method": "bidirectional-kalman-v1",
+        "gapSeconds": 300,
+        "minInnovationMetres": 80,
+        "gateSquared": 100,
+        "minNoiseMetres": 3,
+        "maxNoiseMetres": 50,
+        "minProcessNoise": 0.02,
+        "maxProcessNoise": 0.5
+      }
+    },
+    {
+      "version": 1,
+      "id": "silverrudder-2026",
+      "title": "Silverrudder 2026",
+      "timezone": "Europe/Copenhagen",
+      "start": 1789715701.0,
+      "end": 1789859935.0,
+      "courses": {
+        "fyn": {
+          "name": "Fyn rundt",
+          "points": [
+            [
+              10.632346,
+              55.0578885
+            ],
+            [
+              10.639543086239112,
+              55.05285320520665
+            ],
+            [
+              10.649463017878132,
+              55.037244754746744
+            ],
+            [
+              10.659510137945691,
+              55.03579390582367
+            ],
+            [
+              10.667800109841,
+              55.02833578200481
+            ],
+            [
+              10.724283388304933,
+              55.02653575969023
+            ],
+            [
+              10.777807597802065,
+              55.10099731382671
+            ],
+            [
+              10.824738101834448,
+              55.176488894087896
+            ],
+            [
+              10.889384029397341,
+              55.30721394811653
+            ],
+            [
+              10.752378478932604,
+              55.49711287988076
+            ],
+            [
+              10.707722419400081,
+              55.542010886012406
+            ],
+            [
+              10.627888438608045,
+              55.63026212462339
+            ],
+            [
+              10.161025670376894,
+              55.65102077137487
+            ],
+            [
+              9.754104333792892,
+              55.54414486675846
+            ],
+            [
+              9.742233105548074,
+              55.517266067908935
+            ],
+            [
+              9.724834049015401,
+              55.516856408216135
+            ],
+            [
+              9.68622989640726,
+              55.5196210885175
+            ],
+            [
+              9.675627354510477,
+              55.51685645595273
+            ],
+            [
+              9.67245565407744,
+              55.491411137622414
+            ],
+            [
+              9.695898116508378,
+              55.46263683179507
+            ],
+            [
+              9.791418813393495,
+              55.29438126038974
+            ],
+            [
+              9.97385171558701,
+              55.13129457376771
+            ],
+            [
+              10.071951488102709,
+              55.07379026277509
+            ],
+            [
+              10.144658913734917,
+              55.067816390059136
+            ],
+            [
+              10.326338358781047,
+              55.025601231366394
+            ],
+            [
+              10.524424588256908,
+              55.02385668138987
+            ],
+            [
+              10.589004193223525,
+              55.04260087034394
+            ],
+            [
+              10.612644220109297,
+              55.050769210079544
+            ],
+            [
+              10.62011309611463,
+              55.05615030044776
+            ],
+            [
+              10.632346,
+              55.0578885
+            ]
+          ]
+        }
+      },
+      "defaultReference": "ed9479c0-94cc-013f-73e7-04421a259aad:3bf86c90-94cd-013f-74db-04421a259aad",
+      "initialView": [
+        20,
+        465,
+        345,
+        365
+      ],
+      "places": [
+        [
+          "Svendborg",
+          10.61,
+          55.06
+        ],
+        [
+          "Nyborg",
+          10.8,
+          55.31
+        ],
+        [
+          "Middelfart",
+          9.73,
+          55.51
+        ],
+        [
+          "Assens",
+          9.9,
+          55.27
+        ]
+      ],
+      "marks": [
+        [
+          "480f11e0-0975-013e-8ee1-1c6b0055db37",
+          10.716219,
+          55.030137,
+          "Thurø"
+        ],
+        [
+          "480f04c0-0975-013e-8ee1-1c6b0055db37",
+          10.853119,
+          55.299583,
+          "Knudshoved"
+        ],
+        [
+          "480f06c0-0975-013e-8ee1-1c6b0055db37",
+          10.61707,
+          55.620662,
+          "Fynshoved"
+        ],
+        [
+          "480f1ad0-0975-013e-8ee1-1c6b0055db37",
+          10.162642,
+          55.646146,
+          "Æbelø"
+        ],
+        [
+          "480f0a90-0975-013e-8ee1-1c6b0055db37",
+          9.758434,
+          55.542731,
+          "Strib"
+        ],
+        [
+          "480f1020-0975-013e-8ee1-1c6b0055db37",
+          9.74158,
+          55.519806,
+          "Ny Lillebæltsbro"
+        ],
+        [
+          "480f0c60-0975-013e-8ee1-1c6b0055db37",
+          9.677067,
+          55.51386,
+          "Hindsgavl"
+        ],
+        [
+          "480f08d0-0975-013e-8ee1-1c6b0055db37",
+          9.977854,
+          55.133241,
+          "Helnæs"
+        ],
+        [
+          "480f0e50-0975-013e-8ee1-1c6b0055db37",
+          10.325775,
+          55.037467,
+          "Svelmø"
+        ]
+      ],
+      "features": {
+        "weather": false,
+        "handicap": false
+      },
+      "nativeFile": "data/events/silverrudder-2026/native.json.gz",
+      "backgroundFile": "data/events/silverrudder-2025/background.json.gz",
+      "presentationFile": "presentation/silverrudder-2026.json",
+      "profileRoot": "events/silverrudder-2026/track-profiles/",
+      "source": {
+        "eventPage": "https://www.tractrac.com/event-page/event_20260916_Silverrudd/3629",
+        "grouping": "classes",
+        "courseLines": "shared",
+        "races": [
+          {
+            "id": "ed9479c0-94cc-013f-73e7-04421a259aad",
+            "name": "Silverrudder",
+            "start": "2026-09-18T08:00:00Z",
+            "boats": 428,
+            "source": "https://em.liveserver1.tractrac.com/events/448a0210-9331-013f-c1e0-1c6b0055db37/races/ed9479c0-94cc-013f-73e7-04421a259aad.json",
+            "classes": [
+              {
+                "id": "39dd7110-94cd-013f-73e8-04421a259aad",
+                "name": "Keelboats Mini",
+                "start": "2026-09-18T08:00:00Z"
+              },
+              {
+                "id": "39e8f410-94cd-013f-73ec-04421a259aad",
+                "name": "Keelboats Small",
+                "start": "2026-09-18T08:30:00Z"
+              },
+              {
+                "id": "3d779d40-94cd-013f-7589-04421a259aad",
+                "name": "Keelboats Medium",
+                "start": "2026-09-18T09:00:00Z"
+              },
+              {
+                "id": "42f1ff90-94cd-013f-7859-04421a259aad",
+                "name": "Keelboats Extra Large",
+                "start": "2026-09-18T10:00:00Z"
+              },
+              {
+                "id": "40b26e50-94cd-013f-7720-04421a259aad",
+                "name": "Keelboats Large",
+                "start": "2026-09-18T09:30:00Z"
+              },
+              {
+                "id": "43a84f50-94cd-013f-78c6-04421a259aad",
+                "name": "Multihulls Small",
+                "start": "2026-09-18T10:30:00Z"
+              },
+              {
+                "id": "43c6e6e0-94cd-013f-78d9-04421a259aad",
+                "name": "Multihulls Large",
+                "start": "2026-09-18T11:00:00Z"
+              }
+            ]
+          }
+        ],
+        "duplicateSpeedPolicy": "latest"
+      },
+      "metadataNotes": [
+        "Kort, rhumbline, mærker og start-/mållinje genbruges fra Silverrudder 2025 efter brugerens valg.",
+        "Vejr og handicap er ikke importeret."
+      ],
+      "description": "Fyn rundt · syv løb i én samlet tracker",
+      "storage": {
+        "legacyPrefix": null,
+        "legacyAdminPath": null
+      },
+      "routeEditor": {
+        "allowReplace": true
+      },
+      "nameDisplay": {
+        "startNumberPrefix": true,
+        "removeModelParentheses": true,
+        "duplicateSuffix": "startNumber"
+      },
+      "boatStyle": {
+        "colours": {},
+        "featured": [
+          "saltamalin",
+          "Perelka",
+          "moana",
+          "BOLT",
+          "Sweet Escape",
+          "My",
+          "Saga",
+          "JuLia",
+          "SAMBA",
+          "Nordri",
+          "Mercutio",
+          "Pronto",
+          "Ægir 2.0",
+          "Ashika I",
+          "Vera",
+          "Chaya",
+          "Capricho de Papa",
+          "Let's Sea",
+          "Escape"
+        ],
+        "labelOffsets": {},
+        "overrides": {},
+        "dimensions": {},
+        "featuredModelPattern": "\\b(?:Seascape\\s*27(?![\\d.])|First\\s*27\\s*SE\\b)"
+      },
+      "layers": {
+        "traffic": true,
+        "military": false
+      },
+      "trackFilter": {
+        "method": "bidirectional-kalman-v1",
+        "gapSeconds": 300,
+        "minInnovationMetres": 80,
+        "gateSquared": 100,
+        "minNoiseMetres": 3,
+        "maxNoiseMetres": 50,
+        "minProcessNoise": 0.02,
+        "maxProcessNoise": 0.5
+      }
     }
-  ]
+  ],
+  "mapLayers": {
+    "bridges": {
+      "file": "bridges.geojson",
+      "events": {
+        "sjaelland-rundt-2026": [
+          "storebaelt-east",
+          "storebaelt-west",
+          "storstroem-old",
+          "storstroem-new",
+          "masnedsund",
+          "faroe-north",
+          "faroe-south",
+          "guldborg",
+          "frederik-ix"
+        ],
+        "silverrudder-2025": [
+          "storebaelt-east",
+          "storebaelt-west",
+          "lillebaelt-old",
+          "lillebaelt-new",
+          "svendborgsund"
+        ],
+        "silverrudder-2024": [
+          "storebaelt-east",
+          "storebaelt-west",
+          "lillebaelt-old",
+          "lillebaelt-new",
+          "svendborgsund"
+        ],
+        "silverrudder-2026": [
+          "storebaelt-east",
+          "storebaelt-west",
+          "lillebaelt-old",
+          "lillebaelt-new",
+          "svendborgsund"
+        ]
+      }
+    }
+  }
 }

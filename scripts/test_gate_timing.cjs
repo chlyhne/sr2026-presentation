@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const context=vm.createContext({window:{},$:()=>({addEventListener(){}})});
+const context=vm.createContext({window:{addEventListener(){}},document:{addEventListener(){}},$:()=>({addEventListener(){}})});
 vm.runInContext(`const D={start:0,end:10000},boats=[],ghostClocks=new Map();
 function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>=b.south&&a.south<=b.north;}
 function eventToolPoints(note,field,count){const p=note[field]??[];if(![0,count].includes(p.length))throw Error('Invalid gate');return p;}

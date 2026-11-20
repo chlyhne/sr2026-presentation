@@ -1,5 +1,32 @@
 let visibleBoatEntries=[],hoveredVisibleBoatId=null,hoveredMapBoatId=null;
 const visibleBoatRows=new Map();
+let boatHoverPoint=null,boatHoverRefreshTask=null;
+function syncBoatHoverTarget(target){
+ const listId=target?.closest('#visibleBoatsList [data-boat-id]')?.dataset.boatId||null;
+ const mapId=target?.closest('#map [data-boat-marker]')?.dataset.boatMarker||null;
+ const listChanged=listId!==hoveredVisibleBoatId,mapChanged=mapId!==hoveredMapBoatId;
+ hoveredVisibleBoatId=listId;
+ setHoveredMapBoat(mapId);
+ if(listChanged&&!mapChanged)refreshVisibleBoatHighlight();
+}
+function scheduleBoatHoverRefresh(){
+ if(!boatHoverPoint||boatHoverRefreshTask!==null)return;
+ boatHoverRefreshTask=requestAnimationFrame(()=>{
+  boatHoverRefreshTask=null;
+  if(boatHoverPoint)syncBoatHoverTarget(document.elementFromPoint(boatHoverPoint.x,boatHoverPoint.y));
+ });
+}
+function trackBoatHoverPointer(event){
+ if(event.pointerType==='touch'||event.buttons){clearBoatHoverPointer();return;}
+ boatHoverPoint={x:event.clientX,y:event.clientY};syncBoatHoverTarget(event.target);
+}
+function clearBoatHoverPointer(){boatHoverPoint=null;syncBoatHoverTarget(null);}
+document.addEventListener('pointermove',trackBoatHoverPointer,{capture:true,passive:true});
+document.addEventListener('pointerover',trackBoatHoverPointer,{capture:true,passive:true});
+document.addEventListener('pointerup',trackBoatHoverPointer,{capture:true,passive:true});
+document.addEventListener('pointerleave',clearBoatHoverPointer);
+window.addEventListener('blur',clearBoatHoverPointer);
+$('visibleBoatsPanel').addEventListener('scroll',scheduleBoatHoverRefresh,{passive:true});
 // Measure fixed text once. Layout and animation never run on playback ticks.
 const boatDetailMeasure=document.createElement('canvas').getContext('2d');
 if(!boatDetailMeasure)throw Error('Bådlistens tekstbredder kunne ikke måles.');
@@ -81,10 +108,37 @@ function refreshVisibleBoatHighlight(){
  const id=hoveredVisibleBoatId||hoveredMapBoatId||focused;
  highlightVisibleBoat(!$('visibleBoatsPanel').hidden&&!$('visibleBoats').hidden&&visibleBoatEntries.some(entry=>entry.boat.id===id)?id:null);
 }
+const expandedBoatRows=new Set();
+function setLocalBoatColour(boat,colour){
+ if(!/^#[0-9a-f]{6}$/i.test(colour))throw Error('Ugyldig bådfarve.');
+ localBoatColours[boat.id]=colour;eventStorage.setItem(BOAT_COLOURS_KEY,JSON.stringify(localBoatColours));
+ colours[boat.name]=colour;
+ const rgb=[1,3,5].map(start=>parseInt(colour.slice(start,start+2),16)/255);
+ webglTracks.boatColours.set(colour,new Float32Array(rgb));webglTracks.lastKey=null;boatCompareRenderKey='';
+ const row=visibleBoatRows.get(boat.id);
+ if(row){row.node.style.setProperty('--boat-colour',colour);row.colour.value=colour;}
+ for(const label of $('choices').children)if(label.querySelector('input').value===boat.name)label.querySelector('.dot').style.background=colour;
+ requestRender();
+}
+function toggleBoatRow(row){
+ const expanded=row.extra.hidden;
+ row.extra.hidden=!expanded;row.node.setAttribute('aria-expanded',String(expanded));
+ if(expanded)expandedBoatRows.add(row.node.dataset.boatId);else expandedBoatRows.delete(row.node.dataset.boatId);
+ scheduleBoatHoverRefresh();
+}
+function focusBoatInList(id){
+ followBoatOnMap(id);
+ expandedBoatRows.add(id);setVisibleBoatsExpanded(true);
+ const row=visibleBoatRows.get(id);if(!row)return;
+ if(row.extra.hidden)toggleBoatRow(row);
+ row.node.focus({preventScroll:true});scrollVisibleBoatRow(row.node);
+ refreshVisibleBoatHighlight();scheduleBoatHoverRefresh();
+}
 function createVisibleBoatRow(boat){
  const node=document.createElement('li');node.className='visible-boat';node.dataset.boatId=boat.id;node.tabIndex=0;
  node.style.setProperty('--boat-colour',colours[boat.name]);
- const heading=document.createElement('label');heading.className='visible-boat-heading';
+ const heading=document.createElement('div');heading.className='visible-boat-heading';
+ const heartLabel=document.createElement('label');heartLabel.className='visible-boat-heart';
  const {choice,heart}=createBoatHeartChoice(boat,'visible-boat-choice');
  const name=document.createElement('span');name.className='visible-boat-name';
  const speed=document.createElement('span');speed.className='visible-boat-speed';
@@ -94,23 +148,29 @@ function createVisibleBoatRow(boat){
  const skipper=document.createElement('span'),type=document.createElement('span');skipper.className=type.className='boat-detail-text';
  const separator=document.createElement('span');separator.className='boat-detail-separator';separator.textContent='·';separator.setAttribute('aria-hidden','true');
  skipperField.append(skipper);typeField.append(type);details.append(skipperField,separator,typeField);
- heading.append(choice,heart,name,speed);node.append(heading,details);
+ const extra=document.createElement('div');extra.className='visible-boat-extra';extra.id='boat-details-'+boat.id;
+ extra.hidden=!expandedBoatRows.has(boat.id);node.setAttribute('aria-expanded',String(!extra.hidden));node.setAttribute('aria-controls',extra.id);
+ const raceClass=document.createElement('div');raceClass.className='visible-boat-class';raceClass.textContent='Klasse: '+(boat.raceClassName||'Ikke oplyst');
+ const colourLabel=document.createElement('label');colourLabel.className='visible-boat-colour';colourLabel.append(document.createTextNode('Bådfarve'));
+ const colour=document.createElement('input');colour.type='color';colour.setAttribute('aria-label','Bådfarve: '+boat.name);
+ boatDetailMeasure.fillStyle=colours[boat.name];colour.value=boatDetailMeasure.fillStyle;
+ colour.oninput=()=>setLocalBoatColour(boat,colour.value);colourLabel.append(colour);extra.append(raceClass,colourLabel);
+ heartLabel.append(choice,heart);heading.append(heartLabel,name,speed);node.append(heading,details,extra);
+ const row={node,choice,name,speed,skipper,type,details,extra,colour};
  node.onclick=event=>{
-  // The heading label already activates its checkbox, including keyboard clicks.
-  if(event.target.closest('label,input'))return;
-  choice.click();
+  if(event.target.closest('label,input,button,select'))return;
+  toggleBoatRow(row);
  };
- node.onpointerenter=()=>{hoveredVisibleBoatId=boat.id;refreshVisibleBoatHighlight();};
- node.onpointerleave=()=>{if(hoveredVisibleBoatId===boat.id)hoveredVisibleBoatId=null;refreshVisibleBoatHighlight();};
  node.addEventListener('focusin',refreshVisibleBoatHighlight);node.addEventListener('focusout',refreshVisibleBoatHighlight);
- return {node,choice,name,speed,skipper,type,details};
+ return row;
 }
+
 function setBoatListText(node,text){if(node.textContent!==text)node.textContent=text;}
 let visibleBoatLayoutKey=null;
 function updateBoatOverlayBounds(){
  const bounds=$('visibleBoats').getBoundingClientRect(),previous=visibleBoatOverlayBounds;
  if(previous&&['left','top','right','bottom'].every(key=>previous[key]===bounds[key]))return;
- visibleBoatOverlayBounds=bounds;mapCreditKey=null;requestRender({viewportOnly:true});
+ visibleBoatOverlayBounds=bounds;mapCreditKey=null;scheduleBoatHoverRefresh();requestRender({viewportOnly:true});
 }
 // Filtering changes the panel's natural height without changing the viewport.
 new ResizeObserver(updateBoatOverlayBounds).observe($('visibleBoats'));
@@ -140,6 +200,7 @@ function updateVisibleBoats(time=currentTime()){
   const display=sample?trackPinValue(boat,sample,{includeReference:true}):{label:trackUsesComparison()?'Sammenligning mangler':'Fart mangler',description:''};
   entries.push({boat,display});
  }
+ const membershipChanged=entries.length!==visibleBoatEntries.length||entries.some((entry,i)=>entry.boat.id!==visibleBoatEntries[i].boat.id);
  visibleBoatEntries=entries;
  $('boatFavouritesOnly').setAttribute('aria-pressed',String(boatFavouritesOnly));
  $('boatClearFavourites').disabled=!chosen.size;
@@ -170,22 +231,22 @@ function updateVisibleBoats(time=currentTime()){
   }
  }
  refreshVisibleBoatHighlight();
+ if(membershipChanged)scheduleBoatHoverRefresh();
 }
-function hoverMapBoat(event){
- const id=event.pointerType==='touch'||event.buttons?null:event.target.closest('[data-boat-marker]')?.dataset.boatMarker||null;
+function setHoveredMapBoat(id){
  if(id===hoveredMapBoatId)return;
  hoveredMapBoatId=id;refreshVisibleBoatHighlight();
  if(!id||$('visibleBoatsPanel').hidden||$('visibleBoats').hidden)return;
  const row=visibleBoatRows.get(id)?.node;if(!row)return;
  // Scroll only the list, keeping the page, keyboard focus and map scene unchanged.
+ scrollVisibleBoatRow(row);
+}
+function scrollVisibleBoatRow(row){
  const panel=$('visibleBoatsPanel'),bounds=panel.getBoundingClientRect(),item=row.getBoundingClientRect();
  const top=bounds.top+panel.clientTop+$('boatSearch').offsetHeight,bottom=bounds.top+panel.clientTop+panel.clientHeight;
  if(item.top<top)panel.scrollTop+=item.top-top;
  else if(item.bottom>bottom)panel.scrollTop+=item.bottom-bottom;
 }
-$('map').addEventListener('pointerover',hoverMapBoat);
-$('map').addEventListener('pointermove',hoverMapBoat);
-$('map').addEventListener('pointerleave',()=>{hoveredMapBoatId=null;refreshVisibleBoatHighlight();});
 function setVisibleBoatsExpanded(expanded){
  $('visibleBoatsToggle').setAttribute('aria-expanded',String(expanded));
  $('visibleBoatsPanel').hidden=!expanded;
@@ -243,9 +304,9 @@ document.addEventListener('keydown',event=>{
   }
   return;
  }
- if(event.target.matches('select')){event.stopImmediatePropagation();return;}
+ if(event.target.matches('select,input')){event.stopImmediatePropagation();return;}
  if((event.key===' '||event.key==='Enter')&&event.target.matches('.visible-boat')){
-  event.preventDefault();event.stopImmediatePropagation();event.target.querySelector('input').click();return;
+  event.preventDefault();event.stopImmediatePropagation();toggleBoatRow(visibleBoatRows.get(event.target.dataset.boatId));return;
  }
  if(!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
  event.stopImmediatePropagation();

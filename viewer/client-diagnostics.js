@@ -1,7 +1,7 @@
 // Enabled by the local test server only. No external telemetry service.
 (()=>{
  const config=window.SR_CONFIG;if(!config?.local||!config.diagnosticsUrl)return;
- const endpoint=new URL(config.diagnosticsUrl,location.href),renderers=new Map(),seen=new Set();
+ const endpoint=new URL(config.diagnosticsUrl,document.baseURI),renderers=new Map(),seen=new Set();
  const session=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10),started=performance.now();
  const recentErrors=[];
  let errorCount=0,lastLoadingState='',loadingReports=0;
@@ -45,7 +45,7 @@
   return true;
  }
  if(config.clientControlUrl){
-  const controlUrl=new URL(config.clientControlUrl,location.href),handledKey='sr2026-test-reload';
+  const controlUrl=new URL(config.clientControlUrl,document.baseURI),handledKey='sr2026-test-reload';
   // config.js is fetched fresh for this document, so an existing command has
   // already been fulfilled by this navigation. Do not interrupt its startup.
   if(typeof config.clientControlRevision==='string')sessionStorage.setItem(handledKey,config.clientControlRevision);

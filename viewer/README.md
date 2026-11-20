@@ -1,3 +1,8 @@
+> Aktuel opsætning af flere stævner, direkte links og rhumbline-redigering:
+> se [projektets README](../README.md#flere-stævner) og
+> [den fælles konfiguration](./events/catalog.json). Nedenstående udviklingsnoter
+> beskriver også tidligere datastrukturer og adresser.
+
 # Sjælland Rundt — kort til præsentation
 
 Kør fra projektroden for at bruge alle funktioner, inklusive billed-upload.
@@ -337,10 +342,17 @@ python3 scripts/serve_viewer.py
   favoritter fra **hele feltet**, også både skjult af filterteksten.
   Ændringer vises straks, uden en Færdig-knap. Filter og favoritvisning bevares,
   når listen foldes sammen. Escape rydder først en filtertekst og folder ellers
-  listen sammen. Enter i feltet eller mellemrum på en fokuseret række skifter
-  hjerterne. Tekst og favoritvisning ændrer ikke gemte events; hjertevalg bruger
+  listen sammen. Enter i søgefeltet skifter de filtrerede hjerter; Enter eller
+  mellemrum på en fokuseret række udvider/lukker bådens detaljer. Kun klik på
+  selve hjertet ændrer favoritstatus. Detaljerne viser klasse og et lokalt
+  farvevalg pr. stævne/båd. Farven gemmes i browseren og bruges af ikon,
+  liste og spor med bådens egen farve. Tekst og favoritvisning ændrer ikke gemte events; hjertevalg bruger
   den eksisterende eventgemning i redigering. I præsentation ændres kun visningen.
-  Under tekstfiltrering skifter klik på kortets bådikoner også favoritstatus.
+  Klik på kortets bådikoner åbner bådlisten, udvider bådens detaljer og
+  flytter fokus og listens scroll til rækken uden at ændre favoritstatus.
+  Kameraet følger den klikkede båd og holder den centreret under afspilning,
+  zoom. Når kortet gribes til manuel panorering, frigøres kamerafølgningen.
+  Escape eller Vis hele banen frigør den også.
   Hold musen over en række, eller fokusér den med Tab, for at forstørre det
   tilsvarende bådikon midlertidigt. Op/ned, Home og End flytter fokus i listen;
   Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,

@@ -1,24 +1,6 @@
 // Metres. Other boats use provisional dimensions until measured values are supplied.
-const boatMetadataOverrides={
- mercutio:{lengthM:8,beamM:2.54,hull:'modern'},vera:{lengthM:8,beamM:2.54,hull:'modern'},
- my:{lengthM:8,beamM:2.54,hull:'modern'},saltamalin:{lengthM:8,beamM:2.54,hull:'modern'},
- 'the hulk':{lengthM:10.3,beamM:3.18,hull:'modern'},
- 'rosa-lux':{lengthM:10,beamM:3,hull:'common'},
- xbox:{lengthM:12.75,beamM:4.18,hull:'modern'},
- 'quinta light':{lengthM:12.55,beamM:4.3,hull:'modern'},
- 'hansen 3.5':{lengthM:10.65,beamM:3.53},
- munje:{lengthM:13.35,beamM:4.25,hull:'common'},
- 'vi ses':{lengthM:10.21,beamM:3.21,hull:'common'},
- 'dream on':{lengthM:15.88,beamM:3.86,hull:'common'},
- norma:{lengthM:9.96,beamM:3.1,hull:'common'},
- // User-approved standard Luffe 40: https://sailboatdata.com/sailboat/luffe-40/
- 'tjørn':{lengthM:12.25,beamM:3.3,hull:'common'},
- // 39 feet, with Munje's length-to-beam ratio as requested.
- sabrina:{lengthM:39*0.3048,beamM:39*0.3048*4.25/13.35,hull:'common'},
- laolao:{hull:'modern'},
- alice:{lengthM:8,beamM:2.51},moster:{lengthM:7.77,beamM:2.5},
- slipstik:{lengthM:10,beamM:2.3,hull:'classic'},ambra:{lengthM:10,beamM:2.3,hull:'classic'}
-};
+const boatMetadataOverrides=window.SR_EVENT.boatStyle.overrides;
+const sourcedBoatDimensions=window.SR_EVENT.boatStyle.dimensions;
 function boatMetadata(name){
  const key=name.toLowerCase(),manual=boatMetadataOverrides[key]||{};
  const dimensions=manual.lengthM!==undefined

@@ -2,7 +2,7 @@
 
 Race metadata is fetched directly as JSON. The existing cached TracTrac decoder
 reads the complete stored files without replaying the race or interpolating GPS.
-Manual event.json metadata/route edits and background layers are preserved,
+Manual registry metadata/route edits and background layers are preserved,
 except source-defined start/finish lines, which are refreshed from TracTrac.
 """
 import argparse
@@ -19,8 +19,8 @@ ROOT=Path(__file__).resolve().parents[1]
 def read(file):return json.loads(file.read_text(encoding='utf-8'))
 def epoch(value):return datetime.fromisoformat(value.replace('Z','+00:00')).timestamp()
 
-def boat_identity(competitor):
-    match=re.fullmatch(r'(\d+)\s*-\s*(.+)',competitor['nameShort'])
+def boat_identity(competitor,policy):
+    match=re.fullmatch(r'(\d+)\s*-\s*(.+)',competitor['nameShort']) if policy['startNumberPrefix'] else None
     return (match[2],match[1]) if match else (competitor['nameShort'],None)
 
 def source_lines(race,payload):
@@ -57,7 +57,7 @@ def source_lines(race,payload):
 def import_event(event_id,refresh=False):
     catalog=read(ROOT/'viewer/events/catalog.json')
     if event_id not in {event['id'] for event in catalog['events']}:raise ValueError('Unknown event')
-    config=read(ROOT/'viewer/events'/event_id/'event.json')
+    config=next(event for event in catalog['events'] if event['id']==event_id)
     races=config['source']['races']
     folder=ROOT/'data/events'/event_id/'tractrac';folder.mkdir(parents=True,exist_ok=True)
     for race in races:
@@ -68,41 +68,55 @@ def import_event(event_id,refresh=False):
     if refresh or any(not (folder/('speeds_'+r['id']+'.json')).exists() for r in races):
         subprocess.run(['node',str(ROOT/'scripts/collect_track_speeds.mjs'),'--data-dir',str(folder)],check=True,cwd=ROOT)
     boats=[];seen=set()
-    first=min(races,key=lambda entry:epoch(read(folder/('race_'+entry['id']+'.json'))['raceStartTime']))
-    lines=source_lines(read(folder/('race_'+first['id']+'.json')),read(folder/('speeds_'+first['id']+'.json')))
+    if config['source']['courseLines'] not in ['source','shared']:raise ValueError('Unknown course-line source')
+    if config['source']['courseLines']=='source':
+        first=min(races,key=lambda entry:epoch(entry['start']))
+        lines=source_lines(read(folder/('race_'+first['id']+'.json')),read(folder/('speeds_'+first['id']+'.json')))
     course_ids=list(config['courses'])
     for entry in races:
         race=read(folder/('race_'+entry['id']+'.json'));payload=read(folder/('speeds_'+entry['id']+'.json'))
         course=entry.get('course',course_ids[0])
         if course not in config['courses']:raise ValueError('Race references an unknown course')
-        start=epoch(race['raceStartTime'])
+        grouping=config['source']['grouping']
+        if grouping not in ['races','classes']:raise ValueError('Unknown race grouping')
+        classes={item['id']:item for item in entry['classes']} if grouping=='classes' else None
         for uid,rows in payload['tracks'].items():
             competitor=race['competitors'][uid];unique={}
+            race_class=classes[competitor['classId']] if grouping=='classes' else entry
+            start=epoch(race_class['start'])
             for row in rows:
-                if row[2] in unique and unique[row[2]][:4]!=row[:4]:raise ValueError('Conflicting timestamp: '+uid)
+                if row[2] in unique and unique[row[2]][:4]!=row[:4]:
+                    if unique[row[2]][:2]!=row[:2] or config['source']['duplicateSpeedPolicy']!='latest':
+                        raise ValueError('Conflicting timestamp: '+uid)
                 unique[row[2]]=row
             points=[row[:4] for _,row in sorted(unique.items())]
             if not points:continue
             key=entry['id']+':'+uid
             if key in seen:raise ValueError('Duplicate source identity: '+key)
             seen.add(key)
-            name,start_number=boat_identity(competitor)
+            name,start_number=boat_identity(competitor,config['nameDisplay'])
             boats.append({'id':key,'name':name,'course':course,'sourceRaceId':entry['id'],
-                          'details':{'skipper':competitor.get('name',''),'boatType':re.sub(r'\s*\([^()]*\)\s*$','',competitor.get('description','')).strip(),
+                          'details':{'skipper':competitor.get('name',''),'boatType':(re.sub(r'\s*\([^()]*\)\s*$','',competitor.get('description','')).strip() if config['nameDisplay']['removeModelParentheses'] else competitor.get('description','')),
                                      'boatName':name,'startNumber':start_number,
-                                     'raceClassId':entry['id'],'raceClassName':entry['name'],'raceStartTime':start,
+                                     'raceClassId':race_class['id'],'raceClassName':race_class['name'],'raceStartTime':start,
                                      'raceFinishTime':epoch(competitor['statusTime']) if competitor.get('status')==10 else None,
                                      'handicapSecondsPerNm':0,'courseLengthNm':None},'points':points})
+    if config['nameDisplay']['duplicateSuffix']!='startNumber':raise ValueError('Unknown duplicate-name policy')
     counts=Counter(boat['name'] for boat in boats)
     for boat in boats:
         if counts[boat['name']]>1:boat['name']+=f" ({boat['details']['startNumber']})"
     if len({boat['name'] for boat in boats})!=len(boats):raise ValueError('Boat display names must be unique')
-    background_file=ROOT/config['backgroundFile']
-    background=json.loads(gzip.decompress(background_file.read_bytes()))
-    background['course_lines']={'type':'FeatureCollection','features':lines}
-    background_file.write_bytes(gzip.compress(json.dumps(background,ensure_ascii=False,separators=(',',':')).encode(),mtime=0))
+    if config['source']['courseLines']=='source':
+        background_file=ROOT/config['backgroundFile']
+        background=json.loads(gzip.decompress(background_file.read_bytes()))
+        background['course_lines']={'type':'FeatureCollection','features':lines}
+        background_file.write_bytes(gzip.compress(json.dumps(background,ensure_ascii=False,separators=(',',':')).encode(),mtime=0))
     output=ROOT/config['nativeFile']
     output.write_bytes(gzip.compress(json.dumps({'version':1,'boats':boats},ensure_ascii=False,separators=(',',':')).encode(),mtime=0))
+    pattern=config['boatStyle'].get('featuredModelPattern')
+    if pattern is not None:
+        config['boatStyle']['featured']=[boat['name'] for boat in boats if re.search(pattern,boat['details']['boatType'],re.I)]
+        (ROOT/'viewer/events/catalog.json').write_text(json.dumps(catalog,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print(f'{event_id}: {len(races)} races, {len(boats)} boats, {sum(len(b["points"]) for b in boats)} native observations')
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--event',required=True);parser.add_argument('--refresh',action='store_true')

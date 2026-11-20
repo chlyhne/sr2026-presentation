@@ -104,7 +104,9 @@ def build(angle,event=None):
               'data/tractrac/combined_tracks.json','viewer/tracks.js','data/geography/map-track-exclusions.json',
               'scripts/export_map_tracks.cjs','scripts/prepare_adaptive_map.py']
     if event:
-        inputs[2]=f'data/events/{event}/native.json.gz'
+        from event_config import event_config
+        definition=event_config(event)
+        inputs[2]=definition['nativeFile']
         inputs.remove('data/geography/map-track-exclusions.json')
     hashes = {name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in inputs}
     land = json.loads((ROOT/inputs[0]).read_text(encoding='utf-8'))
@@ -217,7 +219,7 @@ def build(angle,event=None):
     ((output/'coast-distance-field.json.gz') if event else (ROOT/'data/geography/coast-distance-field.json.gz')).write_bytes(gzip.compress(json.dumps(field,separators=(',',':')).encode(),mtime=0))
     if event:
         # Publish the new geometry into this event's background input only.
-        background_file=ROOT/'data/events'/event/'background.json.gz'
+        background_file=ROOT/definition['backgroundFile']
         background=json.loads(gzip.decompress(background_file.read_bytes()))
         background.update(land=new_land,coast_metadata=new_coast['metadata'],coast=lines)
         background_file.write_bytes(gzip.compress(json.dumps(background,ensure_ascii=False,separators=(',',':')).encode(),mtime=0))

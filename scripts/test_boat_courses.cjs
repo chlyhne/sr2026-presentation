@@ -48,3 +48,73 @@ test('boat list values use the track units, including the reference boat',()=>{
  comparison.basis='absolute';assert.equal(format({id:'other'},sample,{includeReference:true}).label,'-1,20 kn');
  context.trackUsesComparison=()=>false;assert.equal(format({id:'ref'},sample,{includeReference:true}).label,'6,0 kn');
 });
+
+test('hover refresh follows the current hit target and coalesces layout changes',()=>{
+ const source=read('boat-list'),frames=[];let hit=null;
+ const target=(kind,id)=>({closest:selector=>selector.startsWith('#visibleBoatsList')&&kind==='list'?{dataset:{boatId:id}}:selector.startsWith('#map')&&kind==='map'?{dataset:{boatMarker:id}}:null});
+ const context=vm.createContext({hoveredVisibleBoatId:null,hoveredMapBoatId:null,document:{elementFromPoint:()=>hit},
+  requestAnimationFrame:callback=>{frames.push(callback);return frames.length;},refreshVisibleBoatHighlight(){},
+  setHoveredMapBoat(id){context.hoveredMapBoatId=id;}});
+ vm.runInContext(source.slice(source.indexOf('let boatHoverPoint='),source.indexOf("document.addEventListener('pointermove'")),context);
+ context.trackBoatHoverPointer({clientX:10,clientY:20,pointerType:'mouse',buttons:0,target:target('list','a')});
+ assert.equal(context.hoveredVisibleBoatId,'a');hit=target('list','b');
+ context.scheduleBoatHoverRefresh();context.scheduleBoatHoverRefresh();assert.equal(frames.length,1);
+ frames.shift()();assert.equal(context.hoveredVisibleBoatId,'b');
+ hit=target('map','c');context.scheduleBoatHoverRefresh();frames.shift()();
+ assert.equal(context.hoveredVisibleBoatId,null);assert.equal(context.hoveredMapBoatId,'c');
+ context.trackBoatHoverPointer({pointerType:'touch',buttons:0});assert.equal(context.hoveredMapBoatId,null);
+ context.scheduleBoatHoverRefresh();assert.equal(frames.length,0);
+});
+
+
+test('boat row expansion leaves favourites unchanged and colour changes persist locally and invalidate GPU colour',()=>{
+ const source=read('boat-list'),saved=new Map(),attributes={},properties={},frames=[];
+ const row={extra:{hidden:true},node:{dataset:{boatId:'boat1'},setAttribute:(k,v)=>attributes[k]=v,style:{setProperty:(k,v)=>properties[k]=v}},colour:{value:''}};
+ const context=vm.createContext({localBoatColours:{},BOAT_COLOURS_KEY:'boat-colour-overrides',eventStorage:{setItem:(k,v)=>saved.set(k,v)},
+  colours:{Alpha:'#112233'},webglTracks:{boatColours:new Map(),lastKey:'cached'},boatCompareRenderKey:'cached',
+  visibleBoatRows:new Map([['boat1',row]]),$:()=>({children:[]}),requestRender:()=>frames.push(1),scheduleBoatHoverRefresh(){}});
+ vm.runInContext(source.slice(source.indexOf('const expandedBoatRows='),source.indexOf('function createVisibleBoatRow(')),context);
+ context.toggleBoatRow(row);assert.equal(row.extra.hidden,false);assert.equal(attributes['aria-expanded'],'true');
+ context.toggleBoatRow(row);assert.equal(row.extra.hidden,true);
+ context.setLocalBoatColour({id:'boat1',name:'Alpha'},'#abcdef');
+ assert.equal(context.colours.Alpha,'#abcdef');assert.equal(row.colour.value,'#abcdef');assert.equal(properties['--boat-colour'],'#abcdef');
+ assert.deepEqual(JSON.parse(saved.get('boat-colour-overrides')),{boat1:'#abcdef'});
+ const rgb=[...context.webglTracks.boatColours.get('#abcdef')];
+ rgb.forEach((v,i)=>assert.ok(Math.abs(v-[171,205,239][i]/255)<1e-6));
+ assert.equal(context.webglTracks.lastKey,null);assert.equal(context.boatCompareRenderKey,'');assert.equal(frames.length,1);
+ assert.throws(()=>context.setLocalBoatColour({id:'boat1',name:'Alpha'},'invalid'),/Ugyldig/);
+});
+
+
+test('map boat activation opens, expands and focuses its list row without toggling on repeat',()=>{
+ const source=read('boat-list'),calls=[],row={extra:{hidden:true},node:{}};
+ const context=vm.createContext({followBoatOnMap:id=>calls.push(['follow',id]),expandedBoatRows:new Set(),visibleBoatRows:new Map([['boat1',row]]),
+  setVisibleBoatsExpanded:value=>calls.push(['panel',value]),toggleBoatRow:r=>{r.extra.hidden=false;calls.push(['expand']);},
+  scrollVisibleBoatRow:node=>calls.push(['scroll',node===row.node]),refreshVisibleBoatHighlight(){},scheduleBoatHoverRefresh(){}});
+ row.node.focus=options=>calls.push(['focus',options.preventScroll]);
+ vm.runInContext(source.slice(source.indexOf('function focusBoatInList('),source.indexOf('function createVisibleBoatRow(')),context);
+ context.focusBoatInList('boat1');context.focusBoatInList('boat1');
+ assert.equal(row.extra.hidden,false);assert.ok(context.expandedBoatRows.has('boat1'));
+ assert.equal(calls.filter(c=>c[0]==='expand').length,1);
+ assert.equal(calls.filter(c=>c[0]==='focus'&&c[1]).length,2);
+ assert.equal(calls.filter(c=>c[0]==='scroll'&&c[1]).length,2);
+});
+
+
+test('clicked boat camera keeps the boat centred through zoom and playback without changing reference',()=>{
+ const source=read('viewer'),boat={id:'follow'},reference={id:'reference'};
+ let point=[100,200];const context=vm.createContext({boats:[boat],followedBoatId:null,timelineDragPointer:null,view:[0,0,80,40],
+  displayBoatPosition:()=>({point}),currentTime:()=>0,xy:p=>p,referenceBoat:()=>reference,
+  setAttr(){},$:()=>({}),scheduleBoatHoverRefresh(){},invalidateTimelineViewport(){},requestRender(){}});
+ vm.runInContext(source.slice(source.indexOf('function centerViewOnBoat('),source.indexOf('function advancePlayback(')),context);
+ vm.runInContext(source.slice(source.indexOf('function setview(){'),source.indexOf('function changeMapView(')),context);
+ context.followBoatOnMap('follow');assert.equal(context.followedBoatId,'follow');
+ assert.deepEqual([...context.view],[60,180,80,40]);
+ context.view=[999,999,40,20];context.setview();assert.deepEqual([...context.view],[80,190,40,20]);
+ point=[120,230];assert.equal(context.centerViewOnBoat(boat),true);assert.deepEqual([...context.view],[100,220,40,20]);
+ assert.equal(context.centerViewOnBoat(boat),false,'Stationary follow does not schedule an endless render loop');
+ context.timelineDragPointer=17;point=[150,270];
+ assert.equal(context.centerViewOnBoat(boat),false);assert.deepEqual([...context.view],[100,220,40,20]);
+ context.timelineDragPointer=null;assert.equal(context.centerViewOnBoat(boat),true);assert.deepEqual([...context.view],[130,260,40,20]);
+ assert.equal(context.referenceBoat(),reference);
+});

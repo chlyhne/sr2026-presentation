@@ -1,0 +1,130 @@
+{
+  "event": {
+    "id": "448a0210-9331-013f-c1e0-1c6b0055db37",
+    "name": "Silverrudder 2026",
+    "database": "event_20260916_Silverrudd",
+    "starttime": "2026-09-15 06:00:00",
+    "endtime": "2026-09-21 23:00:00",
+    "type": "a1b74ca0-fdd8-11dc-8811-005056c00008",
+    "enable_notifier": false,
+    "notifier_client_name": null,
+    "subscriber_service": "https://em.liveserver1.tractrac.com/api/v1/events/448a0210-9331-013f-c1e0-1c6b0055db37/mobile_subscriptions",
+    "url_scheme": "tractrac://open.app/3629",
+    "db_replica_enabled": false,
+    "high_load": false,
+    "web_url": "https://www.tractrac.com/event-page/event_20260916_Silverrudd/3629",
+    "dataservers": {
+      "stored": [
+        "tcp://liveserver1.tractrac.com:4401"
+      ],
+      "live": [
+        "tcp://liveserver1.tractrac.com:4400"
+      ],
+      "ws": [
+        "wss://clubs.tractrac.com:8891",
+        "wss://clubs.tractrac.com:8892",
+        "wss://clubs.tractrac.com:8893",
+        "wss://clubs.tractrac.com:8894"
+      ]
+    },
+    "server_update_uri": "https://em.liveserver1.tractrac.com",
+    "sap_url": null,
+    "sap_event_url": null,
+    "sap_leaderboard_name": null,
+    "server": "liveserver1.tractrac.com",
+    "location": {
+      "lat": 55.33008020561808,
+      "lon": 10.360991308593725
+    },
+    "scoreboards": [],
+    "notification_message": null
+  },
+  "races": [
+    {
+      "params_url": "https://liveserver1.tractrac.com/events/event_20260916_Silverrudd/b0be6c90-936c-013f-5eb0-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.liveserver1.tractrac.com/events/448a0210-9331-013f-c1e0-1c6b0055db37/races/b0be6c90-936c-013f-5eb0-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=448a0210-9331-013f-c1e0-1c6b0055db37&event_name=Silverrudder 2026&race_name=Test&publish_time=&server_url=em.liveserver1.tractrac.com&web_id=3629&race_id=b0be6c90-936c-013f-5eb0-04421a259aad&race_web_id=47",
+      "url_scheme": "tractrac://open.app/3629/b0be6c90-936c-013f-5eb0-04421a259aad",
+      "params_json": "https://em.liveserver1.tractrac.com/events/448a0210-9331-013f-c1e0-1c6b0055db37/races/b0be6c90-936c-013f-5eb0-04421a259aad.json",
+      "id": "b0be6c90-936c-013f-5eb0-04421a259aad",
+      "name": "Test",
+      "tracking_starttime": "2026-09-15 22:00:00",
+      "tracking_endtime": "2026-09-21 23:00:00",
+      "race_starttime": "",
+      "expected_race_startdate": "2026-09-16",
+      "map_publication_time": null,
+      "initialized": "0",
+      "status": "UNOFFICIAL",
+      "status_time": "2026-09-22 03:00:07",
+      "visibility": "HIDDEN",
+      "classes": "",
+      "classes_list": [],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2026-09-16"
+    },
+    {
+      "params_url": "https://liveserver1.tractrac.com/events/event_20260916_Silverrudd/ed9479c0-94cc-013f-73e7-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.liveserver1.tractrac.com/events/448a0210-9331-013f-c1e0-1c6b0055db37/races/ed9479c0-94cc-013f-73e7-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=448a0210-9331-013f-c1e0-1c6b0055db37&event_name=Silverrudder 2026&race_name=Silverrudder&publish_time=&server_url=em.liveserver1.tractrac.com&web_id=3629&race_id=ed9479c0-94cc-013f-73e7-04421a259aad&race_web_id=49",
+      "url_scheme": "tractrac://open.app/3629/ed9479c0-94cc-013f-73e7-04421a259aad",
+      "params_json": "https://em.liveserver1.tractrac.com/events/448a0210-9331-013f-c1e0-1c6b0055db37/races/ed9479c0-94cc-013f-73e7-04421a259aad.json",
+      "id": "ed9479c0-94cc-013f-73e7-04421a259aad",
+      "name": "Silverrudder",
+      "tracking_starttime": "2026-09-18 07:15:00",
+      "tracking_endtime": "2026-09-19 23:20:00",
+      "race_starttime": "",
+      "expected_race_startdate": "2026-09-18",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2026-09-20 06:01:52",
+      "visibility": "REPLAY",
+      "classes": "1 Keelboats Mini, 2 Keelboats Small, 3 Keelboats Medium, 5 Keelboats Extra Large, 4 Keelboats Large, 6 Multihulls Small, 7 Multihulls Large",
+      "classes_list": [
+        {
+          "id": "39dd7110-94cd-013f-73e8-04421a259aad",
+          "name": "1 Keelboats Mini",
+          "starttime": "2026-09-18 08:00:00 UTC"
+        },
+        {
+          "id": "39e8f410-94cd-013f-73ec-04421a259aad",
+          "name": "2 Keelboats Small",
+          "starttime": "2026-09-18 08:30:00 UTC"
+        },
+        {
+          "id": "3d779d40-94cd-013f-7589-04421a259aad",
+          "name": "3 Keelboats Medium",
+          "starttime": "2026-09-18 09:00:00 UTC"
+        },
+        {
+          "id": "42f1ff90-94cd-013f-7859-04421a259aad",
+          "name": "5 Keelboats Extra Large",
+          "starttime": "2026-09-18 10:00:00 UTC"
+        },
+        {
+          "id": "40b26e50-94cd-013f-7720-04421a259aad",
+          "name": "4 Keelboats Large",
+          "starttime": "2026-09-18 09:30:00 UTC"
+        },
+        {
+          "id": "43a84f50-94cd-013f-78c6-04421a259aad",
+          "name": "6 Multihulls Small",
+          "starttime": "2026-09-18 10:30:00 UTC"
+        },
+        {
+          "id": "43c6e6e0-94cd-013f-78d9-04421a259aad",
+          "name": "7 Multihulls Large",
+          "starttime": "2026-09-18 11:00:00 UTC"
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2026-09-18"
+    }
+  ],
+  "banners": [],
+  "banners_url": "https://em.liveserver1.tractrac.com/api/v2/events/448a0210-9331-013f-c1e0-1c6b0055db37/banners.json"
+}

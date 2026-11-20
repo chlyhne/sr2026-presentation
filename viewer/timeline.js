@@ -237,7 +237,18 @@ function updateTimeline(){
 }
 
 $('time').oninput=()=>seekTimeline(+$('time').value);
-$('time').addEventListener('pointerdown',syncTimelineViewport);
+$('time').addEventListener('pointerdown',event=>{
+ if(event.button!==0||$('time').disabled)return;
+ timelineDragPointer=event.pointerId;syncTimelineViewport();
+});
+function finishTimelineDrag(event){
+ if(timelineDragPointer===null||event?.pointerId!==undefined&&event.pointerId!==timelineDragPointer)return;
+ timelineDragPointer=null;requestRender();
+}
+document.addEventListener('pointerup',finishTimelineDrag,true);
+document.addEventListener('pointercancel',finishTimelineDrag,true);
+$('time').addEventListener('lostpointercapture',finishTimelineDrag);
+window.addEventListener('blur',()=>finishTimelineDrag());
 $('time').addEventListener('focus',syncTimelineViewport);
 $('time').addEventListener('wheel',e=>{
  syncTimelineViewport();

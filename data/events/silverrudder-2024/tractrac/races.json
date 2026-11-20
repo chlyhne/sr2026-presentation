@@ -1,0 +1,310 @@
+{
+  "event": {
+    "id": "d2166bc0-fb13-013c-63a3-342e996a9920",
+    "name": "Silverrudder 2024",
+    "database": "event_20240920_Silverrudd",
+    "starttime": "2024-09-17 22:00:00",
+    "endtime": "2024-09-26 21:00:00",
+    "type": "a1b74ca0-fdd8-11dc-8811-005056c00008",
+    "enable_notifier": false,
+    "notifier_client_name": null,
+    "subscriber_service": "https://em.historical1.tractrac.com/api/v1/events/d2166bc0-fb13-013c-63a3-342e996a9920/mobile_subscriptions",
+    "url_scheme": "tractrac://open.app/2932",
+    "db_replica_enabled": false,
+    "high_load": false,
+    "web_url": "https://www.tractrac.com/event-page/event_20240920_Silverrudd/2932",
+    "dataservers": {
+      "stored": [
+        "tcp://historical1.tractrac.com:4401"
+      ],
+      "live": [
+        "tcp://historical1.tractrac.com:4400"
+      ],
+      "ws": [
+        "ws://historical1.tractrac.com:8891",
+        "ws://historical1.tractrac.com:8892",
+        "ws://historical1.tractrac.com:8893",
+        "ws://historical1.tractrac.com:8894"
+      ]
+    },
+    "server_update_uri": "https://em.historical1.tractrac.com",
+    "sap_url": null,
+    "sap_event_url": null,
+    "sap_leaderboard_name": null,
+    "server": "historical1.tractrac.com",
+    "location": {
+      "lat": 55.33008020561808,
+      "lon": 10.360991308593725
+    },
+    "scoreboards": [],
+    "notification_message": null
+  },
+  "races": [
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20240920_Silverrudd/78698bf0-570b-013d-9fb5-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/78698bf0-570b-013d-9fb5-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=d2166bc0-fb13-013c-63a3-342e996a9920&event_name=Silverrudder 2024&race_name=Keelboats Mini&publish_time=&server_url=em.historical1.tractrac.com&web_id=2932&race_id=78698bf0-570b-013d-9fb5-04421a259aad&race_web_id=15",
+      "url_scheme": "tractrac://open.app/2932/78698bf0-570b-013d-9fb5-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/78698bf0-570b-013d-9fb5-04421a259aad.json",
+      "id": "78698bf0-570b-013d-9fb5-04421a259aad",
+      "name": "Keelboats Mini",
+      "tracking_starttime": "2024-09-20 07:34:00",
+      "tracking_endtime": "2024-09-22 04:00:00",
+      "race_starttime": "2024-09-20 08:00:00",
+      "expected_race_startdate": "2024-09-20",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2024-09-22 06:18:14",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Mini",
+      "classes_list": [
+        {
+          "id": "6b7b7ba0-f892-0139-0ec1-10bf48d758ce",
+          "name": "Keelboats Mini",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2024-09-20"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20240920_Silverrudd/c1545e70-570b-013d-9fc2-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c1545e70-570b-013d-9fc2-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=d2166bc0-fb13-013c-63a3-342e996a9920&event_name=Silverrudder 2024&race_name=Keelboats Small&publish_time=&server_url=em.historical1.tractrac.com&web_id=2932&race_id=c1545e70-570b-013d-9fc2-04421a259aad&race_web_id=17",
+      "url_scheme": "tractrac://open.app/2932/c1545e70-570b-013d-9fc2-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c1545e70-570b-013d-9fc2-04421a259aad.json",
+      "id": "c1545e70-570b-013d-9fc2-04421a259aad",
+      "name": "Keelboats Small",
+      "tracking_starttime": "2024-09-20 07:34:06",
+      "tracking_endtime": "2024-09-22 06:22:07",
+      "race_starttime": "2024-09-20 08:30:00",
+      "expected_race_startdate": "2024-09-20",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2024-09-22 06:22:07",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Small",
+      "classes_list": [
+        {
+          "id": "77501780-f892-0139-0f83-10bf48d758ce",
+          "name": "Keelboats Small",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2024-09-20"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20240920_Silverrudd/c1607cf0-570b-013d-9fcf-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c1607cf0-570b-013d-9fcf-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=d2166bc0-fb13-013c-63a3-342e996a9920&event_name=Silverrudder 2024&race_name=Keelboats Medium&publish_time=&server_url=em.historical1.tractrac.com&web_id=2932&race_id=c1607cf0-570b-013d-9fcf-04421a259aad&race_web_id=19",
+      "url_scheme": "tractrac://open.app/2932/c1607cf0-570b-013d-9fcf-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c1607cf0-570b-013d-9fcf-04421a259aad.json",
+      "id": "c1607cf0-570b-013d-9fcf-04421a259aad",
+      "name": "Keelboats Medium",
+      "tracking_starttime": "2024-09-20 08:38:47",
+      "tracking_endtime": "2024-09-22 07:40:06",
+      "race_starttime": "2024-09-20 09:00:00",
+      "expected_race_startdate": "2024-09-20",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2024-09-22 06:21:12",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Medium",
+      "classes_list": [
+        {
+          "id": "87780310-f892-0139-107f-10bf48d758ce",
+          "name": "Keelboats Medium",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2024-09-20"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20240920_Silverrudd/c16834d0-570b-013d-9fdc-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c16834d0-570b-013d-9fdc-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=d2166bc0-fb13-013c-63a3-342e996a9920&event_name=Silverrudder 2024&race_name=Keelboats Large&publish_time=&server_url=em.historical1.tractrac.com&web_id=2932&race_id=c16834d0-570b-013d-9fdc-04421a259aad&race_web_id=21",
+      "url_scheme": "tractrac://open.app/2932/c16834d0-570b-013d-9fdc-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c16834d0-570b-013d-9fdc-04421a259aad.json",
+      "id": "c16834d0-570b-013d-9fdc-04421a259aad",
+      "name": "Keelboats Large",
+      "tracking_starttime": "2024-09-20 09:12:49",
+      "tracking_endtime": "2024-09-22 14:05:04",
+      "race_starttime": "2024-09-20 09:30:00",
+      "expected_race_startdate": "2024-09-20",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2024-09-22 14:05:04",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Large",
+      "classes_list": [
+        {
+          "id": "a1182200-f892-0139-1221-10bf48d758ce",
+          "name": "Keelboats Large",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2024-09-20"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20240920_Silverrudd/c16dc980-570b-013d-9fe9-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c16dc980-570b-013d-9fe9-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=d2166bc0-fb13-013c-63a3-342e996a9920&event_name=Silverrudder 2024&race_name=Keelboats Extra Large&publish_time=&server_url=em.historical1.tractrac.com&web_id=2932&race_id=c16dc980-570b-013d-9fe9-04421a259aad&race_web_id=23",
+      "url_scheme": "tractrac://open.app/2932/c16dc980-570b-013d-9fe9-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c16dc980-570b-013d-9fe9-04421a259aad.json",
+      "id": "c16dc980-570b-013d-9fe9-04421a259aad",
+      "name": "Keelboats Extra Large",
+      "tracking_starttime": "2024-09-20 09:49:50",
+      "tracking_endtime": "2024-09-22 00:00:00",
+      "race_starttime": "2024-09-20 10:00:00",
+      "expected_race_startdate": "2024-09-20",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2024-09-22 06:16:00",
+      "visibility": "REPLAY",
+      "classes": "Keelboats Extra Large",
+      "classes_list": [
+        {
+          "id": "b0e9f690-f892-0139-132d-10bf48d758ce",
+          "name": "Keelboats Extra Large",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2024-09-20"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20240920_Silverrudd/c17355c0-570b-013d-9ff6-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c17355c0-570b-013d-9ff6-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=d2166bc0-fb13-013c-63a3-342e996a9920&event_name=Silverrudder 2024&race_name=Multihulls Small&publish_time=&server_url=em.historical1.tractrac.com&web_id=2932&race_id=c17355c0-570b-013d-9ff6-04421a259aad&race_web_id=25",
+      "url_scheme": "tractrac://open.app/2932/c17355c0-570b-013d-9ff6-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c17355c0-570b-013d-9ff6-04421a259aad.json",
+      "id": "c17355c0-570b-013d-9ff6-04421a259aad",
+      "name": "Multihulls Small",
+      "tracking_starttime": "2024-09-20 10:09:12",
+      "tracking_endtime": "2024-09-21 13:00:00",
+      "race_starttime": "2024-09-20 10:30:00",
+      "expected_race_startdate": "2024-09-20",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2024-09-22 06:23:23",
+      "visibility": "REPLAY",
+      "classes": "Multihulls Small",
+      "classes_list": [
+        {
+          "id": "b7d92e70-f892-0139-13a9-10bf48d758ce",
+          "name": "Multihulls Small",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2024-09-20"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20240920_Silverrudd/c178dc60-570b-013d-a003-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c178dc60-570b-013d-a003-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=d2166bc0-fb13-013c-63a3-342e996a9920&event_name=Silverrudder 2024&race_name=Multihulls Large&publish_time=&server_url=em.historical1.tractrac.com&web_id=2932&race_id=c178dc60-570b-013d-a003-04421a259aad&race_web_id=27",
+      "url_scheme": "tractrac://open.app/2932/c178dc60-570b-013d-a003-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/c178dc60-570b-013d-a003-04421a259aad.json",
+      "id": "c178dc60-570b-013d-a003-04421a259aad",
+      "name": "Multihulls Large",
+      "tracking_starttime": "2024-09-20 10:40:31",
+      "tracking_endtime": "2024-09-21 13:00:00",
+      "race_starttime": "2024-09-20 11:00:00",
+      "expected_race_startdate": "2024-09-20",
+      "map_publication_time": null,
+      "initialized": "1",
+      "status": "UNOFFICIAL",
+      "status_time": "2024-09-22 06:22:50",
+      "visibility": "REPLAY",
+      "classes": "Multihulls Large",
+      "classes_list": [
+        {
+          "id": "ba07c940-f892-0139-13d1-10bf48d758ce",
+          "name": "Multihulls Large",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2024-09-20"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20240920_Silverrudd/f8a55cf0-5701-013d-9f99-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/f8a55cf0-5701-013d-9f99-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=d2166bc0-fb13-013c-63a3-342e996a9920&event_name=Silverrudder 2024&race_name=Silverrudder&publish_time=&server_url=em.historical1.tractrac.com&web_id=2932&race_id=f8a55cf0-5701-013d-9f99-04421a259aad&race_web_id=11",
+      "url_scheme": "tractrac://open.app/2932/f8a55cf0-5701-013d-9f99-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/f8a55cf0-5701-013d-9f99-04421a259aad.json",
+      "id": "f8a55cf0-5701-013d-9f99-04421a259aad",
+      "name": "Silverrudder",
+      "tracking_starttime": "2024-09-19 22:00:00",
+      "tracking_endtime": "2024-09-26 21:00:00",
+      "race_starttime": "",
+      "expected_race_startdate": "2024-09-20",
+      "map_publication_time": null,
+      "initialized": "0",
+      "status": "UNOFFICIAL",
+      "status_time": "2024-09-23 03:00:40",
+      "visibility": "HIDDEN",
+      "classes": "",
+      "classes_list": [],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2024-09-20"
+    },
+    {
+      "params_url": "https://historical1.tractrac.com/events/event_20240920_Silverrudd/d6ce5200-570a-013d-9fa8-04421a259aad.txt",
+      "url_html": "https://live.tractrac.com/viewer/index.html?target=https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/d6ce5200-570a-013d-9fa8-04421a259aad.json",
+      "url_mobile": "https://live.tractrac.com/viewer/count_down.html?event_id=d2166bc0-fb13-013c-63a3-342e996a9920&event_name=Silverrudder 2024&race_name=Silverrudder MED URET&publish_time=&server_url=em.historical1.tractrac.com&web_id=2932&race_id=d6ce5200-570a-013d-9fa8-04421a259aad&race_web_id=13",
+      "url_scheme": "tractrac://open.app/2932/d6ce5200-570a-013d-9fa8-04421a259aad",
+      "params_json": "https://em.historical1.tractrac.com/events/d2166bc0-fb13-013c-63a3-342e996a9920/races/d6ce5200-570a-013d-9fa8-04421a259aad.json",
+      "id": "d6ce5200-570a-013d-9fa8-04421a259aad",
+      "name": "Silverrudder MED URET",
+      "tracking_starttime": "2024-09-19 22:00:00",
+      "tracking_endtime": "2024-09-26 21:00:00",
+      "race_starttime": "",
+      "expected_race_startdate": "2024-09-20",
+      "map_publication_time": null,
+      "initialized": "0",
+      "status": "UNOFFICIAL",
+      "status_time": "2024-09-23 03:00:44",
+      "visibility": "HIDDEN",
+      "classes": "class",
+      "classes_list": [
+        {
+          "id": "0dc6eff0-a4fa-0139-d006-60a44ce903c3",
+          "name": "class",
+          "starttime": null
+        }
+      ],
+      "results_url": "",
+      "rerun": "",
+      "has_replay": true,
+      "metadata": "ExpectedRaceStartDay=2024-09-20"
+    }
+  ],
+  "banners": [],
+  "banners_url": "https://em.historical1.tractrac.com/api/v2/events/d2166bc0-fb13-013c-63a3-342e996a9920/banners.json"
+}

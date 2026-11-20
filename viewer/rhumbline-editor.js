@@ -4,7 +4,7 @@ $('wind').checked=$('rain').checked=$('traffic').checked=$('military').checked=f
 boatCourseFilter=window.SR_SETUP_COURSE;boatClassFilter='';boatFavouritesOnly=false;boatSearchQuery='';
 chosen.clear();$('rhumblineTools').hidden=false;
 const setupTitle=document.createElement('h1');setupTitle.textContent='Tegn rhumbline · '+BOAT_COURSE_NAMES[window.SR_SETUP_COURSE];
-const canReplaceRhumbline=window.SR_EVENT.id==='silverrudder-2025';
+const canReplaceRhumbline=window.SR_EVENT.routeEditor.allowReplace;
 $('rhumblineTools').prepend(setupTitle);
 const setupStatus=document.createElement('p');setupStatus.id='rhumblineSaveStatus';setupStatus.setAttribute('role','status');
 $('rhumblineTools').append(setupStatus);

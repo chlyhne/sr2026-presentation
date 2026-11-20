@@ -54,7 +54,7 @@ function eventSettings(settings={}){
  if(settings.mapVersion!==undefined&&settings.mapVersion!==1)throw Error('Eventets kortkonfiguration har en ukendt version.');
  const next={boatCourseFilter:'',boatClassFilter:'',...(settings.mapVersion===1?settings:{wind:false,windModel:'dmi_harmonie_arome_europe',windNumbers:false,rain:false,rainOpacity:.75,
   grid:true,traffic:true,military:true,annotationsVisible:true,boats:[],boatNames:boats.map(boat=>boat.id),
-  comparison:{enabled:false,basis:'absolute',boatColour:false},referenceBoatId:boats.find(boat=>boat.name==='Mercutio').id,
+  comparison:{enabled:false,basis:'absolute',boatColour:false},referenceBoatId:window.SR_EVENT.defaultReference,
   trackLengthSeconds:7200,handicapTracksEnabled:false,boatSearchQuery:'',boatFavouritesOnly:Array.isArray(settings.boats),...settings,mapVersion:1})};
  if(!validBoatRaceFilters(next.boatCourseFilter,next.boatClassFilter)||!validComparison(next.comparison)||!TRACK_LENGTHS.has(next.trackLengthSeconds)||!boats.some(boat=>boat.id===next.referenceBoatId)
   ||typeof next.handicapTracksEnabled!=='boolean'||typeof next.boatFavouritesOnly!=='boolean'||typeof next.boatSearchQuery!=='string'
@@ -62,7 +62,7 @@ function eventSettings(settings={}){
   ||!['wind','windNumbers','rain','grid','traffic','military','annotationsVisible'].every(key=>typeof next[key]==='boolean')
   ||!D.wind_models[next.windModel]||!Number.isFinite(next.rainOpacity)||next.rainOpacity<0||next.rainOpacity>1)throw Error('Eventets kortkonfiguration er ugyldig.');
  // Keep the legacy boatNames field in documents; names are always shown.
- return {...next,boatNames:boats.map(boat=>boat.id)};
+ return {...next,traffic:next.traffic&&window.SR_EVENT.layers.traffic,military:next.military&&window.SR_EVENT.layers.military,boatNames:boats.map(boat=>boat.id)};
 }
 function applySceneSettings(settings){
  const next=eventSettings(settings);

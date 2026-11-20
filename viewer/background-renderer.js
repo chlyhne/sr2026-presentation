@@ -1,5 +1,5 @@
 // The sole background renderer:
-// wind texture -> land triangles -> radar texture -> coastline triangles.
+// wind texture -> land -> radar -> coast -> bridges. All geometry uses WebGL 2.
 const MAP_GRID_LEVELS=[{meters:15*1852,label:'15 sømil'},{meters:5*1852,label:'5 sømil'},
  {meters:2*1852,label:'2 sømil'},{meters:1852,label:'1 sømil'},{meters:.5*1852,label:'0,5 sømil'},{meters:400,label:'400 m'},{meters:200,label:'200 m'},{meters:100,label:'100 m'}];
 const MAP_SCALE_LEVELS=[...MAP_GRID_LEVELS,...[50,20,10,5,2,1].map(meters=>({meters,label:`${meters} m`}))];
@@ -87,7 +87,7 @@ class WebGLBackgroundRenderer {
    this.phase='Link baggrundsprogram '+number;
    program=gl.createProgram();for(const shader of shaders)gl.attachShader(program,shader);gl.linkProgram(program);
    if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
-   return {program,uniforms:Object.fromEntries(['origin','screen','size','image','opacity','gridStep','gridAnchor'].map(name=>[name,gl.getUniformLocation(program,name)]))};
+   return {program,uniforms:Object.fromEntries(['origin','screen','size','image','opacity','gridStep','gridAnchor','lineWidth','strokeColour'].map(name=>[name,gl.getUniformLocation(program,name)]))};
   }finally{for(const shader of shaders)gl.deleteShader(shader);}
  }
  initializePrograms(){
@@ -105,9 +105,9 @@ vec4 clip(vec2 p){return vec4(p.x*2.0/size.x-1.0,1.0-p.y*2.0/size.y,0.0,1.0);}
    this.landProgram=this.program(`#version 300 es
 precision highp float;layout(location=0) in vec4 position;${projection}
 void main(){gl_Position=clip(project(position));}`,`#version 300 es
-precision highp float;out vec4 colour;void main(){colour=vec4(189.0/255.0,199.0/255.0,203.0/255.0,1.0);}`);
+precision highp float;uniform vec4 strokeColour;out vec4 colour;void main(){colour=strokeColour;}`);
    this.coastProgram=this.program(`#version 300 es
-precision highp float;layout(location=0) in vec4 position;layout(location=1) in vec4 directions;${projection}
+precision highp float;layout(location=0) in vec4 position;layout(location=1) in vec4 directions;uniform float lineWidth;${projection}
 void main(){
  vec2 before=screen*directions.xy,after=screen*directions.zw;
  if(length(before)<0.000001)before=after;if(length(after)<0.000001)after=before;
@@ -115,11 +115,11 @@ void main(){
  before=normalize(before);after=normalize(after);
  vec2 n0=vec2(-before.y,before.x),n1=vec2(-after.y,after.x),sum=n0+n1;
  vec2 normal=length(sum)>0.000001?normalize(sum):n1;
- float miter=0.5/max(abs(dot(normal,n1)),0.5);
+ float miter=0.5*lineWidth/max(abs(dot(normal,n1)),0.5);
  float side=(gl_VertexID&1)==0?-1.0:1.0;
  gl_Position=clip(project(position)+normal*miter*side);
 }`,`#version 300 es
-precision highp float;out vec4 colour;void main(){colour=vec4(54.0/255.0,87.0/255.0,102.0/255.0,1.0);}`);
+precision highp float;uniform vec4 strokeColour;out vec4 colour;void main(){colour=strokeColour;}`);
    this.textureProgram=this.program(`#version 300 es
 precision highp float;layout(location=0) in vec2 uv;out vec2 texCoord;${projection}
 void main(){texCoord=uv;gl_Position=clip(screen*((uv*vec2(1000.0,1180.0)-origin.xy)-origin.zw));}`,`#version 300 es
@@ -152,13 +152,23 @@ void main(){
    this.geometry||=prepareBackgroundGeometry(landPolygons,coastChunks);
    this.phase='Upload landgeometri';this.landMesh=this.mesh(this.geometry.land,4);
    this.phase='Upload kystgeometri';this.coastMesh=this.mesh(this.geometry.coast,8);
+   this.bridgeGeometry||=prepareBackgroundGeometry([],bridgeChunks).coast;
+   this.bridgeMesh=this.mesh(this.bridgeGeometry,8);
+   this.bridgeSupportGeometry||=prepareBackgroundGeometry(bridgeSupportPolygons,[]).land;
+   this.bridgeSupportMesh=this.mesh(this.bridgeSupportGeometry,4);
+   this.bridgeDeckGeometry||=prepareBackgroundGeometry(bridgeDeckPolygons,[]).land;
+   this.bridgeDeckMesh=this.mesh(this.bridgeDeckGeometry,4);
    this.quad=gl.createVertexArray();gl.bindVertexArray(this.quad);
    const quad=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0,1,0,0,1,0,1,1,0,1,1]),gl.STATIC_DRAW);
    gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,8,0);gl.bindVertexArray(null);
    this.weatherSlots=new Map([windImageBuffer,radarImageBuffer].map(buffer=>[buffer.id,[0,1].map(()=>({texture:gl.createTexture(),entry:null,width:0,height:0}))]));
    // Explicit order is independent of SVG node creation or weather load order.
-   this.layers=[{id:'wind',buffer:windImageBuffer,node:$('windField')},{id:'land',mesh:this.landMesh,node:$('land')},
-    {id:'radar',buffer:radarImageBuffer,node:$('precipitation')},{id:'coast',mesh:this.coastMesh,node:$('coast')}];
+   this.layers=[{id:'wind',buffer:windImageBuffer,node:$('windField')},{id:'land',mesh:this.landMesh,node:$('land'),fill:true,colour:[189/255,199/255,203/255,1]},
+    {id:'radar',buffer:radarImageBuffer,node:$('precipitation')},{id:'coast',mesh:this.coastMesh,node:$('coast'),width:1,colour:[54/255,87/255,102/255,1]},
+    {id:'bridge-outline',mesh:this.bridgeMesh,node:$('coast'),width:3.5,colour:[.2,.28,.32,1]},
+    {id:'bridge-deck',mesh:this.bridgeMesh,node:$('coast'),width:1.5,colour:[.88,.91,.92,1]},
+    {id:'bridge-deck-area',mesh:this.bridgeDeckMesh,node:$('coast'),fill:true,colour:[.88,.91,.92,1]},
+    {id:'bridge-supports',mesh:this.bridgeSupportMesh,node:$('coast'),fill:true,colour:[.18,.24,.27,1]}];
    this.viewportKey=null;this.setActive(true);this.phase='Kortbaggrund klargjort; afventer første tegning';
   }catch(error){this.fail(error);}
  }
@@ -229,7 +239,11 @@ void main(){
    for(const state of states){
     if(!state.visible)continue;
     if(state.layer.mesh){
-     this.camera(state.layer.id==='land'?this.landProgram:this.coastProgram,viewport);this.drawMesh(state.layer.mesh,viewport.bounds);
+     const program=state.layer.fill?this.landProgram:this.coastProgram;
+     this.camera(program,viewport);
+     gl.uniform4f(program.uniforms.strokeColour,...state.layer.colour);
+     if(!state.layer.fill)gl.uniform1f(program.uniforms.lineWidth,state.layer.width);
+     this.drawMesh(state.layer.mesh,viewport.bounds);
     }else if(state.texture){
      this.camera(this.textureProgram,viewport);gl.bindVertexArray(this.quad);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,state.texture.texture);
      gl.uniform1i(this.textureProgram.uniforms.image,0);gl.uniform1f(this.textureProgram.uniforms.opacity,state.opacity);gl.drawArrays(gl.TRIANGLES,0,6);

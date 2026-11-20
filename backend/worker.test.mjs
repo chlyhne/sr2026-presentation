@@ -247,3 +247,18 @@ test('publishing Silverrudder writes its own presentation without touching Sjæl
  assert.equal(response.status,200);assert.equal(calls.filter(c=>c.options.method==='PUT').length,1);
  assert.ok(calls.every(c=>!c.url.includes('/presentation/presentation.json')));
 });
+
+test('admin event links proxy symmetric public routes under a repository prefix',async()=>{
+ globalThis.fetch=async(url,options)=>{
+  assert.equal(String(url),'https://owner.github.io/repo/events/silverrudder-2025/');
+  assert.equal(options.redirect,'manual');return new Response('tracker');
+ };
+ assert.equal(await (await request('/admin/events/silverrudder-2025/')).text(),'tracker');
+});
+test('OAuth returns to the selected event canonical editor link',async()=>{
+ const pending=await seal({state:'event-state',verifier:'verifier',eventId:'silverrudder-2025',exp:Math.floor(Date.now()/1000)+600},env,'oauth');
+ mockGithub('write');const githubFetch=globalThis.fetch;
+ globalThis.fetch=async(url,options)=>String(url)==='https://github.com/login/oauth/access_token'?reply({access_token:'token'}):githubFetch(url,options);
+ const response=await worker.fetch(new Request(origin+'/auth/callback?state=event-state&code=code',{headers:{Cookie:'__Host-sr-oauth='+pending}}),env);
+ assert.equal(response.status,302);assert.equal(response.headers.get('Location'),'/admin/events/silverrudder-2025/');
+});

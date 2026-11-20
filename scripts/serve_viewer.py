@@ -1,5 +1,6 @@
 """Serve the viewer and persist uploaded event images on the local server."""
 import argparse
+import io
 import json
 import math
 import os
@@ -14,6 +15,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from build_pages import prepare_track_profiles
+from event_config import CATALOG_FILE, load_catalog, event_config, tracker_html
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE_DIR = ROOT / 'viewer' / 'event-images'
@@ -58,19 +60,33 @@ class ViewerHandler(SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         route = urlsplit(path).path
-        if route == '/rhumbline.html':
-            return str(ROOT / 'viewer' / 'index.html')
         if route.startswith('/events/') and route.endswith('/presentation.json'):
             event_id=route.split('/')[2]
-            catalog=json.loads((ROOT/'viewer/events/catalog.json').read_text(encoding='utf-8'))
+            catalog=load_catalog()
             if event_id not in {event['id'] for event in catalog['events']}:
                 return str(ROOT/'viewer/_not_found')
-            definition=json.loads((ROOT/'viewer/events'/event_id/'event.json').read_text(encoding='utf-8'))
+            definition=event_config(event_id)
             return str(ROOT/definition['presentationFile'])
         if route.startswith('/event-images/'):
             name = route.removeprefix('/event-images/')
             return str(IMAGE_DIR / name) if IMAGE_NAME.fullmatch(name) else str(IMAGE_DIR / '_not_found')
         return super().translate_path(path)
+
+    def send_head(self):
+        route=urlsplit(self.path).path
+        match=re.fullmatch(r'/events/([a-z0-9-]+)(/|/index.html)?',route)
+        if match:
+            try:
+                body=tracker_html(match[1]).encode('utf-8')
+            except StopIteration:
+                self.send_error(404,'Unknown event');return None
+            if match[2] is None:
+                self.send_response(301);self.send_header('Location',route+'/');self.end_headers();return None
+            self.send_response(200)
+            self.send_header('Content-Type','text/html; charset=utf-8')
+            self.send_header('Content-Length',str(len(body)));self.end_headers()
+            return io.BytesIO(body)
+        return super().send_head()
 
     def end_headers(self):
         immutable = re.fullmatch(r'/events/[a-z0-9-]+/track-profiles/[a-f0-9]{64}/[a-zA-Z0-9_.-]+\.gz', urlsplit(self.path).path)
@@ -198,12 +214,12 @@ class ViewerHandler(SimpleHTTPRequestHandler):
 
     def save_rhumbline(self):
         query=parse_qs(urlsplit(self.path).query)
-        event_id=query.get('event',['sjaelland-rundt-2026'])[0]
-        catalog=json.loads((ROOT/'viewer/events/catalog.json').read_text(encoding='utf-8'))
+        event_id=query.get('event',[None])[0]
+        catalog=load_catalog()
         if event_id not in {event['id'] for event in catalog['events']}:
             self.json_response(400, {'error':'Ukendt stævne.'});return
-        route_file=ROOT/'viewer/events'/event_id/'event.json'
-        event=json.loads(route_file.read_text(encoding='utf-8'))
+        route_file=CATALOG_FILE
+        event=event_config(event_id)
         course=query.get('course',[next(iter(event['courses']))])[0]
         if course not in event['courses']:
             self.json_response(400, {'error':'Ukendt bane.'});return
@@ -227,20 +243,21 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         with RHUMBLINE_LOCK:
             temporary = None
             try:
-                event=json.loads(route_file.read_text(encoding='utf-8'))
+                catalog=load_catalog()
+                event=next(e for e in catalog['events'] if e['id']==event_id)
                 existing = {'version':1,'points':event['courses'][course]['points']}
                 if existing != {'version': 1, 'points': []} and not valid_rhumbline(existing):
                     raise ValueError('Invalid permanent rhumbline')
-                if existing != definition and event_id == 'silverrudder-2025' and payload.get('previousPoints') != existing['points']:
+                if existing != definition and event['routeEditor']['allowReplace'] and payload.get('previousPoints') != existing['points']:
                     self.json_response(409, {'error': 'Den gemte rhumbline er ændret. Genindlæs tegnekortet, før du gemmer.'})
                     return
-                if existing['points'] and existing != definition and event_id != 'silverrudder-2025':
+                if existing['points'] and existing != definition and not event['routeEditor']['allowReplace']:
                     self.json_response(409, {'error': 'Rhumbline er allerede gemt permanent og kan ikke overskrives fra kortet.'})
                     return
                 with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=route_file.parent, delete=False) as target:
                     temporary = Path(target.name)
                     event['courses'][course]['points']=definition['points']
-                    target.write(json.dumps(event, ensure_ascii=False, indent=2) + '\n')
+                    target.write(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n')
                     target.flush()
                     os.fsync(target.fileno())
                 temporary.chmod(0o644)

@@ -92,7 +92,7 @@ body.rhumbline-setup #rhumblineSaveStatus:empty{display:none}
 #boatFavouritesOnly[aria-pressed=true] svg{fill:currentColor}
 #boatClearFavourites:disabled{cursor:default}
 #visibleBoatsList{margin:0;padding:0;list-style:none}
-.visible-boat{height:54px;padding:7px 10px;border-left:4px solid var(--boat-colour);border-bottom:1px solid #d5e1e7;overflow-wrap:anywhere;outline:none;cursor:pointer;scroll-margin-top:86px}
+.visible-boat{min-height:54px;padding:7px 10px;border-left:4px solid var(--boat-colour);border-bottom:1px solid #d5e1e7;overflow-wrap:anywhere;outline:none;cursor:pointer;scroll-margin-top:86px}
 .visible-boat:last-child{border-bottom-color:transparent}
 .visible-boat:hover,.visible-boat:focus,.visible-boat.highlighted{background:color-mix(in srgb,var(--boat-colour) 20%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--boat-colour) 55%,transparent)}
 .visible-boat:focus-visible{outline:2px solid #173d4c;outline-offset:-2px}
@@ -101,6 +101,11 @@ body.rhumbline-setup #rhumblineSaveStatus:empty{display:none}
 .boat-heart-icon{pointer-events:none;display:block;flex-shrink:0;width:17px;height:17px;color:#607e90}
 .boat-heart-choice:checked+.boat-heart-icon{fill:#bc3154;color:#bc3154}
 .boat-heart-choice:focus-visible+.boat-heart-icon{outline:2px solid #173d4c;outline-offset:2px;border-radius:3px}
+.visible-boat-heart{position:relative;display:flex;align-items:center;justify-content:center;width:20px;height:20px;margin:0;flex-shrink:0;cursor:pointer}
+.visible-boat-extra{margin:7px 0 0 26px;padding-top:6px;border-top:1px solid #d5e1e7;font-size:11px;color:#365766}
+.visible-boat-extra[hidden]{display:none}
+.visible-boat-colour{display:flex;align-items:center;justify-content:space-between;margin:6px 0 0;cursor:default}
+.visible-boat-colour input{width:40px;height:25px;padding:2px;border:1px solid #b5cad4;border-radius:4px;background:transparent;cursor:pointer}
 .visible-boat-name{flex:1;font-size:12px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .visible-boat-speed{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
 .visible-boat-details{display:grid;grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr);margin-top:3px;font-size:11px;line-height:1.35;color:#365766}
@@ -135,7 +140,7 @@ select,textarea{width:100%}input[type=range]{width:100%;accent-color:#ffce5c}
 #map image{pointer-events:none;-webkit-user-drag:none}
 #places{pointer-events:none}
 #map:active,#map.panning{cursor:grabbing}#map.placing,#map.placing:active{cursor:crosshair}
-#map .boat-marker{outline:none}#map .boat-marker[role=button]{cursor:pointer}
+#map .boat-marker{outline:none;cursor:pointer}
 #map .track-hit-target,#map .speed-marker{cursor:pointer;outline:none}
 #map.track-hover{cursor:pointer}
 #trackHover{position:fixed;z-index:30;pointer-events:none;max-width:calc(100vw - 8px);padding:5px 8px;border:1px solid #365766;border-radius:4px;background:#f4fafb;color:#14212a;font:12px system-ui,sans-serif;box-shadow:0 2px 8px #0003}
@@ -291,3 +296,5 @@ body.presenting #boatComparePanel{grid-column:2}
 #mapHeading{display:flex;align-items:center;gap:3px;}
 #eventSelect{flex:1;min-width:0;max-width:100%;border:0;background:transparent;color:inherit;padding:0;font:inherit;pointer-events:auto;}
 #referenceBoatHeading{flex:0 1 auto;max-width:100px;overflow:hidden;text-overflow:ellipsis;}
+
+.all-events{color:inherit;text-decoration:none;font-size:18px;margin-left:auto;padding:0 4px}.all-events:focus-visible{outline:2px solid currentColor}

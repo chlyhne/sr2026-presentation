@@ -74,6 +74,19 @@ for(const line of D.coast)for(let start=0;start<line.length-1;start+=256){
  for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
  coastChunks.push({west,east,south,north,points,before:line[start-1],after:line[start+257]});
 }
+const bridgeChunks=window.SR_BRIDGE_FEATURES.filter(feature=>feature.geometry.type==='LineString'&&!feature.properties.deck_width_metres).map(feature=>{
+ const points=feature.geometry.coordinates;let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
+ for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
+ return {west,east,south,north,points};
+});
+const bridgeAreaPolygons=window.SR_BRIDGE_FEATURES.filter(feature=>feature.geometry.type==='Polygon').map(feature=>{
+ const rings=feature.geometry.coordinates,points=rings.flat();let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
+ for(const [lon,lat] of points){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
+ return {west,east,south,north,rings,kind:feature.properties.source_kind};
+});
+const bridgeSupportPolygons=bridgeAreaPolygons.filter(p=>p.kind==='support');
+const bridgeDeckPolygons=bridgeAreaPolygons.filter(p=>p.kind==='deck');
+for(const polygon of bridgeDeckPolygons)for(const points of polygon.rings)bridgeChunks.push({...polygon,points});
 function positionScreenGroup(group,x,y,scale){
  setAttr(group,'data-screen-x',x);setAttr(group,'data-screen-y',y);
  setAttr(group,'transform',`translate(${x} ${y}) scale(${scale})`);
@@ -105,9 +118,10 @@ function renderMapCredit(){
  setAttr(line,'d',`M${-width},-27v5H0v-5`);setAttr(text,'x',-width/2);
  if(text.textContent!==label)text.textContent=label;
 }
-const colours={Mercutio:'#ffdc42',Vera:'#ff4dac',My:'#6cffff','THE HULK':'#65ff84'};
+const colours={...window.SR_EVENT.boatStyle.colours};
+let followedBoatId=null,timelineDragPointer=null;
 const TRACK_STROKE_WIDTH=2.7,TRACK_OUTLINE_WIDTH=4.7;
-const featured=new Set([...Object.keys(colours),'Rosa-Lux']),chosen=new Set();
+const featured=new Set(window.SR_EVENT.boatStyle.featured),chosen=new Set();
 const boats=D.boats.map(b=>({...b,...boatDetails[b.id],metadata:boatMetadata(b.name)})).sort((a,b)=>(featured.has(b.name)-featured.has(a.name))||a.name.localeCompare(b.name));
 const REFERENCE_BOAT_KEY='sr2026-reference-boat';
 let referenceBoatId=window.SR_EVENT.defaultReference,referencePreferenceError='';
@@ -162,7 +176,7 @@ function syncBoatChoices(){
  for(const [i,b] of boats.entries()){
   const input=$('choices').children[i]?.querySelector('input');if(input)input.checked=chosen.has(b.name);
  }
- for(const input of $('visibleBoatsList').querySelectorAll('input'))input.checked=chosen.has(input.value);
+ for(const input of $('visibleBoatsList').querySelectorAll('input[type=checkbox]'))input.checked=chosen.has(input.value);
 }
 function setBoatSelected(boat,selected){
  changeBoatSelection(()=>{if(selected)chosen.add(boat.name);else chosen.delete(boat.name);});
@@ -170,15 +184,16 @@ function setBoatSelected(boat,selected){
 function setAllBoatsSelected(selected){
  changeBoatSelection(()=>{for(const boat of boats){if(selected)chosen.add(boat.name);else chosen.delete(boat.name);}});
 }
-function activateBoatMarker(id,focus=false){
- if(!isBoatFilterActive())return;
- const boat=boats.find(boat=>boat.id===id);if(!boat)return;
- setBoatSelected(boat,!chosen.has(boat.name));flushRender();
- if(focus)$('boatMarkers').querySelector(`[data-boat-marker="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
-}
 // Assign the complete field once, so toggling boats never changes their colours.
 for(const [i,name] of [...new Set(boats.map(b=>b.name))].sort().entries()){
  if(!Object.hasOwn(colours,name))colours[name]=`hsl(${((18+i*137.507764)%360).toFixed(3)},78%,${42+i%3*7}%)`;
+}
+const BOAT_COLOURS_KEY='boat-colour-overrides';
+const localBoatColours=JSON.parse(eventStorage.getItem(BOAT_COLOURS_KEY)||'{}');
+for(const boat of boats)if(Object.hasOwn(localBoatColours,boat.id)){
+ const colour=localBoatColours[boat.id];
+ if(!/^#[0-9a-f]{6}$/i.test(colour))throw Error('Ugyldig lokal bådfarve.');
+ colours[boat.name]=colour;
 }
 for(const b of boats){const label=document.createElement('label');label.className='boat';const {choice,heart}=createBoatHeartChoice(b);const dot=document.createElement('span');dot.className='dot';dot.style.background=colours[b.name];label.append(choice,heart,dot,document.createTextNode(b.name));$('choices').append(label)}
 for(const [name,lon,lat] of window.SR_EVENT.places){const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('places'));el('circle',{cx:0,cy:0,r:2,fill:'#173d4c'},group);const n=el('text',{x:4,y:-4,fill:'#173d4c','font-size':11,stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);n.textContent=name}
@@ -308,7 +323,7 @@ function flushRender(){
 }
 // Retain an immediate path for exports, scene restoration and programmatic use.
 function render(){if(!viewerModulesReady){requestRender();return;}consumeRenderRequest();drawMap();}
-function drawMap(){if(hasRenderingFailure())return;const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderWindField(t);renderRadar(t);webglBackground.render();status(t);renderWindArrows(t);renderTraffic();renderMilitary();
+function drawMap(){if(hasRenderingFailure())return;if(followedBoatId&&centerViewOnBoat(boats.find(boat=>boat.id===followedBoatId)))setview();const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderWindField(t);renderRadar(t);webglBackground.render();status(t);renderWindArrows(t);renderTraffic();renderMilitary();
  renderTracks(t,{includeSpeedPins:false});
  renderAnnotations();
  renderNavigation();
@@ -326,7 +341,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  const drawingOrder=boats.filter(boatIsDisplayed).sort((a,b)=>(referenceBoatId===a.id)-(referenceBoatId===b.id));
  if(!webglTracks.render(t,drawingOrder))return;
  syncHandicapTracks();
- const active=new Set();let previous=null;
+ const active=new Set();let previous=null,markerTopologyChanged=false;
  for(const b of drawingOrder){
   const position=displayBoatPosition(b,t);if(!position)continue;
   active.add(b.id);
@@ -346,27 +361,28 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
   setAttr(group,'data-screen-x',x);setAttr(group,'data-screen-y',y);setAttr(group,'data-source-time',position.replayTime);
   if(handicapTracksEnabled)setAttr(group,'data-handicap-compensated','true');else group.removeAttribute('data-handicap-compensated');
   if(position.finished)setAttr(group,'data-handicap-finished','true');else group.removeAttribute('data-handicap-finished');
-  const selectable=isBoatFilterActive();
-  setAttr(group,'role',selectable?'button':'img');
-  setAttr(group,'aria-label',selectable?`Tilføj/fjern favorit: ${b.name}`:b.name);
-  if(selectable){setAttr(group,'tabindex','0');setAttr(group,'aria-pressed',String(chosen.has(b.name)));}
-  else{group.removeAttribute('tabindex');group.removeAttribute('aria-pressed');}
+  setAttr(group,'role','button');setAttr(group,'tabindex','0');
+  setAttr(group,'aria-label','Vis '+b.name+' i bådlisten');
   const description=`${b.name} · ${handicapTracksEnabled?'handicapkompenseret position · oprindeligt spor ved '+fmt(position.replayTime):position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
   if(title.textContent!==description)title.textContent=description;
+  setAttr(icon.querySelector('.boat-hull'),'fill',color);
+  if(record.name)setAttr(record.name,'fill',color);
   setAttr(icon,'data-lat',position.point[1]);setAttr(icon,'data-course',boatCourse(b.points,position.replayTime));
   if(!record.name){
-   record.name=el('text',{class:'boat-name','pointer-events':'none',x:7,y:({Mercutio:-12,Vera:15,My:-4,'THE HULK':27}[b.name]||3),fill:color,
+   record.name=el('text',{class:'boat-name','pointer-events':'none',x:7,y:(window.SR_EVENT.boatStyle.labelOffsets[b.name]??3),fill:color,
     'font-size':12,'font-weight':700,stroke:'#14212a','stroke-width':3,'paint-order':'stroke'},record.symbols);
    record.name.textContent=b.name;
   }
   const next=previous?previous.nextElementSibling:markerLayer.firstElementChild;
-  if(next!==wrapper)markerLayer.insertBefore(wrapper,next);previous=wrapper;
+  if(next!==wrapper){markerLayer.insertBefore(wrapper,next);markerTopologyChanged=true;}previous=wrapper;
  }
  for(const [id,record] of boatMarkerNodes)if(!active.has(id)){
+  if(record.wrapper.parentNode)markerTopologyChanged=true;
   record.wrapper.remove();
   if(!boats.includes(record.boat))boatMarkerNodes.delete(id);
  }
  resizeSymbols();if(includeSpeedPins)renderSpeedPins();updateVisibleBoats(t);
+ if(markerTopologyChanged)scheduleBoatHoverRefresh();
 }
 function step(n){syncTimelineViewport();if(finishEventEditing(()=>step(n))&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
 function setMapLayersExpanded(expanded){
@@ -412,12 +428,20 @@ function changePlaybackSpeed(direction){
 }
 $('back').onclick=()=>changePlaybackSpeed(-1);$('next').onclick=()=>changePlaybackSpeed(1);
 syncPlaybackControls();
-function centerPlaybackOnReferenceBoat(){
- const boat=referenceBoat();
+function centerViewOnBoat(boat){
+ if(timelineDragPointer!==null)return false;
  const position=boat&&displayBoatPosition(boat,currentTime());
- if(!position)return;
- const [x,y]=xy(position.point);
- view=[x-view[2]/2,y-view[3]/2,view[2],view[3]];setview();
+ if(!position)return false;
+ const [x,y]=xy(position.point),left=x-view[2]/2,top=y-view[3]/2;
+ if(view[0]===left&&view[1]===top)return false;
+ view=[left,top,view[2],view[3]];return true;
+}
+function followBoatOnMap(id){
+ followedBoatId=id;
+ if(centerViewOnBoat(boats.find(boat=>boat.id===id)))setview();
+}
+function centerPlaybackOnReferenceBoat(){
+ if(centerViewOnBoat(referenceBoat()))setview();
 }
 function advancePlayback(now){
  if(hasRenderingFailure()){stopPlayback();return;}
@@ -453,10 +477,12 @@ $('play').onclick=()=>{
  startPlayback();
 };
 $('playbackSpeed').onchange=updatePlaybackSpeed;
-document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
+document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){followedBoatId=null;cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
 let view=[...window.SR_EVENT.initialView];
 function setview(){
+ if(followedBoatId)centerViewOnBoat(boats.find(boat=>boat.id===followedBoatId));
  setAttr($('map'),'viewBox',view.join(' '));
+ scheduleBoatHoverRefresh();
  invalidateTimelineViewport();requestRender({viewportOnly:true});
 }
 function changeMapView(next){
@@ -464,7 +490,7 @@ function changeMapView(next){
  if(target&&!stageEventChanges(target,{view:[...next]}))return false;
  view=next;setview();return true;
 }
-$('reset').onclick=()=>changeMapView(window.SR_EVENT.initialView);
+$('reset').onclick=()=>{followedBoatId=null;changeMapView(window.SR_EVENT.initialView);};
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
 $('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture||navigationGesture||(!e.deltaY&&!e.deltaX))return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*((e.deltaY||e.deltaX)>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);changeMapView([anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f])},{passive:false});
 let drag=null;
@@ -493,6 +519,7 @@ map.onpointerdown=e=>{
  clearTrackHover();
  if(beginNavigationGesture(e))return;
  if(beginDrawingGesture(e))return;
+ followedBoatId=null;
  e.preventDefault();
  drag={pointerId:e.pointerId,pointerType:e.pointerType,pointers:new Map([[e.pointerId,{x:e.clientX,y:e.clientY}]]),
   x:e.clientX,y:e.clientY,view:[...view],initialView:[...view],event:editableSettingsEvent(),
@@ -553,7 +580,7 @@ function endPan(e){
   else if(placingNote)placeAnnotation(e);
   else if(noteIndex!==undefined&&!document.body.classList.contains('presenting'))beginNoteEditing(notes[+noteIndex]);
   else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
-  else if(boatId)activateBoatMarker(boatId);
+  else if(boatId)focusBoatInList(boatId);
   else if(trackBoatId)chooseTrackSpeed(e,trackBoatId);
   else chooseTrackSpeed(e);
  }
@@ -570,16 +597,19 @@ window.addEventListener('blur',cancelPan);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelPan();});
 window.addEventListener('scroll',event=>{if(event.target!==document)return;invalidateMapLayout();requestRender({viewportOnly:true});},true);
 map.addEventListener('keydown',e=>{
+ const marker=e.target.closest('[data-boat-marker]');
+ if(marker&&(e.key==='Enter'||e.key===' ')){
+  e.preventDefault();e.stopPropagation();focusBoatInList(marker.dataset.boatMarker);return;
+ }
  const speedMarker=e.target.closest('[data-speed-key]');
  if(speedMarker&&(e.key==='Enter'||e.key===' ')){
   e.preventDefault();e.stopPropagation();handleSpeedPinClick(e.target.closest('[data-speed-action]')?.dataset.speedAction,speedMarker.dataset.speedKey);return;
  }
- const marker=e.target.closest('[data-boat-marker]');
- if(marker&&(e.key==='Enter'||e.key===' ')){
-  e.preventDefault();e.stopPropagation();activateBoatMarker(marker.dataset.boatMarker,true);
- }
+
 });
 
 $('map').setAttribute('viewBox',window.SR_EVENT.initialView.join(' '));
 $('mapBase').setAttribute('viewBox',window.SR_EVENT.initialView.join(' '));
 if(!window.SR_EVENT.features.weather){for(const id of ['wind','windModel','windNumbers','rain']){$(id).disabled=true;$(id).title='Vejrdata er ikke importeret for dette stævne';} $('wind').checked=false;$('rain').checked=false;}
+
+for(const [layer,enabled] of Object.entries(window.SR_EVENT.layers)){const control=$(layer);control.disabled=!enabled;if(!enabled)control.checked=false;control.closest('label').hidden=!enabled;$(layer+'Info').hidden=!enabled;}

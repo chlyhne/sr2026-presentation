@@ -7,6 +7,10 @@
    Værdien er backendens HTTPS-origin, fx `https://sr2026-api.example.workers.dev`, uden `/admin/`.
 5. Push til `main`, eller kør **Publish presentation** manuelt under Actions.
 
+Forsiden viser stævnevælgeren. Direkte links ligger symmetrisk på
+`events/<id>/`, og redigering på backendens `/admin/events/<id>/`.
+Det fælles layout bruger relative basisadresser og virker under Pages-repositoryets sti.
+
 Workflowet bygger kun de offentlige filer i `dist/`. Forskningsnoter, rådata,
 backendkode og øvrige projektfiler medtages ikke i Pages-artifaktet.
 Repositoryets synlighed bestemmer separat, hvem der kan læse selve kildekoden.
