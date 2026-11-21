@@ -16,7 +16,7 @@ async function check(type){
    const index=boat.points.findIndex((p,i)=>p[2]>D.start+26*3600&&boat.points[i+1]?.[2]-p[2]<300&&boat.speeds[i]>4);
    const a=boat.points[index],b=boat.points[index+1],time=a[2]+.37*(b[2]-a[2]);
    const point=trackValue(boat.points,index,time).point,[x,y]=xy(point);
-   setBoatFavouritesOnly(true);chosen.clear();chosen.add(boat.name);$('wind').checked=$('rain').checked=false;
+   setBoatFavouritesOnly(true);chosen.clear();chosen.add(boat.name);setWindMode('off');setRainEnabled(false);
    view=[x-4,y-4,8,8];setview();selectedTime=time+600;render();
    const screen=new DOMPoint(x,y).matrixTransform($('map').getScreenCTM());
    const hit=nearestTrackSpeed(screen.x,screen.y,boat.id);

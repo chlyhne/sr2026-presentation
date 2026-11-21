@@ -14,7 +14,7 @@ for(const boat of boats){
  ghostClocks.set(boat.id,prepareGhostClock(boat,HANDICAP_COMMON_START,course.handicap));
 }
 const VIEWER_DATA_END=Math.ceil(Math.max(D.end,...[...ghostClocks.values()].filter(clock=>!clock.error).map(clock=>clock.end+GHOST_FINISH_HOLD)));
-try{
+if(window.SR_EVENT.features.handicap)try{
  const stored=JSON.parse(eventStorage.getItem(HANDICAP_TRACKS_KEY)??'false');
  if(typeof stored!=='boolean')throw Error(srText('Ugyldigt valg.'));
  handicapTracksEnabled=stored;
@@ -29,6 +29,7 @@ function syncHandicapTracks(){
  $('ghostStatus').hidden=!message;
 }
 function setHandicapTracks(enabled){
+ if(!window.SR_EVENT.features.handicap)return false;
  return changeEventConfiguration(()=>{
   try{if(!openedEvent)eventStorage.setItem(HANDICAP_TRACKS_KEY,JSON.stringify(enabled));}
   catch{handicapPreferenceError=srText('Handicapkompenseret spor kunne ikke gemmes.');syncHandicapTracks();return false;}
@@ -66,5 +67,3 @@ function viewerEndTime(){
  return handicapTracksEnabled?VIEWER_DATA_END:D.end;
 }
 syncNavigationControls();
-
-if(!window.SR_EVENT.features.handicap){handicapTracksEnabled=false;$('trackStyle').querySelector('option[value="handicap"]').disabled=true;$('handicapCompensatedTracks').checked=false;$('handicapCompensatedTracks').disabled=true;$('handicapCompensatedTracks').title=srText('Stævnet har ikke handicapdata');}

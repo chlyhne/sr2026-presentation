@@ -42,9 +42,14 @@ test('Silverrudder loads complete weather with its own radar source and asset pa
   assert.equal(data.radar.source,radar);
   assert.equal(data.radar.frames.length,count);
   const points=data.wind_models.dmi_harmonie_arome_europe;
-  const barbs=context.prepareWindBarbFrames(points,p=>p).get(points[0].hourly.time[0]);
-  assert.equal(barbs.length,247);
-  assert.equal(barbs[0].direction,points[0].hourly.wind_direction_10m[0]);
+  const grid=context.prepareWindBarbGrid(points),barbs=grid.frames.get(points[0].hourly.time[0]);
+  assert.equal(barbs.filter(Boolean).length,247);
+  const allSites=[...new Set(grid.neighbours.flat(2))].sort((a,b)=>a.index-b.index);
+  const reference={...grid,neighbours:grid.neighbours.map(row=>row.map(()=>allSites))};
+  for(const lat of [54,54.11,54.55,55.2,55.71,56.12,56.83,57])for(const lon of [9.5,9.63,10.45,11.33,12.1,13.88,14]){
+   const scale=Math.cos(lat*Math.PI/180);
+   assert.deepEqual(context.windBarbAt(grid,barbs,lon,lat,scale),context.windBarbAt(reference,barbs,lon,lat,scale));
+  }
   for(const frame of data.radar.frames)assert.ok(fs.existsSync('viewer/'+frame.file),frame.file);
   const incomplete={...manifest,radar:{...manifest.radar,frames:manifest.radar.frames.slice(1)}};
   assert.throws(()=>context.validateWeatherAssets(incomplete,event),/ufuldstændige vejrdata/);
@@ -58,15 +63,26 @@ test('wind barbs round to five knots and use the traditional calm, feather and p
  const context=viewerTestContext({}),source=fs.readFileSync('viewer/weather.js','utf8');
  vm.runInContext(source,context);
  const shape=knots=>context.windBarbPath(knots);
- assert.equal(shape(2.49).calm,true);
- assert.equal(shape(2.5).d,'M0 0V-26M0 -22L5 -24.5');
- assert.equal(shape(10).d,'M0 0V-26M0 -26L10 -31');
- assert.equal(shape(65).d,'M0 0V-26M0 -26H10L0 -20ZM0 -20L10 -25M0 -16L5 -18.5');
- const hourly={time:[0,3600],wind_speed_10m:[10*1852/3600,0],wind_direction_10m:[90,null]};
- const frames=context.prepareWindBarbFrames([{longitude:9.508,latitude:54.007,hourly}],p=>p);
- assert.equal(frames.get(0)[0].direction,90);
- assert.ok(Math.abs(frames.get(0)[0].knots-10)<1e-10);
- assert.equal(frames.get(3600)[0].glyph.calm,true);
+ assert.match(shape(2.49),/^M-3 0a/);
+ assert.equal(shape(2.5),'M0 0V-24M0 -20L4.5 -22');
+ assert.equal(shape(10),'M0 0V-24M0 -24L9 -28');
+ assert.equal(shape(65),'M0 0V-24M0 -24H9L0 -18ZM0 -17L9 -21M0 -13L4.5 -15');
+ const site=(longitude,direction)=>({longitude,latitude:55,hourly:{
+  time:[0,3600],wind_speed_10m:[10*1852/3600,0],wind_direction_10m:[direction,null],wind_gusts_10m:[25*1852/3600,null]
+ }});
+ const grid=context.prepareWindBarbGrid([site(11,359),site(11.25,1)]);
+ const at=(hour,lon)=>context.windBarbAt(grid,grid.frames.get(hour),lon,55,Math.cos(55*Math.PI/180));
+ assert.ok(Math.abs(at(0,11).direction+1)<1e-10);
+ assert.ok(Math.abs(at(0,11.125).direction)<1e-10,'Blend wind vectors across 360°');
+ assert.equal(at(0,11.125).band,2);
+ assert.equal(at(3600,11.125).band,0);
+ assert.equal(at(3600,11.125).direction,null);
+ assert.ok(Math.abs(at(0,11.125).knots-10*Math.cos(Math.PI/180))<1e-10);
+ const gust=context.windBarbAt(grid,grid.frames.get(0),11.125,55,Math.cos(55*Math.PI/180),'gust');
+ assert.equal(gust.band,5);
+ assert.ok(Math.abs(gust.knots-25)<1e-10);
+ assert.equal(gust.direction,at(0,11.125).direction);
+ assert.equal(at(0,9.55),null,'Avoid extending wind past model coverage');
 });
 
 test('an unknown stævne produces an explicit error',async()=>{await assert.rejects(load('unknown',storage()),/Ukendt/);});
@@ -295,14 +311,14 @@ test('the tracker has separate selectors for the stævne and the presentation ev
 
 test('event scene changes stay in the preview until captured and undo leaves content edits intact',()=>{
  const source=fs.readFileSync('viewer/presentation.js','utf8'),nodes=new Map(),writes=[];
- const note={time:10,text:'Original',view:[0,0,100,100],settings:{boats:[],boatSearchQuery:'',boatFavouritesOnly:false,wind:false}};
+ const note={time:10,text:'Original',view:[0,0,100,100],settings:{boats:[],boatSearchQuery:'',boatFavouritesOnly:false,wind:true,windMode:'mean'}};
  const copy=value=>JSON.parse(JSON.stringify(value));
  const context=viewerTestContext({
   $:id=>{if(!nodes.has(id))nodes.set(id,{setAttribute(){}});return nodes.get(id);},window:{SR_READONLY:false},
   openedEvent:note,editingNote:note,newEventDraft:null,interval:null,notes:[note],view:[0,0,100,100],
   sceneCameraBaseline:[0,0,100,100],sceneCameraEdited:false,followedScene:false,followedBoatId:null,
   sceneUndo:null,sceneFeedback:'',boatSearchQuery:'',boats:[{name:'Alpha'},{name:'Beta'}],
-  boatIsDisplayed:boat=>boat.name==='Alpha',previewSettings:{...note.settings},EVENT_LAYER_KEYS:['wind'],
+  boatIsDisplayed:boat=>boat.name==='Alpha',previewSettings:{...note.settings},EVENT_LAYER_KEYS:['windMode'],
   eventToolsVisible:()=>true,setBoatListText:(node,value)=>{node.textContent=value;},
   eventSettings:settings=>settings,eventGates:()=>[],eventMeasurement:()=>[],
   currentMeasurement:()=>[],currentGateMeasurement:()=>[],
@@ -315,20 +331,21 @@ test('event scene changes stay in the preview until captured and undo leaves con
  `,context);
  vm.runInContext(source.slice(source.indexOf('function eventHasContent('),source.indexOf('function sceneSettings()')),context);
  vm.runInContext(source.slice(source.indexOf('function captureScene('),source.indexOf('function restoreNote(')),context);
- vm.runInContext("view=[-10,-20,80,80];markEventCameraChange();previewSettings.wind=true;previewSettings.boatSearchQuery=boatSearchQuery='alpha';updateEventSceneControls()",context);
+ vm.runInContext("view=[-10,-20,80,80];markEventCameraChange();previewSettings.windMode='gust';previewSettings.boatSearchQuery=boatSearchQuery='alpha';updateEventSceneControls()",context);
  assert.equal(writes.length,0);
  assert.match(nodes.get('eventSceneStatus').textContent,/Udsnit · Både · Lag · 1 båd/);
  nodes.get('captureEventScene').onclick();
  assert.equal(writes.length,1);
  assert.deepEqual(writes[0][0].view,[-10,-20,80,80]);
  assert.deepEqual(writes[0][0].settings.boats,['Alpha']);
+ assert.equal(writes[0][0].settings.windMode,'gust');
  assert.equal(writes[0][0].settings.boatSearchQuery,'');
  context.updateEventContent(note,{text:'Ny tekst'});
  nodes.get('undoEventScene').onclick();
  assert.equal(writes.length,3);
  assert.equal(writes[2][0].text,'Ny tekst');
  assert.deepEqual(writes[2][0].view,[0,0,100,100]);
- assert.equal(writes[2][0].settings.wind,false);
+ assert.equal(writes[2][0].settings.windMode,'mean');
 });
 
 test('layout resize preserves the preview centre and geographic scale',()=>{
@@ -369,12 +386,69 @@ test('an edit made while publishing stays in the draft under the published revis
  });
 });
 
-test('the layer menu only offers wind, radar and grid switches',()=>{
+test('wind and rain have independent toolbar buttons and the grid needs no control',()=>{
  const html=fs.readFileSync('viewer/tracker.html','utf8');
- const panel=html.match(/<div id="mapLayersPanel"[^>]*>([\s\S]*?)<\/div>/)?.[1];
- assert.ok(panel);
- const controls=[...panel.matchAll(/<(input|button|select)\b[^>]*\bid="([^"]+)"/g)].map(match=>match[2]);
- assert.deepEqual(controls,['wind','rain','grid']);
+ assert.doesNotMatch(html,/id="(?:mapLayersToggle|mapLayersPanel|grid)"/);
+ assert.match(html,/<button id="wind"[^>]*data-mode="off"/);
+ assert.match(html,/<button id="rain"[^>]*aria-pressed="false"/);
+});
+
+test('the wind toggle cycles through gusts and legacy events restore mean wind',()=>{
+ const viewer=fs.readFileSync('viewer/viewer.js','utf8'),presentation=fs.readFileSync('viewer/presentation.js','utf8');
+ const button={dataset:{}},boat={id:'one'};
+ const context=viewerTestContext({
+  $:()=>button,updateWeatherButtonLabels(){},boats:[boat],validBoatRaceFilters:()=>true,validComparison:()=>true,eventComparison:value=>value,
+  TRACK_LENGTHS:new Set([7200]),window:{SR_EVENT:{defaultReference:boat.id,features:{weather:true},layers:{traffic:true,military:true}}}
+ });
+ vm.runInContext(viewer.slice(viewer.indexOf('const WIND_MODE_LABELS='),viewer.indexOf('let radarKey=')),context);
+ vm.runInContext(presentation.slice(presentation.indexOf('function eventSettings('),presentation.indexOf('function applySceneSettings(')),context);
+ for(const mode of ['mean','gust','off']){
+  context.setWindMode(context.nextWindMode());
+  assert.equal(button.dataset.mode,mode);
+ }
+ assert.equal(context.eventSettings({wind:true}).windMode,'mean');
+ assert.equal(context.eventSettings({wind:true,windMode:'gust'}).windMode,'gust');
+ assert.equal(context.eventSettings({wind:false}).windMode,'off');
+ assert.equal(context.eventSettings({wind:false,grid:false}).grid,true);
+});
+
+test('wind units update the clicked value without reloading the weather',()=>{
+ const viewer=fs.readFileSync('viewer/viewer.js','utf8'),preference=storage(),control={};
+ let updates=0;
+ preference.setItem('sr-wind-unit','m/s');
+ const context=viewerTestContext({
+  $:()=>control,WIND_KNOT_TO_MS:1852/3600,localStorage:preference,
+  currentTime:()=>0,renderWindSelection(){updates++;}
+ });
+ vm.runInContext(viewer.slice(viewer.indexOf('const WIND_UNIT_KEY='),viewer.indexOf('function renderWindAvailability(')),context);
+ assert.equal(control.value,'m/s');
+ assert.equal(context.windSpeedNumber(10),'5,1');
+ control.value='kn';control.onchange();
+ assert.equal(context.windSpeedNumber(10),'10,0');
+ assert.equal(preference.getItem('sr-wind-unit'),'kn');
+ assert.equal(updates,1);
+});
+
+test('only regattas with handicap data offer handicap tracks and restore them from events',()=>{
+ const navigation=fs.readFileSync('viewer/navigation.js','utf8'),presentation=fs.readFileSync('viewer/presentation.js','utf8');
+ const boat={id:'one'},settings={comparison:{enabled:true,basis:'handicap'},handicapTracksEnabled:true};
+ for(const handicap of [false,true]){
+  const label={hidden:false};
+  let removed=false;
+  const context=viewerTestContext({
+   $:id=>id==='handicapTracksLabel'?label:{querySelector:()=>({remove:()=>{removed=true;}})},
+   WIND_MODES:['off'],TRACK_LENGTHS:new Set([7200]),boats:[boat],validBoatRaceFilters:()=>true,
+   window:{SR_EVENT:{defaultReference:boat.id,features:{handicap,weather:true},layers:{traffic:true,military:true}}}
+  });
+  vm.runInContext(navigation.slice(navigation.indexOf('function validComparison('),navigation.indexOf('let comparison=')),context);
+  vm.runInContext(presentation.slice(presentation.indexOf('function eventSettings('),presentation.indexOf('function applySceneSettings(')),context);
+  const restored=context.eventSettings(settings);
+  assert.equal(label.hidden,!handicap);
+  assert.equal(removed,!handicap);
+  assert.equal(restored.handicapTracksEnabled,handicap);
+  assert.equal(restored.comparison.enabled,handicap);
+  assert.equal(restored.comparison.basis,handicap?'handicap':'absolute');
+ }
 });
 
 test('deleting the opened event saves the remaining notes and selects the following event',()=>{
@@ -403,10 +477,10 @@ test('language choice updates visible text, accessibility labels and switcher li
  const heading={childNodes:[{nodeType:3,data:'Brug i eventet'}]};
  const field={dataset:{i18nAttrs:'aria-label title'},attrs:{'aria-label':'Forrige event',title:'Forrige event'},
   getAttribute(name){return this.attrs[name];},setAttribute(name,value){this.attrs[name]=value;}};
- const button={setAttribute(name,value){this[name]=value;},focus(){this.focused=true;}};
+ const button={textContent:'gear',setAttribute(name,value){this[name]=value;},focus(){this.focused=true;}},flag={};
  const choices=['da','en','de','fr'].map(lang=>({lang,setAttribute(name,value){this[name]=value;},removeAttribute(name){delete this[name];}}));
- const panel={hidden:true,querySelectorAll:()=>choices};
- const picker={querySelector:query=>query==='button'?button:panel,contains:node=>node===button};
+ const panel={hidden:true},languages={querySelectorAll:()=>choices};
+ const picker={querySelector:query=>({button,'[data-languages]':languages,'[data-settings-panel]':panel,'[data-language-flag]':flag})[query],contains:node=>node===button};
  const url='http://localhost/events/silverrudder-2025/?editRoute=1&lang=de#map';
  const dynamic={textContent:'',setAttribute(){}},location={href:url};
  const document={baseURI:'http://localhost/',documentElement:{},
@@ -419,7 +493,8 @@ test('language choice updates visible text, accessibility labels and switcher li
  assert.equal(preference.getItem(langKey),'de');
  assert.equal(heading.childNodes[0].data,'Für Ereignis übernehmen');
  assert.deepEqual(field.attrs,{'aria-label':'Vorheriges Ereignis',title:'Vorheriges Ereignis'});
- assert.equal(button.textContent,'🇩🇪');
+ assert.equal(flag.textContent,'🇩🇪');
+ assert.equal(button.textContent,'gear');
  assert.equal(choices[2]['aria-current'],'true');
  assert.equal(choices[1].href.href,'http://localhost/events/silverrudder-2025/?editRoute=1&lang=en#map');
  assert.equal(context.srLanguageURL('events/sjaelland-rundt-2026/').search,'?lang=de');
@@ -437,19 +512,19 @@ test('language choice updates visible text, accessibility labels and switcher li
  assert.equal(heading.childNodes[0].data,'Use in event');
  assert.equal(field.attrs['aria-label'],'Previous event');
  assert.equal(dynamic.textContent,'Could not prepare the image.');
- assert.equal(button.textContent,'🇬🇧');
+ assert.equal(flag.textContent,'🇬🇧');
  assert.equal(choices[2]['aria-current'],undefined);
  assert.equal(choices[1]['aria-current'],'true');
  assert.equal(location.href,'http://localhost/events/silverrudder-2025/?editRoute=1&lang=en#map');
  choices[0].onclick({preventDefault(){}});
  assert.equal(heading.childNodes[0].data,'Brug i eventet');
  assert.equal(dynamic.textContent,'Billedet kunne ikke klargøres.');
- assert.equal(button.textContent,'🇩🇰');
+ assert.equal(flag.textContent,'🇩🇰');
  choices[2].onclick({preventDefault(){}});
  assert.equal(document.documentElement.lang,'de');
  choices[3].onclick({preventDefault(){}});
  assert.equal(document.documentElement.lang,'fr');
- assert.equal(button.textContent,'🇫🇷');
+ assert.equal(flag.textContent,'🇫🇷');
  assert.equal(heading.childNodes[0].data,'Utiliser pour l’événement');
  assert.equal(field.attrs['aria-label'],'Événement précédent');
  assert.equal(dynamic.textContent,'Impossible de préparer l’image.');
@@ -467,7 +542,7 @@ test('translated labels never replace the saved comparison identifiers',()=>{
  const source=fs.readFileSync('viewer/navigation.js','utf8');
  for(const [language,label] of Object.entries({en:'Delete event',de:'Ereignis löschen',fr:'Supprimer l’événement'})){
   const context=viewerTestContext({},language);
-  vm.runInContext(source.slice(source.indexOf('function validComparison('),source.indexOf('let comparison=')),context);
+  vm.runInContext(source.slice(source.indexOf('function validComparison('),source.indexOf('function eventComparison(')),context);
   assert.equal(context.validComparison({enabled:true,basis:'handicap',boatColour:false}),true);
   assert.equal(context.srText('Slet event'),label);
   assert.equal(context.srText('En båd ved broen'),'En båd ved broen');

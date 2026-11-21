@@ -10,7 +10,7 @@ async function check(type){
   const result=await page.evaluate(async()=>{
    const check=(v,message)=>{if(!v)throw Error(message);};
    const frame=()=>new Promise(requestAnimationFrame);
-   chosen.clear();chosen.add('Mercutio');$('wind').checked=$('rain').checked=false;
+   chosen.clear();chosen.add('Mercutio');setWindMode('off');setRainEnabled(false);
    updateTimeline();setCurrentTime(D.start+7200);render();
    const originalMap=drawMap,originalViewport=drawViewport,originalPins=renderSpeedPins;
    let full=0,viewport=0,pins=0;

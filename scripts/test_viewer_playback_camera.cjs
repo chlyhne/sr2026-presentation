@@ -12,7 +12,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.clock.install();await page.clock.pauseAt(new Date());
   await page.evaluate(()=>{
    stopPlayback();notes=[];activePresentationNote=null;
-   $('wind').checked=$('rain').checked=false;comparison.enabled=false;handicapTracksEnabled=false;
+   setWindMode('off');setRainEnabled(false);comparison.enabled=false;handicapTracksEnabled=false;
    const boat={...boats[0],points:Array.from({length:101},(_,i)=>{
     const t=i*100,x=500+(t<=3000?t:t<=6000?6000-t:t-6000)*.01;
     return [9.5+x*4.5/1000,57-500*3/1180,D.start+t];

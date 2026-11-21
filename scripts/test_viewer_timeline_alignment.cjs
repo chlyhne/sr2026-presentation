@@ -61,7 +61,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    };
    return [
     ['viewerLoadingStage','viewerLoading'],['presentationMessage','presentationFooter'],['imageCropHelp','imageCropDialog'],
-    ['inlineTextStatus','eventPanel'],['windPeriod','mapLayersPanel']
+    ['inlineTextStatus','eventPanel'],['windPeriod','weatherStatus']
    ].map(([label,surface])=>{
     const text=luminance(getComputedStyle($(label)).color),background=luminance(getComputedStyle($(surface)).backgroundColor);
     return [label,(Math.max(text,background)+.05)/(Math.min(text,background)+.05)];

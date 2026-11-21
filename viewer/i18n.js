@@ -100,13 +100,14 @@ for(const element of document.querySelectorAll('[data-i18n-attrs]')){
 srSyncLanguage();
 
 for(const picker of document.querySelectorAll('[data-language-picker]')){
- const button=picker.querySelector('button'),panel=picker.querySelector('[data-languages]');
- const choices=panel.querySelectorAll('[lang]');
+ const button=picker.querySelector('button'),languages=picker.querySelector('[data-languages]');
+ const panel=picker.querySelector('[data-settings-panel]')||languages,flag=picker.querySelector('[data-language-flag]')||button;
+ const choices=languages.querySelectorAll('[lang]');
  const toggle=open=>{
   panel.hidden=!open;button.setAttribute('aria-expanded',String(open));
  };
  function updatePicker(){
-  button.textContent=SR_LANGUAGES[srLanguage].flag;
+  flag.textContent=SR_LANGUAGES[srLanguage].flag;
   for(const choice of choices){
    const url=new URL(location.href);
    url.searchParams.set('lang',choice.lang);choice.href=url;
@@ -117,7 +118,8 @@ for(const picker of document.querySelectorAll('[data-language-picker]')){
  updatePicker();srOnLanguageChange(updatePicker);
  button.onclick=()=>toggle(panel.hidden);
  picker.onmousedown=event=>{
-  if(event.button===0&&document.activeElement?.matches?.('input,textarea,[contenteditable="true"]'))event.preventDefault();
+  if(event.button===0&&(panel===languages||button.contains(event.target)||languages.contains(event.target))
+   &&document.activeElement?.matches?.('input,textarea,[contenteditable="true"]'))event.preventDefault();
  };
  for(const choice of choices){
   choice.onclick=event=>{

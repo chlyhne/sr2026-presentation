@@ -23,7 +23,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await marker.locator('.boat-hull').click();
   assert.equal(await marker.locator('.boat-name').count(),1,'Clicking a boat cannot hide its name');
   const levels=await page.evaluate(()=>{
-   stopPlayback();$('wind').checked=$('rain').checked=false;
+   stopPlayback();setWindMode('off');setRainEnabled(false);
    const center=xy([12,55]);
    return [15*1852,5*1852,2*1852,1852,400,100].map(meters=>{
     const width=meters*MAP_GRID_UNITS_PER_METER[0]*10;
@@ -52,13 +52,10 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     if(gl.getError()!==gl.NO_ERROR)throw Error('WebGL grid error');
     return pixels;
    };
-   $('grid').checked=false;const without=read();
-   if(!$('mapCredit').querySelector('[data-map-scale]'))throw Error('Scale remains visible without the grid');
-   $('grid').checked=true;const withGrid=read();
-   let changed=0,partial=0;
-   for(let offset=0;offset<without.length;offset+=4){
-    if(without[offset]!==withGrid[offset]||without[offset+1]!==withGrid[offset+1]||without[offset+2]!==withGrid[offset+2]||without[offset+3]!==withGrid[offset+3])changed++;
-    if(without[offset+3]===0&&withGrid[offset+3]>0&&withGrid[offset+3]<80)partial++;
+   const pixels=read();let changed=0,partial=0;
+   for(let offset=3;offset<pixels.length;offset+=4){
+    if(pixels[offset]>0)changed++;
+    if(pixels[offset]>0&&pixels[offset]<80)partial++;
    }
    $('land').removeAttribute('visibility');$('coast').removeAttribute('visibility');
    return {changed,partial};
@@ -71,15 +68,11 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     {time:currentTime()+60,text:'Grid off',view:[...view],settings:{...settings,grid:false}}];
    restoreNote(notes[0]);
   });
-  await page.locator('#mapLayersToggle').click();
-  await page.locator('#grid').uncheck();
-  assert.equal(await page.evaluate(()=>sceneSettings().grid),false);
-  assert.equal(await page.evaluate(()=>notes[0].settings.grid),false,'Layer change is saved to the active event');
-  await page.evaluate(()=>{notes[0].settings.grid=true;restoreNote(notes[0]);});
-  assert.equal(await page.locator('#grid').isChecked(),true);
+  assert.equal(await page.locator('#mapLayersToggle,#grid').count(),0);
   await page.evaluate(()=>restoreNote(notes[1]));
-  assert.equal(await page.locator('#grid').isChecked(),false,'Event navigation restores grid visibility');
+  assert.equal(await page.evaluate(()=>sceneSettings().grid),true,'Old events cannot turn off the grid');
+  assert.equal(await page.evaluate(()=>notes[1].settings.grid),false,'Viewing the event leaves the stored document intact');
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:'firefox',levels,coverage,checks:'default names, zoom levels, GPU pixels, antialiasing, layer toggle, event save/restore'}));
+  console.log(JSON.stringify({browser:'firefox',levels,coverage,checks:'default names, zoom levels, GPU pixels, antialiasing, fixed grid and legacy event restore'}));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

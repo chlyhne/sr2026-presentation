@@ -21,9 +21,9 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    const first={x:map.x+map.width*.50,y:map.y+map.height*.45};
    const second={x:map.x+map.width*.70,y:map.y+map.height*.65};
    const click=point=>page.mouse.click(point.x,point.y);
-   await page.locator('#mapLayersToggle').click();
+   await page.locator('#mapTracksToggle').click();
    await button.click();
-   assert.equal(await page.locator('#mapLayersPanel').isVisible(),false);
+   assert.equal(await page.locator('#mapTracksPanel').isVisible(),false);
    assert.equal(await button.getAttribute('aria-pressed'),'true');
    assert.equal(await page.evaluate(()=>navigationMode),'measure');
    const before=await page.evaluate(()=>JSON.stringify(SR_RHUMBLINE));

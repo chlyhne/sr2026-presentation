@@ -71,7 +71,7 @@ function nextWeatherTime(time,period){
  return null;
 }
 
-const WIND_MODEL='dmi_harmonie_arome_europe',WIND_MODEL_LABEL='DMI HARMONIE';
+const WIND_MODEL='dmi_harmonie_arome_europe';
 const RADAR_OPACITY=.75;
 
 const WEATHER_RADAR_INTERVAL=600;
@@ -106,36 +106,70 @@ async function loadEventWeather(event,data){
  data.radar=assets.radar;
 }
 
-// A north-facing staff is rotated clockwise by the meteorological direction.
+const WIND_KNOT_TO_MS=1852/3600;
+// The staff points north before rotation by the wind's direction of origin.
 function windBarbPath(knots){
  const units=Math.round(knots/5);
- if(units===0)return {d:'M-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0',calm:true};
+ if(units===0)return 'M-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0';
  const flags=Math.floor(units/10),feathers=Math.floor(units%10/2),half=units%2;
- let d='M0 0V-26',y=-26;
- for(let i=0;i<flags;i++,y+=6)d+=`M0 ${y}H10L0 ${y+6}Z`;
- for(let i=0;i<feathers;i++,y+=4)d+=`M0 ${y}L10 ${y-5}`;
+ let d='M0 0V-24',y=-24;
+ for(let i=0;i<flags;i++,y+=7)d+=`M0 ${y}H9L0 ${y+6}Z`;
+ for(let i=0;i<feathers;i++,y+=4)d+=`M0 ${y}L9 ${y-4}`;
  if(half){
   if(!flags&&!feathers)y+=4;
-  d+=`M0 ${y}L5 ${y-2.5}`;
+  d+=`M0 ${y}L4.5 ${y-2}`;
  }
- return {d,calm:false};
+ return d;
 }
-function prepareWindBarbFrames(points,project){
- const frames=new Map(),glyphs=new Map();
- for(const {longitude,latitude,hourly} of points){
-  const [x,y]=project([longitude,latitude]);
-  // Nearest-model cell coordinates have a small offset from the request grid.
-  const column=Math.round((longitude-9.5)*4),row=Math.round((latitude-54)*4);
+
+function prepareWindBarbGrid(points){
+ const frames=new Map();
+ const locations=points.map(({longitude,latitude},index)=>({
+  longitude,latitude,index,column:Math.round((longitude-9.5)*4),row:Math.round((latitude-54)*4)
+ }));
+ let maxKnots=0;
+ for(const [index,{hourly}] of points.entries()){
   for(const [i,hour] of hourly.time.entries()){
    const speed=hourly.wind_speed_10m[i],direction=hourly.wind_direction_10m[i];
    if(!Number.isFinite(speed)||speed<0||(speed>0&&!Number.isFinite(direction)))continue;
-   const knots=speed*3600/1852,band=Math.round(knots/5)*5;
-   if(!glyphs.has(band))glyphs.set(band,windBarbPath(band));
-   const gust=hourly.wind_gusts_10m?.[i];
+   const knots=speed/WIND_KNOT_TO_MS,angle=(speed?direction:0)*Math.PI/180;
+   const gust=hourly.wind_gusts_10m?.[i],gustKnots=Number.isFinite(gust)&&gust>=0?gust/WIND_KNOT_TO_MS:null;
    if(!frames.has(hour))frames.set(hour,[]);
-   frames.get(hour).push({x,y,column,row,knots,direction:Number.isFinite(direction)?direction:null,
-    gust:Number.isFinite(gust)?gust*3600/1852:null,glyph:glyphs.get(band)});
+   frames.get(hour)[index]={east:knots*Math.sin(angle),north:knots*Math.cos(angle),gustKnots};
+   maxKnots=Math.max(knots,gustKnots??0,maxKnots);
   }
  }
- return frames;
+ // Model cell coordinates have small offsets from the requested quarter-degree grid.
+ // Include a margin of neighbouring rows and columns before ranking real distances.
+ const neighbours=Array.from({length:13},(_,row)=>Array.from({length:19},(_,column)=>
+  locations.filter(site=>Math.abs(site.column-column)<=3&&Math.abs(site.row-row)<=2)));
+ const glyphs=Array.from({length:Math.ceil(maxKnots/5)+1},(_,index)=>windBarbPath(index*5));
+ return {frames,neighbours,glyphs};
+}
+
+function windBarbAt(grid,frame,longitude,latitude,lonScale,mode='mean'){
+ if(longitude<9.5||longitude>14||latitude<54||latitude>57)return null;
+ const sites=grid.neighbours[Math.round((latitude-54)*4)][Math.round((longitude-9.5)*4)];
+ const nearest=[];
+ for(const site of sites){
+  const vector=frame[site.index];if(!vector)continue;
+  const distance=((site.longitude-longitude)*lonScale)**2+(site.latitude-latitude)**2;
+  let at=nearest.length;
+  while(at>0&&distance<nearest[at-1].distance)at--;
+  if(at===4)continue;
+  nearest.splice(at,0,{distance,vector});
+  if(nearest.length>4)nearest.pop();
+ }
+ if(!nearest.length||nearest[0].distance>.3**2)return null;
+ if(nearest[0].distance<1e-12)nearest.length=1;
+ let east=0,north=0,total=0,gust=0,gustWeight=0;
+ for(const {distance,vector} of nearest){
+  const weight=1/Math.max(distance,1e-12);
+  east+=vector.east*weight;north+=vector.north*weight;total+=weight;
+  if(mode==='gust'&&vector.gustKnots!==null){gust+=vector.gustKnots*weight;gustWeight+=weight;}
+ }
+ if(mode==='gust'&&!gustWeight)return null;
+ const mean=Math.hypot(east,north)/total,knots=mode==='gust'?gust/gustWeight:mean,band=Math.round(knots/5);
+ // The source records gust speed and the mean wind direction.
+ return {d:grid.glyphs[band],band,knots,direction:mean<1e-9?null:Math.atan2(east,north)*180/Math.PI};
 }

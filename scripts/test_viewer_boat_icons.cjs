@@ -25,7 +25,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   }
   async function zoom(width,name='Mercutio'){return page.evaluate(([width,name])=>{
    const boat=boats.find(b=>b.name===name);chosen.clear();chosen.add(boat.name);
-   $('wind').checked=false;$('rain').checked=false;selectedTime=D.start+3600;
+   setWindMode('off');setRainEnabled(false);selectedTime=D.start+3600;
    const point=trackPosition(boat.points,selectedTime).point,[x,y]=xy(point);
    const height=width*.9;view=[x-width/2,y-height/2,width,height];$('map').setAttribute('viewBox',view.join(' '));render();
    const icon=document.querySelector('.boat-icon'),hull=icon.querySelector('path'),bbox=hull.getBBox(),m=hull.getScreenCTM();

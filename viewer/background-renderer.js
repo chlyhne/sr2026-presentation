@@ -228,8 +228,7 @@ void main(){
     return {layer,visible:this.visible(layer.node)&&(!layer.buffer||(front?.ready&&layer.buffer.frontNode.getAttribute('visibility')==='visible')),
      texture:layer.buffer&&this.weatherSlots.get(layer.buffer.id).find(slot=>slot.entry===front),opacity:layer.id==='radar'?RADAR_OPACITY:1};
    });
-   const gridEnabled=$('grid').checked,gridLevel=mapGridLevel(viewport);
-   const key=viewportKey+gridEnabled+states.map(s=>`${s.layer.id}:${!!s.visible}:${s.layer.buffer?.front?.key}:${s.opacity}`).join('|');
+   const key=viewportKey+states.map(s=>`${s.layer.id}:${!!s.visible}:${s.layer.buffer?.front?.key}:${s.opacity}`).join('|');
    if(!force&&key===this.lastKey)return true;this.lastKey=key;
    if(viewportKey!==this.viewportKey){this.phase=srText("Tilpas baggrundens grafikbuffer til {0} × {1}",pixelWidth,pixelHeight);positionMapCanvas(this.canvas,viewport);this.viewportKey=viewportKey;}
    this.phase=srText('Tegn kortbaggrund');
@@ -248,12 +247,11 @@ void main(){
      gl.uniform1i(this.textureProgram.uniforms.image,0);gl.uniform1f(this.textureProgram.uniforms.opacity,state.opacity);gl.drawArrays(gl.TRIANGLES,0,6);
     }
    }
-   if(gridEnabled){
-    this.camera(this.gridProgram,viewport);gl.bindVertexArray(this.quad);
-    gl.uniform2f(this.gridProgram.uniforms.gridStep,...MAP_GRID_UNITS_PER_METER.map(value=>value*gridLevel.meters));
-    gl.uniform2f(this.gridProgram.uniforms.gridAnchor,...xy([12,55]));
-    gl.drawArrays(gl.TRIANGLES,0,6);
-   }
+   const gridLevel=mapGridLevel(viewport);
+   this.camera(this.gridProgram,viewport);gl.bindVertexArray(this.quad);
+   gl.uniform2f(this.gridProgram.uniforms.gridStep,...MAP_GRID_UNITS_PER_METER.map(value=>value*gridLevel.meters));
+   gl.uniform2f(this.gridProgram.uniforms.gridAnchor,...xy([12,55]));
+   gl.drawArrays(gl.TRIANGLES,0,6);
    gl.bindVertexArray(null);this.draws++;this.phase=srText('Baggrundstegning sendt til GPU');return true;
   }catch(error){this.fail(error);return false;}
  }

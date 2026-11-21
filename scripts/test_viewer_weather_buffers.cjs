@@ -11,7 +11,7 @@ async function check(type){
   await page.route('**/radar/1781168400.png',route=>route.abort());
   await page.goto(new URL('events/sjaelland-rundt-2026/',process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/').href);
   await page.waitForSelector('main:not([inert])');
-  await page.evaluate(()=>{$('rain').checked=true;visibleTimeRanges=[];renderRadar(1781164800);return radarReady;});
+  await page.evaluate(()=>{setRainEnabled(true);visibleTimeRanges=[];renderRadar(1781164800);return radarReady;});
   await page.waitForFunction(()=>radarImageBuffer.back?.ready);
   const instant=await page.evaluate(()=>{
    const radarBack=radarImageBuffer.backNode;
@@ -36,10 +36,10 @@ async function check(type){
   assert.equal(await page.locator('#radarImage').getAttribute('visibility'),'visible');
   assert.equal(await page.locator('#radarImage').getAttribute('data-weather-key'),'1781167200');
   await page.unroute('**/radar/1781168400.png');
-  await page.evaluate(()=>{$('rain').checked=false;renderRadar(1781168400);});
+  await page.evaluate(()=>{setRainEnabled(false);renderRadar(1781168400);});
   assert.equal(await page.locator('#radarImage').getAttribute('visibility'),'hidden');
   assert.equal(await page.locator('#radarImageBack').getAttribute('visibility'),'hidden');
-  await page.evaluate(()=>{$('rain').checked=true;setCurrentTime(1781168400);render();});
+  await page.evaluate(()=>{setRainEnabled(true);setCurrentTime(1781168400);render();});
   await page.evaluate(()=>radarReady);
   assert.equal(await page.locator('#radarImage').getAttribute('data-weather-key'),'1781168400');
   await page.evaluate(()=>radarImageBuffer.paintReady);

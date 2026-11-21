@@ -56,7 +56,7 @@ function updateEventContent(target,changes){
  return true;
 }
 function sceneSettings() {
- return {wind:$('wind').checked,rain:$('rain').checked,grid:$('grid').checked,
+ return {wind:windMode!=='off',windMode,rain:rainEnabled,grid:true,
   ...sceneOverlays,boats:[...chosen],boatNames:boats.map(boat=>boat.id),
   mapVersion:1,comparison:{...comparison},referenceBoatId,trackLengthSeconds,handicapTracksEnabled,boatSearchQuery,boatFavouritesOnly,boatCourseFilter,boatClassFilter};
 }
@@ -64,15 +64,18 @@ function eventSettings(settings={}){
  if(!settings||typeof settings!=='object'||Array.isArray(settings))throw Error(srText('Eventets kortkonfiguration er ugyldig.'));
  if(settings.mapVersion!==undefined&&settings.mapVersion!==1)throw Error(srText('Eventets kortkonfiguration har en ukendt version.'));
  const next={boatCourseFilter:'',boatClassFilter:'',...(settings.mapVersion===1?settings:{wind:false,rain:false,
-  grid:true,traffic:true,military:true,annotationsVisible:true,boats:[],boatNames:boats.map(boat=>boat.id),
+  traffic:true,military:true,annotationsVisible:true,boats:[],boatNames:boats.map(boat=>boat.id),
   comparison:{enabled:false,basis:'absolute',boatColour:false},referenceBoatId:window.SR_EVENT.defaultReference,
   trackLengthSeconds:7200,handicapTracksEnabled:false,boatSearchQuery:'',boatFavouritesOnly:Array.isArray(settings.boats),...settings,mapVersion:1})};
- if(!validBoatRaceFilters(next.boatCourseFilter,next.boatClassFilter)||!validComparison(next.comparison)||!TRACK_LENGTHS.has(next.trackLengthSeconds)||!boats.some(boat=>boat.id===next.referenceBoatId)
+ const savedWindMode=next.windMode===undefined?(next.wind?'mean':'off'):next.windMode;
+ if(!WIND_MODES.includes(savedWindMode)||!validBoatRaceFilters(next.boatCourseFilter,next.boatClassFilter)||!validComparison(next.comparison)||!TRACK_LENGTHS.has(next.trackLengthSeconds)||!boats.some(boat=>boat.id===next.referenceBoatId)
   ||typeof next.handicapTracksEnabled!=='boolean'||typeof next.boatFavouritesOnly!=='boolean'||typeof next.boatSearchQuery!=='string'
   ||!['boats','boatNames'].every(key=>Array.isArray(next[key])&&next[key].every(value=>typeof value==='string'))
-  ||!['wind','rain','grid','traffic','military','annotationsVisible'].every(key=>typeof next[key]==='boolean'))throw Error(srText('Eventets kortkonfiguration er ugyldig.'));
+  ||!['wind','rain','traffic','military','annotationsVisible'].every(key=>typeof next[key]==='boolean'))throw Error(srText('Eventets kortkonfiguration er ugyldig.'));
  // Keep the legacy boatNames field in documents; names are always shown.
- return {...next,wind:next.wind&&window.SR_EVENT.features.weather,rain:next.rain&&window.SR_EVENT.features.weather,
+ const enabledWindMode=window.SR_EVENT.features.weather?savedWindMode:'off';
+ return {...next,wind:enabledWindMode!=='off',windMode:enabledWindMode,rain:next.rain&&window.SR_EVENT.features.weather,grid:true,
+  comparison:eventComparison(next.comparison),handicapTracksEnabled:next.handicapTracksEnabled&&window.SR_EVENT.features.handicap,
   traffic:next.traffic&&window.SR_EVENT.layers.traffic,military:next.military&&window.SR_EVENT.layers.military,boatNames:boats.map(boat=>boat.id)};
 }
 function applySceneSettings(settings){
@@ -95,11 +98,10 @@ function changeEventConfiguration(change){
  updateEventSceneControls();
  return result;
 }
-const EVENT_LAYER_KEYS=['wind','rain','grid'];
+const EVENT_LAYER_KEYS=['windMode','rain'];
 function applyLayerSettings(settings){
- for(const id of EVENT_LAYER_KEYS)$(id).checked=settings[id];
+ setWindMode(settings.windMode);setRainEnabled(settings.rain);
 }
-for(const id of EVENT_LAYER_KEYS)$(id).onchange=()=>{updateEventSceneControls();requestRender();};
 function currentMapEvent(){
  const time=currentTime();
  return notes.includes(activePresentationNote)&&activePresentationNote.time===time?activePresentationNote:notes.find(note=>note.time===time)||null;
@@ -400,10 +402,11 @@ function handlePresentationKey(event){
  if(event.key==='Escape'){
   if(!event.target.closest('input,textarea,select,dialog')&&(placingNote||drawingTool!=='pan')){event.preventDefault();event.stopImmediatePropagation();endEventTool();requestRender();return;}
   if(navigationMode||event.target.closest('input,textarea,select,dialog,[contenteditable="true"]'))return;
-  if(followedBoatId||pickedTrackSpeed){
+  if(followedBoatId||pickedTrackSpeed||windSelection){
    event.preventDefault();event.stopImmediatePropagation();
    if(followedBoatId){followedBoatId=null;updateEventSceneControls();}
-   closeTrackSpeedSelection();
+   if(pickedTrackSpeed)closeTrackSpeedSelection();
+   closeWindSelection();
   }
   return;
  }

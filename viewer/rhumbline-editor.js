@@ -1,6 +1,6 @@
 // The local route editor reuses the presentation's WebGL map.
 document.body.classList.add('rhumbline-setup');srBind(document,'title',()=>srText('Tegn permanent rhumbline'));
-$('wind').checked=$('rain').checked=false;
+setWindMode('off');setRainEnabled(false);
 sceneOverlays.traffic=sceneOverlays.military=false;
 boatCourseFilter=window.SR_SETUP_COURSE;boatClassFilter='';boatFavouritesOnly=false;boatSearchQuery='';
 chosen.clear();$('rhumblineTools').hidden=false;

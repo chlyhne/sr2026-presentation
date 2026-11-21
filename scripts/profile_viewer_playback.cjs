@@ -15,7 +15,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    return {userAgent:navigator.userAgent,boats:boats.length,displayed:boats.filter(boatIsDisplayed).length,
     renderer:info?gl.getParameter(info.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),
     gpuTimer:!!gl.getExtension('EXT_disjoint_timer_query_webgl2'),view:[...view],
-    trackLengthSeconds,comparison:{...comparison},wind:$('wind').checked,rain:$('rain').checked,
+    trackLengthSeconds,comparison:{...comparison},windMode,rain:rainEnabled,
     listOpen:!$('visibleBoatsPanel').hidden,canvas:[gl.drawingBufferWidth,gl.drawingBufferHeight]};
   });
   await page.evaluate(instrument=>{
@@ -35,7 +35,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     return ()=>{object[key]=original;};
    };
    if(instrument){
-    for(const name of ['advancePlayback','setCurrentTime','drawMap','renderRadar','status','renderWindBarbs','renderTraffic','renderMilitary','renderTracks','renderAnnotations','renderNavigation','renderMapCredit','resizeSymbols','resizeBoatIcons','updateVisibleBoats','highlightVisibleBoat','mapViewport','trackSpeedLegendLayout','centerPlaybackOnReferenceBoat','setview','updateTimeline','visibleBoatRanges'])wrap(window,name);
+    for(const name of ['advancePlayback','setCurrentTime','drawMap','renderRadar','renderWindAvailability','renderWindBarbs','renderTraffic','renderMilitary','renderTracks','renderAnnotations','renderNavigation','renderMapCredit','resizeSymbols','resizeBoatIcons','updateVisibleBoats','highlightVisibleBoat','mapViewport','trackSpeedLegendLayout','centerPlaybackOnReferenceBoat','setview','updateTimeline','visibleBoatRanges'])wrap(window,name);
     wrap(webglTracks,'render','tracks.render');wrap(webglBackground,'render','background.render');
     wrap(SVGGraphicsElement.prototype,'getScreenCTM','DOM.getScreenCTM');
     wrap(Element.prototype,'getBoundingClientRect','DOM.getBoundingClientRect');
@@ -59,7 +59,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     stopPlayback();consumeRenderRequest();
     if(window.restoreProfileCase)window.restoreProfileCase();
     const restores=[];
-    $('wind').checked=name==='normal';$('rain').checked=false;
+    setWindMode(name==='normal'?'mean':'off');setRainEnabled(false);
     boatFavouritesOnly=false;boatSearchQuery='';
     setCurrentTime(D.start+43200,{fractional:true,allowOutsideVisibleRanges:true});
     $('playbackSpeed').value='100';
@@ -100,7 +100,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   }
   await page.evaluate(()=>{stopPlayback();consumeRenderRequest();window.restoreProfileCase();});
   const gpu=process.env.SR_PROFILE_SKIP_GPU==='1'?[]:await page.evaluate(async()=>{
-   $('wind').checked=$('rain').checked=false;
+   setWindMode('off');setRainEnabled(false);
    const gl=webglTracks.gl,results=[],originalDraw=gl.drawArraysInstanced;
    const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
    for(const tail of [900,7200,0]){

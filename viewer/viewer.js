@@ -137,7 +137,9 @@ function syncReferenceBoatControls(){
  $('referenceBoat').value=boat.id;
  $('referenceBoatHeading').textContent=` / ${boat.name}`;
  $('mapHeading').title=window.SR_EVENT.title+' / '+boat.name;
- for(const basis of ['absolute','handicap'])srBind($('trackStyle').querySelector(`option[value="${basis}"]`),'textContent',()=>srText("Mod {0} · {1}",boat.name,basis==='absolute'?srText('absolut'):srText('handicap')));
+ for(const option of $('trackStyle').querySelectorAll('option[value="absolute"],option[value="handicap"]')){
+  srBind(option,'textContent',()=>srText("Mod {0} · {1}",boat.name,option.value==='absolute'?srText('absolut'):srText('handicap')));
+ }
  srBind($('trackStyle').querySelector('option[value="time"]'),'textContent',()=>srText("Mod {0} · tid / 100 m ref.",boat.name));
 }
 for(const boat of boats){
@@ -230,7 +232,16 @@ for(const feature of D.route_t.features){
 }
 let interval=null;
 
-const radarSource=window.SR_EVENT.weather?.radar;
+const WIND_MODE_LABELS={off:'Vind slukket',mean:'Middelvind',gust:'Vindpust'};
+const WIND_MODES=Object.keys(WIND_MODE_LABELS);
+let windMode='off',rainEnabled=false;
+function nextWindMode(){return WIND_MODES[(WIND_MODES.indexOf(windMode)+1)%WIND_MODES.length];}
+function setWindMode(mode){
+ windMode=mode;$('wind').dataset.mode=mode;updateWeatherButtonLabels();
+}
+function setRainEnabled(enabled){
+ rainEnabled=enabled;setAttr($('rain'),'aria-pressed',String(enabled));
+}
 let radarKey=null,radarStatus='indlæser …',radarReady=Promise.resolve();
 const radarImageBuffer=new WeatherImageBuffer('radarImage');
 function prepareNextRadar(time){
@@ -240,60 +251,123 @@ function prepareNextRadar(time){
 }
 function renderRadar(time){
  const t=Math.floor(time/WEATHER_RADAR_INTERVAL)*WEATHER_RADAR_INTERVAL;
- const enabled=$('rain').checked,key=`${t}:${enabled}`;
+ const enabled=rainEnabled,key=`${t}:${enabled}`;
  if(key===radarKey){if(enabled&&radarImageBuffer.front?.key===String(t))prepareNextRadar(time);return;}
  radarKey=key;
- if(!enabled){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='slået fra';$('rainPeriod').textContent='';return;}
+ const rainPeriod=$('rainPeriod');
+ srBind(rainPeriod,'textContent',()=>'');
+ if(!enabled){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='slået fra';return;}
  const frame=D.radar?.frames.find(f=>f.time===t);
- if(!frame){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='mangler';srBind($('rainPeriod'),'textContent',()=>srText("{0} radar mangler ved {1}",radarSource,fmt(t)));prepareNextRadar(time);return;}
+ if(!frame){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='mangler';srBind(rainPeriod,'textContent',()=>srText('Nedbørsdata mangler ved {0}',fmt(t)));prepareNextRadar(time);return;}
  const finish=()=>{
-  radarStatus=fmt(t);srBind($('rainPeriod'),'textContent',()=>srText("{0} radar: {1} · dBZ",radarSource,fmt(t)));
-  prepareNextRadar(time);status(currentTime());
+  radarStatus='klar';prepareNextRadar(time);
  };
  const entry=radarImageBuffer.prepare(String(t),()=>frame.file,true);
  if(radarImageBuffer.display(String(t))){radarReady=Promise.resolve();finish();return;}
  // Keep the previous frame on screen while an unanticipated seek loads.
- radarStatus='indlæser …';srBind($('rainPeriod'),'textContent',()=>srText("{0} radar: {1} · indlæser …",radarSource,fmt(t)));
+ radarStatus='indlæser …';
  radarReady=entry.promise.then(()=>{
   if(key!==radarKey)return;
-  if(entry.error){radarStatus='kunne ikke indlæses';srBind($('rainPeriod'),'textContent',()=>srText("{0} radar kunne ikke indlæses ved {1}",radarSource,fmt(t)));status(currentTime());return;}
+  if(entry.error){radarStatus='kunne ikke indlæses';srBind(rainPeriod,'textContent',()=>srText('Nedbørsdata kunne ikke indlæses ved {0}',fmt(t)));return;}
   if(radarImageBuffer.display(String(t)))finish();
  });
 }
 
-function status(t){
- const hour=Math.floor(t/3600)*3600,windAvailable=windBarbFrames.has(hour);
- if(!window.SR_EVENT.features.weather){$('status').textContent=srText("Tracks: {0} · Vejrdata er ikke importeret for dette stævne",fmt(t));return;}
- setBoatListText($('windPeriod'),!$('wind').checked?'':windAvailable?srText('Halv fane 5 · hel fane 10 · vimpel 50 knob'):srText("Vinddata mangler ved {0}",fmt(hour)));
- $('status').textContent=srText("Vind: {0} {1} {2} · Tracks: interpoleret ved {3} · Noter gemmes i denne browser",WIND_MODEL_LABEL,windAvailable?fmt(hour):srText('data mangler ved ')+fmt(hour),$('rain').checked?srText(' · Radar {0}: {1}',radarSource,srText(radarStatus)):'',fmt(t));
+const WIND_UNIT_KEY='sr-wind-unit',windUnitSelect=$('windUnit');
+let windUnit='kn';
+try{if(localStorage.getItem(WIND_UNIT_KEY)==='m/s')windUnit='m/s';}catch{}
+windUnitSelect.value=windUnit;
+function windSpeedNumber(knots){
+ const value=windUnit==='m/s'?knots*WIND_KNOT_TO_MS:knots;
+ return value.toLocaleString(srLocale,{minimumFractionDigits:1,maximumFractionDigits:1});
 }
-const windBarbFrames=window.SR_EVENT.features.weather?prepareWindBarbFrames(D.wind_models[WIND_MODEL],xy):new Map();
+function refreshWindSelection(){renderWindSelection(currentTime());}
+windUnitSelect.onchange=()=>{
+ windUnit=windUnitSelect.value;
+ try{localStorage.setItem(WIND_UNIT_KEY,windUnit);}catch{}
+ refreshWindSelection();
+};
+srOnLanguageChange(refreshWindSelection);
+
+function renderWindAvailability(t){
+ const hour=Math.floor(t/3600)*3600;
+ const missing=windMode!=='off'&&!windBarbGrid?.frames.has(hour);
+ setBoatListText($('windPeriod'),missing?srText('Vinddata mangler ved {0}',fmt(hour)):'');
+}
+const WIND_BARB_SPACING=90;
+const windBarbGrid=window.SR_EVENT.features.weather?prepareWindBarbGrid(D.wind_models[WIND_MODEL]):null;
+let windSelection=null;
+function closeWindSelection(){
+ if(!windSelection)return;
+ windSelection=null;setAttr($('windSelection'),'visibility','hidden');
+}
+function chooseWind(e){
+ const viewport=mapViewport();if(!viewport)return;
+ const {x,y}=new DOMPoint(e.clientX,e.clientY).matrixTransform(viewport.inverse);
+ windSelection={x,y};
+ if(pickedTrackSpeed)closeTrackSpeedSelection();
+ stopPlayback();renderWindSelection(currentTime());
+}
+function renderWindSelection(t){
+ if(!windSelection)return;
+ if(windMode==='off'){closeWindSelection();return;}
+ const layer=$('windSelection'),viewport=mapViewport();
+ if(!viewport)return;
+ const {rect,matrix}=viewport,{x,y}=windSelection;
+ const screen=new DOMPoint(x,y).matrixTransform(matrix);
+ const visible=screen.x>=rect.left&&screen.x<=rect.right&&screen.y>=rect.top&&screen.y<=rect.bottom;
+ setAttr(layer,'visibility',visible?'visible':'hidden');
+ if(!visible)return;
+ setAttr(layer,'transform',`translate(${x} ${y}) scale(${1/matrix.a})`);
+ const text=$('windSelectionText'),hour=Math.floor(t/3600)*3600;
+ if(windSelection.hour!==hour||windSelection.mode!==windMode){
+  const frame=windBarbGrid?.frames.get(hour),lon=9.5+x*4.5/1000,lat=57-y*3/1180;
+  windSelection.sample=frame?windBarbAt(windBarbGrid,frame,lon,lat,Math.cos(lat*Math.PI/180),windMode):null;
+  windSelection.hour=hour;windSelection.mode=windMode;windSelection.locale=null;
+ }
+ if(windSelection.locale!==srLocale||windSelection.unit!==windUnit){
+  const sample=windSelection.sample;
+  if(!sample)text.textContent=srText('Vinddata mangler her');
+  else{
+   const speed=srText(windUnit==='m/s'?'{0} m/s':'{0} kn',windSpeedNumber(sample.knots));
+   const label=srText(WIND_MODE_LABELS[windMode]);
+   text.textContent=sample.direction!==null?srText('{0} {1} · fra {2}°',label,speed,(Math.round(sample.direction)+360)%360):
+    sample.knots<1e-9?srText('Vindstille · {0}',speed):srText('{0} {1} · retning mangler',label,speed);
+  }
+  windSelection.width=text.getComputedTextLength();windSelection.locale=srLocale;windSelection.unit=windUnit;
+ }
+ const left=screen.x+windSelection.width+12>rect.right;
+ setAttr(text,'x',left?-8:8);setAttr(text,'text-anchor',left?'end':'start');
+ setAttr(text,'y',screen.y-20<rect.top?18:-9);
+}
 let windBarbKey=null;
 function renderWindBarbs(t=currentTime()){
- const layer=$('winds');
- if(!$('wind').checked){
-  if(windBarbKey!==null)layer.replaceChildren();
-  windBarbKey=null;return;
- }
+ renderWindSelection(t);
+ const layer=$('winds'),hour=Math.floor(t/3600)*3600;
+ const frame=windMode!=='off'?windBarbGrid?.frames.get(hour):null;
+ if(!frame){setAttr(layer,'visibility','hidden');return;}
  const viewport=mapViewport();if(!viewport)return;
- const {a:scale}=viewport.matrix,hour=Math.floor(t/3600)*3600;
- // Select a stable subset of the source grid at lower zoom levels.
- const stride=spacing=>2**Math.max(0,Math.ceil(Math.log2(56/(spacing*scale))));
- const columns=stride(1000/18),rows=stride(1180/12),key=`${hour}:${columns}:${rows}`;
+ setAttr(layer,'visibility','visible');
+ const key=windMode+':'+hour+':'+viewport.key;
  if(key===windBarbKey)return;
  windBarbKey=key;
- const fragment=document.createDocumentFragment();
- for(const barb of windBarbFrames.get(hour)||[]){
-  if(barb.column%columns||barb.row%rows)continue;
-  const anchor=screenGroup(barb.x,barb.y,fragment);
-  const symbol=el('g',{class:'wind-barb',transform:barb.glyph.calm?'':`rotate(${barb.direction})`},anchor);
-  el('path',{d:barb.glyph.d,class:'wind-barb-halo'},symbol);
-  el('path',{d:barb.glyph.d,class:'wind-barb-mark',fill:barb.glyph.calm?'none':'currentColor'},symbol);
-  srBind(el('title',{},anchor),'textContent',()=>srText('{0} · vind {1}, vindstød {2}, {3}, {4}',
-   WIND_MODEL_LABEL,srText('{0} knob',barb.knots.toFixed(1)),barb.gust===null?srText('mangler'):srText('{0} knob',barb.gust.toFixed(1)),
-   barb.direction===null?srText('vindstille'):srText('fra {0}°',Math.round(barb.direction)%360),fmt(hour)));
+ const {rect,topLeft,matrix}=viewport,scale=1/matrix.a;
+ // Undo the map camera once for the layer. Each retained path is in CSS pixels.
+ setAttr(layer,'transform',`translate(${topLeft.x} ${topLeft.y}) scale(${scale})`);
+ let index=0;
+ for(let sy=WIND_BARB_SPACING/2;sy<rect.height;sy+=WIND_BARB_SPACING){
+  const lat=57-(topLeft.y+sy*scale)*3/1180,lonScale=Math.cos(lat*Math.PI/180);
+  for(let sx=WIND_BARB_SPACING/2;sx<rect.width;sx+=WIND_BARB_SPACING){
+   const lon=9.5+(topLeft.x+sx*scale)*4.5/1000;
+   const barb=windBarbAt(windBarbGrid,frame,lon,lat,lonScale,windMode);
+   if(!barb||barb.band&&barb.direction===null)continue;
+   const symbol=layer.children[index++]||el('path',{class:'wind-barb'},layer);
+   setAttr(symbol,'d',barb.d);
+   setAttr(symbol,'fill',barb.band?'currentColor':'none');
+   setAttr(symbol,'transform',`translate(${sx} ${sy}) rotate(${barb.band?Math.round(barb.direction):0})`);
+  }
  }
- layer.replaceChildren(fragment);
+ while(layer.children.length>index)layer.lastElementChild.remove();
 }
 // Keep state changes synchronous, but combine UI paint requests until the next
 // browser frame. Full redraws subsume viewport-only redraws, in either order.
@@ -316,7 +390,7 @@ function flushRender(){
 }
 // Retain an immediate path for exports, scene restoration and programmatic use.
 function render(){if(!viewerModulesReady){requestRender();return;}consumeRenderRequest();drawMap();}
-function drawMap(){if(hasRenderingFailure())return;if(followedBoatId&&centerViewOnBoat(boats.find(boat=>boat.id===followedBoatId)))setview();const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderRadar(t);webglBackground.render();status(t);renderWindBarbs(t);renderTraffic();renderMilitary();
+function drawMap(){if(hasRenderingFailure())return;if(followedBoatId&&centerViewOnBoat(boats.find(boat=>boat.id===followedBoatId)))setview();const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderRadar(t);webglBackground.render();renderWindAvailability(t);renderWindBarbs(t);renderTraffic();renderMilitary();
  renderTracks(t,{includeSpeedPins:false});
  renderAnnotations();
  renderNavigation();
@@ -383,25 +457,18 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  if(markerTopologyChanged)scheduleBoatHoverRefresh();
 }
 function step(n){syncTimelineViewport();if(finishEventEditing()&&!$('time').disabled){stopPlayback();leaveOpenedEvent();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
-function setMapLayersExpanded(expanded){
- $('mapLayersPanel').hidden=!expanded;
- $('mapLayersToggle').setAttribute('aria-expanded',String(expanded));
-}
 function setMapTracksExpanded(expanded){
  $('mapTracksPanel').hidden=!expanded;
  $('mapTracksToggle').setAttribute('aria-expanded',String(expanded));
 }
-$('mapLayersToggle').onclick=()=>setMapLayersExpanded($('mapLayersPanel').hidden);
 $('mapTracksToggle').onclick=()=>setMapTracksExpanded($('mapTracksPanel').hidden);
-$('mapLayersToggle').addEventListener('click',()=>{if(!$('mapLayersPanel').hidden)setMapTracksExpanded(false);});
 document.addEventListener('pointerdown',event=>{
- if(!$('mapLayers').contains(event.target))setMapLayersExpanded(false);
  if(!$('mapTracks').contains(event.target))setMapTracksExpanded(false);
 });
 document.addEventListener('keydown',event=>{
  if(document.querySelector('dialog[open]'))return;
- if(event.key==='Escape')for(const name of ['mapLayers','mapTracks'])if(!$(name+'Panel').hidden){
-  event.preventDefault();event.stopImmediatePropagation();$(name+'Panel').hidden=true;$(name+'Toggle').setAttribute('aria-expanded','false');$(name+'Toggle').focus();return;
+ if(event.key==='Escape'&&!$('mapTracksPanel').hidden){
+  event.preventDefault();event.stopImmediatePropagation();setMapTracksExpanded(false);$('mapTracksToggle').focus();
  }
 },true);
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
@@ -513,8 +580,7 @@ map.onpointerdown=e=>{
   rebaseMapGesture();map.setPointerCapture(e.pointerId);return;
  }
  clearTrackHover();
- if(beginNavigationGesture(e))return;
- if(beginDrawingGesture(e))return;
+ if(beginNavigationGesture(e)||beginDrawingGesture(e)){closeWindSelection();return;}
  followedBoatId=null;
  e.preventDefault();
  drag={pointerId:e.pointerId,pointerType:e.pointerType,pointers:new Map([[e.pointerId,{x:e.clientX,y:e.clientY}]]),
@@ -570,11 +636,13 @@ function endPan(e){
  drag=null;map.classList.remove('panning');
  if(map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);
  if(click){
+  if(windMode==='off'||navigationMode==='route'||placingNote||noteIndex!==undefined||speedKey!==undefined||boatId)closeWindSelection();
   if(navigationMode==='route')addNavigationPoint(e);
   else if(placingNote)placeAnnotation(e);
   else if(noteIndex!==undefined)beginNoteEditing(notes[+noteIndex]);
   else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
   else if(boatId)focusBoatInList(boatId);
+  else if(windMode!=='off')chooseWind(e);
   else if(trackBoatId)chooseTrackSpeed(e,trackBoatId);
   else chooseTrackSpeed(e);
  }
@@ -604,6 +672,15 @@ map.addEventListener('keydown',e=>{
 
 $('map').setAttribute('viewBox',window.SR_EVENT.initialView.join(' '));
 $('mapBase').setAttribute('viewBox',window.SR_EVENT.initialView.join(' '));
-if(!window.SR_EVENT.features.weather){for(const id of ['wind','rain']){$(id).disabled=true;srBind($(id),'title',()=>srText('Vejrdata er ikke importeret for dette stævne'));} $('wind').checked=false;$('rain').checked=false;}
+const weatherAvailable=window.SR_EVENT.features.weather;
+for(const id of ['wind','rain'])$(id).disabled=!weatherAvailable;
+function updateWeatherButtonLabels(){
+ setAttr($('wind'),'aria-label',srText(WIND_MODE_LABELS[windMode]));
+ setAttr($('wind'),'title',weatherAvailable?srText('Skift til {0}',srText(WIND_MODE_LABELS[nextWindMode()])):srText('Vejrdata er ikke importeret for dette stævne'));
+ setAttr($('rain'),'title',srText(weatherAvailable?'Nedbørsradar':'Vejrdata er ikke importeret for dette stævne'));
+}
+updateWeatherButtonLabels();srOnLanguageChange(updateWeatherButtonLabels);
+$('wind').onclick=()=>{setWindMode(nextWindMode());updateEventSceneControls();requestRender();};
+$('rain').onclick=()=>{setRainEnabled(!rainEnabled);updateEventSceneControls();requestRender();};
 
 let sceneOverlays={...window.SR_EVENT.layers,annotationsVisible:true};

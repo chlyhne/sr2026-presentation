@@ -42,7 +42,7 @@ GPUTrackPreparation.prototype.ready=async function(){await benchmarkReady.call(t
    });
    await page.goto('http://127.0.0.1:'+proxy.address().port+'/');await page.waitForSelector('main:not([inert])',{timeout:120000});
    const result=await page.evaluate(async()=>{
-    stopPlayback();$('wind').checked=$('rain').checked=false;chosen.clear();for(const boat of boats)chosen.add(boat.name);boatFavouritesOnly=true;
+    stopPlayback();setWindMode('off');setRainEnabled(false);chosen.clear();for(const boat of boats)chosen.add(boat.name);boatFavouritesOnly=true;
     selectedTime=D.start+43200;render();await webglTracks.preparation.ready();
     const end=performance.now(),resource=performance.getEntriesByType('resource').find(r=>r.name.endsWith('/source.bin.gz'));
     if(!resource||webglTracks.buffers.size!==boats.length)throw Error('Incomplete benchmark data');

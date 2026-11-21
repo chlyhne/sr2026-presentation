@@ -18,18 +18,17 @@ async function check(readonly){
   assert.equal(await page.evaluate(()=>window.SR_READONLY),readonly);
   assert.deepEqual(await page.evaluate(()=>[...chosen]),[],'No default favourites');
   assert.equal(await page.locator('#boatFavouritesOnly').getAttribute('aria-pressed'),'false');
-  assert.equal(await page.locator('#grid').isChecked(),true);
-  assert.equal(await page.locator('#wind').isChecked(),false);
-  assert.equal(await page.locator('#rain').isChecked(),false);
+  assert.equal(await page.locator('#wind').getAttribute('data-mode'),'off');
+  assert.equal(await page.locator('#rain').getAttribute('aria-pressed'),'false');
   assert.equal(await page.locator('#eventPanel').isVisible(),false);
   assert.equal(await page.locator('#eventPanelToggle').getAttribute('aria-expanded'),'false');
-  const toolIds=['eventPanelToggle','mapRhumblineToggle','mapLayersToggle','mapTracksToggle','mapMeasureToggle',readonly?'loginLink':'endPresentation','presentationFullscreen'];
+  const toolIds=['eventPanelToggle','mapSettingsToggle','rain','wind','mapTracksToggle','mapMeasureToggle',readonly?'loginLink':'endPresentation','presentationFullscreen'];
   assert.deepEqual(await page.locator('#mapTools > *').evaluateAll(nodes=>nodes.map(node=>node.id)),
-   ['presentationFullscreen','loginLink','endPresentation','mapMeasure','mapGates','rhumblineTools','mapTracks','mapLayers','boatCompareToggle','mapRhumblineToggle','eventPanelToggle','comparisonStatus','trackDataStatus']);
+   ['presentationFullscreen','loginLink','endPresentation','mapMeasure','mapGates','rhumblineTools','mapTracks','wind','rain','weatherStatus','boatCompareToggle','mapSettings','eventPanelToggle','comparisonStatus','trackDataStatus']);
   const toolPositions=await page.evaluate(ids=>ids.map(id=>$(id).getBoundingClientRect()).filter(rect=>rect.width).map(rect=>rect.x),toolIds);
   assert.deepEqual(toolPositions,[...toolPositions].sort((a,b)=>b-a),'Toolbar reads from right to left');
   await page.evaluate(()=>{
-   stopPlayback();$('wind').checked=$('rain').checked=false;selectedTime=D.start+3600;
+   stopPlayback();setWindMode('off');setRainEnabled(false);selectedTime=D.start+3600;
    const time=selectedTime,metadata=boatMetadata('Mercutio');
    const makeBoat=(id,name,skipper,boatType,lon)=>({id,name,skipper,boatType,metadata,
     points:[[lon,55.6,time-60],[lon+.01,55.6,time+120]],speeds:[5,8]});

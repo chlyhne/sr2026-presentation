@@ -10,7 +10,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/';
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(url);await page.waitForSelector('main:not([inert])',{timeout:120000});
   const baseline=await page.evaluate(()=>{
-   $('wind').checked=$('rain').checked=false;stopPlayback();selectedTime=D.start+43200;render();
+   setWindMode('off');setRainEnabled(false);stopPlayback();selectedTime=D.start+43200;render();
    const bytes=()=>boats.reduce((total,boat)=>{
     const profile=trackProfileCache.get(boat.points),record=webglTracks.buffers.get(boat.points);
     total.cpu+=profile.samples.byteLength+profile.stations.byteLength+profile.timeSamples.byteLength+profile.timeStations.byteLength;total.gpu+=record.bytes;

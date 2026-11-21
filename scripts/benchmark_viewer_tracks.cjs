@@ -9,7 +9,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const result=await page.evaluate(async()=>{
    if(!webglTracks.active)throw Error(webglTracks.error);
-   $('wind').checked=$('rain').checked=false;chosen.clear();for(const boat of boats)chosen.add(boat.name);
+   setWindMode('off');setRainEnabled(false);chosen.clear();for(const boat of boats)chosen.add(boat.name);
    prepareSelectedTracks();
    const initialMemoryMB=[...webglTracks.buffers.values()].reduce((sum,b)=>sum+b.bytes,0)/1e6;
    const output=[];

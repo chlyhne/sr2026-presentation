@@ -10,7 +10,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const target=await page.evaluate(()=>{
-   stopPlayback();$('wind').checked=$('rain').checked=false;
+   stopPlayback();setWindMode('off');setRainEnabled(false);
    // Independent CPU oracle at the source endpoints, interpolated as on the GPU.
    window.pinExpected=(boat,index)=>{
     const profile=trackProfileCache.get(boat.points),reference=referenceBoat(),referenceProfile=trackProfileCache.get(reference.points);

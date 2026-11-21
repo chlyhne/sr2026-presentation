@@ -28,7 +28,7 @@ const near=(actual,expected,tolerance=.001)=>assert.ok(Math.abs(actual-expected)
   assert.ok(fleet.median>.05&&fleet.median<1,JSON.stringify(fleet));
   assert.ok(fleet.sailing>1000&&fleet.saturated/fleet.sailing<.1,JSON.stringify(fleet));
   const result=await page.evaluate(()=>{
-   stopPlayback();$('wind').checked=$('rain').checked=false;
+   stopPlayback();setWindMode('off');setRainEnabled(false);
    const latitude=55.6,longitude=meters=>12+meters/(NAV_RADIUS_NM*1852*NAV_RAD*Math.cos(latitude*NAV_RAD));
    const route=buildRhumbRoute([[longitude(0),latitude],[longitude(207),latitude]]);
    rhumbRoute.legs=route.legs;rhumbRoute.total=route.total;

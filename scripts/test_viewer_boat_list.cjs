@@ -32,7 +32,7 @@ async function check(browserType){
   }
   await aligned();
   const testTime=await page.evaluate(()=>{
-   $('wind').checked=$('rain').checked=false;selectedTime=D.start+3600;
+   setWindMode('off');setRainEnabled(false);selectedTime=D.start+3600;
    const t=selectedTime,metadata=boatMetadata('Mercutio'),points=[[11.8,55.6,t-60],[11.8,55.6,t+60]];
    const visible=Array.from({length:14},(_,i)=>({id:'list-'+i,name:'Båd '+String(i+1).padStart(2,'0'),skipper:i?'Skipper '+i:'Kåre <b>Gibsholm</b>',boatType:'Seascape 27',metadata,points,speeds:i===1?[null,null]:i===2?[25,25]:[4,8]}));
    const extra=[

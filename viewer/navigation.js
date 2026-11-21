@@ -12,6 +12,13 @@ function validComparison(value){
   &&(value.boatColour===undefined||typeof value.boatColour==='boolean')&&!(value.enabled&&value.boatColour)
   &&Object.keys(value).every(key=>['enabled','basis','boatColour'].includes(key));
 }
+function eventComparison(value){
+ return value.basis==='handicap'&&!window.SR_EVENT.features.handicap?{...value,enabled:false,basis:'absolute'}:value;
+}
+if(!window.SR_EVENT.features.handicap){
+ $('handicapTracksLabel').hidden=true;
+ $('trackStyle').querySelector('option[value="handicap"]').remove();
+}
 let comparison={enabled:false,basis:'absolute'},comparisonRevision=0;
 let navigationMode=null,navigationDraft=[],measurement=[],measurementOverride=null,gateMeasurement=[],gateOverride=null,gateDraft=[],navigationGesture=null,lastNavigationKey=null;
 // Keep the gates' origin across playback and pause: temporary gates outlive events.
@@ -61,7 +68,7 @@ function resetMapMeasurement(){
 function comparisonMessage(message){$('comparisonStatus').textContent=message;$('comparisonStatus').hidden=!message;}
 try{
  const stored=eventStorage.getItem(TRACK_COMPARISON_KEY);
- if(stored){const value=JSON.parse(stored);if(!validComparison(value))throw Error(srText('Ugyldigt sammenligningsvalg.'));comparison=value;}
+ if(stored){const value=JSON.parse(stored);if(!validComparison(value))throw Error(srText('Ugyldigt sammenligningsvalg.'));comparison=eventComparison(value);}
 }catch(error){comparisonMessage(srText('Sammenligning kunne ikke indlæses: ')+error.message);}
 try{
  const stored=eventStorage.getItem(TRACK_LENGTH_KEY);
@@ -69,15 +76,16 @@ try{
 }catch(error){comparisonMessage(srText('Sporlængde kunne ikke indlæses: ')+error.message);}
 const courseRhumbRoutes=Object.fromEntries(Object.entries(window.SR_RHUMBLINES).map(([course,definition])=>[course,buildRhumbRoute(definition.points)]));
 const RHUMBLINE_COLOUR='#d21f26';
-const rhumblineToggle=$('mapRhumblineToggle'),rhumblineOverlay=$('mapRhumbline');
-rhumblineToggle.hidden=SIMPLE_IPHONE_TRACKS||window.SR_RHUMBLINE_SETUP;
-const courseRhumblinePaths=rhumblineToggle.hidden?null:Object.fromEntries(
+const rhumblineSetting=$('rhumblineSetting'),rhumblineOverlay=$('mapRhumbline'),RHUMBLINE_VISIBILITY_KEY='sr-rhumbline-visible';
+let rhumblineVisible=eventStorage.getItem(RHUMBLINE_VISIBILITY_KEY)==='1';
+$('rhumblineSettingLabel').hidden=window.SR_RHUMBLINE_SETUP;
+const courseRhumblinePaths=window.SR_RHUMBLINE_SETUP?null:Object.fromEntries(
  Object.entries(window.SR_RHUMBLINES).map(([course,definition])=>[course,path(definition.points)]));
 rhumblineOverlay.setAttribute('stroke',RHUMBLINE_COLOUR);
-rhumblineToggle.onclick=()=>{
- const show=rhumblineOverlay.hasAttribute('hidden');
- rhumblineOverlay.toggleAttribute('hidden',!show);
- rhumblineToggle.setAttribute('aria-pressed',String(show));
+rhumblineSetting.onchange=()=>{
+ rhumblineVisible=rhumblineSetting.checked;
+ rhumblineOverlay.toggleAttribute('hidden',!rhumblineVisible);
+ try{eventStorage.setItem(RHUMBLINE_VISIBILITY_KEY,rhumblineVisible?'1':'0');}catch{}
 };
 let rhumbRoute=courseRhumbRoutes[referenceBoat().course];
 function syncComparisonRoute(){
@@ -86,7 +94,9 @@ function syncComparisonRoute(){
  if(courseRhumblinePaths){
   const routePath=courseRhumblinePaths[course];
   setAttr(rhumblineOverlay,'d',routePath);
-  rhumblineToggle.disabled=!routePath;
+  rhumblineSetting.disabled=!routePath;
+  rhumblineSetting.checked=rhumblineVisible&&!!routePath;
+  rhumblineOverlay.toggleAttribute('hidden',!rhumblineSetting.checked);
  }
  comparisonMessage(rhumbRoute.legs.length?'':srText('Rhumbline for ')+srText(BOAT_COURSE_NAMES[course])+srText(' er endnu ikke defineret.'));
 }
@@ -153,7 +163,7 @@ const TRACK_GAIN_COLOURS=Array.from({length:TRACK_SPEED_BINS},(_,i)=>trackGainCo
 function saveComparison(next){
  return changeEventConfiguration(()=>{
   if(handicapTracksEnabled){comparisonMessage(srText('Handicapkompenseret spor bruger bådfarver.'));syncNavigationControls();return false;}
-  if(!validComparison(next)){comparisonMessage(srText('Ugyldigt sammenligningsvalg.'));return false;}
+  if(!validComparison(next)||eventComparison(next)!==next){comparisonMessage(srText('Ugyldigt sammenligningsvalg.'));return false;}
   if(next.enabled&&!rhumbRoute.legs.length){syncComparisonRoute();syncNavigationControls();return false;}
   try{if(!openedEvent)eventStorage.setItem(TRACK_COMPARISON_KEY,JSON.stringify(next));}
   catch{comparisonMessage(srText('Sammenligningsvalget kunne ikke gemmes. Ændringen er ikke anvendt.'));return false;}
@@ -164,7 +174,7 @@ function saveComparison(next){
 function syncNavigationControls(){
  syncReferenceBoatControls();
  $('referenceBoat').title=srText('Rhumbline: ')+srText(BOAT_COURSE_NAMES[referenceBoat().course])+(rhumbRoute.legs.length?'':srText(' · endnu ikke tegnet'));
- for(const basis of ['absolute','handicap','time'])$('trackStyle').querySelector(`option[value="${basis}"]`).disabled=!rhumbRoute.legs.length;
+ for(const option of $('trackStyle').querySelectorAll('option[value="absolute"],option[value="handicap"],option[value="time"]'))option.disabled=!rhumbRoute.legs.length;
  $('trackStyle').value=trackUsesBoatColour()?'boat':comparison.enabled?comparison.basis:'speed';
  $('trackStyle').disabled=handicapTracksEnabled;$('trackLength').value=String(trackLengthSeconds);
  const lengthLabel=$('trackLength').selectedOptions[0].textContent;

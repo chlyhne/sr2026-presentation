@@ -20,7 +20,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   const result=await page.evaluate(()=>{
    const check=(ok,message)=>{if(!ok)throw Error(message);};
    check(webglTracks.active,'Nominal WebGL 2 must be active: '+webglTracks.error);
-   $('wind').checked=$('rain').checked=false;
+   setWindMode('off');setRainEnabled(false);
    const boat=boats.find(b=>b.name==='Mercutio'),point=(x,y,t)=>[9.5+x*4.5/1000,57-y*3/1180,D.start+t];
    boat.points=[point(600,460,100),point(610,468,160),point(630,465,220),point(640,480,280),point(645,470,1000),point(650,465,1060)];
    boat.speeds=[2,5,9,11,null,7];prepareTrackFixture(boat);

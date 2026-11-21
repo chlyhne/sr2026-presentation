@@ -11,7 +11,7 @@ const url=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
    if(readonly)await page.route('**/presentation.json',r=>r.fulfill({json:{version:1,notes:[],speedPins:[publishedPin]}}));
    await page.goto(url);await page.waitForSelector('main:not([inert])',{timeout:120000});
    const target=await page.evaluate(async saved=>{
-    stopPlayback();notes=[];activePresentationNote=null;$('wind').checked=$('rain').checked=false;
+    stopPlayback();notes=[];activePresentationNote=null;setWindMode('off');setRainEnabled(false);
     const boat=saved?boats.find(b=>b.id===saved.boatId):boats.find(b=>b.name==='Mercutio');
     const index=boat.points.findIndex((p,i)=>p[2]>D.start+26*3600&&boat.points[i+1]?.[2]-p[2]<300&&boat.speeds[i]>4);
     const time=saved?.time??boat.points[index][2]+.37*(boat.points[index+1][2]-boat.points[index][2]);

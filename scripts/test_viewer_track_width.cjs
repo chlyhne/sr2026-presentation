@@ -35,7 +35,7 @@ async function check(type){
     const point=x=>[9.5+x*4.5/1000,57-y*3/1180];
     boat.points=[[...point(600),D.start+880],[...point(700),D.start+940]];boat.speeds=[7.5,7.5];boat.widthTestY=y;prepareTrackFixture(boat);
    }
-   $('wind').checked=$('rain').checked=$('grid').checked=false;
+   setWindMode('off');setRainEnabled(false);
    for(const id of ['land','baseMap','places','seamarks','mapCredit','trackSpeedLegend'])$(id).setAttribute('visibility','hidden');
    return names;
   });

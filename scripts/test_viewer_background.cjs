@@ -13,7 +13,7 @@ async function check(type){
   });
   await page.evaluate(async()=>{
    if(document.fullscreenElement)await document.exitFullscreen();
-   view=[230,250,620,760];$('grid').checked=false;$('rain').checked=true;setview();render();
+   view=[230,250,620,760];setRainEnabled(true);setview();render();
    visibleTimeRanges=[];renderRadar(1781164800);await radarReady;await radarImageBuffer.paintReady;flushRender();
   });
   // Both radar textures are prepared before exercising pan/zoom; there

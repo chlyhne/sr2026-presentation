@@ -10,7 +10,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const fleet=await page.evaluate(()=>{
    const check=(condition,message)=>{if(!condition)throw Error(message);};
-   stopPlayback();$('wind').checked=$('rain').checked=false;
+   stopPlayback();setWindMode('off');setRainEnabled(false);
    const renderer=webglTracks,gl=renderer.gl,initial=[...renderer.buffers],uploads=renderer.uploads,originals=new Map();
    let draws=0,geometryDraws=0,capDraws=0,offsets=0,capMode=0;
    for(const name of ['vertexAttribPointer','vertexAttribIPointer','vertexAttribDivisor','enableVertexAttribArray','createBuffer','bufferData','bufferSubData','texImage2D','getBufferSubData']){

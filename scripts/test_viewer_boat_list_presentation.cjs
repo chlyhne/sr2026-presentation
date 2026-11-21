@@ -29,7 +29,7 @@ async function check(type){
    chosen.clear();for(const boat of boats){prepareTrackFixture(boat);chosen.add(boat.name);colours[boat.name]='#ffdc42';}
    const [x,y]=xy([11.8,55.6]);view=[x-200,y-200,400,400];
    for(const note of notes)note.view=[...view];
-   $('map').setAttribute('viewBox',view.join(' '));$('wind').checked=$('rain').checked=false;
+   $('map').setAttribute('viewBox',view.join(' '));setWindMode('off');setRainEnabled(false);
    updateTimeline();selectedTime=t;render();
   },t);
   async function aligned(){

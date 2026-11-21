@@ -25,18 +25,14 @@ python3 scripts/serve_viewer.py
 - Både vises altid med navn, også ved navigation til events med gamle navnevalg.
   Ingen både har hjerte som standard, og favoritfilteret starter slået fra.
   Klik på hjertet for at vælge en favorit eller på resten af rækken for detaljer.
-- Grid starter slået til; vind, radar og eventpanelet starter slået fra.
-  Kortværktøjerne står fra højre mod venstre: eventpanel, lag, spor, gates, lineal,
-  og fuld skærm.
-- **Lag → Grid** viser et antialiaseret afstandsgrid oven på kortbaggrunden,
+- Vind, radar og eventpanelet starter slået fra.
+- Afstandsgitteret vises altid oven på kortbaggrunden,
   under sporene. Afstanden skifter automatisk mellem **15 sømil, 5 sømil,
   2 sømil, 1 sømil, 0,5 sømil, 400 m, 200 m og 100 m**, så cellerne normalt er mindst 80 skærmpixel brede.
-  Laget kan gemmes med **Brug i eventet**.
   Grid er forankret ved 55° N, 12° Ø; afstandene er kalibreret ved 55° N
   i kortets eksisterende længde-/breddegradsprojektion.
 - Nederst til venstre vises en målestok i sømil eller meter. Den flyttes lige til højre for bådlisten,
-  hvis bådlisten overlapper dens plads. Målestokken vises også, når grid er slået
-  fra. Den følger gridets afstandstrin og fortsætter ved tæt zoom med
+  hvis bådlisten overlapper dens plads. Den følger gridets afstandstrin og fortsætter ved tæt zoom med
   **50, 20, 10, 5, 2 og 1 meter**; gridets mindste afstand er fortsat 100 m.
 - Kortet står til venstre, og det valgte events tekst og eventuelle billede
   vises i eventfanen til højre.
@@ -170,13 +166,10 @@ python3 scripts/serve_viewer.py
   skærmstørrelse i både redigering og præsentation. Navigation og snap ændrer
   ikke de gemte noter.
 - Mercutio, Vera, My, The Hulk og Rosa-Lux er valgt fra start; begge baners øvrige tracks kan vælges.
-- **Lag** øverst til højre på kortet åbner valgene **Vind** og **Nedbør**.
-  De kan slås til og fra hver for sig, også i præsentation og fuld skærm.
-  Klik udenfor eller tryk Escape for at lukke lagmenuen. I redigering gemmes
-  ændringer på det aktive event; i præsentation ændrer de kun den aktuelle visning.
-  Vindmodel og radarens synlighed justeres
-  fortsat i sidepanelet.
-  `node scripts/test_viewer_layers.cjs` tester lagmenuen lokalt i Firefox på PC.
+- Vindikonet skifter mellem **slukket**, **middelvind** og **vindpust**.
+  Skyen med regn slår **nedbør** til og fra. Afstandsgitteret vises altid.
+  **Brug i eventet** gemmer vejrvalgene i eventets kortscene.
+  `node scripts/test.cjs --extended layers` kontrollerer vejrknapperne i lokal Firefox.
 - **Linealknappen** starter en afstandsmåling uden undermenu.
   Træk fra start til slut: lineal, afstand i sømil og kurs tegnes, mens du trækker.
   Tryk på linealen igen for at fjerne målingen, eller tryk Escape. Kortet kan
@@ -588,13 +581,15 @@ Modellen er forespurgt ved 247 punkter i 0,25° trin med
 Det er en sampling af de oprindelige modelgitre. De returnerede gitterkoordinater
 bruges i kortet. Vinddataene har timeopløsning i UTC.
 
-Vind vises som traditionelle meteorologiske vindfaner ved de returnerede
-modelpunkter. Staven peger mod den retning, vinden kommer fra. En halv fane
+Vind vises som traditionelle meteorologiske vindfaner i et skærmgitter
+med 90 pixels afstand. Vindvektoren interpoleres mellem de nærmeste modelpunkter. Staven peger mod den retning, vinden kommer fra. En halv fane
 svarer til 5 knob, en hel fane til 10 knob og en vimpel til 50 knob.
 Hastigheden afrundes til nærmeste 5 knob, og vindstille vises som en ring.
-Symbolerne har fast skærmstørrelse. Ved zoom ud vises et fast udsnit af
-gitterpunkterne for at holde afstand mellem symbolerne. Vindlaget bruger
-data fra den seneste hele time.
+Symbolerne har fast skærmstørrelse og samme afstand ved zoom og panorering.
+Vindlaget bruger data fra den seneste hele time. Klik på kortet med vindlaget
+tændt for at aflæse den lokale vind og retningen i grader. Tandhjulet åbner
+sprogvalg, valg af knob eller m/s og visning af rhumbline. Vindpustene
+viser modellens vindstødshastighed med middelvindens retning.
 [National Weather Service](https://www.weather.gov/hfo/windbarbinfo).
 
 Prognosearkiver er sammenstykkede korte prognosehorisonter fra flere kørsler,
@@ -608,7 +603,7 @@ Radar: observerede DMI-kompositter fra `radardata/collections/composite`.
 Der er 253 fullRange-billeder, ét for hvert 10-minutters trin. Kildens pixels er
 500 m. De originale ODIM HDF5-filer ligger i `../data/radar/`.
 Ved sekundtrin bruges radarbilledet for det seneste nominelle 10-minutters
-tidspunkt; radarens eget tidspunkt står ved laget. Vindfanerne følger
+tidspunkt. Vindfanerne følger
 seneste hele time. Der opfindes ingen nye vejrbilleder mellem kildetidspunkterne.
 
 Radaren vises i **dBZ (ekkostyrke)**. Det er observationer af radarreflektivitet,

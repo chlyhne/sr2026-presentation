@@ -155,7 +155,7 @@ function migrateHostedDrafts(){
   syncPlaybackControls();updateFullscreenButton();
   updateBoatCourseOptions();boatRaceControlsKey=null;boatListSource=[];updateVisibleBoats();
   syncNavigationControls();lastNavigationKey=null;renderNavigation();
-  refreshPresentationEvents();updateDrawingControls();status(currentTime());
+  refreshPresentationEvents();updateDrawingControls();renderWindAvailability(currentTime());
   for(const record of boatMarkerNodes.values())updateBoatMarkerLabel(record);
   renderSpeedPins();mapCreditKey=null;trackLegendKey=null;renderMapCredit();
   boatCompareRenderKey='';if(!SIMPLE_IPHONE_TRACKS)renderBoatCompare();

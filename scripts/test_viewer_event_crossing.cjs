@@ -6,7 +6,7 @@ async function check(type){
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('main:not([inert])',{timeout:120000});
-  await page.evaluate(()=>{setPresentationMode(true);$('wind').checked=$('rain').checked=false;});
+  await page.evaluate(()=>{setPresentationMode(true);setWindMode('off');setRainEnabled(false);});
   await page.waitForTimeout(100);
   await page.clock.install();await page.clock.pauseAt(new Date());
   const fixture=await page.evaluate(()=>{

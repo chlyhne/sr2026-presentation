@@ -50,11 +50,16 @@ function boatCompareDistribution(boat,passages){
 }
 function prepareBoatCompareGates(key,timing){
  const distributions=new Map();
- for(const boat of boats)distributions.set(boat.id,boatCompareDistribution(boat,timing.get(boat.id).passages));
+ const add=(boat,duration=null)=>{
+  if(!distributions.has(boat.id))distributions.set(boat.id,{boat,duration,...boatCompareDistribution(boat,timing.get(boat.id).passages)});
+ };
+ // Gate timing is already sorted by elapsed time. The first passage per boat is its fastest.
+ for(const {boat,duration} of timing.ranking)add(boat,duration);
+ for(const boat of boats)add(boat);
  boatCompareCache.set(key,distributions);
 }
 if(!SIMPLE_IPHONE_TRACKS){
- const all=new Map();for(const boat of boats)all.set(boat.id,boatCompareDistribution(boat,null));boatCompareCache.set('',all);
+ const all=new Map();for(const boat of boats)all.set(boat.id,{boat,duration:null,...boatCompareDistribution(boat,null)});boatCompareCache.set('',all);
  const select=$('boatCompareReference');
  select.onchange=()=>{boatCompareRenderKey='';renderBoatCompare();};
  $('boatCompareMetric').onchange=()=>{boatCompareZoom=null;boatCompareRenderKey='';renderBoatCompare();};
@@ -74,11 +79,11 @@ function closeBoatCompare(){
  if($('boatComparePanel').hidden)return;
  $('boatComparePanel').hidden=true;document.body.classList.remove('boat-compare-open');$('boatCompareToggle').setAttribute('aria-expanded','false');invalidateMapLayout();requestRender();
 }
-function syncBoatCompareReference(){
+function syncBoatCompareReference(ordered){
  const select=$('boatCompareReference'),viewport=mapViewport();
  if(!viewport)return;
  const [left,top,width,height]=viewport.viewBox;
- const visible=boats.filter(boat=>{
+ const visible=ordered.filter(boat=>{
   const marker=boatMarkerNodes.get(boat.id)?.group;
   if(!marker?.isConnected)return false;
   const x=+marker.dataset.screenX,y=+marker.dataset.screenY;
@@ -94,10 +99,11 @@ function syncBoatCompareReference(){
 }
 function renderBoatCompare(){
  if($('boatComparePanel').hidden)return;
- syncBoatCompareReference();
  const gates=currentGateMeasurement(),key=gates.length?JSON.stringify(gates):'',data=boatCompareCache.get(key);
  if(!data)throw Error(srText('SOG-fordelingerne for gates er ikke forberedt.'));
- const reference=boats.find(boat=>boat.id===$('boatCompareReference').value),selected=boats.filter(boat=>boatIsDisplayed(boat)&&boat.id!==reference?.id);
+ const ordered=Array.from(data.values(),entry=>entry.boat);
+ syncBoatCompareReference(ordered);
+ const reference=data.get($('boatCompareReference').value)?.boat,selected=ordered.filter(boat=>boatIsDisplayed(boat)&&boat.id!==reference?.id);
  const metric=$('boatCompareMetric').value;
  const renderKey=JSON.stringify([key,metric,reference?.id,selected.map(boat=>boat.id)]);if(renderKey===boatCompareRenderKey)return;boatCompareRenderKey=renderKey;
  $('boatCompareScope').textContent=(gates.length?srText('Mellem gates · alle passager'):srText('Hele sporet'))+(metric==='speed'?srText(' · SOG i knob'):srText(' · tempo i sekunder pr. sømil'))+(metric==='speed'?srText(' · tidsvægtet'):srText(' · pr. rhumbline-station'))+(reference?srText(' · reference nederst'):'')+(metric==='speed'?srText(' · 20+ samlet ved højre kant'):srText(' · tempo over 7200 vises ikke'));
@@ -117,7 +123,8 @@ function renderBoatCompare(){
  const digits=Math.min(4,Math.max(metric==='speed'?1:0,Math.ceil(-Math.log10((maxValue-minValue)/4))));
  const formatValue=value=>value.toLocaleString(srLocale,{maximumFractionDigits:digits});
  for(const boat of selected){
-  const row=document.createElement('div'),title=document.createElement('div');title.textContent=boat.name+(reference&&reference.id!==boat.id?' / '+reference.name:'');row.append(title);
+  const row=document.createElement('div'),title=document.createElement('div'),duration=data.get(boat.id).duration;
+  title.textContent=boat.name+(duration?' · '+duration:'')+(reference&&reference.id!==boat.id?' / '+reference.name:'');row.append(title);
   const split=!!reference&&reference.id!==boat.id;
   const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 240 68');svg.setAttribute('role','img');svg.setAttribute('aria-label',(metric==='speed'?srText('Fartfordeling for '):srText('Tempofordeling for '))+title.textContent);
   const plot=(values,colour,side)=>{

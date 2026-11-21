@@ -10,7 +10,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.waitForSelector('main:not([inert])',{timeout:120000});
   const result=await page.evaluate(async()=>{
    stopPlayback();consumeRenderRequest();
-   $('wind').checked=$('rain').checked=false;
+   setWindMode('off');setRainEnabled(false);
    setCurrentTime(D.start+43200);render();
    const functions=new Map(),restores=[],stack=[];
    const wrap=(object,key,name=key)=>{

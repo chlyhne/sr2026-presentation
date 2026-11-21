@@ -68,6 +68,6 @@ async function waitForMapReady(){
   await radarImageBuffer.paintReady;
  }while(renderRequestKind!==null||radarPending!==radarReady);
  assertRenderingReady();
- if($('rain').checked&&radarStatus==='kunne ikke indlæses')throw Error(srText('Radaren kunne ikke indlæses. Prøv igen, eller slå radarlaget fra.'));
+ if(rainEnabled&&radarStatus==='kunne ikke indlæses')throw Error(srText('Radaren kunne ikke indlæses. Prøv igen, eller slå radarlaget fra.'));
 }
 $('reloadRendering').onclick=()=>location.reload();

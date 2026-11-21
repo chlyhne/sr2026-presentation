@@ -18,7 +18,7 @@ const near=(actual,expected,tolerance=.005)=>assert.ok(Math.abs(actual-expected)
   });
   assert.equal(await page.evaluate(()=>boats.every(b=>b.handicapSecondsPerNm>0)),true);
   const alignment=await page.evaluate(()=>{
-   const map=$('map').getBoundingClientRect(),buttons=['mapMeasureToggle','mapGatesToggle','mapTracksToggle','mapLayersToggle'].map(id=>$(id).getBoundingClientRect()),layers=buttons.at(-1);
+   const map=$('map').getBoundingClientRect(),buttons=['mapMeasureToggle','mapGatesToggle','mapTracksToggle','rain'].map(id=>$(id).getBoundingClientRect()),layers=buttons.at(-1);
    return {gaps:buttons.slice(1).map((button,i)=>button.left-buttons[i].right),top:layers.top-map.top,right:map.right-$('mapTools').getBoundingClientRect().right,aligned:buttons.every(button=>button.top===layers.top)};
   });
   assert.ok(alignment.aligned);alignment.gaps.forEach(gap=>near(gap,6,1));near(alignment.top,12,1);near(alignment.right,12,1);
@@ -26,7 +26,7 @@ const near=(actual,expected,tolerance=.005)=>assert.ok(Math.abs(actual-expected)
   const compact=await page.evaluate(()=>{
    const tools=$('mapTools').getBoundingClientRect(),legend=$('trackSpeedLegend').getBoundingClientRect();
    return {overlap:tools.left<legend.right&&tools.right>legend.left&&tools.top<legend.bottom&&tools.bottom>legend.top,
-    aligned:$('mapMeasureToggle').getBoundingClientRect().top===$('mapLayersToggle').getBoundingClientRect().top};
+    aligned:$('mapMeasureToggle').getBoundingClientRect().top===$('rain').getBoundingClientRect().top};
   });
   assert.equal(compact.overlap,false);assert.equal(compact.aligned,true);
   await page.setViewportSize({width:1500,height:1000});
@@ -50,7 +50,7 @@ const near=(actual,expected,tolerance=.005)=>assert.ok(Math.abs(actual-expected)
   // All boats pass the same positions at different times; cross-track offsets
   // must not change the comparison, and Mercutio need not be selected.
   await page.evaluate(()=>{
-   stopPlayback();$('wind').checked=$('rain').checked=$('traffic').checked=$('military').checked=false;
+   stopPlayback();setWindMode('off');setRainEnabled(false);$('traffic').checked=$('military').checked=false;
    const time=D.start+3600,metadata=boatMetadata('Mercutio');
    function boat(id,name,offset,latitude,speeds,handicap=580.6){return {id,name,metadata,handicapSecondsPerNm:handicap,
     points:Array.from({length:9},(_,i)=>[12+i*.01,latitude,time+offset+i*60]),speeds};}

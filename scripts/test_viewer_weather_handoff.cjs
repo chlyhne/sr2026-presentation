@@ -6,7 +6,7 @@ async function check(type){
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(new URL('events/sjaelland-rundt-2026/',process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/').href);
   await page.waitForSelector('main:not([inert])');
-  await page.evaluate(()=>{$('rain').checked=true;visibleTimeRanges=[];renderRadar(1781164800);return radarReady;});
+  await page.evaluate(()=>{setRainEnabled(true);visibleTimeRanges=[];renderRadar(1781164800);return radarReady;});
   await page.waitForFunction(()=>radarImageBuffer.front?.ready&&radarImageBuffer.back?.ready);
   const result=await page.evaluate(async()=>{
    const check=(ok,message)=>{if(!ok)throw Error(message);};

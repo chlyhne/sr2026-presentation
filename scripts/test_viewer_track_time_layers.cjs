@@ -19,7 +19,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     const b={id:'time-b',name:'Other',metadata,points:[point(600,440,250),point(600,520,450)],speeds:[2,2]};
     boats.splice(0,boats.length,a,b);chosen.clear();chosen.add(a.name);chosen.add(b.name);colours.Other='#ffffff';
     referenceBoatId=a.id;
-    $('wind').checked=$('rain').checked=$('traffic').checked=$('military').checked=$('annotationsVisible').checked=false;
+    setWindMode('off');setRainEnabled(false);$('traffic').checked=$('military').checked=$('annotationsVisible').checked=false;
     for(const id of ['places','seamarks','boatMarkers','speedMarkers','trackSpeedLegend'])$(id).setAttribute('visibility','hidden');
     view=[570,430,60,100];$('map').setAttribute('viewBox',view.join(' '));selectedTime=D.start+650;
     const renderer=webglTracks;

@@ -7,7 +7,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('main:not([inert])',{timeout:120000});
   await page.evaluate(()=>{
-   chosen.clear();chosen.add('Mercutio');$('wind').checked=false;$('rain').checked=false;updateTimeline();setCurrentTime(D.start+3600);render();
+   chosen.clear();chosen.add('Mercutio');setWindMode('off');setRainEnabled(false);updateTimeline();setCurrentTime(D.start+3600);render();
    window.framesPlayed=0;window.originalAdvance=advancePlayback;advancePlayback=now=>{framesPlayed++;originalAdvance(now);};
   });
   await page.clock.install();await page.clock.pauseAt(new Date());

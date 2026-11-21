@@ -12,6 +12,18 @@ const project=vm.runInContext('xy',context);
 vm.runInContext(navigation.slice(navigation.indexOf('function drawGateResults('),navigation.indexOf("$('mapMeasureToggle').onclick")),context);
 const rows=[{boat:{id:'fast',name:'Mercutio'},passage:{elapsed:240},duration:'04:00,0'},
  {boat:{id:'slow',name:'Vera'},passage:{elapsed:360},duration:'06:00,0'}];
+const boatCompare=fs.readFileSync('viewer/boat-compare.js','utf8'),missing={id:'missing',name:'Alpha'};
+const boats=[missing,rows[1].boat,rows[0].boat],calls=[];
+const compareContext=vm.createContext({boats,boatCompareCache:new Map(),
+ boatCompareDistribution(boat,passages){calls.push([boat.id,passages.length]);return {};}
+});
+vm.runInContext(boatCompare.slice(boatCompare.indexOf('function prepareBoatCompareGates('),boatCompare.indexOf('if(!SIMPLE_IPHONE_TRACKS)')),compareContext);
+const repeat={boat:rows[0].boat,passage:{elapsed:480},duration:'08:00,0'};
+const timing=new Map(boats.map(boat=>[boat.id,{passages:[...rows,repeat].filter(entry=>entry.boat===boat).map(entry=>entry.passage)}]));
+timing.ranking=[...rows,repeat];
+compareContext.prepareBoatCompareGates('gates',timing);
+assert.deepEqual(calls,[['fast',2],['slow',1],['missing',0]]);
+assert.deepEqual(Array.from(compareContext.boatCompareCache.get('gates').values(),entry=>entry.duration),['04:00,0','06:00,0',null]);
 const variants=[
  [[12,55.5],[12,55.6],[12.1,55.5],[12.1,55.6]],
  [[12.1,55.5],[12.1,55.6],[12,55.5],[12,55.6]],

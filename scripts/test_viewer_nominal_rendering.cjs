@@ -14,7 +14,7 @@ const base=process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/';
   assert.equal(await page.evaluate(()=>typeof webglTracks.snapshot),'undefined');
   assert.equal(await page.evaluate(()=>typeof webglBackground.snapshot),'undefined');
   const sample=await page.evaluate(()=>{
-   chosen.clear();$('wind').checked=$('rain').checked=false;
+   chosen.clear();setWindMode('off');setRainEnabled(false);
    for(const id of ['winds','trafficSeparation','militaryAreas','routeT','courseLines','boatMarkers','places','seamarks','speedMarkers','noteDrawings','drawingPreview','annotations','mapCredit','trackSpeedLegend'])$(id).setAttribute('visibility','hidden');
    render();webglBackground.render(true);
    const {gl,canvas}=webglBackground,raw=new Uint8Array(canvas.width*canvas.height*4);
