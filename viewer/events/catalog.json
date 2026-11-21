@@ -2752,6 +2752,24 @@
       }
     }
   ],
+  "weather": {
+    "sjaelland-rundt-2026": {
+      "embedded": true,
+      "radar": "DMI"
+    },
+    "silverrudder-2024": {
+      "file": "weather/silverrudder-2024/manifest.json",
+      "radar": "OPERA"
+    },
+    "silverrudder-2025": {
+      "file": "weather/silverrudder-2025/manifest.json",
+      "radar": "OPERA"
+    },
+    "silverrudder-2026": {
+      "file": "weather/silverrudder-2026/manifest.json",
+      "radar": "DMI"
+    }
+  },
   "mapLayers": {
     "bridges": {
       "file": "bridges.geojson",

@@ -22,9 +22,34 @@ test('stævner isolate storage and explicitly migrate existing Sjælland Rundt a
 test('Silverrudder merges seven source races on one course, with distinct starts and one overlay',()=>{
  const event=configs.get('silverrudder-2025');assert.equal(event.source.races.length,7);assert.equal(Object.keys(event.courses).length,1);
  assert.equal(new Set(event.source.races.map(r=>r.id)).size,7);assert.equal(new Set(event.source.races.map(r=>r.start)).size,7);
- assert.equal(event.features.handicap,false);assert.equal(event.features.weather,false);
+ assert.equal(event.features.handicap,false);
  for(const item of configs.values()){assert.equal(item.profileRoot,'events/'+item.id+'/track-profiles/');assert.ok(fs.existsSync(item.nativeFile));assert.ok(fs.existsSync(item.presentationFile));}
 });
+test('Silverrudder loads complete weather with its own radar source and asset paths',async()=>{
+ const source=fs.readFileSync('viewer/weather.js','utf8');
+ const implementation=source.slice(source.indexOf('const WIND_MODEL='),source.indexOf('// Interpolate the archived samples'));
+ for(const [year,radar,count] of [[2024,'OPERA',328],[2025,'OPERA',290],[2026,'DMI',241]]){
+  const {context}=await load('silverrudder-'+year,storage()),event=context.window.SR_EVENT;
+  assert.equal(event.features.weather,true);
+  assert.equal(event.weather.radar,radar);
+  vm.runInContext(implementation,context);
+  const manifest=JSON.parse(fs.readFileSync('viewer/'+event.weather.file,'utf8'));
+  context.fetch=async file=>{
+   assert.equal(file,event.weather.file);
+   return {ok:true,json:async()=>manifest};
+  };
+  const data={};await context.loadEventWeather(event,data);
+  assert.equal(data.radar.source,radar);
+  assert.equal(data.radar.frames.length,count);
+  for(const frame of data.radar.frames)assert.ok(fs.existsSync('viewer/'+frame.file),frame.file);
+  const incomplete={...manifest,radar:{...manifest.radar,frames:manifest.radar.frames.slice(1)}};
+  assert.throws(()=>context.validateWeatherAssets(incomplete,event),/ufuldstændige vejrdata/);
+ }
+ const {context}=await load(catalog.default,storage());
+ assert.equal(context.window.SR_EVENT.weather.embedded,true);
+ assert.equal(context.window.SR_EVENT.weather.radar,'DMI');
+});
+
 test('an unknown stævne produces an explicit error',async()=>{await assert.rejects(load('unknown',storage()),/Ukendt/);});
 
 test('event links preserve deployment prefixes in both public and admin pages',async()=>{

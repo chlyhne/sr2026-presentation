@@ -92,6 +92,38 @@ function windVector(speed,direction) {
 const WIND_MODEL='dmi_harmonie_arome_europe',WIND_MODEL_LABEL='DMI HARMONIE';
 const RADAR_OPACITY=.75;
 
+const WEATHER_RADAR_INTERVAL=600;
+function validateWeatherAssets(assets,event){
+ const prefix=`weather/${event.id}/radar/`,radar=assets?.radar,points=assets?.wind_models?.[WIND_MODEL];
+ const firstFrame=Math.floor(event.start/WEATHER_RADAR_INTERVAL)*WEATHER_RADAR_INTERVAL;
+ const lastFrame=Math.floor(event.end/WEATHER_RADAR_INTERVAL)*WEATHER_RADAR_INTERVAL;
+ const firstHour=Math.floor(event.start/3600)*3600,lastHour=Math.floor(event.end/3600)*3600;
+ const fields=['wind_speed_10m','wind_direction_10m','wind_gusts_10m'];
+ const invalid=()=>new SRMessageError('Ugyldige eller ufuldstændige vejrdata for {0}.',event.id);
+ if(assets?.version!==1||assets.eventId!==event.id||radar?.source!==event.weather.radar||radar.quantity!=='DBZH'||
+  radar.interval_seconds!==WEATHER_RADAR_INTERVAL||radar.projection!=='EPSG:4326'||JSON.stringify(radar.bbox)!=='[9.5,54,14,57]'||
+  !Array.isArray(radar.frames)||radar.frames.length!==(lastFrame-firstFrame)/WEATHER_RADAR_INTERVAL+1||
+  !radar.frames.every((frame,i)=>frame?.time===firstFrame+i*WEATHER_RADAR_INTERVAL&&frame.file===prefix+frame.time+'.png')||
+  !Array.isArray(points)||points.length!==247)throw invalid();
+ for(const point of points){
+  const hourly=point?.hourly;
+  if(![point?.latitude,point?.longitude].every(Number.isFinite)||
+   !Array.isArray(hourly?.time)||hourly.time.length!==(lastHour-firstHour)/3600+1||
+   !hourly.time.every((time,i)=>time===firstHour+i*3600)||
+   !fields.every(key=>Array.isArray(hourly[key])&&hourly[key].length===hourly.time.length&&hourly[key].every(Number.isFinite)))
+   throw invalid();
+ }
+ return assets;
+}
+async function loadEventWeather(event,data){
+ if(!event.weather||event.weather.embedded)return;
+ const response=await fetch(event.weather.file);
+ if(!response.ok)throw new SRMessageError('Vejrdata kunne ikke hentes ({0}).',response.status);
+ const assets=validateWeatherAssets(await response.json(),event);
+ data.wind_models=assets.wind_models;
+ data.radar=assets.radar;
+}
+
 // Interpolate the archived samples for a continuous background. This adds no
 // weather information or meteorological resolution.
 const windGrids = new Map();

@@ -231,32 +231,33 @@ for(const feature of D.route_t.features){
 }
 let interval=null;
 
+const radarSource=window.SR_EVENT.weather?.radar;
 let radarKey=null,radarStatus='indlæser …',radarReady=Promise.resolve();
 const radarImageBuffer=new WeatherImageBuffer('radarImage');
 function prepareNextRadar(time){
- const next=nextWeatherTime(time,600);if(next===null)return;
+ const next=nextWeatherTime(time,WEATHER_RADAR_INTERVAL);if(next===null)return;
  const frame=D.radar?.frames.find(f=>f.time>=next);
  if(frame)radarImageBuffer.prepare(String(frame.time),()=>frame.file);
 }
 function renderRadar(time){
- const t=Math.floor(time/600)*600;
+ const t=Math.floor(time/WEATHER_RADAR_INTERVAL)*WEATHER_RADAR_INTERVAL;
  const enabled=$('rain').checked,key=`${t}:${enabled}`;
  if(key===radarKey){if(enabled&&radarImageBuffer.front?.key===String(t))prepareNextRadar(time);return;}
  radarKey=key;
  if(!enabled){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='slået fra';$('rainPeriod').textContent='';return;}
  const frame=D.radar?.frames.find(f=>f.time===t);
- if(!frame){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='mangler';srBind($('rainPeriod'),'textContent',()=>srText("DMI radar mangler ved {0}",fmt(t)));prepareNextRadar(time);return;}
+ if(!frame){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='mangler';srBind($('rainPeriod'),'textContent',()=>srText("{0} radar mangler ved {1}",radarSource,fmt(t)));prepareNextRadar(time);return;}
  const finish=()=>{
-  radarStatus=fmt(t);srBind($('rainPeriod'),'textContent',()=>srText("DMI radar: {0} · dBZ",fmt(t)));
+  radarStatus=fmt(t);srBind($('rainPeriod'),'textContent',()=>srText("{0} radar: {1} · dBZ",radarSource,fmt(t)));
   prepareNextRadar(time);status(currentTime());
  };
  const entry=radarImageBuffer.prepare(String(t),()=>frame.file,true);
  if(radarImageBuffer.display(String(t))){radarReady=Promise.resolve();finish();return;}
  // Keep the previous frame on screen while an unanticipated seek loads.
- radarStatus='indlæser …';srBind($('rainPeriod'),'textContent',()=>srText("DMI radar: {0} · indlæser …",fmt(t)));
+ radarStatus='indlæser …';srBind($('rainPeriod'),'textContent',()=>srText("{0} radar: {1} · indlæser …",radarSource,fmt(t)));
  radarReady=entry.promise.then(()=>{
   if(key!==radarKey)return;
-  if(entry.error){radarStatus='kunne ikke indlæses';srBind($('rainPeriod'),'textContent',()=>srText("DMI radar kunne ikke indlæses ved {0}",fmt(t)));status(currentTime());return;}
+  if(entry.error){radarStatus='kunne ikke indlæses';srBind($('rainPeriod'),'textContent',()=>srText("{0} radar kunne ikke indlæses ved {1}",radarSource,fmt(t)));status(currentTime());return;}
   if(radarImageBuffer.display(String(t)))finish();
  });
 }
@@ -265,7 +266,7 @@ function status(t){
  const hour=Math.floor(t/3600)*3600,windAvailable=!!D.wind_models[WIND_MODEL]?.[0]?.hourly.time.includes(hour);
  if(!window.SR_EVENT.features.weather){$('status').textContent=srText("Tracks: {0} · Vejrdata er ikke importeret for dette stævne",fmt(t));return;}
  setBoatListText($('windPeriod'),$('wind').checked&&!windAvailable?srText("Vinddata mangler ved {0}",fmt(hour)):'');
- $('status').textContent=srText("Vind: {0} {1} {2} · Tracks: interpoleret ved {3} · Noter gemmes i denne browser",WIND_MODEL_LABEL,windAvailable?fmt(hour):srText('data mangler ved ')+fmt(hour),$('rain').checked?srText(' · Radar DMI: ')+srText(radarStatus):'',fmt(t));
+ $('status').textContent=srText("Vind: {0} {1} {2} · Tracks: interpoleret ved {3} · Noter gemmes i denne browser",WIND_MODEL_LABEL,windAvailable?fmt(hour):srText('data mangler ved ')+fmt(hour),$('rain').checked?srText(' · Radar {0}: {1}',radarSource,srText(radarStatus)):'',fmt(t));
 }
 const WIND_ARROW_SPACING=90;
 let windArrowKey=null;

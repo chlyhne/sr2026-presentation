@@ -590,6 +590,9 @@ originalbilleder og mobilvisning. Begge tests kører i Chromium og Firefox.
 
 ## Datagrundlag
 
+Se [Silverrudders vejrdata](../README.md#vejr-til-silverrudder) for kilder og
+klargøring pr. årgang. Beskrivelsen nedenfor dokumenterer Sjælland Rundt.
+
 Vindlaget bruger DMI HARMONIE (ca. 2 km) fra prognosearkivet via Open-Meteo.
 Modellen er forespurgt ved 247 punkter i 0,25° trin med
 `cell_selection=nearest` og `elevation=nan`.

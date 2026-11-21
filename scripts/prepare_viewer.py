@@ -1,5 +1,6 @@
 """Prepare an offline, time-synchronised radar/wind/track explorer."""
 import json, time
+from datetime import date
 from pathlib import Path
 import requests
 import math
@@ -20,8 +21,8 @@ def get(url, params):
             if attempt==3:raise
             time.sleep(2*(attempt+1))
 
-def wind(model='era5'):
-    cache=ROOT/f'data/weather/{model}_grid_gusts.json'
+def wind(model='era5',start_date='2026-06-11',end_date='2026-06-13',cache=None):
+    if cache is None:cache=ROOT/f'data/weather/{model}_grid_gusts.json'
     if cache.exists():return json.loads(cache.read_text(encoding='utf-8'))
     points=[(54+i*.25,9.5+j*.25) for i in range(13) for j in range(19)]
     checkpoint=cache.with_suffix('.partial.json')
@@ -29,11 +30,12 @@ def wind(model='era5'):
     for offset in range(len(result),len(points),40):
         batch=points[offset:offset+40]
         url='https://archive-api.open-meteo.com/v1/archive' if model in ('era5','ecmwf_ifs') else 'https://historical-forecast-api.open-meteo.com/v1/forecast'
-        r=get(url,dict(latitude=','.join(str(p[0]) for p in batch),longitude=','.join(str(p[1]) for p in batch),start_date='2026-06-11',end_date='2026-06-13',hourly='wind_speed_10m,wind_direction_10m,wind_gusts_10m',models=model,wind_speed_unit='ms',timezone='UTC',timeformat='unixtime',cell_selection='nearest',elevation=','.join(['nan']*len(batch))))
+        r=get(url,dict(latitude=','.join(str(p[0]) for p in batch),longitude=','.join(str(p[1]) for p in batch),start_date=start_date,end_date=end_date,hourly='wind_speed_10m,wind_direction_10m,wind_gusts_10m',models=model,wind_speed_unit='ms',timezone='UTC',timeformat='unixtime',cell_selection='nearest',elevation=','.join(['nan']*len(batch))))
         data=r.json();result.extend(data if isinstance(data,list) else [data])
         checkpoint.write_text(json.dumps(result),encoding='utf-8')
     assert len(result)==len(points)
-    assert all(len(p['hourly']['time'])==72 and all(v is not None for v in p['hourly']['wind_speed_10m']) for p in result)
+    hours=((date.fromisoformat(end_date)-date.fromisoformat(start_date)).days+1)*24
+    assert all(len(p['hourly']['time'])==hours and all(v is not None for v in p['hourly']['wind_speed_10m']) for p in result)
     cache.write_text(json.dumps(result),encoding='utf-8');return result
 
 def main():

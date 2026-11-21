@@ -165,6 +165,30 @@ samlede spor-/GPU-/gate-kontrol i headless Firefox. `SR_TEST_KEEP_GOING=1` samle
 fejl fra flere delkontroller i én kørsel. Se [dækning og målinger](scripts/track-validation.md).
 Denne kontrol køres ikke ved almindelige iterationer.
 
+## Vejr til Silverrudder
+
+Silverrudder 2024, 2025 og 2026 har timevind fra DMI HARMONIE via Open-Meteo,
+med samme sampling som Sjælland Rundt. Nedbørslaget viser observeret
+radarreflektivitet ved 10-minutters trin. OPERA leverer radarbillederne for 2024 og
+2025, og DMI leverer dem for 2026. Kilden vises i lagmenuen.
+
+Vind kommer fra [Open-Meteos DMI-prognosearkiv](https://open-meteo.com/en/docs/historical-forecast-api).
+Radarkompositterne kommer fra [EUMETNET OPERA](https://www.eumetnet.eu/data-access/data-policy/)
+(CC BY 4.0) og [DMI Frie Data](https://www.dmi.dk/friedata/dokumentation/radar-data).
+Billederne er beskåret, reprojiceret og farvelagt til kortet.
+
+Klargjorte data og radarbilleder ligger i `viewer/weather/` pr. årgang.
+Trackeren indlæser dem som separate filer, så en ændring af vejrlaget kan
+publiceres uafhængigt af sporprofilerne. Til ny dataforberedelse bruges
+pakkerne i `scripts/requirements-radar.txt` samt `requests` og følgende kommando.
+
+```sh
+.venv/bin/python scripts/prepare_silverrudder_weather.py --event silverrudder-2026
+```
+
+Klargøring kræver adgang til kildernes arkiver. DMI’s åbne radararkiv har en
+rullende periode på 180 dage. Build og afspilning bruger de klargjorte filer.
+
 ## Lokalt preview og redigering
 
 Kør fra denne projektmappe:

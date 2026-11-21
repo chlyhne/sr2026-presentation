@@ -108,6 +108,7 @@ function validatePresentationDocument(document){
     if(!Array.isArray(data[name]?.features))throw Error(srText('Kortdata mangler laget ')+name+'.');
    }
   }
+  if(file==='weather')await loadEventWeather(event,window.DATA);
   if(file==='rhumbline-geometry'){
    const definitions=Object.entries(event.courses).map(([course,definition])=>{
     const route={version:1,points:definition.points};

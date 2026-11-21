@@ -1,6 +1,7 @@
 """Download DMI observed radar composites and reproject to the viewer image extent."""
 import concurrent.futures as cf
 from datetime import datetime,timezone
+from functools import lru_cache
 import json,time
 from pathlib import Path
 import h5py,numpy as np,requests
@@ -23,6 +24,59 @@ def get(url,params=None):
    if attempt==2:raise
    time.sleep(2*(attempt+1))
 
+def scalar(attrs, key):
+ return np.asarray(attrs[key]).item()
+
+@lru_cache(maxsize=4)
+def grid_indices(projection,ul_lon,ul_lat,xscale,yscale,shape,source):
+ transformer=Transformer.from_crs('EPSG:4326',projection,always_xy=True)
+ x,y=transformer.transform(lon,lat)
+ left,top=transformer.transform(ul_lon,ul_lat)
+ # DMI's upper-left coordinate marks the first pixel centre. OPERA uses a corner.
+ if source=='DMI':
+  ix=np.rint((x-left)/xscale).astype(int)
+  iy=np.rint((top-y)/yscale).astype(int)
+ elif source=='OPERA':
+  ix=np.floor((x-left)/xscale).astype(int)
+  iy=np.floor((top-y)/yscale).astype(int)
+ else:
+  raise ValueError('Unknown radar source: '+source)
+ valid=(ix>=0)&(ix<shape[1])&(iy>=0)&(iy<shape[0])
+ return np.clip(ix,0,shape[1]-1),np.clip(iy,0,shape[0]-1),valid
+
+def prepare_frame(raw,png,t,source_id,source,file):
+ with h5py.File(raw) as f:
+  group=f['dataset1/data1'];values=group['data'];where=f['where'].attrs
+  if source=='DMI':
+   what=f['what'].attrs
+   quantity=scalar(group.attrs,'quantity')
+  elif source=='OPERA':
+   what=group['what'].attrs
+   quantity=scalar(what,'quantity')
+  else:
+   raise ValueError('Unknown radar source: '+source)
+  if quantity!=b'DBZH':raise ValueError(f'{source_id} is not a DBZH composite')
+  ix,iy,valid=grid_indices(scalar(where,'projdef').decode(),float(scalar(where,'UL_lon')),float(scalar(where,'UL_lat')),
+    float(scalar(where,'xscale')),float(scalar(where,'yscale')),values.shape,source)
+  left,right=int(ix.min()),int(ix.max())+1
+  top,bottom=int(iy.min()),int(iy.max())+1
+  sampled=values[top:bottom,left:right][iy-top,ix-left]
+  nodata=(~valid)|(sampled==scalar(what,'nodata'))
+  undetect=sampled==scalar(what,'undetect')
+  gain,offset=float(scalar(what,'gain')),float(scalar(what,'offset'))
+  dbz=sampled*gain+offset
+  rgba=np.zeros((HEIGHT,WIDTH,4),dtype=np.uint8)
+  detected=(~nodata)&(~undetect)&(dbz>=0)
+  rgba[detected]=COLOURS[np.searchsorted([10,20,30,40,50,60],dbz[detected],side='right')]
+  rgba[nodata]=[130,140,150,80]
+  temp=png.with_suffix('.png.tmp')
+  Image.fromarray(rgba).save(temp,format='PNG')
+  temp.replace(png)
+  observed=datetime.strptime(scalar(f['what'].attrs,'date').decode()+scalar(f['what'].attrs,'time').decode(),'%Y%m%d%H%M%S').replace(tzinfo=timezone.utc)
+  return dict(time=t,observed_time=observed.isoformat(),file=file,colour_scheme=COLOUR_SCHEME,source_id=source_id,
+   source_pixel_size_m=int(scalar(where,'xscale')),source_quantity='DBZH',gain=gain,offset=offset,
+   nodata=scalar(what,'nodata'),undetect=scalar(what,'undetect'),coloured_pixels=int(detected.sum()),missing_pixels=int(nodata.sum()))
+
 def frame(item):
  t=int(datetime.fromisoformat(item['properties']['datetime'].replace('Z','+00:00')).timestamp())
  png=OUT/f'{t}.png';meta=OUT/f'{t}.json'
@@ -33,29 +87,7 @@ def frame(item):
  if not raw.exists():
   asset=item.get('assets',item.get('asset'))['data']
   raw.write_bytes(get(asset['href']).content)
- with h5py.File(raw) as f:
-  values=f['dataset1/data1/data'][:];what=f['what'].attrs;where=f['where'].attrs
-  assert f['dataset1/data1'].attrs['quantity'].decode()=='DBZH'
-  transformer=Transformer.from_crs('EPSG:4326',where['projdef'].decode(),always_xy=True)
-  x,y=transformer.transform(lon,lat)
-  left,top=transformer.transform(float(where['UL_lon'][0]),float(where['UL_lat'][0]))
-  # DMI UL/UR/LL coordinates are pixel centres: spans equal (size-1)*500 m.
-  ix=np.rint((x-left)/float(where['xscale'])).astype(int)
-  iy=np.rint((top-y)/float(where['yscale'])).astype(int)
-  valid=(ix>=0)&(ix<values.shape[1])&(iy>=0)&(iy<values.shape[0])
-  sampled=values[np.clip(iy,0,values.shape[0]-1),np.clip(ix,0,values.shape[1]-1)]
-  nodata=(~valid)|(sampled==what['nodata'])
-  undetect=sampled==what['undetect']
-  dbz=sampled.astype(float)*float(what['gain'])+float(what['offset'])
-  rgba=np.zeros((HEIGHT,WIDTH,4),dtype=np.uint8)
-  detected=(~nodata)&(~undetect)&(dbz>=0)
-  rgba[detected]=COLOURS[np.searchsorted([10,20,30,40,50,60],dbz[detected],side='right')]
-  rgba[nodata]=[130,140,150,80]
-  Image.fromarray(rgba).save(png)
-  observed=datetime.strptime(what['date'].decode()+what['time'].decode(),'%Y%m%d%H%M%S').replace(tzinfo=timezone.utc)
-  info=dict(time=t,observed_time=observed.isoformat(),file='radar/'+png.name,colour_scheme=COLOUR_SCHEME,source_id=item['id'],source_pixel_size_m=int(where['xscale']),
-   source_quantity='DBZH',gain=float(what['gain']),offset=float(what['offset']),nodata=int(what['nodata']),undetect=float(what['undetect']),
-   coloured_pixels=int(detected.sum()),missing_pixels=int(nodata.sum()))
+ info=prepare_frame(raw,png,t,item['id'],'DMI','radar/'+png.name)
  meta.write_text(json.dumps(info,indent=2));return info
 
 if __name__=='__main__':
