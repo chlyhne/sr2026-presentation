@@ -29,7 +29,7 @@ async function prepareFleetTracks(onProgress=()=>{}){
   // The renderer has already displayed its error. Finish loading its controls
   // so the user can reload; no alternative rendering or calculation is used.
   if(!webglTracks.active)return false;
-  setViewerLoadingStage('Klargør spor · '+boat.name+' ('+(prepared+1)+'/'+boats.length+')');
+  setViewerLoadingStage(srText('Klargør spor · ')+boat.name+' ('+(prepared+1)+'/'+boats.length+')');
   await prepareBoatTrack(boat);
   onProgress(++prepared,boats.length);
   // Let the loading message paint between boats while interaction is locked.
@@ -55,7 +55,7 @@ function renderTrackSpeedLegend(){
  const group=screenGroup(point.x,point.y,layer);
  group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${1/Math.hypot(matrix.a,matrix.b)})`);
  el('rect',{width,height:layout.height,rx:5,fill:'#ffffff',opacity:.94},group);
- const relative=trackUsesComparison(),timeMode=comparison.basis==='time',limit=trackGainLimit(),referenceName=referenceBoat()?.name??'referencebåd';
+ const relative=trackUsesComparison(),timeMode=comparison.basis==='time',limit=trackGainLimit(),referenceName=referenceBoat()?.name??srText('referencebåd');
  function legendLabel(label,attrs){
   const text=el('text',{x:10,fill:'#173d4c',...attrs,'aria-label':label},group);
   text.textContent=label;
@@ -69,17 +69,17 @@ function renderTrackSpeedLegend(){
   }
   el('title',{},text).textContent=label;
  }
- const comparisonHelp=`Sammenlignet med ${referenceName} ved samme sted på ruten. ${timeMode?'Tid pr. 100 meter langs rhumblinen. Referencebådens frem- og tilbagepassager summeres. Grå: mangler fælles data eller begge har uendeligt tidsforbrug.':'Grå: mangler fælles passage eller data.'} Under −${limit}: varm gul (større tab). Over +${limit}: magenta (større gevinst). ${referenceName}: gennemsigtigt spor i bådens egen farve.`;
- layer.setAttribute('aria-label',relative?`${timeMode?'Tidsforskel i sekunder pr. 100 meter: rød tab, blå gevinst':'Fartforskel: rød langsommere, blå hurtigere'}. ${comparisonHelp}`:'Bådfart over grunden, jet-farveskala fra 0 til 15 knob');
+ const comparisonHelp=srText("Sammenlignet med {0} ved samme sted på ruten. {1} Under −{2}: varm gul (større tab). Over +{3}: magenta (større gevinst). {4}: gennemsigtigt spor i bådens egen farve.",referenceName,timeMode?srText('Tid pr. 100 meter langs rhumblinen. Referencebådens frem- og tilbagepassager summeres. Grå: mangler fælles data eller begge har uendeligt tidsforbrug.'):srText('Grå: mangler fælles passage eller data.'),limit,limit,referenceName);
+ layer.setAttribute('aria-label',relative?`${timeMode?srText('Tidsforskel i sekunder pr. 100 meter: rød tab, blå gevinst'):srText('Fartforskel: rød langsommere, blå hurtigere')}. ${comparisonHelp}`:srText('Bådfart over grunden, jet-farveskala fra 0 til 15 knob'));
  if(relative)el('title',{},group).textContent=comparisonHelp;
- legendLabel(relative?(timeMode?`s/100 m · ${referenceName}`:`Mod ${referenceName} · ${comparison.basis==='handicap'?'ToD · kn':'absolut · kn'}`):'Bådfart · SOG · knob',{y:17,'font-size':11,'font-weight':650});
+ legendLabel(relative?(timeMode?`s/100 m · ${referenceName}`:srText("Mod {0} · {1}",referenceName,comparison.basis==='handicap'?'ToD · kn':srText('absolut · kn'))):srText('Bådfart · SOG · knob'),{y:17,'font-size':11,'font-weight':650});
  const gradient=el('linearGradient',{id:'trackSpeedJetGradient',x1:0,x2:1,y1:0,y2:0},el('defs',{},group));
  for(let i=0;i<=128;i++)el('stop',{offset:i/128,'stop-color':relative?trackGainColour(-limit+2*limit*i/128,limit):trackSpeedColour(TRACK_SPEED_MAX*i/128)},gradient);
  el('rect',{x:10,y:24,width:width-20,height:13,fill:'url(#trackSpeedJetGradient)'},group);
  if(relative){
   for(const [side,d,fill,label] of [
-   ['under','M10 24 3 30.5 10 37Z',TRACK_GAIN_UNDERFLOW_COLOUR,`Under −${limit}: større tab`],
-   ['over',`M${width-10} 24 ${width-3} 30.5 ${width-10} 37Z`,TRACK_GAIN_OVERFLOW_COLOUR,`Over +${limit}: større gevinst`]
+   ['under','M10 24 3 30.5 10 37Z',TRACK_GAIN_UNDERFLOW_COLOUR,srText("Under −{0}: større tab",limit)],
+   ['over',`M${width-10} 24 ${width-3} 30.5 ${width-10} 37Z`,TRACK_GAIN_OVERFLOW_COLOUR,srText("Over +{0}: større gevinst",limit)]
   ])el('title',{},el('path',{d,fill,'data-gain-overflow':side,'aria-label':label},group)).textContent=label;
  }
  for(const value of relative?[-limit,0,limit]:[0,5,10,15]){
@@ -88,7 +88,7 @@ function renderTrackSpeedLegend(){
   el('text',{x,y:54,fill:'#173d4c','font-size':11,'text-anchor':value===(relative?-limit:0)?'start':value===(relative?limit:15)?'end':'middle'},group).textContent=relative?(value<0?`−${limit}`:value>0?`+${limit}`:0):value===15?'15+':value;
  }
  if(relative){
-  legendLabel(timeMode?'Rød: tab · Blå: gevinst':'Rød: langsommere · Blå: hurtigere',{y:69,'font-size':10});
+  legendLabel(timeMode?srText('Rød: tab · Blå: gevinst'):srText('Rød: langsommere · Blå: hurtigere'),{y:69,'font-size':10});
  }
 }
 

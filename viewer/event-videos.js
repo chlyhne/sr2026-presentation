@@ -1,4 +1,4 @@
-let pendingEventVideo=null,panelEventVideo=null,panelEventVideoNote=null,eventVideoView=null;
+let panelEventVideo=null,panelEventVideoNote=null,eventVideoView=null;
 let videoOwnsFullscreen=false,videoOpenToken=0;
 let videoBackgroundState=null;
 const YOUTUBE_ID=/^[\w-]{11}$/;
@@ -15,7 +15,7 @@ function youtubeVideo(id,start=0){
 }
 function parseYouTubeVideo(input){
  const text=input.trim();if(!text)return null;
- const invalid=()=>{throw new Error('Indsæt et gyldigt YouTube-link, fx https://youtu.be/VIDEO_ID.');};
+ const invalid=()=>{throw new SRMessageError('Indsæt et gyldigt YouTube-link, fx https://youtu.be/VIDEO_ID.');};
  let url;try{url=new URL(text.includes('://')?text:'https://'+text);}catch{invalid();}
  if(!['https:','http:'].includes(url.protocol)||url.username||url.password||url.port)invalid();
  const host=url.hostname.toLowerCase(),parts=url.pathname.split('/').filter(Boolean);
@@ -34,38 +34,28 @@ function validatedEventVideo(video){
  const start=Number.isInteger(video.start)&&video.start>=0&&video.start<=2147483647?video.start:0;
  return youtubeVideo(video.id,start);
 }
-function hasPendingEventVideo(){return !editingNote&&!!$('noteVideo').value.trim();}
-function currentAttachedVideo(){return editingNote?eventDraft.video:pendingEventVideo;}
-function eventNoteLabel(note){return note.text||note.image?.name||(note.video?'YouTube-video':'Billede');}
-function setAttachedEventVideo(video){
- if(editingNote)return JSON.stringify(validatedEventVideo(eventDraft.video))===JSON.stringify(video)||stageEventChanges(editingNote,{video});
- pendingEventVideo=video;return true;
-}
+function eventNoteLabel(note){return note.text||note.image?.name||(note.video?srText('YouTube-video'):srText('Billede'));}
 function updateVideoEditor(){
- const input=$('noteVideo');let video=null,error='';
- try{video=parseYouTubeVideo(input.value);}catch(e){error=e.message;}
- input.setCustomValidity(error);input.setAttribute('aria-invalid',String(!!error));
- $('noteVideoStatus').textContent=error||(video?(editingNote?'Videoen er i kladden. Tryk Gem ændringer.':'Video vedhæftet. Gem eventet for at beholde den.'):'');
- $('removeNoteVideo').hidden=!input.value;
- updateImageEditor();return {video,error};
+ $('removeNoteVideo').hidden=!editingNote?.video;
 }
 function validateEventVideoInput(){
- const result=updateVideoEditor();
- if(result.error){$('noteVideo').focus();$('noteVideo').reportValidity();return false;}
- if(!setAttachedEventVideo(result.video)){$('noteVideoStatus').textContent='Videoen kunne ikke gemmes til eventet.';return false;}
- return true;
+ const target=editingNote,input=$('noteVideo');
+ if(!target)return false;
+ try{
+  const video=parseYouTubeVideo(input.value);
+  if(sceneValue(validatedEventVideo(target.video))!==sceneValue(video)&&!updateEventContent(target,{video})){
+   input.value=validatedEventVideo(target.video)?.url||'';return false;
+  }
+  input.setCustomValidity('');input.removeAttribute('aria-invalid');
+  input.value=video?.url||'';$('noteVideoStatus').textContent='';
+  updateVideoEditor();refreshPresentationEvents();requestRender();return true;
+ }catch(error){
+  input.setCustomValidity(srErrorText(error));input.setAttribute('aria-invalid','true');
+  srBind($('noteVideoStatus'),'textContent',()=>srErrorText(error));return false;
+ }
 }
-function clearPendingEventVideo(){
- pendingEventVideo=null;$('noteVideo').value='';updateVideoEditor();
-}
-$('noteVideo').oninput=()=>{
- const {video,error}=updateVideoEditor();
- if(!error&&!setAttachedEventVideo(video))$('noteVideoStatus').textContent='Videoen kunne ikke gemmes til eventet.';
- updatePresentationControls();
-};
-$('removeNoteVideo').onclick=()=>{
- $('noteVideo').value='';$('noteVideo').dispatchEvent(new Event('input',{bubbles:true}));
-};
+$('noteVideo').onchange=validateEventVideoInput;
+$('removeNoteVideo').onclick=()=>{$('noteVideo').value='';validateEventVideoInput();};
 function hideEventVideo(){
  const overlay=$('eventVideoOverlay'),wasOpen=!!eventVideoView;
  videoOpenToken++;eventVideoView=null;overlay.hidden=true;
@@ -82,7 +72,7 @@ function hideEventVideo(){
 function showEventVideo(){
  if(!finishInlineTextEditing()||!panelEventVideo)return;
  if(!document.fullscreenElement&&(!document.fullscreenEnabled||!$('eventVideoOverlay').requestFullscreen)){
-  $('eventVideoStatus').textContent='Videoen kræver fuld skærm, men browseren tillader ikke fuld skærm.';return;
+  srBind($('eventVideoStatus'),'textContent',()=>srText('Videoen kræver fuld skærm, men browseren tillader ikke fuld skærm.'));return;
  }
  $('eventVideoStatus').textContent='';
  stopPlayback();hideMapEventImage();
@@ -93,7 +83,7 @@ function showEventVideo(){
   for(const [node] of videoBackgroundState)node.inert=true;
  }
  $('eventVideoLink').href=video.url;
- const frame=document.createElement('iframe');frame.title='YouTube-video til event';
+ const frame=document.createElement('iframe');srBind(frame,'title',()=>srText('YouTube-video til event'));
  const src=new URL('https://www.youtube-nocookie.com/embed/'+video.id);
  src.searchParams.set('autoplay','1');src.searchParams.set('playsinline','1');src.searchParams.set('rel','0');
  if(video.start)src.searchParams.set('start',String(video.start));
@@ -108,7 +98,7 @@ function showEventVideo(){
    if(token!==videoOpenToken&&!eventVideoView&&document.fullscreenElement===overlay)document.exitFullscreen().catch(()=>{});
   }).catch(error=>{if(token===videoOpenToken){
    videoOwnsFullscreen=false;hideEventVideo();
-   $('eventVideoStatus').textContent='Videoen kunne ikke åbnes i fuld skærm: '+(error.message||'Browseren afviste anmodningen.');
+   srBind($('eventVideoStatus'),'textContent',()=>srText('Videoen kunne ikke åbnes i fuld skærm: ')+(error.message||srText('Browseren afviste anmodningen.')));
   }});
  }
 }

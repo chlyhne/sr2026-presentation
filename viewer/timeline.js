@@ -30,9 +30,9 @@ function renderTimelineEvents(){
  if(!timelineLength)return;
  const times=new Set(snappableTimelineNotes().map(n=>n.time));
  for(const time of times){
-  const ratio=offsetAtTime(time)/Math.max(1,timelineLength-1),mark=document.createElement('span');
+  const ratio=Math.round(offsetAtTime(time))/Math.max(1,timelineLength-1),mark=document.createElement('span');
   mark.className='timeline-event';mark.dataset.time=time;
-  mark.style.left=`calc(${ratio*100}% + ${8-16*ratio}px)`;marks.append(mark);
+  mark.style.left=`${ratio*100}%`;marks.append(mark);
  }
 }
 function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false,includeHiddenEvents=false,preservePlaybackGates=false}={}){
@@ -58,10 +58,10 @@ function syncTimelineEvent(previousTime=selectedTime,{crossedEvents=false,includ
 }
 function seekTimeline(offset,{snap=true}={}){
  syncTimelineViewport();
- if(!finishEventEditing(()=>seekTimeline(offset,{snap}))){$('time').value=offsetAtTime(currentTime());return;}
+ if(!finishEventEditing()){$('time').value=offsetAtTime(currentTime());return;}
  hideMapEventImage();
  hideEventVideo();
- stopPlayback();
+ stopPlayback();leaveOpenedEvent();
  const snapWindow=eventSnapWindowSeconds(),candidateTime=timeAtOffset(offset);
  let nearest=null,distance=Infinity;
  for(const n of snap?snappableTimelineNotes():[]){
@@ -70,7 +70,7 @@ function seekTimeline(offset,{snap=true}={}){
   if(delta<=snapWindow&&Math.abs(n.time-candidateTime)<=snapWindow&&(delta<distance||(delta===distance&&n===activePresentationNote))){nearest=n;distance=delta;}
  }
  if(nearest){
-  activePresentationNote=nearest;setCurrentTime(nearest.time);
+  activePresentationNote=nearest;setCurrentTime(nearest.time,{fractional:true});
  }else setCurrentTime(candidateTime,{crossedEvents:true});
  requestRender();
 }
@@ -200,7 +200,6 @@ function setCurrentTime(time,{fractional=false,crossedEvents=false,allowOutsideV
 
 function updateTimeline(){
  if(timelineViewportTask!==null)clearTimeout(timelineViewportTask);timelineViewportTask=null;
- const presenting=document.body.classList.contains('presenting');
  const bounds=visibleMapBounds();if(!bounds)return false;
  const ranges=[];
  for(const boat of boats)if(boatIsDisplayed(boat)){
@@ -224,16 +223,16 @@ function updateTimeline(){
  }
  // Events in excluded gaps remain available through event navigation only.
  // Keep a manually selected event's exact time without inserting it into the slider.
- visibleTimeRanges=boatTimeRanges.length?boatTimeRanges:presenting?[{start:D.start,end:viewerEndTime()}]:[];
+ visibleTimeRanges=boatTimeRanges.length?boatTimeRanges:[{start:D.start,end:viewerEndTime()}];
  timelineLength=visibleTimeRanges.reduce((sum,r)=>sum+r.end-r.start+1,0);
  const slider=$('time');slider.min=0;slider.max=Math.max(0,timelineLength-1);slider.step=1;slider.disabled=timelineLength<2;
  // Derived UI never writes replay time or the playback tick timestamp.
  $('time').value=offsetAtTime(selectedTime);$('time').setAttribute('aria-valuetext',fmt(selectedTime));
  syncPlaybackAvailability();
  renderTimelineEvents();
- $('timeWindow').textContent=timelineLength
-  ? `I udsnittet: ${fmt(visibleTimeRanges[0].start)} – ${fmt(visibleTimeRanges.at(-1).end)} · ${visibleTimeRanges.length} ${visibleTimeRanges.length===1?'periode':'perioder'} · skydertrin: 1 sekund · afspilning følger tiden sammenhængende`
-  : isBoatFilterActive()?'Ingen både i filteret passerer dette udsnit. Ret filteret eller zoom ud.':'Ingen både passerer dette udsnit. Zoom ud eller flyt kortet.';
+ srBind($('timeWindow'),'textContent',()=>timelineLength
+  ? srText("I udsnittet: {0} – {1} · {2} {3} · skydertrin: 1 sekund · afspilning følger tiden sammenhængende",fmt(visibleTimeRanges[0].start),fmt(visibleTimeRanges.at(-1).end),visibleTimeRanges.length,visibleTimeRanges.length===1?srText('periode'):srText('perioder'))
+  : isBoatFilterActive()?srText('Ingen både i filteret passerer dette udsnit. Ret filteret eller zoom ud.'):srText('Ingen både passerer dette udsnit. Zoom ud eller flyt kortet.'));
 }
 
 $('time').oninput=()=>seekTimeline(+$('time').value);

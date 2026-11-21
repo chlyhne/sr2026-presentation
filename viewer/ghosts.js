@@ -16,22 +16,22 @@ for(const boat of boats){
 const VIEWER_DATA_END=Math.ceil(Math.max(D.end,...[...ghostClocks.values()].filter(clock=>!clock.error).map(clock=>clock.end+GHOST_FINISH_HOLD)));
 try{
  const stored=JSON.parse(eventStorage.getItem(HANDICAP_TRACKS_KEY)??'false');
- if(typeof stored!=='boolean')throw Error('Ugyldigt valg.');
+ if(typeof stored!=='boolean')throw Error(srText('Ugyldigt valg.'));
  handicapTracksEnabled=stored;
-}catch(error){handicapPreferenceError='Handicapkompenseret spor kunne ikke indlæses: '+error.message;}
+}catch(error){handicapPreferenceError=srText('Handicapkompenseret spor kunne ikke indlæses: ')+error.message;}
 function trackUsesBoatColour(){return handicapTracksEnabled||comparison.boatColour;}
 function trackUsesComparison(){return !handicapTracksEnabled&&comparison.enabled;}
 function syncHandicapTracks(){
  $('handicapCompensatedTracks').checked=handicapTracksEnabled;
  const missing=handicapTracksEnabled?boats.filter(boat=>boatIsDisplayed(boat)&&ghostClocks.get(boat.id).error):[];
- const message=handicapPreferenceError||(missing.length?`Handicapkompensation mangler for ${missing.map(boat=>boat.name).join(', ')}: ${[...new Set(missing.map(boat=>ghostClocks.get(boat.id).error))].join(' · ')}.`:'');
+ const message=handicapPreferenceError||(missing.length?srText("Handicapkompensation mangler for {0}: {1}.",missing.map(boat=>boat.name).join(', '),[...new Set(missing.map(boat=>ghostClocks.get(boat.id).error))].join(' · ')):'');
  if($('ghostStatus').textContent!==message)$('ghostStatus').textContent=message;
  $('ghostStatus').hidden=!message;
 }
 function setHandicapTracks(enabled){
  return changeEventConfiguration(()=>{
-  try{eventStorage.setItem(HANDICAP_TRACKS_KEY,JSON.stringify(enabled));}
-  catch{handicapPreferenceError='Handicapkompenseret spor kunne ikke gemmes.';syncHandicapTracks();return false;}
+  try{if(!openedEvent)eventStorage.setItem(HANDICAP_TRACKS_KEY,JSON.stringify(enabled));}
+  catch{handicapPreferenceError=srText('Handicapkompenseret spor kunne ikke gemmes.');syncHandicapTracks();return false;}
   handicapTracksEnabled=enabled;handicapPreferenceError='';syncHandicapTracks();
   clearTrackHover();comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();
   updateTimeline();requestRender();return true;
@@ -67,4 +67,4 @@ function viewerEndTime(){
 }
 syncNavigationControls();
 
-if(!window.SR_EVENT.features.handicap){handicapTracksEnabled=false;$('trackStyle').querySelector('option[value="handicap"]').disabled=true;$('handicapCompensatedTracks').checked=false;$('handicapCompensatedTracks').disabled=true;$('handicapCompensatedTracks').title='Stævnet har ikke handicapdata';}
+if(!window.SR_EVENT.features.handicap){handicapTracksEnabled=false;$('trackStyle').querySelector('option[value="handicap"]').disabled=true;$('handicapCompensatedTracks').checked=false;$('handicapCompensatedTracks').disabled=true;$('handicapCompensatedTracks').title=srText('Stævnet har ikke handicapdata');}

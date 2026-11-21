@@ -1,3 +1,4 @@
+import '../viewer/i18n-messages.js';
 import eventCatalog from '../viewer/events/catalog.json' with {type:'json'};
 const encoder = new TextEncoder(), decoder = new TextDecoder();
 const SESSION = '__Host-sr-session', OAUTH = '__Host-sr-oauth';
@@ -133,20 +134,23 @@ async function getDocument(env, token, documentPath) {
 async function putContent(env, token, path, content, message, sha) {
   return (await github(contentsPath(env, path), token, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({branch: branch(env), message, content: b64(content), ...(sha ? {sha} : {})})})).json();
 }
-async function routes(request, env) {
+const supportedLanguage=language=>language==='da'||globalThis.SR_MESSAGE_LANGUAGES.includes(language);
+async function routes(request, env, locale) {
   const url = new URL(request.url), path = url.pathname, method = request.method;
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) checkOrigin(request);
   if (method === 'GET' && path === '/auth/login') {
     if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) fail(503, 'GitHub-login er ikke konfigureret.');
     const state = random(), verifier = random(), eventId=url.searchParams.get('event');
     if(eventId&&!eventCatalog.events.some(event=>event.id===eventId))fail(400,'Ukendt stævne.');
+    const language=url.searchParams.get('lang');
     const challenge = url64(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier))));
     const destination = new URL('https://github.com/login/oauth/authorize');
     destination.search = new URLSearchParams({client_id: env.GITHUB_CLIENT_ID, redirect_uri: `${url.origin}/auth/callback`, state, code_challenge: challenge, code_challenge_method: 'S256'});
-    return new Response(null, {status: 302, headers: {Location: destination.href, 'Set-Cookie': cookie(OAUTH, await seal({state, verifier, ...(eventId?{eventId}:{}), exp: now() + 600}, env, 'oauth'), 600), 'Cache-Control': 'no-store'}});
+    return new Response(null, {status: 302, headers: {Location: destination.href, 'Set-Cookie': cookie(OAUTH, await seal({state, verifier, ...(eventId?{eventId}:{}), ...(supportedLanguage(language)?{language}:{}), exp: now() + 600}, env, 'oauth'), 600), 'Cache-Control': 'no-store'}});
   }
   if (method === 'GET' && path === '/auth/callback') {
     const pending = await unseal(cookies(request)[OAUTH], env, 'oauth');
+    if (supportedLanguage(pending?.language)) locale.language=pending.language;
     if (!pending || !url.searchParams.get('code') || url.searchParams.get('state') !== pending.state) fail(400, 'Loginforsøget er udløbet eller ugyldigt. Prøv igen.');
     const response = await fetch('https://github.com/login/oauth/access_token', {method: 'POST', headers: {'Content-Type': 'application/json', Accept: 'application/json'}, body: JSON.stringify({client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code: url.searchParams.get('code'), code_verifier: pending.verifier, redirect_uri: `${url.origin}/auth/callback`})});
     const token = await response.json();
@@ -156,7 +160,8 @@ async function routes(request, env) {
     const maxAge = Math.max(1, Math.min(8 * 3600, Number(token.expires_in) || 8 * 3600));
     const value = await seal({id: user.id, token: token.access_token, exp: now() + maxAge}, env, 'session');
     if (value.length > 3800) fail(502, 'GitHub-sessionen kunne ikke oprettes.');
-    const headers = new Headers({Location: pending.eventId?'/admin/events/'+encodeURIComponent(pending.eventId)+'/':'/admin/', 'Cache-Control': 'no-store'});
+    const location=pending.eventId?'/admin/events/'+encodeURIComponent(pending.eventId)+'/':'/admin/';
+    const headers = new Headers({Location: location+(pending.language?'?lang='+pending.language:''), 'Cache-Control': 'no-store'});
     headers.append('Set-Cookie', cookie(SESSION, value, maxAge)); headers.append('Set-Cookie', cookie(OAUTH, '', 0));
     return new Response(null, {status: 302, headers});
   }
@@ -222,15 +227,21 @@ async function routes(request, env) {
 export default {
   async fetch(request, env) {
     let response;
+    const locale={language:new URL(request.url).searchParams.get('lang')};
     try {
       if (request.method === 'HEAD') {
         const path = new URL(request.url).pathname;
         if (!(path === '/' || path === '/admin' || path.startsWith('/admin/'))) fail(405, 'Metoden understøttes ikke.');
-        response = await routes(new Request(request.url, {method: 'GET', headers: request.headers}), env);
+        response = await routes(new Request(request.url, {method: 'GET', headers: request.headers}), env, locale);
         response = new Response(null, {status: response.status, headers: response.headers});
-      } else response = await routes(request, env);
+      } else response = await routes(request, env, locale);
     }
-    catch (error) { response = json({error: error.status ? error.message : 'Serveren kunne ikke gennemføre handlingen.'}, error.status || 500); }
+    catch (error) {
+      const message=error.status?error.message:'Serveren kunne ikke gennemføre handlingen.';
+      const translated=globalThis.SR_MESSAGES[message];
+      const text=translated?.[globalThis.SR_MESSAGE_LANGUAGES.indexOf(locale.language)];
+      response=json({error:text??message},error.status||500);
+    }
     const headers = new Headers(response.headers);
     headers.set('X-Content-Type-Options', 'nosniff'); headers.set('Referrer-Policy', 'no-referrer');
     headers.set('X-Frame-Options', 'DENY');

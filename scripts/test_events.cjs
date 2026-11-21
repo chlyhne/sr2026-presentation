@@ -1,3 +1,4 @@
+const viewerTestContext=require('./viewer-test-locale.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{test}=require('node:test');
 const catalog=JSON.parse(fs.readFileSync('viewer/events/catalog.json','utf8'));
 const bridgeData=JSON.parse(fs.readFileSync('viewer/bridges.geojson','utf8'));
@@ -5,7 +6,7 @@ const configs=new Map(catalog.events.map(e=>[e.id,e]));
 function storage(){const values={};Object.defineProperties(values,{getItem:{value:k=>values[k]??null},setItem:{value:(k,v)=>{values[k]=String(v);}},removeItem:{value:k=>{delete values[k];}}});return values;}
 async function load(id,shared){
  const select={replaceChildren(){},value:''},location={href:'http://localhost/events/'+id+'/',search:''};
- const context=vm.createContext({URL,URLSearchParams,Option:class{},window:{},localStorage:shared,location,noteNavigationAllowed:()=>true,document:{baseURI:'http://localhost/',documentElement:{dataset:{eventId:id}},title:'',getElementById:key=>key==='eventSelect'?select:{firstChild:{textContent:''},textContent:''}},fetch:async file=>({ok:true,json:async()=>file==='events/catalog.json'?catalog:bridgeData})});
+ const context=viewerTestContext({URL,URLSearchParams,Option:class{},window:{},localStorage:shared,location,noteNavigationAllowed:()=>true,document:{baseURI:'http://localhost/',querySelector:()=>({}),documentElement:{dataset:{eventId:id}},title:'',getElementById:key=>key==='eventSelect'?select:{firstChild:{textContent:''},textContent:''}},fetch:async file=>({ok:true,json:async()=>file==='events/catalog.json'?catalog:bridgeData})});
  vm.runInContext(fs.readFileSync('viewer/event-selection.js','utf8'),context);await context.loadEventSelection();return {context,select,location};
 }
 test('stævner isolate storage and explicitly migrate existing Sjælland Rundt annotations',async()=>{
@@ -59,7 +60,7 @@ test('landing builds event cards without loading tracks and redirects old explic
   const nodes=new Map(),make=()=>({children:[],append(...items){this.children.push(...items);},setAttribute(){}});
   const document={baseURI:'https://example.com/repo/',getElementById:id=>{if(!nodes.has(id))nodes.set(id,make());return nodes.get(id);},createElement:make};
   const calls=[],location={search,replace(url){this.redirect=url;}};
-  const context=vm.createContext({document,location,URL,URLSearchParams,fetch:async url=>{calls.push(url);return {ok:true,json:async()=>catalog};}});
+  const context=viewerTestContext({document,location,URL,URLSearchParams,fetch:async url=>{calls.push(url);return {ok:true,json:async()=>catalog};}});
   vm.runInContext(fs.readFileSync('viewer/event-selection.js','utf8'),context);
   await vm.runInContext(fs.readFileSync('viewer/landing.js','utf8'),context);
   assert.deepEqual(calls,['events/catalog.json']);
@@ -238,4 +239,206 @@ test('new Lillebaelt deck aligns through both pylon centres with equal end spans
  assert.ok(Math.abs(positions[0]-fit.end_span_metres)<.002);
  const source=bridgeData.features.find(f=>f.properties.bridge==='lillebaelt-new'&&f.geometry.type==='LineString').geometry.coordinates.map(metric);
  assert.ok(Math.abs(length-Math.hypot(source[1][0]-source[0][0],source[1][1]-source[0][1]))<.002);
+});
+
+test('the tracker has separate selectors for the stævne and the presentation event',()=>{
+ const html=fs.readFileSync('viewer/tracker.html','utf8');
+ const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]);
+ assert.equal(new Set(ids).size,ids.length);
+ assert.ok(ids.includes('eventSelect'));
+ assert.ok(ids.includes('presentationEventSelect'));
+});
+
+test('event scene changes stay in the preview until captured and undo leaves content edits intact',()=>{
+ const source=fs.readFileSync('viewer/presentation.js','utf8'),nodes=new Map(),writes=[];
+ const note={time:10,text:'Original',view:[0,0,100,100],settings:{boats:[],boatSearchQuery:'',boatFavouritesOnly:false,wind:false}};
+ const copy=value=>JSON.parse(JSON.stringify(value));
+ const context=viewerTestContext({
+  $:id=>{if(!nodes.has(id))nodes.set(id,{setAttribute(){}});return nodes.get(id);},window:{SR_READONLY:false},
+  openedEvent:note,editingNote:note,newEventDraft:null,interval:null,notes:[note],view:[0,0,100,100],
+  sceneCameraBaseline:[0,0,100,100],sceneCameraEdited:false,followedScene:false,followedBoatId:null,
+  sceneUndo:null,sceneFeedback:'',boatSearchQuery:'',boats:[{name:'Alpha'},{name:'Beta'}],
+  boatIsDisplayed:boat=>boat.name==='Alpha',previewSettings:{...note.settings},EVENT_LAYER_KEYS:['wind'],
+  eventToolsVisible:()=>true,setBoatListText:(node,value)=>{node.textContent=value;},
+  eventSettings:settings=>settings,eventGates:()=>[],eventMeasurement:()=>[],
+  currentMeasurement:()=>[],currentGateMeasurement:()=>[],
+  validatedEventVideo:()=>null,persistNotes:next=>{writes.push(copy(next));return true;},
+  restoreNote(){},finishInlineTextEditing:()=>true,updateTimeline(){},requestRender(){}
+ });
+ vm.runInContext(`
+  function sceneSettings(){return {...previewSettings};}
+  function applySceneSettings(settings){previewSettings={...settings};boatSearchQuery=settings.boatSearchQuery;}
+ `,context);
+ vm.runInContext(source.slice(source.indexOf('function eventHasContent('),source.indexOf('function sceneSettings()')),context);
+ vm.runInContext(source.slice(source.indexOf('function captureScene('),source.indexOf('function restoreNote(')),context);
+ vm.runInContext("view=[-10,-20,80,80];markEventCameraChange();previewSettings.wind=true;previewSettings.boatSearchQuery=boatSearchQuery='alpha';updateEventSceneControls()",context);
+ assert.equal(writes.length,0);
+ assert.match(nodes.get('eventSceneStatus').textContent,/Udsnit · Både · Lag · 1 båd/);
+ nodes.get('captureEventScene').onclick();
+ assert.equal(writes.length,1);
+ assert.deepEqual(writes[0][0].view,[-10,-20,80,80]);
+ assert.deepEqual(writes[0][0].settings.boats,['Alpha']);
+ assert.equal(writes[0][0].settings.boatSearchQuery,'');
+ context.updateEventContent(note,{text:'Ny tekst'});
+ nodes.get('undoEventScene').onclick();
+ assert.equal(writes.length,3);
+ assert.equal(writes[2][0].text,'Ny tekst');
+ assert.deepEqual(writes[2][0].view,[0,0,100,100]);
+ assert.equal(writes[2][0].settings.wind,false);
+});
+
+test('layout resize preserves the preview centre and geographic scale',()=>{
+ const source=fs.readFileSync('viewer/presentation.js','utf8'),context=viewerTestContext({});
+ vm.runInContext(source.slice(source.indexOf('function resizedSceneCamera('),source.indexOf('function resizeEventSceneBaseline(')),context);
+ const rect={width:800,height:600},changed={width:500,height:600},view=[100,200,200,300];
+ const next=[...context.resizedSceneCamera(view,rect,changed)];
+ assert.deepEqual(next,[75,200,250,300]);
+ assert.equal(Math.max(next[2]/changed.width,next[3]/changed.height),Math.max(view[2]/rect.width,view[3]/rect.height));
+});
+
+test('an edit made while publishing stays in the draft under the published revision',async()=>{
+ const source=fs.readFileSync('viewer/online.js','utf8'),buttons=new Map(),draft=storage();
+ let release,submitted;
+ const context=viewerTestContext({
+  notes:[{time:10,text:'Til udgivelse'}],speedPins:[],eventImageUploads:new Map(),eventStorage:draft,
+  window:{SR_CONFIG:{admin:true,apiBase:''},SR_SHA:'version-a',SR_DRAFT_KEY:'draft'},
+  document:{
+   body:{append(){}},
+   createElement:()=>({setAttribute(){}}),
+   querySelector:()=>({after(){},append(button){buttons.set(button.textContent,button);}})
+  },
+  showPresentationEvent(){},eventAPI:path=>path,noteNavigationAllowed:()=>true,
+  fetch:(path,request)=>{
+   assert.equal(path,'/api/presentation');
+   submitted=JSON.parse(request.body);
+   return new Promise(resolve=>{release=resolve;});
+  }
+ });
+ vm.runInContext(source,context);
+ const publishing=buttons.get('Udgiv').onclick();
+ assert.equal(submitted.document.notes[0].text,'Til udgivelse');
+ context.notes[0].text='Rettet under udgivelse';
+ release({ok:true,json:async()=>({sha:'version-b'})});
+ await publishing;
+ assert.deepEqual(JSON.parse(draft.getItem('draft')),{
+  sha:'version-b',document:{version:1,notes:[{time:10,text:'Rettet under udgivelse'}],speedPins:[]}
+ });
+});
+
+test('the layer menu only offers wind, radar and grid switches',()=>{
+ const html=fs.readFileSync('viewer/tracker.html','utf8');
+ const panel=html.match(/<div id="mapLayersPanel"[^>]*>([\s\S]*?)<\/div>/)?.[1];
+ assert.ok(panel);
+ const controls=[...panel.matchAll(/<(input|button|select)\b[^>]*\bid="([^"]+)"/g)].map(match=>match[2]);
+ assert.deepEqual(controls,['wind','rain','grid']);
+});
+
+test('deleting the opened event saves the remaining notes and selects the following event',()=>{
+ const source=fs.readFileSync('viewer/presentation.js','utf8'),nodes=new Map();
+ const first={time:1},current={time:2},next={time:3};
+ const context=viewerTestContext({
+  $:id=>{if(!nodes.has(id))nodes.set(id,{focus(){},setAttribute(){}});return nodes.get(id);},
+  notes:[first,current,next],editingNote:current,newEventDraft:null,
+  finishInlineTextEditing:()=>true,confirm:()=>false,
+  persistNotes(remaining){context.saved=[...remaining];return true;},
+  leaveOpenedEvent(){},refreshEditedEvent(){},restoreNote(note){context.opened=note;}
+ });
+ vm.runInContext(source.slice(source.indexOf("$('deleteNote').onclick"),source.indexOf("$('placeNote').onclick")),context);
+ nodes.get('deleteNote').onclick();
+ assert.equal(context.saved,undefined);
+ context.confirm=()=>true;
+ nodes.get('deleteNote').onclick();
+ assert.deepEqual(context.saved,[first,next]);
+ assert.equal(context.opened,next);
+});
+
+test('language choice updates visible text, accessibility labels and switcher links',()=>{
+ const source=['i18n-messages','i18n'].map(name=>fs.readFileSync('viewer/'+name+'.js','utf8')).join('\n');
+ const langKey='sr-language',preference=storage(),listeners=new Map();
+ preference.setItem(langKey,'en');
+ const heading={childNodes:[{nodeType:3,data:'Brug i eventet'}]};
+ const field={dataset:{i18nAttrs:'aria-label title'},attrs:{'aria-label':'Forrige event',title:'Forrige event'},
+  getAttribute(name){return this.attrs[name];},setAttribute(name,value){this.attrs[name]=value;}};
+ const button={setAttribute(name,value){this[name]=value;},focus(){this.focused=true;}};
+ const choices=['da','en','de','fr'].map(lang=>({lang,setAttribute(name,value){this[name]=value;},removeAttribute(name){delete this[name];}}));
+ const panel={hidden:true,querySelectorAll:()=>choices};
+ const picker={querySelector:query=>query==='button'?button:panel,contains:node=>node===button};
+ const url='http://localhost/events/silverrudder-2025/?editRoute=1&lang=de#map';
+ const dynamic={textContent:'',setAttribute(){}},location={href:url};
+ const document={baseURI:'http://localhost/',documentElement:{},
+  querySelectorAll:selector=>({'[data-i18n]':[heading],'[data-i18n-attrs]':[field],'[data-language-picker]':[picker],'[data-i18n-live]':[dynamic]})[selector],
+  addEventListener:(type,callback)=>listeners.set(type,callback)};
+ const history={state:{kept:true},replaceState(state,title,next){assert.deepEqual(state,this.state);location.href=next.href;}};
+ const context=vm.createContext({document,location,history,localStorage:preference,URL,Node:{TEXT_NODE:3}});
+ vm.runInContext(source,context);
+ assert.equal(document.documentElement.lang,'de');
+ assert.equal(preference.getItem(langKey),'de');
+ assert.equal(heading.childNodes[0].data,'Für Ereignis übernehmen');
+ assert.deepEqual(field.attrs,{'aria-label':'Vorheriges Ereignis',title:'Vorheriges Ereignis'});
+ assert.equal(button.textContent,'🇩🇪');
+ assert.equal(choices[2]['aria-current'],'true');
+ assert.equal(choices[1].href.href,'http://localhost/events/silverrudder-2025/?editRoute=1&lang=en#map');
+ assert.equal(context.srLanguageURL('events/sjaelland-rundt-2026/').search,'?lang=de');
+ assert.equal(context.srText('Event {0} af {1}',3,8),'Ereignis 3 von 8');
+ button.onclick();
+ assert.equal(panel.hidden,false);
+ listeners.get('keydown')({key:'Escape',preventDefault(){},stopImmediatePropagation(){}});
+ assert.equal(panel.hidden,true);
+ assert.equal(button.focused,true);
+ const error=vm.runInContext("new SRMessageError('Billedet kunne ikke klargøres.')",context);
+ context.srBind(dynamic,'textContent',()=>context.srErrorText(error));
+ assert.equal(dynamic.textContent,'Bild konnte nicht vorbereitet werden.');
+ choices[1].onclick({preventDefault(){}});
+ assert.equal(document.documentElement.lang,'en');
+ assert.equal(heading.childNodes[0].data,'Use in event');
+ assert.equal(field.attrs['aria-label'],'Previous event');
+ assert.equal(dynamic.textContent,'Could not prepare the image.');
+ assert.equal(button.textContent,'🇬🇧');
+ assert.equal(choices[2]['aria-current'],undefined);
+ assert.equal(choices[1]['aria-current'],'true');
+ assert.equal(location.href,'http://localhost/events/silverrudder-2025/?editRoute=1&lang=en#map');
+ choices[0].onclick({preventDefault(){}});
+ assert.equal(heading.childNodes[0].data,'Brug i eventet');
+ assert.equal(dynamic.textContent,'Billedet kunne ikke klargøres.');
+ assert.equal(button.textContent,'🇩🇰');
+ choices[2].onclick({preventDefault(){}});
+ assert.equal(document.documentElement.lang,'de');
+ choices[3].onclick({preventDefault(){}});
+ assert.equal(document.documentElement.lang,'fr');
+ assert.equal(button.textContent,'🇫🇷');
+ assert.equal(heading.childNodes[0].data,'Utiliser pour l’événement');
+ assert.equal(field.attrs['aria-label'],'Événement précédent');
+ assert.equal(dynamic.textContent,'Impossible de préparer l’image.');
+ assert.equal(context.srText('Event {0} af {1}',3,8),'Événement 3 sur 8');
+ assert.equal(context.srLanguageURL('events/sjaelland-rundt-2026/').search,'?lang=fr');
+
+ document.querySelectorAll=()=>[];
+ context.location.href='http://localhost/?lang=unsupported';
+ const remembered=vm.createContext({document,location:context.location,localStorage:preference,URL});
+ vm.runInContext(source,remembered);
+ assert.equal(document.documentElement.lang,'fr');
+});
+
+test('translated labels never replace the saved comparison identifiers',()=>{
+ const source=fs.readFileSync('viewer/navigation.js','utf8');
+ for(const [language,label] of Object.entries({en:'Delete event',de:'Ereignis löschen',fr:'Supprimer l’événement'})){
+  const context=viewerTestContext({},language);
+  vm.runInContext(source.slice(source.indexOf('function validComparison('),source.indexOf('let comparison=')),context);
+  assert.equal(context.validComparison({enabled:true,basis:'handicap',boatColour:false}),true);
+  assert.equal(context.srText('Slet event'),label);
+  assert.equal(context.srText('En båd ved broen'),'En båd ved broen');
+ }
+});
+
+test('every translation keeps the placeholders of its Danish key',()=>{
+ const context=viewerTestContext();
+ const all=vm.runInContext('SR_MESSAGES',context),languages=vm.runInContext('SR_MESSAGE_LANGUAGES',context);
+ const placeholders=message=>[...new Set(message.match(/\{\d+\}/g)||[])].sort();
+ for(const [key,translations] of Object.entries(all)){
+  assert.equal(translations.length,languages.length);
+  for(const value of translations){
+   assert.ok(value.trim(),key);
+   assert.deepEqual(placeholders(value),placeholders(key),key);
+  }
+ }
 });

@@ -8,7 +8,7 @@ const militaryHatch=el('pattern',{id:'militaryHatch',width:8,height:8,patternUni
 el('path',{d:'M -2 2 L 2 -2 M 0 8 L 8 0 M 6 10 L 10 6',stroke:'#000000','stroke-width':1.2,opacity:.7},militaryHatch);
 let militaryKey=null;
 function renderMilitary(){
- const layer=$('militaryAreas'),enabled=$('military').checked;
+ const layer=$('militaryAreas'),enabled=sceneOverlays.military;
  setAttr(layer,'display',enabled?'inline':'none');
  if(!enabled)return;
  const bounds=visibleMapBounds(),matrix=mapViewport()?.matrix;if(!bounds||!matrix)return;
@@ -21,11 +21,9 @@ function renderMilitary(){
   if(feature.node){if(!feature.node.parentNode)layer.append(feature.node);continue;}
   const group=el('g',{'data-military-id':feature.id,'aria-label':feature.properties.name},layer);
   feature.node=group;
-  el('title',{},group).textContent=feature.properties.name+' · områdets afgrænsning';
+  srBind(el('title',{},group),'textContent',()=>feature.properties.name+srText(' · områdets afgrænsning'));
   el('path',{d:feature.d,fill:'#000000','fill-opacity':.035,stroke:'none','fill-rule':'evenodd'},group);
   el('path',{d:feature.d,fill:'url(#militaryHatch)','fill-rule':'evenodd',stroke:'#000000',
    'stroke-width':1.4,'stroke-linejoin':'round','vector-effect':'non-scaling-stroke'},group);
  }
 }
-$('military').onchange=renderMilitary;
-if(!militaryFeatures.length){$('military').checked=false;$('military').disabled=true;$('militaryInfo').textContent='Skydeområdets afgrænsning er ikke indlæst.';}

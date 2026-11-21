@@ -1,8 +1,8 @@
 const trafficFeatures=D.traffic_separation.features.map(feature=>{
- if(feature.properties.kind!=='restricted_area')throw Error('Trafikseparering mangler forberedt områdeflade.');
+ if(feature.properties.kind!=='restricted_area')throw Error(srText('Trafikseparering mangler forberedt områdeflade.'));
  const geometry=feature.geometry;
  const polygons=geometry.type==='Polygon'?[geometry.coordinates]:geometry.type==='MultiPolygon'?geometry.coordinates:null;
- if(!polygons)throw Error('Ugyldig områdeflade for trafikseparering.');
+ if(!polygons)throw Error(srText('Ugyldig områdeflade for trafikseparering.'));
  const lines=polygons.flat();
  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;
  for(const line of lines)for(const [lon,lat] of line){west=Math.min(west,lon);east=Math.max(east,lon);south=Math.min(south,lat);north=Math.max(north,lat);}
@@ -12,7 +12,7 @@ const trafficHatch=el('pattern',{id:'trafficHatch',width:8,height:8,patternUnits
 el('path',{d:'M -2 2 L 2 -2 M 0 8 L 8 0 M 6 10 L 10 6',stroke:'#000000','stroke-width':1.2,opacity:.7},trafficHatch);
 let trafficKey=null;
 function renderTraffic(){
- const layer=$('trafficSeparation'),enabled=$('traffic').checked;
+ const layer=$('trafficSeparation'),enabled=sceneOverlays.traffic;
  setAttr(layer,'display',enabled?'inline':'none');
  if(!enabled)return;
  const bounds=visibleMapBounds(),viewport=mapViewport();if(!bounds||!viewport)return;
@@ -34,4 +34,3 @@ function renderTraffic(){
   if(!feature.node.parentNode)layer.append(feature.node);
  }
 }
-$('traffic').onchange=renderTraffic;

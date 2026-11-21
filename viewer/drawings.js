@@ -2,9 +2,7 @@
 let drawingTool='pan',drawingGesture=null;
 const DRAWING_TOOLS=new Set(['pen','arrow','line','circle']);
 function noteIsVisible(note){
- if(!$('annotationsVisible').checked||note.time!==currentTime())return false;
- if(editingNote)return note===editingNote;
- return !document.body.classList.contains('presenting')||note===activePresentationNote;
+ return (sceneOverlays.annotationsVisible||drawingTool!=='pan')&&note.time===currentTime()&&note===activePresentationNote;
 }
 function validDrawing(d){
  return d&&DRAWING_TOOLS.has(d.tool)&&/^#[0-9a-f]{6}$/i.test(d.colour)
@@ -32,37 +30,36 @@ function drawNoteShape(d,parent){
 }
 function renderNoteDrawings(){
  const layer=$('noteDrawings');layer.replaceChildren();
- for(const [i,saved] of notes.entries()){
-  if(!noteIsVisible(saved))continue;
-  const note=saved===editingNote?eventDraft:saved;
-  if(!Array.isArray(note.drawings)||!note.drawings.length)continue;
-  const group=el('g',{'data-drawing-note-index':i},layer);
-  for(const shape of note.drawings)drawNoteShape(shape,group);
+ const note=newEventDraft||activePresentationNote;
+ if(note&&(note===newEventDraft||noteIsVisible(note))){
+  const i=notes.indexOf(note);
+  if(note.drawings?.length){
+   const group=el('g',{'data-drawing-note-index':i},layer);
+   for(const shape of note.drawings)drawNoteShape(shape,group);
+  }
  }
  renderDrawingPreview();
 }
 function renderDrawingPreview(){
  $('drawingPreview').replaceChildren();
- if(drawingGesture&&$('annotationsVisible').checked)drawNoteShape(drawingGesture.shape,$('drawingPreview'));
+ if(drawingGesture)drawNoteShape(drawingGesture.shape,$('drawingPreview'));
 }
 function updateDrawingControls(){
- const count=Array.isArray(eventDraft?.drawings)?eventDraft.drawings.length:0;
+ const count=editingNote?.drawings?.length??0;
  $('undoDrawing').disabled=$('clearDrawings').disabled=count===0;
- $('drawingCount').textContent=`${count} ${count===1?'tegning':'tegninger'} til denne note`;
+ $('drawingCount').textContent=srText("{0} {1} til denne note",count,count===1?srText('tegning'):srText('tegninger'));
 }
 function setDrawingTool(tool){
  cancelDrawingGesture();drawingTool=DRAWING_TOOLS.has(tool)?tool:'pan';
- $('drawingTool').value=drawingTool;$('map').classList.toggle('drawing',drawingTool!=='pan');
+ if(drawingTool!=='pan')$('drawingTool').value=drawingTool;$('map').classList.toggle('drawing',drawingTool!=='pan');
 }
 function mapDrawingPoint(e,inverse){
  const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(inverse);return [p.x,p.y];
 }
 function beginDrawingGesture(e){
  if(drawingGesture){e.preventDefault();return true;}
- if(!editingNote||drawingTool==='pan'||placingNote||document.body.classList.contains('presenting'))return false;
+ if(!editingNote||drawingTool==='pan'||placingNote)return false;
  e.preventDefault();stopPlayback();
- if(!stageEventSettings(editingNote,{annotationsVisible:true}))return true;
- $('annotationsVisible').checked=true;
  const inverse=mapViewport().inverse,point=mapDrawingPoint(e,inverse);
  drawingGesture={pointerId:e.pointerId,inverse,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false,
   shape:{tool:drawingTool,colour:$('drawingColour').value,width:+$('drawingWidth').value,points:[point,point]}};
@@ -90,7 +87,7 @@ function endDrawingGesture(e){
   if(gesture.moved){
    const point=mapDrawingPoint(e,gesture.inverse);
    if(gesture.shape.tool==='pen')gesture.shape.points.push(point);else gesture.shape.points[1]=point;
-   stageEventChanges(editingNote,{drawings:[...(eventDraft.drawings||[]),gesture.shape]});
+   updateEventContent(editingNote,{drawings:[...(editingNote.drawings||[]),gesture.shape]});
   }
  }
  cancelDrawingGesture();updateDrawingControls();renderAnnotations();return true;
@@ -103,8 +100,17 @@ function cancelDrawingGesture(){
 }
 $('drawingTool').onchange=()=>{cancelPlacement();setDrawingTool($('drawingTool').value);};
 $('undoDrawing').onclick=()=>{
- if(!editingNote)return;cancelDrawingGesture();stageEventChanges(editingNote,{drawings:(eventDraft.drawings||[]).slice(0,-1)});updateDrawingControls();renderAnnotations();
+ if(!editingNote)return;cancelDrawingGesture();updateEventContent(editingNote,{drawings:(editingNote.drawings||[]).slice(0,-1)});updateDrawingControls();renderAnnotations();
 };
 $('clearDrawings').onclick=()=>{
- if(!editingNote)return;cancelDrawingGesture();stageEventChanges(editingNote,{drawings:[]});updateDrawingControls();renderAnnotations();
+ if(!editingNote)return;cancelDrawingGesture();updateEventContent(editingNote,{drawings:[]});updateDrawingControls();renderAnnotations();
 };
+
+$('startDrawing').onclick=()=>{
+ if(!editingNote||!finishInlineTextEditing())return;
+ if(drawingTool!=='pan'){endEventTool();requestRender();return;}
+ stopPlayback();cancelPlacement();if(navigationMode)cancelMapLine();hideMapEventImage();followedBoatId=null;
+ setDrawingTool($('drawingTool').value);$('drawingTools').hidden=false;
+ $('startDrawing').setAttribute('aria-expanded','true');requestRender();
+};
+$('finishDrawing').onclick=()=>{endEventTool();$('startDrawing').focus();requestRender();};

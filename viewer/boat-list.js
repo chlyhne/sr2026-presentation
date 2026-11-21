@@ -29,7 +29,7 @@ window.addEventListener('blur',clearBoatHoverPointer);
 $('visibleBoatsPanel').addEventListener('scroll',scheduleBoatHoverRefresh,{passive:true});
 // Measure fixed text once. Layout and animation never run on playback ticks.
 const boatDetailMeasure=document.createElement('canvas').getContext('2d');
-if(!boatDetailMeasure)throw Error('Bådlistens tekstbredder kunne ikke måles.');
+if(!boatDetailMeasure)throw Error(srText('Bådlistens tekstbredder kunne ikke måles.'));
 boatDetailMeasure.font='11px system-ui';
 const boatDetailSegments=new Intl.Segmenter('da',{granularity:'grapheme'}),boatDetailMetrics=new Map(),boatDetailLayouts=new Map();
 function boatDetailWidths(text){
@@ -40,7 +40,7 @@ function boatDetailWidths(text){
  }
  return boatDetailMetrics.get(text);
 }
-for(const boat of boats){boatDetailWidths(boat.skipper||'Ikke oplyst');boatDetailWidths(boat.boatType||boat.metadata.boatType||'Ikke oplyst');}
+for(const boat of boats){boatDetailWidths(boat.skipper||srText('Ikke oplyst'));boatDetailWidths(boat.boatType||boat.metadata.boatType||srText('Ikke oplyst'));}
 function allocateBoatDetailWidths(left,right,width){
  const a=left.at(-1),b=right.at(-1);
  if(a+b<=width)return [a,width-a];
@@ -82,14 +82,14 @@ function syncBoatRaceControls(){
  if(key===boatRaceControlsKey)return;boatRaceControlsKey=key;
  $('boatCourseSelect').value=boatCourseFilter;
  const classes=boatCourseFilter?boatRaceClasses.get(boatCourseFilter):new Map([...boatRaceClasses.values()].flatMap(classes=>[...classes]));
- $('boatClassSelect').replaceChildren(new Option('Alle løb',''),...[...classes].sort((a,b)=>a[1].localeCompare(b[1],'da',{numeric:true})).map(([id,name])=>new Option(name,id)));
+ $('boatClassSelect').replaceChildren(new Option(srText('Alle løb'),''),...[...classes].sort((a,b)=>a[1].localeCompare(b[1],srLocale,{numeric:true})).map(([id,name])=>new Option(name,id)));
  $('boatClassSelect').value=boatClassFilter;
- $('boatCourseSelect').title='Bane: '+$('boatCourseSelect').selectedOptions[0].textContent;
- $('boatClassSelect').title='Løb: '+$('boatClassSelect').selectedOptions[0].textContent;
+ $('boatCourseSelect').title=srText('Bane: ')+$('boatCourseSelect').selectedOptions[0].textContent;
+ $('boatClassSelect').title=srText('Løb: ')+$('boatClassSelect').selectedOptions[0].textContent;
 }
 function orderedListBoats(){
  if(boats.length!==boatListSource.length||boats.some((boat,i)=>boat!==boatListSource[i])){
-  boatListSource=boats.slice();boatListOrder=boats.slice().sort((a,b)=>a.name.localeCompare(b.name,'da'));
+  boatListSource=boats.slice();boatListOrder=boats.slice().sort((a,b)=>a.name.localeCompare(b.name,srLocale));
  }
  return boatListOrder;
 }
@@ -110,14 +110,13 @@ function refreshVisibleBoatHighlight(){
 }
 const expandedBoatRows=new Set();
 function setLocalBoatColour(boat,colour){
- if(!/^#[0-9a-f]{6}$/i.test(colour))throw Error('Ugyldig bådfarve.');
+ if(!/^#[0-9a-f]{6}$/i.test(colour))throw Error(srText('Ugyldig bådfarve.'));
  localBoatColours[boat.id]=colour;eventStorage.setItem(BOAT_COLOURS_KEY,JSON.stringify(localBoatColours));
  colours[boat.name]=colour;
  const rgb=[1,3,5].map(start=>parseInt(colour.slice(start,start+2),16)/255);
  webglTracks.boatColours.set(colour,new Float32Array(rgb));webglTracks.lastKey=null;boatCompareRenderKey='';
  const row=visibleBoatRows.get(boat.id);
  if(row){row.node.style.setProperty('--boat-colour',colour);row.colour.value=colour;}
- for(const label of $('choices').children)if(label.querySelector('input').value===boat.name)label.querySelector('.dot').style.background=colour;
  requestRender();
 }
 function toggleBoatRow(row){
@@ -150,9 +149,9 @@ function createVisibleBoatRow(boat){
  skipperField.append(skipper);typeField.append(type);details.append(skipperField,separator,typeField);
  const extra=document.createElement('div');extra.className='visible-boat-extra';extra.id='boat-details-'+boat.id;
  extra.hidden=!expandedBoatRows.has(boat.id);node.setAttribute('aria-expanded',String(!extra.hidden));node.setAttribute('aria-controls',extra.id);
- const raceClass=document.createElement('div');raceClass.className='visible-boat-class';raceClass.textContent='Klasse: '+(boat.raceClassName||'Ikke oplyst');
- const colourLabel=document.createElement('label');colourLabel.className='visible-boat-colour';colourLabel.append(document.createTextNode('Bådfarve'));
- const colour=document.createElement('input');colour.type='color';colour.setAttribute('aria-label','Bådfarve: '+boat.name);
+ const raceClass=document.createElement('div');raceClass.className='visible-boat-class';srBind(raceClass,'textContent',()=>srText('Klasse: ')+(boat.raceClassName||srText('Ikke oplyst')));
+ const colourLabel=document.createElement('label');colourLabel.className='visible-boat-colour';const colourCaption=document.createElement('span');srBind(colourCaption,'textContent',()=>srText('Bådfarve'));colourLabel.append(colourCaption);
+ const colour=document.createElement('input');colour.type='color';srBindAttribute(colour,'aria-label',()=>srText('Bådfarve: ')+boat.name);
  boatDetailMeasure.fillStyle=colours[boat.name];colour.value=boatDetailMeasure.fillStyle;
  colour.oninput=()=>setLocalBoatColour(boat,colour.value);colourLabel.append(colour);extra.append(raceClass,colourLabel);
  heartLabel.append(choice,heart);heading.append(heartLabel,name,speed);node.append(heading,details,extra);
@@ -197,17 +196,17 @@ function updateVisibleBoats(time=currentTime()){
   if(!boatIsDisplayed(boat))continue;
   const position=$('visibleBoatsPanel').hidden?null:displayBoatPosition(boat,time);
   const sample=position?trackSpeedSample(boat,position.interpolated?position.replayTime:position.sourceTime):null;
-  const display=sample?trackPinValue(boat,sample,{includeReference:true}):{label:trackUsesComparison()?'Sammenligning mangler':'Fart mangler',description:''};
+  const display=sample?trackPinValue(boat,sample,{includeReference:true}):{label:trackUsesComparison()?srText('Sammenligning mangler'):srText('Fart mangler'),description:''};
   entries.push({boat,display});
  }
  const membershipChanged=entries.length!==visibleBoatEntries.length||entries.some((entry,i)=>entry.boat.id!==visibleBoatEntries[i].boat.id);
  visibleBoatEntries=entries;
  $('boatFavouritesOnly').setAttribute('aria-pressed',String(boatFavouritesOnly));
  $('boatClearFavourites').disabled=!chosen.size;
- setBoatListText($('visibleBoatsTitle'),boatFavouritesOnly?'Favoritter':'Både');
+ setBoatListText($('visibleBoatsTitle'),boatFavouritesOnly?srText('Favoritter'):srText('Både'));
  setBoatListText($('visibleBoatsCount'),'· '+entries.length);
  $('visibleBoatsEmpty').hidden=!!entries.length;
- setBoatListText($('visibleBoatsEmpty'),isBoatSearchActive()?'Ingen både matcher filteret.':boatFavouritesOnly?'Ingen favoritter.':'Ingen både.');
+ setBoatListText($('visibleBoatsEmpty'),isBoatSearchActive()?srText('Ingen både matcher filteret.'):boatFavouritesOnly?srText('Ingen favoritter.'):srText('Ingen både.'));
  const ids=new Set(entries.map(entry=>entry.boat.id));
  for(const [id,row] of visibleBoatRows)if(!ids.has(id)){if(row.node.contains(document.activeElement))$('boatSearchInput').focus({preventScroll:true});row.node.remove();visibleBoatRows.delete(id);}
  if(hoveredVisibleBoatId&&!ids.has(hoveredVisibleBoatId))hoveredVisibleBoatId=null;
@@ -221,8 +220,8 @@ function updateVisibleBoats(time=currentTime()){
    setBoatListText(row.name,boat.name);
    setBoatListText(row.speed,display.label);
    row.speed.title=display.description;
-   setBoatListText(row.skipper,boat.skipper||'Ikke oplyst');
-   setBoatListText(row.type,boat.boatType||boat.metadata.boatType||'Ikke oplyst');
+   setBoatListText(row.skipper,boat.skipper||srText('Ikke oplyst'));
+   setBoatListText(row.type,boat.boatType||boat.metadata.boatType||srText('Ikke oplyst'));
    row.name.title=boat.name;row.skipper.title=row.skipper.textContent;row.type.title=row.type.textContent;
    layoutBoatDetails(row);
    const next=previous?previous.nextElementSibling:$('visibleBoatsList').firstElementChild;
@@ -267,7 +266,7 @@ function setBoatSearch(value){
 }
 $('boatSearchInput').oninput=event=>setBoatSearch(event.target.value);
 function setBoatRaceFilters(course,raceClass){
- if(!validBoatRaceFilters(course,raceClass))throw Error('Ugyldigt bane- eller løbsvalg.');
+ if(!validBoatRaceFilters(course,raceClass))throw Error(srText('Ugyldigt bane- eller løbsvalg.'));
  return changeEventConfiguration(()=>{
   boatCourseFilter=course;boatClassFilter=raceClass;$('visibleBoatsPanel').scrollTop=0;
   updateTimeline();requestRender();

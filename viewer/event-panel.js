@@ -1,27 +1,32 @@
+let eventMapRect=null;
+function updateEventPanelLabel(){
+ const expanded=!document.body.classList.contains('event-panel-collapsed');
+ const button=$('eventPanelToggle'),label=srText(expanded?'Skjul eventpanel':'Vis eventpanel');
+ button.setAttribute('aria-expanded',String(expanded));button.setAttribute('aria-label',label);button.title=label;
+}
+srOnLanguageChange(updateEventPanelLabel);
 function setEventPanelExpanded(expanded){
  if(expanded&&!SIMPLE_IPHONE_TRACKS)closeBoatCompare();
  if(expanded===!document.body.classList.contains('event-panel-collapsed'))return;
  if(!expanded&&!finishInlineTextEditing())return;
+ if(!expanded)endEventTool();
  const viewport=mapViewport();
  const active=document.activeElement;
  if(!expanded&&(active?.closest('#eventPanel')||active?.closest('#presentationFooter')))
   $('eventPanelToggle').focus({preventScroll:true});
  document.body.classList.toggle('event-panel-collapsed',!expanded);
- const button=$('eventPanelToggle'),label=expanded?'Skjul eventpanel':'Vis eventpanel';
- button.setAttribute('aria-expanded',String(expanded));
- button.setAttribute('aria-label',label);button.title=label;
- const rect=$('map').getBoundingClientRect();
- invalidateMapLayout();
- if(viewport&&(rect.width!==viewport.rect.width||rect.height!==viewport.rect.height)){
-  // Keep the actual geographic centre and screen scale, including SVG letterboxing.
-  const [x,y,width,height]=viewport.viewBox,unitsPerPixel=1/Math.hypot(viewport.matrix.a,viewport.matrix.b);
-  const nextWidth=rect.width*unitsPerPixel,nextHeight=rect.height*unitsPerPixel;
-  view=[x+width/2-nextWidth/2,y+height/2-nextHeight/2,nextWidth,nextHeight];
-  $('map').setAttribute('viewBox',view.join(' '));
- }
+ updateEventPanelLabel();
+ resizeMapViewport(viewport?.rect);
+ updatePresentationControls();requestRender({viewportOnly:true});
 }
 $('eventPanelToggle').onclick=()=>setEventPanelExpanded(document.body.classList.contains('event-panel-collapsed'));
-function resizeMapViewport(){
+function resizeMapViewport(previous=eventMapRect){
+ const rect=$('map').getBoundingClientRect();eventMapRect=rect;
  invalidateMapLayout();
+ if(previous?.width&&previous.height&&rect.width&&rect.height&&(rect.width!==previous.width||rect.height!==previous.height)){
+  view=resizedSceneCamera(view,previous,rect);
+  resizeEventSceneBaseline(previous,rect);
+  $('map').setAttribute('viewBox',view.join(' '));
+ }
  invalidateTimelineViewport();requestRender({viewportOnly:true});
 }

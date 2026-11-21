@@ -9,7 +9,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.goto(new URL('client-diagnostics-test',base).href);
   await page.evaluate(()=>{window.$=id=>document.getElementById(id);const interval=window.setInterval;window.setInterval=(fn,ms)=>interval(fn,ms===5000?50:ms);});
   await page.addScriptTag({url:new URL('config.js',base).href});
-  await page.addScriptTag({url:new URL('client-diagnostics.js',base).href});
+  for(const name of ['i18n-messages','i18n','client-diagnostics'])await page.addScriptTag({url:new URL(name+'.js',base).href});
   await page.waitForResponse(response=>response.url().endsWith('/api/client-errors')&&response.request().postDataJSON().kind==='loading'&&response.status()===201);
   await page.addScriptTag({url:new URL('rendering.js',base).href});
   await page.addScriptTag({content:fs.readFileSync(path.join(__dirname,'../viewer/boot.js'),'utf8').split('(async()=>{')[0]});
@@ -43,7 +43,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await publicPage.route('**/client-diagnostics-test',r=>r.fulfill({contentType:'text/html',body:html}));
   await publicPage.goto(new URL('client-diagnostics-test',base).href);
   await publicPage.evaluate(()=>{window.SR_CONFIG={admin:false,apiBase:''};});
-  await publicPage.addScriptTag({url:new URL('client-diagnostics.js',base).href});
+  for(const name of ['i18n-messages','i18n','client-diagnostics'])await publicPage.addScriptTag({url:new URL(name+'.js',base).href});
   assert.equal(await publicPage.evaluate(()=>typeof SRClientDiagnostics),'undefined');
   const url=new URL('api/client-errors',base),origin=new URL(base).origin;
   const forbidden=await fetch(url,{method:'POST',headers:{Origin:'http://another-host','Content-Type':'application/json'},body:JSON.stringify({version:1,session:'test',kind:'test',message:marker})});

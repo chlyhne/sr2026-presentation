@@ -16,35 +16,35 @@ class WebGLTrackRenderer {
   this.canvas.addEventListener('webglcontextlost',e=>{
    e.preventDefault();if(releasingPageGraphics)return;const detail=this.preparation;
    const message=` Trin: ${this.phase||'initialisering'}. Grafikbuffer: ${this.canvas.width} × ${this.canvas.height}.`+
-    (detail?.currentBoat?` Seneste klargøring: ${detail.currentBoat}, ${detail.stage}. ${this.buffers.size} både klargjort.`:'');
+    (detail?.currentBoat?srText(" Seneste klargøring: {0}, {1}. {2} både klargjort.",detail.currentBoat,detail.stage,this.buffers.size):'');
    this.preparation?.dispose();
    if(!this.active&&this.error)return;
-   this.fail(Error('WebGL-konteksten er mistet.'+message));
+   this.fail(Error(srText('WebGL-konteksten er mistet.')+message));
   });
   this.canvas.addEventListener('webglcontextrestored',async()=>{
    // A failed bootstrap must be reloaded, not resumed with half its modules.
    if(!viewerModulesReady)return;
    this.restoring=true;this.buffers.clear();this.initializePreparation();
    try{
-    if(!this.active)throw Error(this.error||'WebGL kunne ikke genskabes.');
-    if(!await prepareFleetTracks())throw Error(this.error||'Sporklargøringen blev afbrudt.');
+    if(!this.active)throw Error(this.error||srText('WebGL kunne ikke genskabes.'));
+    if(!await prepareFleetTracks())throw Error(this.error||srText('Sporklargøringen blev afbrudt.'));
     await this.preparation.compare(referenceBoat());
-    this.initialize();if(!this.active)throw Error(this.error||'Sporrenderer kunne ikke genskabes.');
+    this.initialize();if(!this.active)throw Error(this.error||srText('Sporrenderer kunne ikke genskabes.'));
     await this.preparation.loadGeometry();
-    if(!await this.prepareComparison())throw Error(this.error||'Sportypen kunne ikke genskabes.');
-    clearRenderingFailure('Spor');requestRender();
+    if(!await this.prepareComparison())throw Error(this.error||srText('Sportypen kunne ikke genskabes.'));
+    clearRenderingFailure(srText('Spor'));requestRender();
    }catch(error){this.fail(error);}finally{this.restoring=false;}
   });
   try{this.initializePreparation();}catch(error){this.fail(error);}
  }
  initializePreparation(){
-  this.error=null;this.graphicsReady=false;this.phase='Indlæs færdige sporfiler';
+  this.error=null;this.graphicsReady=false;this.phase=srText('Indlæs færdige sporfiler');
   this.comparisonReference=null;this.comparisonEpoch=-1;this.loadedMode=null;this.loadedReference=null;this.loadedEpoch=-1;this.styleTask=null;this.styleLoading=false;
   this.preparation=new TrackPreparation(this);this.active=true;
  }
  initialize(){
   this.active=false;this.error=null;
-  this.phase='Opret sporenes WebGL-kontekst';
+  this.phase=srText('Opret sporenes WebGL-kontekst');
   try{
    const gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,depth:true,premultipliedAlpha:true});
    if(!gl)throw Error('WebGL 2 unavailable');
@@ -54,7 +54,7 @@ class WebGLTrackRenderer {
    const shader=(type,source)=>{
     this.phase='Kompilér spor-'+(type===gl.VERTEX_SHADER?'vertexshader':'fragmentshader');
     const result=gl.createShader(type);gl.shaderSource(result,source);gl.compileShader(result);
-    if(!gl.getShaderParameter(result,gl.COMPILE_STATUS)){const message=gl.getShaderInfoLog(result)||(gl.isContextLost()?'WebGL-konteksten er mistet under shaderkompilering.':'Shaderkompileringen mislykkedes uden fejlbesked.');gl.deleteShader(result);throw Error(message);}
+    if(!gl.getShaderParameter(result,gl.COMPILE_STATUS)){const message=gl.getShaderInfoLog(result)||(gl.isContextLost()?srText('WebGL-konteksten er mistet under shaderkompilering.'):srText('Shaderkompileringen mislykkedes uden fejlbesked.'));gl.deleteShader(result);throw Error(message);}
     return result;
    };
    // Select geometry before compilation. The line shader contains no desktop
@@ -258,7 +258,7 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
 `}
  colour*=opacity;
 }`);
-   this.phase='Link sporenes shaderprogram';
+   this.phase=srText('Link sporenes shaderprogram');
    this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
    gl.deleteShader(vertex);gl.deleteShader(fragment);
    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
@@ -267,15 +267,15 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
    // Procedural vertices require no mesh buffer or changing attribute bindings.
    this.vao=gl.createVertexArray();gl.bindVertexArray(this.vao);
    gl.bindVertexArray(null);
-   this.phase='Klargør sporenes farvepaletter';
+   this.phase=srText('Klargør sporenes farvepaletter');
    this.initializePalettes();
    this.initializeBoatColours();
    this.loadedMode=null;this.loadedReference=null;this.loadedEpoch=-1;this.styleTask=null;this.styleLoading=false;
    this.preparation.attachGraphics(gl);this.neutralStyle=this.preparation.texture(1,1,new Float32Array([-1,-1,-1,-1]));
    this.stats={frames:0,draws:0,vertices:0,intervals:0,caps:0};
    this.active=true;this.graphicsReady=true;this.host.hidden=false;this.lastKey=null;this.viewportKey=null;this.sceneKey=null;
-   this.phase='Sporrenderer klargjort; afventer upload';
-   if(!this.restoring)clearRenderingFailure('Spor');
+   this.phase=srText('Sporrenderer klargjort; afventer upload');
+   if(!this.restoring)clearRenderingFailure(srText('Spor'));
   }catch(error){
    this.fail(error);
   }
@@ -307,15 +307,15 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
  fail(error){
   const failure=Error(error.message+(error.message.includes('Trin:')?'':' Trin: '+this.phase+'.'));
   this.active=false;this.error=failure.message;this.host.hidden=true;
-  reportRenderingFailure('Spor',failure);
+  reportRenderingFailure(srText('Spor'),failure);
  }
  async prepare(boat){
-  if(!this.active)throw Error(this.error||'WebGL is unavailable.');
-  this.phase='Klargør båd: '+boat.name;
+  if(!this.active)throw Error(this.error||srText('WebGL is unavailable.'));
+  this.phase=srText('Klargør båd: ')+boat.name;
   if(!this.buffers.has(boat.points))await this.preparation.prepare(boat);
  }
  requirePrepared(boat){
-  if(!this.restoring&&!this.buffers.has(boat.points))throw Error('Bådens GPU-spor er ikke forberedt: '+boat.name);
+  if(!this.restoring&&!this.buffers.has(boat.points))throw Error(srText('Bådens GPU-spor er ikke forberedt: ')+boat.name);
  }
  desiredStyle(){
   const compensated=typeof handicapTracksEnabled!=='undefined'&&handicapTracksEnabled;
@@ -331,11 +331,11 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
   if(this.styleReady())return Promise.resolve(true);
   const preparation=this.preparation;
   this.styleLoading=true;this.host.hidden=true;
-  $('trackDataStatus').hidden=false;$('trackDataStatus').textContent='Henter forberedte spordata …';
+  $('trackDataStatus').hidden=false;$('trackDataStatus').textContent=srText('Henter forberedte spordata …');
   this.styleTask=Promise.resolve().then(async()=>{
    while(this.active&&this.preparation===preparation&&!this.styleReady()){
     const {mode,reference}=this.desiredStyle();
-    if(!reference)throw Error('Referencebåden findes ikke.');
+    if(!reference)throw Error(srText('Referencebåden findes ikke.'));
     // Release the old type before reference preparation or loading the new type.
     preparation.releaseStyle();this.loadedMode=null;
     if(this.comparisonReference!==reference.points||this.comparisonEpoch!==this.uploads)await preparation.compare(reference);
@@ -357,7 +357,7 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
   try{
    const record=this.buffers.get(boat.points);
    if(this.styleLoading)return null;
-   if(!this.active||!record||this.comparisonReference!==referenceBoat()?.points)throw Error('Sammenligningsdata er ikke forberedt.');
+   if(!this.active||!record||this.comparisonReference!==referenceBoat()?.points)throw Error(srText('Sammenligningsdata er ikke forberedt.'));
    const index=timeBoundary(boat.points,time,true)-1;if(index<0)return null;
    const a=boat.points[index],b=boat.points[index+1],connects=b&&b[2]>a[2]&&b[2]-a[2]<=TRACK_MAX_GAP;
    if(time!==a[2]&&(!connects||time>b[2]))return null;
@@ -393,10 +393,10 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
   gl.uniform1i(u.boatColourMode,solidColour?1:0);gl.uniform1f(u.opacity,isReference?0.18:1);
   if(solidColour){
    const colour=this.boatColours.get(colours[boat.name]);
-   if(!colour)throw Error('Bådens sporfarve er ikke forberedt: '+boat.name);
+   if(!colour)throw Error(srText('Bådens sporfarve er ikke forberedt: ')+boat.name);
    gl.uniform3fv(u.boatColour,colour);
   }
-  if(!solidColour&&!record.comparisonTexture)throw Error('Den valgte sportype er ikke indlæst.');
+  if(!solidColour&&!record.comparisonTexture)throw Error(srText('Den valgte sportype er ikke indlæst.'));
   gl.uniform1i(u.relativeMode,relative?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,relative?this.gainPalette:this.palette);
   gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,record.texture);
   gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,record.comparisonTexture||this.neutralStyle);
@@ -419,7 +419,7 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
   if(this.restoring)return true;
   if(this.styleLoading||!this.styleReady()){this.prepareComparison();return true;}
   try{
-   if(this.gl.isContextLost())throw Error('WebGL-konteksten er mistet.');
+   if(this.gl.isContextLost())throw Error(srText('WebGL-konteksten er mistet.'));
    const baseViewport=mapViewport();if(!baseViewport)return true;
    const viewport={...baseViewport,...mapCanvasResolution(baseViewport.rect,2*(devicePixelRatio||1))};
    const {rect,matrix,pixelWidth:width,pixelHeight:height}=viewport;
@@ -431,7 +431,7 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
    this.lastKey=key;
    if(this.viewportKey!==viewportKey){
     // Resize only the drawing buffer; HTML composition fixes its screen bounds.
-    this.phase=`Tilpas sporenes grafikbuffer til ${width} × ${height}`;
+    this.phase=srText("Tilpas sporenes grafikbuffer til {0} × {1}",width,height);
     positionMapCanvas(this.canvas,viewport);
     this.viewportKey=viewportKey;
    }
@@ -450,7 +450,7 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
      this.states.push({boat,record,window,first,last,boundaryFirst,isReference,solidColour,relative});
     }
    }
-   this.phase='Tegn spor';this.begin(viewport);this.stats.frames++;
+   this.phase=srText('Tegn spor');this.begin(viewport);this.stats.frames++;
    let referenceDrawn=false;
    for(const state of this.states){
     if(referenceDrawn&&!state.isReference){this.gl.clear(this.gl.DEPTH_BUFFER_BIT);referenceDrawn=false;}
@@ -458,7 +458,7 @@ ${this.simpleTracks?' colour=boatColourMode?vec4(boatColour,1.0):texelFetch(pale
     if(state.isReference)referenceDrawn=true;
    }
    this.gl.bindVertexArray(null);this.gl.activeTexture(this.gl.TEXTURE0);
-   this.phase=`Sportegning sendt til GPU (${this.states.length} både)`;
+   this.phase=srText("Sportegning sendt til GPU ({0} både)",this.states.length);
    return true;
   }catch(error){this.gl.bindFramebuffer(this.gl.FRAMEBUFFER,null);this.gl.disable(this.gl.SCISSOR_TEST);this.fail(error);return false;}
  }

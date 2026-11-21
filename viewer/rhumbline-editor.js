@@ -1,43 +1,45 @@
 // The local route editor reuses the presentation's WebGL map.
-document.body.classList.add('rhumbline-setup');document.title='Tegn permanent rhumbline';
-$('wind').checked=$('rain').checked=$('traffic').checked=$('military').checked=false;
+document.body.classList.add('rhumbline-setup');srBind(document,'title',()=>srText('Tegn permanent rhumbline'));
+$('wind').checked=$('rain').checked=false;
+sceneOverlays.traffic=sceneOverlays.military=false;
 boatCourseFilter=window.SR_SETUP_COURSE;boatClassFilter='';boatFavouritesOnly=false;boatSearchQuery='';
 chosen.clear();$('rhumblineTools').hidden=false;
-const setupTitle=document.createElement('h1');setupTitle.textContent='Tegn rhumbline · '+BOAT_COURSE_NAMES[window.SR_SETUP_COURSE];
+const setupTitle=document.createElement('h1');srBind(setupTitle,'textContent',()=>srText('Tegn rhumbline · ')+srText(BOAT_COURSE_NAMES[window.SR_SETUP_COURSE]));
+srOnLanguageChange(()=>{document.title=srText('Tegn permanent rhumbline');});
 const canReplaceRhumbline=window.SR_EVENT.routeEditor.allowReplace;
 $('rhumblineTools').prepend(setupTitle);
 const setupStatus=document.createElement('p');setupStatus.id='rhumblineSaveStatus';setupStatus.setAttribute('role','status');
 $('rhumblineTools').append(setupStatus);
 const setupActions=document.createElement('div');setupActions.className='map-tool-actions';
-const reverseRoute=document.createElement('button');reverseRoute.textContent='Vend retning';reverseRoute.type='button';
-const restartRoute=document.createElement('button');restartRoute.textContent='Start forfra';restartRoute.type='button';
+const reverseRoute=document.createElement('button');srBind(reverseRoute,'textContent',()=>srText('Vend retning'));reverseRoute.type='button';
+const restartRoute=document.createElement('button');srBind(restartRoute,'textContent',()=>srText('Start forfra'));restartRoute.type='button';
 setupActions.append(reverseRoute,restartRoute);$('rhumblineTools').append(setupActions);
 reverseRoute.onclick=()=>{navigationDraft.reverse();renderNavigation();};
 restartRoute.onclick=()=>{startMapLine('route');updateSetupHelp();};
 function updateSetupHelp(){
- $('measurementHelp').textContent='Klik på kortet for at tilføje punkter i sejlretningen. Træk et punkt for at flytte det. Dobbeltklik på et linjestykke for at indsætte et punkt. Punkter snapper til start/mål, og rutens ender kan snappe sammen.';
+ srBind($('measurementHelp'),'textContent',()=>srText('Klik på kortet for at tilføje punkter i sejlretningen. Træk et punkt for at flytte det. Dobbeltklik på et linjestykke for at indsætte et punkt. Punkter snapper til start/mål, og rutens ender kan snappe sammen.'));
 }
 function lockRhumblineEditor(points){
  navigationMode=null;navigationDraft=[];measurement=points.map(p=>[...p]);syncNavigationControls();renderNavigation();
  $('finishMapLine').disabled=$('undoMapPoint').disabled=reverseRoute.disabled=restartRoute.disabled=true;
- $('measurementHelp').textContent='Rhumbline er gemt permanent. Præsentationen bruger nu disse punkter ved sammenligning med referencebåden.';
- setupStatus.textContent=`${points.length} punkter gemt · ${buildRhumbRoute(points).total.toLocaleString('da-DK',{maximumFractionDigits:2})} sømil`;
+ srBind($('measurementHelp'),'textContent',()=>srText('Rhumbline er gemt permanent. Præsentationen bruger nu disse punkter ved sammenligning med referencebåden.'));
+ srBind(setupStatus,'textContent',()=>srText("{0} punkter gemt · {1} sømil",points.length,buildRhumbRoute(points).total.toLocaleString(srLocale,{maximumFractionDigits:2})));
 }
 let savingRhumbline=false;
 async function savePermanentRhumbline(){
  if(savingRhumbline||navigationDraft.length<2)return;
  const definition={version:1,points:navigationDraft.map(p=>[...p])};
- if(!validRhumbline(definition)){setupStatus.textContent='Ruten indeholder ugyldige punkter. Ret ruten, før du gemmer.';return;}
+ if(!validRhumbline(definition)){srBind(setupStatus,'textContent',()=>srText('Ruten indeholder ugyldige punkter. Ret ruten, før du gemmer.'));return;}
  savingRhumbline=true;window.SR_RHUMBLINE_SAVING=true;syncNavigationControls();
  $('finishMapLine').disabled=$('undoMapPoint').disabled=reverseRoute.disabled=restartRoute.disabled=true;
- setupStatus.textContent='Gemmer rhumbline og klargør sporfiler på serveren …';
+ srBind(setupStatus,'textContent',()=>srText('Gemmer rhumbline og klargør sporfiler på serveren …'));
  try{
   const payload=canReplaceRhumbline?{...definition,previousPoints:window.SR_RHUMBLINE.points}:definition;
   const response=await fetch('/api/rhumbline?event='+encodeURIComponent(window.SR_EVENT.id)+'&course='+window.SR_SETUP_COURSE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-  const result=await response.json();if(!response.ok)throw Error(result.error||'Rhumbline kunne ikke gemmes.');
+  const result=await response.json();if(!response.ok)throw Error(srText(result.error||'Rhumbline kunne ikke gemmes.'));
   lockRhumblineEditor(result.points);
-  $('measurementHelp').textContent='Rhumbline og sporfiler er gemt. Genindlæs præsentationen for at bruge den nye rute.';
- }catch(error){setupStatus.textContent=error.message;syncNavigationControls();reverseRoute.disabled=restartRoute.disabled=false;}
+  srBind($('measurementHelp'),'textContent',()=>srText('Rhumbline og sporfiler er gemt. Genindlæs præsentationen for at bruge den nye rute.'));
+ }catch(error){srBind(setupStatus,'textContent',()=>srErrorText(error));syncNavigationControls();reverseRoute.disabled=restartRoute.disabled=false;}
  finally{savingRhumbline=false;window.SR_RHUMBLINE_SAVING=false;}
 }
 const routeSnapPixels=12,routePointPixels=8;
@@ -94,7 +96,7 @@ function updateRoutePoint(index,point,insert){
  navigationDraft=next;syncNavigationControls();renderNavigation();
 }
 function insertRoutePoint(index,point){
- if(navigationDraft.length>=200){setupStatus.textContent='En rhumbline kan højst have 200 punkter.';return;}
+ if(navigationDraft.length>=200){srBind(setupStatus,'textContent',()=>srText('En rhumbline kan højst have 200 punkter.'));return;}
  updateRoutePoint(index,point,true);
 }
 function addNavigationPoint(event){

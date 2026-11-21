@@ -61,7 +61,10 @@ if(!SIMPLE_IPHONE_TRACKS){
  $('boatCompareResetZoom').onclick=()=>{boatCompareZoom=null;boatCompareRenderKey='';renderBoatCompare();};
  $('boatCompareToggle').onclick=()=>{
   if(!$('boatComparePanel').hidden){closeBoatCompare();return;}
-  if(!document.body.classList.contains('event-panel-collapsed'))setEventPanelExpanded(false);
+  if(!document.body.classList.contains('event-panel-collapsed')){
+   setEventPanelExpanded(false);
+   if(!document.body.classList.contains('event-panel-collapsed'))return;
+  }
   document.body.classList.add('boat-compare-open');$('boatComparePanel').hidden=false;$('boatCompareToggle').setAttribute('aria-expanded','true');
   invalidateMapLayout();requestRender();
  };
@@ -93,14 +96,14 @@ function renderBoatCompare(){
  if($('boatComparePanel').hidden)return;
  syncBoatCompareReference();
  const gates=currentGateMeasurement(),key=gates.length?JSON.stringify(gates):'',data=boatCompareCache.get(key);
- if(!data)throw Error('SOG-fordelingerne for gates er ikke forberedt.');
+ if(!data)throw Error(srText('SOG-fordelingerne for gates er ikke forberedt.'));
  const reference=boats.find(boat=>boat.id===$('boatCompareReference').value),selected=boats.filter(boat=>boatIsDisplayed(boat)&&boat.id!==reference?.id);
  const metric=$('boatCompareMetric').value;
  const renderKey=JSON.stringify([key,metric,reference?.id,selected.map(boat=>boat.id)]);if(renderKey===boatCompareRenderKey)return;boatCompareRenderKey=renderKey;
- $('boatCompareScope').textContent=(gates.length?'Mellem gates · alle passager':'Hele sporet')+(metric==='speed'?' · SOG i knob':' · tempo i sekunder pr. sømil')+(metric==='speed'?' · tidsvægtet':' · pr. rhumbline-station')+(reference?' · reference nederst':'')+(metric==='speed'?' · 20+ samlet ved højre kant':' · tempo over 7200 vises ikke');
+ $('boatCompareScope').textContent=(gates.length?srText('Mellem gates · alle passager'):srText('Hele sporet'))+(metric==='speed'?srText(' · SOG i knob'):srText(' · tempo i sekunder pr. sømil'))+(metric==='speed'?srText(' · tidsvægtet'):srText(' · pr. rhumbline-station'))+(reference?srText(' · reference nederst'):'')+(metric==='speed'?srText(' · 20+ samlet ved højre kant'):srText(' · tempo over 7200 vises ikke'));
  $('boatCompareResetZoom').hidden=!boatCompareZoom;
  const host=$('boatComparePlots');host.replaceChildren();
- if(!selected.length){host.textContent=reference?'Ingen andre både vises med de valgte filtre.':'Ingen både vises med de valgte filtre.';return;}
+ if(!selected.length){host.textContent=reference?srText('Ingen andre både vises med de valgte filtre.'):srText('Ingen både vises med de valgte filtre.');return;}
  const ns='http://www.w3.org/2000/svg';
  const visible=[...selected,...(reference?[reference]:[])].map(boat=>data.get(boat.id)[metric]).filter(Boolean);
  let first=BOAT_COMPARE_BINS-1,last=0;
@@ -112,11 +115,11 @@ function renderBoatCompare(){
  const valueAt=fraction=>minValue+fraction*(maxValue-minValue);
  const indexAt=fraction=>Math.max(0,Math.min(BOAT_COMPARE_BINS-1,valueAt(fraction)/max*(BOAT_COMPARE_BINS-1)));
  const digits=Math.min(4,Math.max(metric==='speed'?1:0,Math.ceil(-Math.log10((maxValue-minValue)/4))));
- const formatValue=value=>value.toLocaleString('da-DK',{maximumFractionDigits:digits});
+ const formatValue=value=>value.toLocaleString(srLocale,{maximumFractionDigits:digits});
  for(const boat of selected){
   const row=document.createElement('div'),title=document.createElement('div');title.textContent=boat.name+(reference&&reference.id!==boat.id?' / '+reference.name:'');row.append(title);
   const split=!!reference&&reference.id!==boat.id;
-  const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 240 68');svg.setAttribute('role','img');svg.setAttribute('aria-label',(metric==='speed'?'Fartfordeling for ':'Tempofordeling for ')+title.textContent);
+  const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 240 68');svg.setAttribute('role','img');svg.setAttribute('aria-label',(metric==='speed'?srText('Fartfordeling for '):srText('Tempofordeling for '))+title.textContent);
   const plot=(values,colour,side)=>{
    if(!values)return false;
    const path=document.createElementNS(ns,'path'),coords=[];
@@ -127,27 +130,27 @@ function renderBoatCompare(){
   };
   const own=plot(data.get(boat.id)[metric],colours[boat.name],1);
   const ref=reference&&reference.id!==boat.id?plot(data.get(reference.id)[metric],colours[reference.name],-1):false;
-  const axis=document.createElementNS(ns,'path');axis.setAttribute('d','M10 32H230');axis.setAttribute('stroke','#edf4f7');axis.setAttribute('stroke-width','.5');svg.append(axis);row.append(svg);
-  const labels=document.createElement('div');labels.className='boat-compare-axis';for(let i=0;i<=4;i++){const label=document.createElement('span'),value=valueAt(i/4);label.textContent=formatValue(value)+(i===4?(metric==='speed'?' kn':' s/sømil'):'');labels.append(label);}row.append(labels);
-  const ticks=document.createElementNS(ns,'path');let tickPath='';for(let i=0;i<=20;i++){const x=10+i*11;tickPath+=`M${x} 63v${i%5===0?4:2} `;}ticks.setAttribute('d',tickPath);ticks.setAttribute('stroke','#b8cbd5');ticks.setAttribute('stroke-width','.6');svg.append(ticks);
-  const selection=document.createElementNS(ns,'rect');selection.setAttribute('y','3');selection.setAttribute('height','58');selection.setAttribute('fill','#fff');selection.setAttribute('fill-opacity','.2');selection.setAttribute('stroke','#fff');selection.setAttribute('stroke-width','.6');selection.setAttribute('visibility','hidden');svg.append(selection);
+  const axis=document.createElementNS(ns,'path');axis.setAttribute('d','M10 32H230');axis.setAttribute('stroke','#6c7781');axis.setAttribute('stroke-width','.5');svg.append(axis);row.append(svg);
+  const labels=document.createElement('div');labels.className='boat-compare-axis';for(let i=0;i<=4;i++){const label=document.createElement('span'),value=valueAt(i/4);label.textContent=formatValue(value)+(i===4?(metric==='speed'?' kn':srText(' s/sømil')):'');labels.append(label);}row.append(labels);
+  const ticks=document.createElementNS(ns,'path');let tickPath='';for(let i=0;i<=20;i++){const x=10+i*11;tickPath+=`M${x} 63v${i%5===0?4:2} `;}ticks.setAttribute('d',tickPath);ticks.setAttribute('stroke','#8d969e');ticks.setAttribute('stroke-width','.6');svg.append(ticks);
+  const selection=document.createElementNS(ns,'rect');selection.setAttribute('y','3');selection.setAttribute('height','58');selection.setAttribute('fill','#8d969e');selection.setAttribute('fill-opacity','.2');selection.setAttribute('stroke','#59646d');selection.setAttribute('stroke-width','.6');selection.setAttribute('visibility','hidden');svg.append(selection);
   let drag=null;
   const pointerX=event=>Math.max(10,Math.min(230,new DOMPoint(event.clientX,event.clientY).matrixTransform(svg.getScreenCTM().inverse()).x));
   svg.addEventListener('pointerdown',event=>{if(event.button!==0||event.pointerType!=='mouse')return;event.preventDefault();const x=pointerX(event);drag={id:event.pointerId,start:x};svg.setPointerCapture(event.pointerId);selection.setAttribute('x',x);selection.setAttribute('width','0');selection.setAttribute('visibility','visible');});
   svg.addEventListener('pointerup',event=>{if(!drag||drag.id!==event.pointerId)return;const x=pointerX(event),start=drag.start;drag=null;selection.setAttribute('visibility','hidden');if(Math.abs(x-start)<5)return;const toValue=position=>valueAt((position-10)/220);boatCompareZoom=[toValue(Math.min(x,start)),toValue(Math.max(x,start))];boatCompareRenderKey='';renderBoatCompare();});
   svg.addEventListener('pointercancel',()=>{drag=null;selection.setAttribute('visibility','hidden');});
-  const marker=document.createElementNS(ns,'line');marker.setAttribute('y1','3');marker.setAttribute('y2','61');marker.setAttribute('stroke','#fff');marker.setAttribute('stroke-width','1');marker.setAttribute('visibility','hidden');svg.append(marker);
+  const marker=document.createElementNS(ns,'line');marker.setAttribute('y1','3');marker.setAttribute('y2','61');marker.setAttribute('stroke','#48535e');marker.setAttribute('stroke-width','1');marker.setAttribute('visibility','hidden');svg.append(marker);
   const readout=document.createElement('div');readout.className='boat-compare-readout';readout.hidden=true;row.append(readout);
   svg.addEventListener('pointermove',event=>{
    if(drag&&drag.id===event.pointerId){const x=pointerX(event);selection.setAttribute('x',Math.min(x,drag.start));selection.setAttribute('width',Math.abs(x-drag.start));marker.setAttribute('visibility','hidden');readout.hidden=true;return;}
    const point=new DOMPoint(event.clientX,event.clientY).matrixTransform(svg.getScreenCTM().inverse()),fraction=Math.max(0,Math.min(1,(point.x-10)/220)),position=indexAt(fraction),index=Math.floor(position),part=position-index;
    marker.setAttribute('x1',10+fraction*220);marker.setAttribute('x2',10+fraction*220);marker.setAttribute('visibility','visible');
    const percent=distribution=>{if(!distribution)return '–';const tail=distribution.tail;const above=(tail[index]*(1-part)+tail[index+1]*part)/tail[0];return ((metric==='pace'?1-above:above)*100).toFixed(1).replace('.',',')+' %';};
-   const value=formatValue(valueAt(fraction))+(metric==='speed'?' kn':' s/sømil');
-   readout.textContent=value+(metric==='pace'?' · ca. under: ':' · ca. over: ')+boat.name+' '+percent(data.get(boat.id)[metric])+(split?' · '+reference.name+' '+percent(data.get(reference.id)[metric]):'');readout.hidden=false;
+   const value=formatValue(valueAt(fraction))+(metric==='speed'?' kn':srText(' s/sømil'));
+   readout.textContent=value+(metric==='pace'?srText(' · ca. under: '):srText(' · ca. over: '))+boat.name+' '+percent(data.get(boat.id)[metric])+(split?' · '+reference.name+' '+percent(data.get(reference.id)[metric]):'');readout.hidden=false;
   });
   svg.addEventListener('pointerleave',()=>{marker.setAttribute('visibility','hidden');readout.hidden=true;});
-  if(!own||(reference&&reference.id!==boat.id&&!ref)){const msg=document.createElement('small');msg.textContent='Ingen gyldig passage eller måledata for '+(!own?boat.name:reference.name)+'.';row.append(msg);}
+  if(!own||(reference&&reference.id!==boat.id&&!ref)){const msg=document.createElement('small');msg.textContent=srText('Ingen gyldig passage eller måledata for ')+(!own?boat.name:reference.name)+'.';row.append(msg);}
   host.append(row);
  }
 }

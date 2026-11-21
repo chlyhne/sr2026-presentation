@@ -2,12 +2,21 @@
 <html lang="da">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sejltracker · Vælg stævne</title>
+<title data-i18n>Sejltracker · Vælg stævne</title>
 <link rel="stylesheet" href="landing.css">
+<link rel="stylesheet" href="i18n.css">
 <main>
- <header><p class="eyebrow">Sejltracker</p><h1>Vælg stævne</h1><p>Følg bådene, udforsk sporene og sammenlign sejladserne.</p></header>
- <nav id="eventCards" aria-label="Stævner" aria-busy="true"></nav>
- <p id="landingStatus" role="status">Henter stævner …</p>
+ <header><div class="language-picker" data-language-picker>
+  <button type="button" aria-label="Vælg sprog" title="Sprog" aria-expanded="false" aria-controls="languageOptions" data-i18n-attrs="aria-label title">🇩🇰</button>
+  <nav id="languageOptions" aria-label="Sprog" data-languages hidden data-i18n-attrs="aria-label">
+    <a lang="da" hreflang="da">Dansk</a>
+    <a lang="en" hreflang="en">English</a>
+    <a lang="de" hreflang="de">Deutsch</a>
+    <a lang="fr" hreflang="fr">Français</a>
+  </nav>
+</div><p class="eyebrow" data-i18n>Sejltracker</p><h1 data-i18n>Vælg stævne</h1><p data-i18n>Følg bådene, udforsk sporene og sammenlign sejladserne.</p></header>
+ <nav id="eventCards" aria-label="Stævner" aria-busy="true" data-i18n-attrs="aria-label"></nav>
+ <p id="landingStatus" role="status" data-i18n>Henter stævner …</p>
 </main>
-<script src="event-selection.js"></script><script src="landing.js"></script>
+<script src="i18n-messages.js"></script><script src="i18n.js"></script><script src="event-selection.js"></script><script src="landing.js"></script>
 </html>

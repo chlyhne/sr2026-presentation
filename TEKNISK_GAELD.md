@@ -58,7 +58,7 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 ### UI-04 — Bane-/løbsfiltre og to permanente rhumblines
 
 - **Område:** [bådvælger](./viewer/boat-list.js), [rutegemning](./scripts/serve_viewer.py) og [build](./scripts/prepare_track_profiles.cjs).
-- **Udskudt:** Samlet browserkontrol af bane/løb, eventgemning/-gendannelse og referenceskift mellem banerne efter indtegning af Bøgestrømmens rhumbline. Kontroller også den kompakte skipper-/bådtype-linje, streaming af lange felter og udvidede bådrækker med klasse/farvevalg. Hjerteklik ændrer favorit, øvrige rækkeklik udvider. Klik på kortets båd åbner listen, ekspanderer rækken og flytter fokus/scroll til den; gentaget klik lader rækken være åben. Kortklik låser også kameraets centrum til båden ved afspilning og zoom via den fælles centreringsfunktion; manuel kortgestus, Escape eller Vis hele banen frigør låsen. Centrering suspenderes under pointertræk i tidslinjen og genoptages ved slip/annullering; hurtig kontrol dækker fastholdt kamera under træk og centrering efter slip. Hurtig kontrol dækker panorering/zoom/tidsændring uden skift af referencebåd; visuel accept udestår. Farvevalg gemmes pr. stævne/båd i browseren og opdaterer liste, ikon og sporet ved egen bådfarve; visuel accept og genindlæsning med brugerfarver udestår.
+- **Udskudt:** Samlet browserkontrol af bane/løb, eventgemning/-gendannelse og referenceskift mellem banerne efter indtegning af Bøgestrømmens rhumbline. Kontroller også den kompakte skipper-/bådtype-linje, streaming af lange felter og udvidede bådrækker med klasse/farvevalg. Hjerteklik ændrer favorit, øvrige rækkeklik udvider. Klik på kortets båd åbner listen, ekspanderer rækken og flytter fokus/scroll til den; gentaget klik lader rækken være åben. Kortklik låser også kameraets centrum til båden ved afspilning og zoom via den fælles centreringsfunktion; manuel kortgestus eller Escape frigør låsen. Centrering suspenderes under pointertræk i tidslinjen og genoptages ved slip/annullering; hurtig kontrol dækker fastholdt kamera under træk og centrering efter slip. Hurtig kontrol dækker panorering/zoom/tidsændring uden skift af referencebåd; visuel accept udestår. Farvevalg gemmes pr. stævne/båd i browseren og opdaterer liste, ikon og sporet ved egen bådfarve; visuel accept og genindlæsning med brugerfarver udestår.
 - **Gennemført:** Hurtige kontroller af filterkombinationer, banespecifikke projiceringer, manglende rute og valg af færdige profilopslag. Begge rutedefinitioner indgår i buildets fingerprint. Bøgestrømmens tegnekort er åbnet og starter med den rigtige bane. Målrettet skjult Firefox-kontrol bekræfter, at hover følger den faktiske række under en stillestående mus efter ændret bådantal og scroll. Kontrollen bekræfter også naturlig listehøjde, scroll ved mange både og målestokkens placering nederst til venstre eller lige ved siden af listen ved faktisk overlap, også efter filtrering og sammenklapning.
 - **Konsekvens/usikkerhed:** Bøgestrømmens rute er nu indtegnet med 26 punkter; første punkt ligger midt på startlinjen. Ingen automatisk erstatning med Grønsunds rute. Browser- og telefonforløbet for referenceskift er endnu ikke valideret.
 - **Færdig når:** Den rigtige profil vælges ved referenceskift, og bane-/løbsvalg (inklusive Alle baner/løb) virker i redigering og offentlig visning med eksisterende events.
@@ -94,19 +94,12 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 - **Konsekvens/usikkerhed:** Trafiklaget bruger nu lukkede flader med sammenhængende skravering uden indvendige linjer. Hatter Barns gamle trafikgeometri er udeladt, og brugerens polygoner for Hatter Barn, Storebæltsbroen og Øresund er bevaret. Øresunds to tidligere flader er erstattet af brugerens femten punkter. Ved øvrige områder er åbne ender lukket mellem kildegrænserne. Samspillet mellem lagene er ikke browserkontrolleret.
 - **Færdig når:** De samlede ydergrænser er kontrolleret mod dokumenterede grænser, og skraveringen er visuelt kontrolleret i Firefox.
 
-### UI-02 — Eventredigering efter pause med midlertidige gates
+### UI-02 — Browserdækning af den fælles eventfane
 
-- **Område:** [gates](./viewer/navigation.js), [afspilning](./viewer/timeline.js) og [eventlagring](./viewer/presentation.js).
-- **Udskudt:** Ekstra browserdækning af oprettelse, gem og annullering af events efter pause med gates fra afspilning.
-- **Konsekvens/usikkerhed:** Play/pause, passage af events, manuel spoling og frisk offentlig opstart er kontrolleret i Firefox. Gem bruger nu de synlige gates og afslutter deres midlertidige afspilningstilstand; den særlige kombination er kun kodegennemgået.
-- **Færdig når:** En målrettet browserkontrol bekræfter, at et nyt event efter pause gemmer de synlige gates og derefter følger normale eventskift.
-
-### UI-03 — Prompt under billedklargøring og online udgivelse
-
-- **Område:** [eventprompt](./viewer/presentation.js) og [import/udgivelse](./viewer/online.js).
-- **Udskudt:** Ekstra browserdækning af prompten under igangværende billedklargøring og ved autentificeret online udgivelse/import med indlejrede billeder.
-- **Konsekvens/usikkerhed:** Gem, Gem ikke, Annullér, Escape, gemmefejl, afspilning, præsentation og eventskift efter ændret rækkefølge er kontrolleret i skjult Firefox på PC. Uploadannullering og online fortsættelse er kodegennemgået; deres særlige kombinationer er endnu ikke browserkontrolleret.
-- **Færdig når:** Målrettet kontrol viser, at et sent uploadsvar ikke overskriver det nye event, og at online handlinger kun fortsætter efter et vellykket valg af Gem eller Gem ikke.
+- **Område:** [eventfanen](./viewer/presentation.js), [afspilning](./viewer/timeline.js), [billeder](./viewer/event-images.js) og [udgivelse](./viewer/online.js).
+- **Udskudt:** Migrér browserfixtures fra den gamle redigeringsvisning og de fjernede kontroller for vindmodel og radaropacitet. Målret dem mod den fælles eventfane og de tre afbrydere i lagmenuen. Kontrollér også, hvordan længere engelske og tyske tekster fylder i værktøjslinjen og på kortet. Quick checks dækker eksplicit lagring af kortvisningen, bådudvalg, gendannelse, bevaret centrum/målestok og nyere rettelser under udgivelse.
+- **Konsekvens/usikkerhed:** Samspillet mellem fulgt udsnit, aktivering af kortværktøjer, oprettelse med midlertidige gates og layoutskift er endnu ikke afprøvet i lokal Firefox. Et sent billedsvar er kodegennemgået.
+- **Færdig når:** Målrettede kontroller i lokal Firefox dækker eventskift med kortforhåndsvisning, **Nyt event her** med aktive gates, upload over eventskift og kladdeændring under udgivelse.
 
 Det tidligere catch-up og genbrugelig validering er beskrevet i
 [spor-/GPU-valideringen](./scripts/track-validation.md).

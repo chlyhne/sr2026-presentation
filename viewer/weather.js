@@ -32,7 +32,7 @@ class WeatherImageBuffer {
     await new Promise((resolve,reject)=>{
      entry.cancel=()=>{node.onload=node.onerror=null;resolve();};
      node.onload=()=>{node.onload=node.onerror=null;resolve();};
-     node.onerror=()=>{node.onload=node.onerror=null;reject(new Error('Vejrbilledet kunne ikke indlæses.'));};
+     node.onerror=()=>{node.onload=node.onerror=null;reject(new Error(srText('Vejrbilledet kunne ikke indlæses.')));};
      node.setAttribute('href',href);
     });
     entry.cancel=null;
@@ -89,25 +89,8 @@ function windVector(speed,direction) {
  const angle=(direction||0)*Math.PI/180;
  return {east:-Math.sin(angle)*speed,north:-Math.cos(angle)*speed};
 }
-// Independent radar palette, shared with scripts/prepare_radar.py.
-const RAIN_COLOURS = [[0,'#f44336'],[10,'#e93260'],[20,'#d62487'],[30,'#bb20aa'],
- [40,'#9823c5'],[50,'#7624d6'],[60,'#5416a8']];
-
-function colourLegend(id, stops, unit) {
- const legend = document.getElementById(id);
- for (const [i,[value,colour]] of stops.entries()) {
-  const swatch = document.createElement('span');
-  swatch.style.background = colour;
-  swatch.textContent = value;
-  swatch.title = `${value}${i === stops.length-1 ? '+' : '–'+stops[i+1][0]} ${unit}`;
-  swatch.setAttribute('aria-label',swatch.title);
-  const rgb = colour.match(/\w\w/g).map(c => parseInt(c,16));
-  if (rgb[0]*.2126 + rgb[1]*.7152 + rgb[2]*.0722 < 125) swatch.className = 'dark';
-  legend.append(swatch);
- }
-}
-colourLegend('windLegend', WIND_COLOURS, 'm/s');
-colourLegend('rainLegend', RAIN_COLOURS, 'dBZ');
+const WIND_MODEL='dmi_harmonie_arome_europe',WIND_MODEL_LABEL='DMI HARMONIE';
+const RADAR_OPACITY=.75;
 
 // Interpolate the archived samples for a continuous background. This adds no
 // weather information or meteorological resolution.
@@ -144,7 +127,7 @@ function prepareNextWind(time,model){
 }
 function renderWindField(t){
  if(!document.getElementById('wind').checked){windFieldKey=null;windReady=Promise.resolve();windFieldError=null;windImageBuffer.hide();return;}
- const model=document.getElementById('windModel').value,hour=Math.floor(t/3600)*3600,key=`${model}:${hour}`;
+ const model=WIND_MODEL,hour=Math.floor(t/3600)*3600,key=`${model}:${hour}`;
  if(key===windFieldKey){if(windImageBuffer.front?.key===key)prepareNextWind(t,model);return;}
  windFieldKey=key;windFieldError=null;
  const entry=windImageBuffer.prepare(key,()=>buildWindField(model,hour),true);

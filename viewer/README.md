@@ -1,7 +1,8 @@
 > Aktuel opsætning af flere stævner, direkte links og rhumbline-redigering:
 > se [projektets README](../README.md#flere-stævner) og
 > [den fælles konfiguration](./events/catalog.json). Nedenstående udviklingsnoter
-> beskriver også tidligere datastrukturer og adresser.
+> beskriver også tidligere datastrukturer, adresser og den tidligere separate
+> redigering. Se [den aktuelle eventfane](../README.md#lokalt-preview-og-redigering).
 
 # Sjælland Rundt — kort til præsentation
 
@@ -18,35 +19,35 @@ python3 scripts/serve_viewer.py
   kortet samtidig med zoom. Kortet roterer ikke; nord bliver opad.
 - Ved første indlæsning vises kun en fremdriftsbjælke. Siden bliver tilgængelig,
   når data, hele feltets spor og sammenligninger samt det første vejrkort er klar.
-  Den offentlige side åbner direkte i præsentationsvisning uden at vise redigeringen først.
+  Trackeren åbner i den samme præsentationsvisning for publikum og redaktører.
   Bjælken vises ikke igen ved bådvalg, afspilning eller navigation på siden.
   Hvis indlæsningen fejler, vises fejlen og en knap til at genindlæse.
 - Både vises altid med navn, også ved navigation til events med gamle navnevalg.
   Ingen både har hjerte som standard, og favoritfilteret starter slået fra.
-  Klik hvor som helst i en bådrække for at skifte dens hjerte.
+  Klik på hjertet for at vælge en favorit eller på resten af rækken for detaljer.
 - Grid starter slået til; vind, radar og eventpanelet starter slået fra.
   Kortværktøjerne står fra højre mod venstre: eventpanel, lag, spor, gates, lineal,
-  redigér og fuld skærm.
+  og fuld skærm.
 - **Lag → Grid** viser et antialiaseret afstandsgrid oven på kortbaggrunden,
   under sporene. Afstanden skifter automatisk mellem **15 sømil, 5 sømil,
   2 sømil, 1 sømil, 0,5 sømil, 400 m, 200 m og 100 m**, så cellerne normalt er mindst 80 skærmpixel brede.
-  Den aktuelle afstand vises i lagmenuen, og lagets tilstand gemmes med eventet.
+  Laget kan gemmes med **Brug i eventet**.
   Grid er forankret ved 55° N, 12° Ø; afstandene er kalibreret ved 55° N
   i kortets eksisterende længde-/breddegradsprojektion.
 - Nederst til venstre vises en målestok i sømil eller meter. Den flyttes lige til højre for bådlisten,
   hvis bådlisten overlapper dens plads. Målestokken vises også, når grid er slået
   fra. Den følger gridets afstandstrin og fortsætter ved tæt zoom med
   **50, 20, 10, 5, 2 og 1 meter**; gridets mindste afstand er fortsat 100 m.
-- **Start præsentation** skjuler indstillinger. Kortet står til venstre, og det
-  valgte events tekst og eventuelle billede vises i panelet til højre.
+- Kortet står til venstre, og det valgte events tekst og eventuelle billede
+  vises i eventfanen til højre.
   På smalle skærme ligger eventpanelet under kortet og kan rulles.
-  Dine gemte noter bruges som events i kronologisk rækkefølge, ligesom notelisten.
+  Dine gemte noter bruges som events i kronologisk rækkefølge.
   Eksisterende noter sorteres ved åbning, og nye events indsættes efter deres
   tidspunkt, også hvis de oprettes senere. Forrige/Næste følger hele datoen og
   klokkeslættet, så rækkefølgen også er korrekt over midnat. Events med samme
   tidspunkt beholder deres indbyrdes rækkefølge.
-  Tilstanden starter ved den senest valgte note, eller ved den første note.
-  **Forrige** og eventlisten hopper direkte. I præsentationsmode afspiller
+  Trackeren starter ved den første note, når der findes events.
+  **Forrige** og eventlisten hopper direkte.
   **Næste** frem til næste event med den valgte afspilningshastighed og stopper
   præcist ved eventets tidspunkt. Tryk **Næste** igen undervejs for at springe
   direkte frem. Ved ankomst indlæses eventets gemte kortindstillinger: lag,
@@ -179,7 +180,7 @@ python3 scripts/serve_viewer.py
   skærmstørrelse i både redigering og præsentation. Navigation og snap ændrer
   ikke de gemte noter.
 - Mercutio, Vera, My, The Hulk og Rosa-Lux er valgt fra start; begge baners øvrige tracks kan vælges.
-- **Lag** øverst til højre på kortet åbner valgene **Vind** og **Byger**.
+- **Lag** øverst til højre på kortet åbner valgene **Vind** og **Nedbør**.
   De kan slås til og fra hver for sig, også i præsentation og fuld skærm.
   Klik udenfor eller tryk Escape for at lukke lagmenuen. I redigering gemmes
   ændringer på det aktive event; i præsentation ændrer de kun den aktuelle visning.
@@ -352,7 +353,7 @@ python3 scripts/serve_viewer.py
   flytter fokus og listens scroll til rækken uden at ændre favoritstatus.
   Kameraet følger den klikkede båd og holder den centreret under afspilning,
   zoom. Når kortet gribes til manuel panorering, frigøres kamerafølgningen.
-  Escape eller Vis hele banen frigør den også.
+  Escape frigør den også.
   Hold musen over en række, eller fokusér den med Tab, for at forstørre det
   tilsvarende bådikon midlertidigt. Op/ned, Home og End flytter fokus i listen;
   Escape folder den sammen. Bjælken virker også i præsentation og fuld skærm,
@@ -589,10 +590,9 @@ originalbilleder og mobilvisning. Begge tests kører i Chromium og Firefox.
 
 ## Datagrundlag
 
-Vind: DMI HARMONIE (ca. 2 km) og ECMWF IFS (ca. 9 km) fra prognosearkiver,
-samt Copernicus ERA5 (0,25°) fra reanalyse, leveret via Open-Meteo.
-DMI er valgt ved åbning; modellen kan ændres i menuen. Hver model er forespurgt
-ved 247 punkter i 0,25° trin med `cell_selection=nearest` og `elevation=nan`.
+Vindlaget bruger DMI HARMONIE (ca. 2 km) fra prognosearkivet via Open-Meteo.
+Modellen er forespurgt ved 247 punkter i 0,25° trin med
+`cell_selection=nearest` og `elevation=nan`.
 Det er en sampling af de oprindelige modelgitre. De returnerede gitterkoordinater
 bruges i kortet. Vindfelterne har timeopløsning i UTC.
 
@@ -617,13 +617,10 @@ Vindpilene bruger de fire nærmeste gyldige modelpunkter med samme afstandsvægt
 vektor. Præcis ved et modelpunkt bruges dets uændrede vind. Vindstød interpoleres
 separat som en skalar; manglende værdier udelades. Vindstille vises som en prik.
 Uden for kortets datadækning og ved større huller tegnes ingen pile. Interpolationen
-tilføjer ingen nye observationer eller meteorologisk detalje. Både pile, valgfrie
-vindtalsmærker og værktøjstips beskriver de interpolerede værdier.
-
-Slå **Vis tal for vind / vindstød** til for tal, begge i m/s. Pilene viser den almindelige
-vindstyrke og retning, ikke stødenes styrke. Seneste hele time vises uden
-tidsinterpolation; kilde og gyldighedstid står under tidslinjen. Vindstød vises
-som en selvstændig modelparameter og erstatter ikke almindelig vindstyrke.
+tilføjer ingen nye observationer eller meteorologisk detalje. Værktøjstippet ved
+pilen viser kilden, timen og interpolerede værdier for vind og vindstød i m/s.
+Pilene viser den almindelige vindstyrke og retning. Kortet bruger data fra den
+seneste hele time.
 
 Prognosearkiver er sammenstykkede korte prognosehorisonter fra flere kørsler,
 ikke én bestemt prognose fra før start. Modeller kan afvige fra lokale forhold.
@@ -645,10 +642,9 @@ nedbør giver typisk stærkere ekkoer; andre ekkoer og fejl kan også forekomme.
 Vi omregner ikke til mm/time, da det ville kræve en usikker empirisk relation.
 Radaren har en selvstændig rød–pink–violet skala for stigende ekkostyrke,
 med grænser ved 0, 10, 20, 30, 40, 50 og 60 dBZ. Farverne er egne farver,
-ikke DMI’s regnskala. De præcise farver ligger i `weather.js` og
-`../scripts/prepare_radar.py`; farveskemaet versionsgemmes i radarens metadata,
-så billedcachen bliver genfarvet efter en ændring. Radarens gennemsigtighed
-styres separat i siden.
+ikke DMI’s regnskala. De præcise farver ligger i `../scripts/prepare_radar.py`.
+Farveskemaet versionsgemmes i radarens metadata. Radarlaget har en fast
+opacitet på 75 procent.
 
 Ekkoer under 0 dBZ og kildens `undetect` er gennemsigtige. Manglende radardata
 vises gråt. Hele manglende billeder skjules og markeres; et tidligere billede
@@ -890,10 +886,9 @@ Navne har fortsat fast skriftstørrelse; farver, klik og præsentation bevares.
 
 ## Lag pr. event
 
-Vind, vindtal, radar, TSS, skydeområde og synligheden af gemte noter tilhører
-hvert event, sammen med vindmodel og radarens gennemsigtighed. I redigering
-ændres kladden til det valgte event, når tiden står præcist på
-eventets tidspunkt. **Gem ændringer** gemmer laget på eventet. Ved andre tidspunkter ændres kun den aktuelle visning.
+Menuen **Lag** har afbrydere til **Vind**, **Nedbør** og **Grid**. Eventfanens
+**Brug i eventet** gemmer de tre valg sammen med resten af kortvisningen.
+Vejrets farver, vindmodel og radarens opacitet er faste.
 
 Forrige, Næste og direkte eventvalg genskaber de gemte lag. Snap på tidslinjen
 bevarer de aktuelle lag og skriver ikke til events. Onlineændringer ligger

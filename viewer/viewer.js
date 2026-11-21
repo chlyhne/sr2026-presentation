@@ -114,9 +114,9 @@ function renderMapCredit(){
  setAttr(scale,'transform',`translate(${scaleLeft+width-(rect.right-8)} 22)`);
  setAttr(scale,'data-placement',covered?'beside-list':'left');
  positionScreenGroup(group,point.x,point.y,1/Math.hypot(matrix.a,matrix.b));
- setAttr(scale,'data-meters',meters);setAttr(scale,'data-pixel-width',width);setAttr(scale,'aria-label',`Målestok: ${label}`);
+ setAttr(scale,'data-meters',meters);setAttr(scale,'data-pixel-width',width);setAttr(scale,'aria-label',srText("Målestok: {0}",srText(label)));
  setAttr(line,'d',`M${-width},-27v5H0v-5`);setAttr(text,'x',-width/2);
- if(text.textContent!==label)text.textContent=label;
+ if(text.textContent!==srText(label))text.textContent=srText(label);
 }
 const colours={...window.SR_EVENT.boatStyle.colours};
 let followedBoatId=null,timelineDragPointer=null;
@@ -128,18 +128,18 @@ let referenceBoatId=window.SR_EVENT.defaultReference,referencePreferenceError=''
 try{
  const stored=eventStorage.getItem(REFERENCE_BOAT_KEY);
  if(stored!==null){
-  if(!boats.some(boat=>boat.id===stored))throw Error('Ugyldig referencebåd.');
+  if(!boats.some(boat=>boat.id===stored))throw Error(srText('Ugyldig referencebåd.'));
   referenceBoatId=stored;
  }
-}catch(error){referencePreferenceError='Referencebåd kunne ikke indlæses: '+error.message;}
+}catch(error){referencePreferenceError=srText('Referencebåd kunne ikke indlæses: ')+error.message;}
 function referenceBoat(){return boats.find(boat=>boat.id===referenceBoatId);}
 function syncReferenceBoatControls(){
  const boat=referenceBoat();
  $('referenceBoat').value=boat.id;
  $('referenceBoatHeading').textContent=` / ${boat.name}`;
  $('mapHeading').title=window.SR_EVENT.title+' / '+boat.name;
- for(const basis of ['absolute','handicap'])$('trackStyle').querySelector(`option[value="${basis}"]`).textContent=`Mod ${boat.name} · ${basis==='absolute'?'absolut':'handicap'}`;
- $('trackStyle').querySelector('option[value="time"]').textContent=`Mod ${boat.name} · tid / 100 m ref.`;
+ for(const basis of ['absolute','handicap'])srBind($('trackStyle').querySelector(`option[value="${basis}"]`),'textContent',()=>srText("Mod {0} · {1}",boat.name,basis==='absolute'?srText('absolut'):srText('handicap')));
+ srBind($('trackStyle').querySelector('option[value="time"]'),'textContent',()=>srText("Mod {0} · tid / 100 m ref.",boat.name));
 }
 for(const boat of boats){
  const option=document.createElement('option');option.value=boat.id;option.textContent=boat.name;
@@ -148,12 +148,17 @@ for(const boat of boats){
 syncReferenceBoatControls();
 $('referenceBoat').onchange=async()=>{
  try{if(!await saveReferenceBoat($('referenceBoat').value))syncReferenceBoatControls();}
- catch(error){comparisonMessage('Referencebåden kunne ikke ændres: '+error.message);syncReferenceBoatControls();}
+ catch(error){comparisonMessage(srText('Referencebåden kunne ikke ændres: ')+error.message);syncReferenceBoatControls();}
 };
 const BOAT_COURSE_NAMES=Object.fromEntries(Object.entries(window.SR_EVENT.courses).map(([id,course])=>[id,course.name]));
-$('boatCourseSelect').replaceChildren(new Option('Alle baner',''),...Object.entries(BOAT_COURSE_NAMES).map(([id,name])=>new Option(name,id)));
+function updateBoatCourseOptions(){
+ const control=$('boatCourseSelect');
+ control.replaceChildren(new Option(srText('Alle baner'),''),...Object.entries(BOAT_COURSE_NAMES).map(([id,name])=>new Option(srText(name),id)));
+ control.value=boatCourseFilter;
+}
 const boatRaceClasses=new Map(Object.keys(BOAT_COURSE_NAMES).map(course=>[course,new Map(boats.filter(b=>b.course===course).map(b=>[b.raceClassId,b.raceClassName]))]));
 let boatSearchQuery='',boatFavouritesOnly=false,boatCourseFilter='',boatClassFilter='';
+updateBoatCourseOptions();
 function validBoatRaceFilters(course,raceClass){
  return (course===''||Object.hasOwn(BOAT_COURSE_NAMES,course))&&typeof raceClass==='string'
   &&(!raceClass||(course?boatRaceClasses.get(course).has(raceClass):[...boatRaceClasses.values()].some(classes=>classes.has(raceClass))));
@@ -167,15 +172,12 @@ function boatIsDisplayed(boat){
 }
 function createBoatHeartChoice(boat,className=''){
  const choice=document.createElement('input');choice.type='checkbox';choice.className='boat-heart-choice '+className;choice.value=boat.name;choice.checked=chosen.has(boat.name);
- choice.setAttribute('aria-label','Favorit: '+boat.name);choice.onchange=()=>setBoatSelected(boat,choice.checked);
+ srBindAttribute(choice,'aria-label',()=>srText('Favorit: {0}',boat.name));choice.onchange=()=>setBoatSelected(boat,choice.checked);
  const heart=el('svg',{class:'boat-heart-icon',width:20,height:20,viewBox:'0 0 24 24','aria-hidden':'true',fill:'none',stroke:'currentColor','stroke-width':1.7,'stroke-linecap':'round','stroke-linejoin':'round'});
  el('path',{d:'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z'},heart);
  return {choice,heart};
 }
 function syncBoatChoices(){
- for(const [i,b] of boats.entries()){
-  const input=$('choices').children[i]?.querySelector('input');if(input)input.checked=chosen.has(b.name);
- }
  for(const input of $('visibleBoatsList').querySelectorAll('input[type=checkbox]'))input.checked=chosen.has(input.value);
 }
 function setBoatSelected(boat,selected){
@@ -192,44 +194,43 @@ const BOAT_COLOURS_KEY='boat-colour-overrides';
 const localBoatColours=JSON.parse(eventStorage.getItem(BOAT_COLOURS_KEY)||'{}');
 for(const boat of boats)if(Object.hasOwn(localBoatColours,boat.id)){
  const colour=localBoatColours[boat.id];
- if(!/^#[0-9a-f]{6}$/i.test(colour))throw Error('Ugyldig lokal bådfarve.');
+ if(!/^#[0-9a-f]{6}$/i.test(colour))throw Error(srText('Ugyldig lokal bådfarve.'));
  colours[boat.name]=colour;
 }
-for(const b of boats){const label=document.createElement('label');label.className='boat';const {choice,heart}=createBoatHeartChoice(b);const dot=document.createElement('span');dot.className='dot';dot.style.background=colours[b.name];label.append(choice,heart,dot,document.createTextNode(b.name));$('choices').append(label)}
 for(const [name,lon,lat] of window.SR_EVENT.places){const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('places'));el('circle',{cx:0,cy:0,r:2,fill:'#173d4c'},group);const n=el('text',{x:4,y:-4,fill:'#173d4c','font-size':11,stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);n.textContent=name}
 // User-supplied mandatory marks; preserve the original decimal minutes.
 for(const [id,lon,lat,title] of window.SR_EVENT.marks){
  const [x,y]=xy([lon,lat]),group=screenGroup(x,y,$('seamarks'));
  el('circle',{id,cx:0,cy:0,r:5,fill:'#e02020',stroke:'#ffffff','stroke-width':1},group);
- el('title',{},group).textContent=title;
+ srBind(el('title',{},group),'textContent',()=>srText(title));
 }
 // Rute T is an open line through the user's waypoints, in the base map layer.
 for(const feature of D.course_lines.features){
  const {kind,name,reference_boat,reference_utc}=feature.properties,coordinates=feature.geometry.coordinates;
  const colour=kind==='start'||kind==='start-finish'?'#087b3d':'#c62738';
  const group=el('g',{'data-course-line':kind},$('courseLines'));
- el('title',{},group).textContent=`${name} · TracTrac${reference_boat?` · ${reference_boat}`:''}${reference_utc?` · start ${fmt(Date.parse(reference_utc)/1000)}`:''}`;
+ srBind(el('title',{},group),'textContent',()=>`${srText(name)} · TracTrac${reference_boat?` · ${reference_boat}`:''}${reference_utc?srText(' · start {0}',fmt(Date.parse(reference_utc)/1000)):''}`);
  el('path',{d:path(coordinates),fill:'none',stroke:'#ffffff','stroke-width':5,'vector-effect':'non-scaling-stroke'},group);
  el('path',{'data-line-geometry':kind,d:path(coordinates),fill:'none',stroke:colour,'stroke-width':2.5,
   'stroke-dasharray':kind==='finish'?'6 4':'none','vector-effect':'non-scaling-stroke'},group);
  for(const [i,coordinate] of coordinates.entries()){
   const [x,y]=xy(coordinate),marker=screenGroup(x,y,group);
   el('circle',{r:3,fill:colour,stroke:'#ffffff','stroke-width':1},marker);
-  el('title',{},marker).textContent=feature.properties.endpoints[i].name;
+  srBind(el('title',{},marker),'textContent',()=>srText(feature.properties.endpoints[i].name));
  }
  const [x,y]=xy([(coordinates[0][0]+coordinates[1][0])/2,(coordinates[0][1]+coordinates[1][1])/2]);
  const label=screenGroup(x,y,group);
- el('text',{x:0,y:-10,'text-anchor':'middle',fill:colour,'font-size':12,'font-weight':750,
-  stroke:'#ffffff','stroke-width':3,'paint-order':'stroke'},label).textContent=name;
+ srBind(el('text',{x:0,y:-10,'text-anchor':'middle',fill:colour,'font-size':12,'font-weight':750,
+  stroke:'#ffffff','stroke-width':3,'paint-order':'stroke'},label),'textContent',()=>srText(name));
 }
 for(const feature of D.route_t.features){
  const line=el('path',{'data-route-id':feature.id,d:path(feature.geometry.coordinates),fill:'none',
   stroke:'#000000','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round',
   'vector-effect':'non-scaling-stroke'},$('routeT'));
- el('title',{},line).textContent=feature.properties.name+' · måtte ikke krydses under sejladsen';
+ srBind(el('title',{},line),'textContent',()=>feature.properties.name+srText(' · måtte ikke krydses under sejladsen'));
 }
 let interval=null;
-const windLabels={era5:'ERA5',ecmwf_ifs:'ECMWF IFS',dmi_harmonie_arome_europe:'DMI HARMONIE'};
+
 let radarKey=null,radarStatus='indlæser …',radarReady=Promise.resolve();
 const radarImageBuffer=new WeatherImageBuffer('radarImage');
 function prepareNextRadar(time){
@@ -239,32 +240,32 @@ function prepareNextRadar(time){
 }
 function renderRadar(time){
  const t=Math.floor(time/600)*600;
- $('precipitation').setAttribute('opacity',$('rainOpacity').value);
  const enabled=$('rain').checked,key=`${t}:${enabled}`;
  if(key===radarKey){if(enabled&&radarImageBuffer.front?.key===String(t))prepareNextRadar(time);return;}
  radarKey=key;
- if(!enabled){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='slået fra';$('rainPeriod').textContent='Radar slået fra';return;}
+ if(!enabled){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='slået fra';$('rainPeriod').textContent='';return;}
  const frame=D.radar?.frames.find(f=>f.time===t);
- if(!frame){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='mangler';$('rainPeriod').textContent=`DMI radar mangler ved ${fmt(t)}`;prepareNextRadar(time);return;}
+ if(!frame){radarImageBuffer.hide();radarReady=Promise.resolve();radarStatus='mangler';srBind($('rainPeriod'),'textContent',()=>srText("DMI radar mangler ved {0}",fmt(t)));prepareNextRadar(time);return;}
  const finish=()=>{
-  radarStatus=fmt(t);$('rainPeriod').textContent=`DMI radar: ${fmt(t)} · dBZ`;
+  radarStatus=fmt(t);srBind($('rainPeriod'),'textContent',()=>srText("DMI radar: {0} · dBZ",fmt(t)));
   prepareNextRadar(time);status(currentTime());
  };
  const entry=radarImageBuffer.prepare(String(t),()=>frame.file,true);
  if(radarImageBuffer.display(String(t))){radarReady=Promise.resolve();finish();return;}
  // Keep the previous frame on screen while an unanticipated seek loads.
- radarStatus='indlæser …';$('rainPeriod').textContent=`DMI radar: ${fmt(t)} · indlæser …`;
+ radarStatus='indlæser …';srBind($('rainPeriod'),'textContent',()=>srText("DMI radar: {0} · indlæser …",fmt(t)));
  radarReady=entry.promise.then(()=>{
   if(key!==radarKey)return;
-  if(entry.error){radarStatus='kunne ikke indlæses';$('rainPeriod').textContent=`DMI radar kunne ikke indlæses ved ${fmt(t)}`;status(currentTime());return;}
+  if(entry.error){radarStatus='kunne ikke indlæses';srBind($('rainPeriod'),'textContent',()=>srText("DMI radar kunne ikke indlæses ved {0}",fmt(t)));status(currentTime());return;}
   if(radarImageBuffer.display(String(t)))finish();
  });
 }
 
 function status(t){
- const model=$('windModel').value,hour=Math.floor(t/3600)*3600,windAvailable=!!D.wind_models[model][0]?.hourly.time.includes(hour);
- if(!window.SR_EVENT.features.weather){$('status').textContent=`Tracks: ${fmt(t)} · Vejrdata er ikke importeret for dette stævne`;return;}
- $('status').textContent=`Vind: ${windLabels[model]} ${windAvailable?fmt(hour):'data mangler ved '+fmt(hour)} ${$('rain').checked?' · Radar DMI: '+radarStatus:''} · Tracks: interpoleret ved ${fmt(t)} · Noter gemmes i denne browser`;
+ const hour=Math.floor(t/3600)*3600,windAvailable=!!D.wind_models[WIND_MODEL]?.[0]?.hourly.time.includes(hour);
+ if(!window.SR_EVENT.features.weather){$('status').textContent=srText("Tracks: {0} · Vejrdata er ikke importeret for dette stævne",fmt(t));return;}
+ setBoatListText($('windPeriod'),$('wind').checked&&!windAvailable?srText("Vinddata mangler ved {0}",fmt(hour)):'');
+ $('status').textContent=srText("Vind: {0} {1} {2} · Tracks: interpoleret ved {3} · Noter gemmes i denne browser",WIND_MODEL_LABEL,windAvailable?fmt(hour):srText('data mangler ved ')+fmt(hour),$('rain').checked?srText(' · Radar DMI: ')+srText(radarStatus):'',fmt(t));
 }
 const WIND_ARROW_SPACING=90;
 let windArrowKey=null;
@@ -276,11 +277,10 @@ function renderWindArrows(t=currentTime()) {
  }
  const map=$('map'),matrix=mapViewport()?.matrix;if(!matrix)return;
  const inverse=matrix.inverse(),scale=1/Math.hypot(matrix.a,matrix.b),rect=mapViewport().rect;
- const model=$('windModel').value,showNumbers=$('windNumbers').checked;
- const key=[Math.floor(t/3600),model,showNumbers,matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.width,rect.height].join(':');
+ const key=[Math.floor(t/3600),matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.width,rect.height].join(':');
  if(key===windArrowKey)return;
  windArrowKey=key;layer.replaceChildren();
- const samples=windSamplesAt(model,t);
+ const samples=windSamplesAt(WIND_MODEL,t);
  // The lattice belongs to the visible map. Zoom and pan change the geographic
  // location sampled at each node, while its distance to the next stays 90 px.
  for(let sy=WIND_ARROW_SPACING/2;sy<rect.height;sy+=WIND_ARROW_SPACING) {
@@ -294,11 +294,7 @@ function renderWindArrows(t=currentTime()) {
     const length=9+wind.speed*1.4,dx=wind.east/wind.speed*length,dy=-wind.north/wind.speed*length;
     el('line',{x1:-dx/2,y1:-dy/2,x2:dx/2,y2:dy/2,stroke:'#183b49','stroke-width':2,'marker-end':'url(#arrow)'},group);
    } else el('circle',{r:2,fill:'#183b49'},group);
-   if(showNumbers) {
-    const text=el('text',{x:5,y:19,'font-size':10,fill:'#173d4c',stroke:'#f4fafb','stroke-width':3,'paint-order':'stroke'},group);
-    text.textContent=wind.speed.toFixed(1)+' / '+(wind.gust==null?'–':wind.gust.toFixed(1));
-   }
-   el('title',{},group).textContent=`${windLabels[model]} · interpoleret: vind ${wind.speed.toFixed(1)} m/s, vindstød ${wind.gust==null?'mangler':wind.gust.toFixed(1)+' m/s'}, ${wind.direction==null?'vindstille':'fra '+wind.direction.toFixed(0)+'°'}, ${fmt(Math.floor(t/3600)*3600)}`;
+   srBind(el('title',{},group),'textContent',()=>srText("{0} · interpoleret: vind {1} m/s, vindstød {2}, {3}, {4}",WIND_MODEL_LABEL,wind.speed.toFixed(1),wind.gust==null?srText('mangler'):wind.gust.toFixed(1)+' m/s',wind.direction==null?srText('vindstille'):srText('fra {0}°',wind.direction.toFixed(0)),fmt(Math.floor(t/3600)*3600)));
   }
  }
 }
@@ -335,6 +331,12 @@ function drawViewport(){
  layoutVisibleBoats();if(!SIMPLE_IPHONE_TRACKS)renderBoatCompare();renderMapCredit();
 }
 const boatMarkerNodes=new Map();
+function updateBoatMarkerLabel({boat,group,title,lastPosition:position,lastTime:time}){
+ setAttr(group,'aria-label',srText('Vis {0} i bådlisten',boat.name));
+ const description=`${boat.name} · ${handicapTracksEnabled?srText('handicapkompenseret position · oprindeligt spor ved ')+fmt(position.replayTime):position.interpolated?srText('interpoleret position ved ')+fmt(time):srText('måling fra ')+fmt(position.sourceTime)}`;
+ if(title.textContent!==description)title.textContent=description;
+}
+
 function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  clearTrackHover();
  const markerLayer=$('boatMarkers');
@@ -357,14 +359,13 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
    renderBoatIcon(symbols,b,position,position.replayTime,color);
    record={boat:b,wrapper,group,symbols,title,icon:group.querySelector('.boat-icon'),name:null};boatMarkerNodes.set(b.id,record);
   }
-  const {wrapper,group,title,icon}=record;
+  const {wrapper,group,icon}=record;
   setAttr(group,'data-screen-x',x);setAttr(group,'data-screen-y',y);setAttr(group,'data-source-time',position.replayTime);
   if(handicapTracksEnabled)setAttr(group,'data-handicap-compensated','true');else group.removeAttribute('data-handicap-compensated');
   if(position.finished)setAttr(group,'data-handicap-finished','true');else group.removeAttribute('data-handicap-finished');
   setAttr(group,'role','button');setAttr(group,'tabindex','0');
-  setAttr(group,'aria-label','Vis '+b.name+' i bådlisten');
-  const description=`${b.name} · ${handicapTracksEnabled?'handicapkompenseret position · oprindeligt spor ved '+fmt(position.replayTime):position.interpolated?'interpoleret position ved '+fmt(t):'måling fra '+fmt(position.sourceTime)}`;
-  if(title.textContent!==description)title.textContent=description;
+  record.lastPosition=position;record.lastTime=t;
+  updateBoatMarkerLabel(record);
   setAttr(icon.querySelector('.boat-hull'),'fill',color);
   if(record.name)setAttr(record.name,'fill',color);
   setAttr(icon,'data-lat',position.point[1]);setAttr(icon,'data-course',boatCourse(b.points,position.replayTime));
@@ -384,7 +385,7 @@ function renderTracks(t=currentTime(),{includeSpeedPins=true}={}){
  resizeSymbols();if(includeSpeedPins)renderSpeedPins();updateVisibleBoats(t);
  if(markerTopologyChanged)scheduleBoatHoverRefresh();
 }
-function step(n){syncTimelineViewport();if(finishEventEditing(()=>step(n))&&!$('time').disabled){stopPlayback();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
+function step(n){syncTimelineViewport();if(finishEventEditing()&&!$('time').disabled){stopPlayback();leaveOpenedEvent();setCurrentTime(timeAtOffset(+$('time').value+n));requestRender()}}
 function setMapLayersExpanded(expanded){
  $('mapLayersPanel').hidden=!expanded;
  $('mapLayersToggle').setAttribute('aria-expanded',String(expanded));
@@ -401,21 +402,20 @@ document.addEventListener('pointerdown',event=>{
  if(!$('mapTracks').contains(event.target))setMapTracksExpanded(false);
 });
 document.addEventListener('keydown',event=>{
- if($('eventChangesDialog').open)return;
+ if(document.querySelector('dialog[open]'))return;
  if(event.key==='Escape')for(const name of ['mapLayers','mapTracks'])if(!$(name+'Panel').hidden){
   event.preventDefault();event.stopImmediatePropagation();$(name+'Panel').hidden=true;$(name+'Toggle').setAttribute('aria-expanded','false');$(name+'Toggle').focus();return;
  }
 },true);
-for(const id of ['wind','windModel','windNumbers','rain'])$(id).onchange=()=>requestRender();$('rainOpacity').oninput=()=>{$('precipitation').setAttribute('opacity',$('rainOpacity').value);window.SRBackground?.invalidate();};
 // Advance from elapsed wall time, retaining fractions for smooth motion at 1x.
 let playbackTickTime=0,playbackRate=+$('playbackSpeed').value,eventPlaybackTarget=null;
 function syncPlaybackControls(){
- const playing=interval!==null,label=playing?'Pause':'Afspil',speed=$('playbackSpeed'),index=speed.selectedIndex;
+ const playing=interval!==null,label=playing?srText('Pause'):srText('Afspil'),speed=$('playbackSpeed'),index=speed.selectedIndex;
  $('play').setAttribute('aria-label',label);$('play').title=label;
  $('playIcon').toggleAttribute('hidden',playing);$('pauseIcon').toggleAttribute('hidden',!playing);
  $('back').disabled=index<=0;$('next').disabled=index>=speed.options.length-1;
- $('back').title=index>0?'Lavere hastighed: '+speed.options[index-1].textContent:'Laveste hastighed: '+speed.options[0].textContent;
- $('next').title=index<speed.options.length-1?'Højere hastighed: '+speed.options[index+1].textContent:'Højeste hastighed: '+speed.options[index].textContent;
+ srBind($('back'),'title',()=>index>0?srText('Lavere hastighed: ')+speed.options[index-1].textContent:srText('Laveste hastighed: ')+speed.options[0].textContent);
+ srBind($('next'),'title',()=>index<speed.options.length-1?srText('Højere hastighed: ')+speed.options[index+1].textContent:srText('Højeste hastighed: ')+speed.options[index].textContent);
 }
 function updatePlaybackSpeed(){
  if(interval)advancePlayback(performance.now());
@@ -439,6 +439,7 @@ function centerViewOnBoat(boat){
 function followBoatOnMap(id){
  followedBoatId=id;
  if(centerViewOnBoat(boats.find(boat=>boat.id===id)))setview();
+ if(typeof openedEvent!=='undefined'&&openedEvent){followedScene=true;updateEventSceneControls();}
 }
 function centerPlaybackOnReferenceBoat(){
  if(centerViewOnBoat(referenceBoat()))setview();
@@ -461,7 +462,8 @@ function advancePlayback(now){
 }
 function startPlayback({target=null}={}){
  if(interval!==null||hasRenderingFailure())return;
- if((!target&&currentTime()>=viewerEndTime())||!finishEventEditing(()=>startPlayback({target})))return;
+ if((!target&&currentTime()>=viewerEndTime())||!finishEventEditing())return;
+ leaveOpenedEvent();if(target)followedBoatId=null;
  prepareSelectedTracks();
  if(playbackGateMeasurement===null){
   const points=currentGateMeasurement().map(point=>[...point]);
@@ -471,13 +473,13 @@ function startPlayback({target=null}={}){
  playbackRate=+$('playbackSpeed').value;playbackTickTime=performance.now();
  $('play').disabled=false;interval=setInterval(()=>advancePlayback(performance.now()),50);syncPlaybackControls();
  if(target)centerPlaybackOnReferenceBoat();
+ updatePresentationControls();
 }
 $('play').onclick=()=>{
  if(interval){stopPlayback();return;}
  startPlayback();
 };
 $('playbackSpeed').onchange=updatePlaybackSpeed;
-document.addEventListener('keydown',e=>{if(document.body.classList.contains('presenting'))return;if(e.key==='Escape'){followedBoatId=null;cancelDrawingGesture();setDrawingTool('pan');cancelPlacement();closeTrackSpeedSelection();}if(['TEXTAREA','INPUT','SELECT','BUTTON'].includes(e.target.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();step(e.shiftKey?60:1)}if(e.key==='ArrowLeft'){e.preventDefault();step(e.shiftKey?-60:-1)}});
 let view=[...window.SR_EVENT.initialView];
 function setview(){
  if(followedBoatId)centerViewOnBoat(boats.find(boat=>boat.id===followedBoatId));
@@ -486,11 +488,8 @@ function setview(){
  invalidateTimelineViewport();requestRender({viewportOnly:true});
 }
 function changeMapView(next){
- const target=editableSettingsEvent();
- if(target&&!stageEventChanges(target,{view:[...next]}))return false;
- view=next;setview();return true;
+ view=next;setview();markEventCameraChange();
 }
-$('reset').onclick=()=>{followedBoatId=null;changeMapView(window.SR_EVENT.initialView);};
 const MIN_MAP_VIEW_WIDTH=.05,MAX_MAP_VIEW_WIDTH=1800;
 $('map').addEventListener('wheel',e=>{e.preventDefault();if(drawingGesture||navigationGesture||(!e.deltaY&&!e.deltaX))return;const f=Math.max(MIN_MAP_VIEW_WIDTH,Math.min(MAX_MAP_VIEW_WIDTH,view[2]*((e.deltaY||e.deltaX)>0?1.15:1/1.15)))/view[2];if(f===1)return;const anchor=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);changeMapView([anchor.x+(view[0]-anchor.x)*f,anchor.y+(view[1]-anchor.y)*f,view[2]*f,view[3]*f])},{passive:false});
 let drag=null;
@@ -522,7 +521,7 @@ map.onpointerdown=e=>{
  followedBoatId=null;
  e.preventDefault();
  drag={pointerId:e.pointerId,pointerType:e.pointerType,pointers:new Map([[e.pointerId,{x:e.clientX,y:e.clientY}]]),
-  x:e.clientX,y:e.clientY,view:[...view],initialView:[...view],event:editableSettingsEvent(),
+  x:e.clientX,y:e.clientY,view:[...view],event:openedEvent,
   boatId:e.target.closest('[data-boat-marker]')?.dataset.boatMarker,
   noteIndex:e.target.closest('[data-note-index]')?.dataset.noteIndex,
   trackBoatId:e.target.closest('[data-track-boat-id]')?.dataset.trackBoatId,
@@ -570,15 +569,13 @@ function endPan(e){
   return;
  }
  const click=e.type==='pointerup'&&!drag.moved,{boatId,noteIndex,trackBoatId,speedKey,speedAction}=drag;
- if(drag.moved&&drag.event&&drag.event===editableSettingsEvent()&&!stageEventChanges(drag.event,{view:[...view]})){
-  view=drag.initialView;setview();
- }
+ if(drag.moved&&drag.event===openedEvent)markEventCameraChange();
  drag=null;map.classList.remove('panning');
  if(map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);
  if(click){
   if(navigationMode==='route')addNavigationPoint(e);
   else if(placingNote)placeAnnotation(e);
-  else if(noteIndex!==undefined&&!document.body.classList.contains('presenting'))beginNoteEditing(notes[+noteIndex]);
+  else if(noteIndex!==undefined)beginNoteEditing(notes[+noteIndex]);
   else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
   else if(boatId)focusBoatInList(boatId);
   else if(trackBoatId)chooseTrackSpeed(e,trackBoatId);
@@ -610,6 +607,6 @@ map.addEventListener('keydown',e=>{
 
 $('map').setAttribute('viewBox',window.SR_EVENT.initialView.join(' '));
 $('mapBase').setAttribute('viewBox',window.SR_EVENT.initialView.join(' '));
-if(!window.SR_EVENT.features.weather){for(const id of ['wind','windModel','windNumbers','rain']){$(id).disabled=true;$(id).title='Vejrdata er ikke importeret for dette stævne';} $('wind').checked=false;$('rain').checked=false;}
+if(!window.SR_EVENT.features.weather){for(const id of ['wind','rain']){$(id).disabled=true;srBind($(id),'title',()=>srText('Vejrdata er ikke importeret for dette stævne'));} $('wind').checked=false;$('rain').checked=false;}
 
-for(const [layer,enabled] of Object.entries(window.SR_EVENT.layers)){const control=$(layer);control.disabled=!enabled;if(!enabled)control.checked=false;control.closest('label').hidden=!enabled;$(layer+'Info').hidden=!enabled;}
+let sceneOverlays={...window.SR_EVENT.layers,annotationsVisible:true};

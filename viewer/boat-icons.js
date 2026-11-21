@@ -13,10 +13,10 @@ const boatHulls={};
 async function loadBoatHulls(){
  for(const name of ['modern','classic','common']){
   const response=await fetch(name+'.svg');
-  if(!response.ok)throw new Error('Bådformen '+name+' kunne ikke indlæses.');
+  if(!response.ok)throw new Error(srText('Bådformen ')+name+srText(' kunne ikke indlæses.'));
   const svg=new DOMParser().parseFromString(await response.text(),'image/svg+xml');
   const d=svg.querySelector('path')?.getAttribute('d');
-  if(!d)throw new Error('Bådformen '+name+' mangler et skrog.');
+  if(!d)throw new Error(srText('Bådformen ')+name+srText(' mangler et skrog.'));
   const measuring=document.createElementNS('http://www.w3.org/2000/svg','svg');
   measuring.style.cssText='position:absolute;width:0;height:0;visibility:hidden';
   const path=document.createElementNS(measuring.namespaceURI,'path');path.setAttribute('d',d);

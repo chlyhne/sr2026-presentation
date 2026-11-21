@@ -1,7 +1,8 @@
+const viewerTestContext=require('./viewer-test-locale.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{test}=require('node:test');
 const read=name=>fs.readFileSync('viewer/'+name+'.js','utf8');
 test('course and race filters combine with favourites and search, and support all boats',()=>{
- const source=read('viewer'),context=vm.createContext({window:{SR_EVENT:{courses:{groensund:{name:'Grønsund'},boegestroemmen:{name:'Bøgestrømmen'}}}},Option:class{},$:()=>({replaceChildren(){}}),boats:[
+ const source=read('viewer'),context=viewerTestContext({window:{SR_EVENT:{courses:{groensund:{name:'Grønsund'},boegestroemmen:{name:'Bøgestrømmen'}}}},Option:class{},$:()=>({replaceChildren(){}}),boats:[
   {id:'g1',name:'Alpha',course:'groensund',raceClassId:'race1',raceClassName:'Two-Racing'},
   {id:'g2',name:'Beta',course:'groensund',raceClassId:'race2',raceClassName:'Multi-Cruising'},
   {id:'b1',name:'Gamma',course:'boegestroemmen',raceClassId:'race1',raceClassName:'Two-Racing'}
@@ -18,7 +19,7 @@ test('course and race filters combine with favourites and search, and support al
  assert.equal(context.validBoatRaceFilters('invalid',''),false);
 });
 test('route-specific mirrors select stored arrays without rebuilding profiles',()=>{
- const context=vm.createContext({});vm.runInContext(read('track-files')+';this.Files=TrackFiles;',context);
+ const context=viewerTestContext({});vm.runInContext(read('track-files')+';this.Files=TrackFiles;',context);
  const files=new context.Files(),arrays={};
  for(const course of ['groensund','boegestroemmen'])for(const name of ['samples','stations','timeSamples','timeStations'])arrays[course+'_'+name]=new Float32Array([course==='groensund'?1:2]);
  files.common=new Map([['boat',{arrays}]]);
@@ -26,7 +27,7 @@ test('route-specific mirrors select stored arrays without rebuilding profiles',(
  assert.equal(files.mirror('boat','boegestroemmen').stations,arrays.boegestroemmen_stations);
 });
 test('compact detail fields favour the allocation hiding the fewest letters',()=>{
- const source=read('boat-list'),context=vm.createContext({});
+ const source=read('boat-list'),context=viewerTestContext({});
  vm.runInContext(source.slice(source.indexOf('function allocateBoatDetailWidths('),source.indexOf('let boatDetailAvailableWidth=')),context);
  const allocate=context.allocateBoatDetailWidths;
  const wide=Array.from({length:6},(_,i)=>i*10),narrow=Array.from({length:13},(_,i)=>i*5);
@@ -38,7 +39,7 @@ test('compact detail fields favour the allocation hiding the fewest letters',()=
  }
 });
 test('boat list values use the track units, including the reference boat',()=>{
- const source=read('speed-pins'),comparison={basis:'time'},context=vm.createContext({comparison,
+ const source=read('speed-pins'),comparison={basis:'time'},context=viewerTestContext({comparison,
   trackUsesComparison:()=>true,referenceBoat:()=>({id:'ref',name:'Reference'}),
   webglTracks:{comparisonSample:()=>({timeGain:12.5,absoluteGain:-1.2,handicapGain:0.8})}});
  vm.runInContext(source.slice(source.indexOf('function trackPinValue('),source.indexOf('function chooseTrackSpeed(')),context);
@@ -52,7 +53,7 @@ test('boat list values use the track units, including the reference boat',()=>{
 test('hover refresh follows the current hit target and coalesces layout changes',()=>{
  const source=read('boat-list'),frames=[];let hit=null;
  const target=(kind,id)=>({closest:selector=>selector.startsWith('#visibleBoatsList')&&kind==='list'?{dataset:{boatId:id}}:selector.startsWith('#map')&&kind==='map'?{dataset:{boatMarker:id}}:null});
- const context=vm.createContext({hoveredVisibleBoatId:null,hoveredMapBoatId:null,document:{elementFromPoint:()=>hit},
+ const context=viewerTestContext({hoveredVisibleBoatId:null,hoveredMapBoatId:null,document:{elementFromPoint:()=>hit},
   requestAnimationFrame:callback=>{frames.push(callback);return frames.length;},refreshVisibleBoatHighlight(){},
   setHoveredMapBoat(id){context.hoveredMapBoatId=id;}});
  vm.runInContext(source.slice(source.indexOf('let boatHoverPoint='),source.indexOf("document.addEventListener('pointermove'")),context);
@@ -70,7 +71,7 @@ test('hover refresh follows the current hit target and coalesces layout changes'
 test('boat row expansion leaves favourites unchanged and colour changes persist locally and invalidate GPU colour',()=>{
  const source=read('boat-list'),saved=new Map(),attributes={},properties={},frames=[];
  const row={extra:{hidden:true},node:{dataset:{boatId:'boat1'},setAttribute:(k,v)=>attributes[k]=v,style:{setProperty:(k,v)=>properties[k]=v}},colour:{value:''}};
- const context=vm.createContext({localBoatColours:{},BOAT_COLOURS_KEY:'boat-colour-overrides',eventStorage:{setItem:(k,v)=>saved.set(k,v)},
+ const context=viewerTestContext({localBoatColours:{},BOAT_COLOURS_KEY:'boat-colour-overrides',eventStorage:{setItem:(k,v)=>saved.set(k,v)},
   colours:{Alpha:'#112233'},webglTracks:{boatColours:new Map(),lastKey:'cached'},boatCompareRenderKey:'cached',
   visibleBoatRows:new Map([['boat1',row]]),$:()=>({children:[]}),requestRender:()=>frames.push(1),scheduleBoatHoverRefresh(){}});
  vm.runInContext(source.slice(source.indexOf('const expandedBoatRows='),source.indexOf('function createVisibleBoatRow(')),context);
@@ -88,7 +89,7 @@ test('boat row expansion leaves favourites unchanged and colour changes persist 
 
 test('map boat activation opens, expands and focuses its list row without toggling on repeat',()=>{
  const source=read('boat-list'),calls=[],row={extra:{hidden:true},node:{}};
- const context=vm.createContext({followBoatOnMap:id=>calls.push(['follow',id]),expandedBoatRows:new Set(),visibleBoatRows:new Map([['boat1',row]]),
+ const context=viewerTestContext({followBoatOnMap:id=>calls.push(['follow',id]),expandedBoatRows:new Set(),visibleBoatRows:new Map([['boat1',row]]),
   setVisibleBoatsExpanded:value=>calls.push(['panel',value]),toggleBoatRow:r=>{r.extra.hidden=false;calls.push(['expand']);},
   scrollVisibleBoatRow:node=>calls.push(['scroll',node===row.node]),refreshVisibleBoatHighlight(){},scheduleBoatHoverRefresh(){}});
  row.node.focus=options=>calls.push(['focus',options.preventScroll]);
@@ -103,7 +104,7 @@ test('map boat activation opens, expands and focuses its list row without toggli
 
 test('clicked boat camera keeps the boat centred through zoom and playback without changing reference',()=>{
  const source=read('viewer'),boat={id:'follow'},reference={id:'reference'};
- let point=[100,200];const context=vm.createContext({boats:[boat],followedBoatId:null,timelineDragPointer:null,view:[0,0,80,40],
+ let point=[100,200];const context=viewerTestContext({boats:[boat],followedBoatId:null,timelineDragPointer:null,view:[0,0,80,40],
   displayBoatPosition:()=>({point}),currentTime:()=>0,xy:p=>p,referenceBoat:()=>reference,
   setAttr(){},$:()=>({}),scheduleBoatHoverRefresh(){},invalidateTimelineViewport(){},requestRender(){}});
  vm.runInContext(source.slice(source.indexOf('function centerViewOnBoat('),source.indexOf('function advancePlayback(')),context);

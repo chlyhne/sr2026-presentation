@@ -173,6 +173,21 @@ Kør fra denne projektmappe:
 python3 scripts/serve_viewer.py
 ```
 
+Åbn en sejlads og klik på bogikonet for at åbne eventfanen. Vælg et event for at
+redigere teksten direkte eller tilføje et billede eller en tegning. Ændringer af
+eventindholdet gemmes i browserens kladde. Med **Nyt event her** oprettes et event
+ved kortets aktuelle tidspunkt. **Slet event** fjerner det åbne event fra kladden.
+
+Sprogknappen i kortets værktøjslinje og på stævneoversigten skifter mellem dansk,
+engelsk, tysk og fransk på den åbne side. Valget gemmes i browseren. Direkte links
+kan også bruge `?lang=da`, `?lang=en`, `?lang=de` eller `?lang=fr`.
+
+Brug kortet, lagene og bådlisten til at afprøve eventets visning. Eventfanen viser,
+hvilke dele af visningen der afviger. **Brug i eventet** gemmer visningen i kladden.
+**Gendan kortvisning** henter eventets gemte opsætning, og **Fortryd** kan rulle den
+seneste lagring af kortvisningen tilbage. Online gør **Udgiv** under
+**Præsentation** kladden offentlig.
+
 Node.js 24 og Python 3 skal være installeret. Serveren forbereder den
 komprimerede kildepakke før opstart og genbruger den, når kildefingeraftrykket
 ikke er ændret. Sammenligningsprofiler beregnes på GPU'en ved indlæsning.
@@ -273,7 +288,8 @@ Se [viewerens vejledning](viewer/README.md) for kortets betjening og datakilder.
 
 GitHub Pages viser den udgivne præsentation. Redaktøren åbnes på backendens
 `/admin/`, hvor login og API ligger på samme origin. Brugere med skriverettighed
-til dette repository kan redigere og udgive. Andre kan se den offentlige visning.
+til dette repository kan redigere og udgive fra eventfanen i den fælles tracker.
+Andre kan se den offentlige visning.
 Backenden kontrollerer rettigheder ved gemning og upload.
 
 [Opsæt GitHub Pages](docs/hosting.md), følg [backendens opsætning](backend/README.md),

@@ -1,3 +1,4 @@
+const viewerTestContext=require('./viewer-test-locale.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const navigation=fs.readFileSync('viewer/navigation.js','utf8'),viewer=fs.readFileSync('viewer/viewer.js','utf8');
 // Exercise the production SVG composition without loading a browser or fleet.
@@ -5,7 +6,7 @@ const element=(tag,attrs={},parent)=>{
  const node={tag,attrs,children:[],style:{},listeners:{},textContent:'',setAttribute(key,value){this.attrs[key]=value;},append(child){this.children.push(child);},addEventListener(type,fn){this.listeners[type]=fn;}};
  if(parent)parent.children.push(node);return node;
 };
-const context=vm.createContext({document:{createElementNS:(ns,tag)=>element(tag)},el:element,screenGroup:(x,y,parent)=>element('g',{'data-screen-x':x,'data-screen-y':y},parent)});
+const context=viewerTestContext({document:{createElementNS:(ns,tag)=>element(tag)},el:element,screenGroup:(x,y,parent)=>element('g',{'data-screen-x':x,'data-screen-y':y},parent)});
 vm.runInContext(viewer.split('\n').find(line=>line.startsWith('const xy=')),context);
 const project=vm.runInContext('xy',context);
 vm.runInContext(navigation.slice(navigation.indexOf('function drawGateResults('),navigation.indexOf("$('mapMeasureToggle').onclick")),context);

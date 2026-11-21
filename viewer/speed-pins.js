@@ -1,9 +1,8 @@
 // Pins identify a boat and source time. Their values follow the visible track style.
 let speedPins=JSON.parse(SRStorage.getItem('sr2026-speed-pins')??'[]'),pickedTrackSpeed=null;
 let viewingSpeedPins=null;
-function speedPinsAreTemporary(){return window.SR_READONLY||document.body.classList.contains('presenting');}
-function visibleSpeedPins(){return speedPinsAreTemporary()?(viewingSpeedPins??speedPins):speedPins;}
-if(!Array.isArray(speedPins)||speedPins.some(pin=>!pin||typeof pin.id!=='string'||typeof pin.boatId!=='string'||!Number.isFinite(pin.time)||!boats.some(boat=>boat.id===pin.boatId)))throw Error('Ugyldige gemte fartmærker.');
+function visibleSpeedPins(){return viewingSpeedPins??speedPins;}
+if(!Array.isArray(speedPins)||speedPins.some(pin=>!pin||typeof pin.id!=='string'||typeof pin.boatId!=='string'||!Number.isFinite(pin.time)||!boats.some(boat=>boat.id===pin.boatId)))throw Error(srText('Ugyldige gemte fartmærker.'));
 function trackSpeedSample(boat,time){
  const points=boat.points,i=timeBoundary(points,time,true)-1;if(i<0)return null;
  const a=points[i],b=points[i+1],s0=boat.speeds?.[i],s1=boat.speeds?.[i+1];
@@ -75,11 +74,11 @@ function trackPinValue(boat,sample,{includeReference=false}={}){
   const gains=webglTracks.comparisonSample(boat,sample.time),timeMode=comparison.basis==='time';
   const value=gains?.[timeMode?'timeGain':comparison.basis==='handicap'?'handicapGain':'absoluteGain']??null;
   const unit=timeMode?'s/100 m':'kn';
-  const description=`${timeMode?'Tidsgevinst pr. 100 m':'Fartforskel'+(comparison.basis==='handicap'?' (ToD)':' (absolut)')} mod ${referenceBoat().name} ved samme sted på ruten${timeMode?'. Negativ værdi er tabt tid. Referenceprofilen summerer alle passager, også baglæns.':''}`;
-  const formatted=timeMode&&Math.abs(value)>1e12?(value<0?'−∞':'+∞'):`${value>0?'+':''}${value?.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-  return {value,label:value===null?'Sammenligning mangler':`${formatted} ${unit}`,description};
+  const description=srText("{0} mod {1} ved samme sted på ruten{2}",timeMode?srText('Tidsgevinst pr. 100 m'):srText('Fartforskel')+(comparison.basis==='handicap'?' (ToD)':srText(' (absolut)')),referenceBoat().name,timeMode?srText('. Negativ værdi er tabt tid. Referenceprofilen summerer alle passager, også baglæns.'):'');
+  const formatted=timeMode&&Math.abs(value)>1e12?(value<0?'−∞':'+∞'):`${value>0?'+':''}${value?.toLocaleString(srLocale,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  return {value,label:value===null?srText('Sammenligning mangler'):`${formatted} ${unit}`,description};
  }
- return {value:sample.speed,label:sample.speed===null?'Fart mangler':sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})+' kn',description:'SOG fra TracTrac'};
+ return {value:sample.speed,label:sample.speed===null?srText('Fart mangler'):sample.speed.toLocaleString(srLocale,{minimumFractionDigits:1,maximumFractionDigits:1})+' kn',description:srText('SOG fra TracTrac')};
 }
 function chooseTrackSpeed(e,boatId){
  pickedTrackSpeed=nearestTrackSpeed(e.clientX,e.clientY,boatId,!boatId);
@@ -93,7 +92,7 @@ function clearTrackHover(){
  if(trackHoverTip&&!trackHoverTip.hidden){trackHoverTip.hidden=true;$('map').classList.remove('track-hover');}
 }
 function updateTrackHover(e){
- if(interval||placingNote||navigationMode||drawingTool!=='pan'||document.body.classList.contains('presenting')||
+ if(interval||placingNote||navigationMode||drawingTool!=='pan'||
   e.target.closest('[data-boat-marker],[data-note-index],[data-speed-key]')){clearTrackHover();return;}
  if(trackHoverTimer!==null)clearTimeout(trackHoverTimer);
  const {clientX,clientY}=e;
@@ -104,11 +103,11 @@ function updateTrackHover(e){
   const boat=boats.find(b=>b.id===hit.boatId),sample=trackSpeedSample(boat,hit.time);
   if(!sample){clearTrackHover();return;}
   if(!trackHoverTip){trackHoverTip=document.createElement('div');trackHoverTip.id='trackHover';trackHoverTip.setAttribute('role','tooltip');document.body.append(trackHoverTip);}
-  const speed=sample.speed===null?'fart mangler':`SOG ${sample.speed.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})} knob`;
+  const speed=sample.speed===null?srText('fart mangler'):srText("SOG {0} knob",sample.speed.toLocaleString(srLocale,{minimumFractionDigits:1,maximumFractionDigits:1}));
   let difference='';
   if(trackUsesComparison()&&referenceBoat()?.id!==boat.id){
    const relative=trackPinValue(boat,sample),referenceTime=trackComparisonSample(boat,hit.time)?.referenceTime??null;
-   difference=relative.value===null?' · Sammenligning mangler ved dette sted':` · ${relative.value>=0?'Henter':'Taber'} ${relative.label}${referenceTime===null?'':` · ${referenceBoat().name} samme sted ca. kl. ${fmt(referenceTime)}`}`;
+   difference=relative.value===null?srText(' · Sammenligning mangler ved dette sted'):` · ${relative.value>=0?srText('Henter'):srText('Taber')} ${relative.label}${referenceTime===null?'':srText(" · {0} samme sted ca. kl. {1}",referenceBoat().name,fmt(referenceTime))}`;
   }
   trackHoverTip.textContent=`${boat.name} · ${speed}${difference} · TracTrac`;
   trackHoverTip.hidden=false;trackHoverTip.style.left=Math.max(4,Math.min(clientX+12,innerWidth-trackHoverTip.offsetWidth-4))+'px';
@@ -117,22 +116,26 @@ function updateTrackHover(e){
  },80);
 }
 function closeTrackSpeedSelection(){pickedTrackSpeed=null;renderSpeedPins();}
-function toggleSpeedPin(){
- if(!pickedTrackSpeed)return;
+function toggleSpeedPin({save=false}={}){
+ if(!pickedTrackSpeed||save&&(window.SR_READONLY||!eventToolsVisible()))return;
  const boat=boats.find(b=>b.id===pickedTrackSpeed.boatId),sample=boat&&trackSpeedSample(boat,pickedTrackSpeed.time);
  if(!sample)return;
- const existing=matchingSpeedPin(sample);
- const pins=visibleSpeedPins(),next=existing?pins.filter(p=>p!==existing):[...pins,{id:crypto.randomUUID(),boatId:sample.boatId,time:sample.time}];
+ const pins=save?speedPins:visibleSpeedPins();
+ const matches=pin=>pin.boatId===sample.boatId&&Math.abs(pin.time-sample.time)<.05;
+ const existing=pins.find(matches);
+ const pin=visibleSpeedPins().find(matches)||{id:crypto.randomUUID(),boatId:sample.boatId,time:sample.time};
+ const next=existing?pins.filter(item=>item!==existing):[...pins,pin];
  try{
-  if(speedPinsAreTemporary())viewingSpeedPins=next;
-  else{SRStorage.setItem('sr2026-speed-pins',JSON.stringify(next));speedPins=next;}
-  $('speedPinStatus').textContent='';
- }
- catch{$('speedPinStatus').textContent='Fartmærket kunne ikke gemmes i browseren.';}
+  if(save){
+   SRStorage.setItem('sr2026-speed-pins',JSON.stringify(next));speedPins=next;
+   if(viewingSpeedPins)viewingSpeedPins=existing?viewingSpeedPins.filter(item=>!matches(item)):[...viewingSpeedPins.filter(item=>!matches(item)),pin];
+  }else viewingSpeedPins=next;
+  $('speedPinStatus').textContent=save?(existing?srText('Fartmærket er fjernet fra kladden.'):srText('Fartmærket er gemt i kladden.')):'';
+ }catch{$('speedPinStatus').textContent=srText('Fartmærket kunne ikke gemmes i browseren.');}
  renderSpeedPins();
 }
 function handleSpeedPinClick(action,key){
- if(action){toggleSpeedPin();return;}
+ if(action){toggleSpeedPin({save:action==='save'});return;}
  const pin=visibleSpeedPins().find(p=>p.id===key);
  if(pin)pickedTrackSpeed={boatId:pin.boatId,time:pin.time};
  else if(key==='preview'&&pickedTrackSpeed){pickedTrackSpeed=null;}
@@ -170,10 +173,17 @@ function renderSpeedPins(){
   const selected=pickedTrackSpeed&&entry.boatId===pickedTrackSpeed.boatId&&Math.abs(entry.time-pickedTrackSpeed.time)<.05;
   if(selected){
    const button=el('g',{'data-speed-action':entry.pinned?'unpin':'pin',role:'button',tabindex:0,
-    'aria-label':entry.pinned?'Fjern pin for '+accessibleLabel:'Pin '+accessibleLabel},group);
+    'aria-label':entry.pinned?srText('Fjern pin for ')+accessibleLabel:srText('Pin ')+accessibleLabel},group);
    const buttonWidth=entry.pinned?76:44;
    el('rect',{x:left,y:top+8,width:buttonWidth,height:24,rx:4,fill:'#f4fafb',stroke:'#365766','stroke-width':1},button);
-   el('text',{x:left+buttonWidth/2,y:top+24,'text-anchor':'middle',fill:'#14212a','font-size':12,'font-weight':650},button).textContent=entry.pinned?'Fjern pin':'Pin';
+   el('text',{x:left+buttonWidth/2,y:top+24,'text-anchor':'middle',fill:'#14212a','font-size':12,'font-weight':650},button).textContent=entry.pinned?srText('Fjern pin'):srText('Pin');
+   if(!window.SR_READONLY&&eventToolsVisible()){
+    const saved=speedPins.some(pin=>pin.boatId===entry.boatId&&Math.abs(pin.time-entry.time)<.05);
+    const label=saved?srText('Fjern fra kladde'):srText('Gem i kladden');
+    const save=el('g',{'data-speed-action':'save',role:'button',tabindex:0,'aria-label':label+': '+accessibleLabel},group);
+    el('rect',{x:left,y:top+34,width:104,height:24,rx:4,fill:'#fff',stroke:'#66717b'},save);
+    el('text',{x:left+52,y:top+50,'text-anchor':'middle',fill:'#14212a','font-size':12},save).textContent=label;
+   }
   }
  }
 }

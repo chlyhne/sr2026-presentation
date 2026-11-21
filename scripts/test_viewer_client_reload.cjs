@@ -18,7 +18,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    window.SRReleaseGraphics=async()=>{await new Promise(resolve=>setTimeout(resolve,80));localStorage.setItem('reload-test-graphics-released',String(1+Number(localStorage.getItem('reload-test-graphics-released'))));};
   });
   await page.route('**/api/client-control',r=>r.fulfill({json:command}));
-  await page.route('**/client-reload-test',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><meta charset="utf-8"><body aria-busy="false"><p id="viewerLoadingStage">Reload test</p><progress id="viewerLoadingProgress" value="100" max="100"></progress><textarea id="note"></textarea><p data-client-report-status hidden></p><script src="config.js"></script><script src="client-diagnostics.js"></script>'}));
+  await page.route('**/client-reload-test',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><meta charset="utf-8"><body aria-busy="false"><p id="viewerLoadingStage">Reload test</p><progress id="viewerLoadingProgress" value="100" max="100"></progress><textarea id="note"></textarea><p data-client-report-status hidden></p><script src="i18n-messages.js"></script><script src="i18n.js"></script><script src="config.js"></script><script src="client-diagnostics.js"></script>'}));
   await page.goto(new URL('client-reload-test',base).href);
   await page.evaluate(()=>{document.getElementById('note').value='Unsaved draft';});
   command={command:'reload',revision:'test-revision-1',target:'all',expiresAt:Date.now()+60000};

@@ -5,14 +5,14 @@ function chronologicalNotes(list){
 }
 {
  const saved=JSON.parse(SRStorage.getItem('sr2026-notes')??'[]');
- if(!Array.isArray(saved)||saved.some(n=>!n||!Number.isFinite(n.time)||typeof n.text!=='string'))throw Error('De gemte noter er ugyldige.');
+ if(!Array.isArray(saved)||saved.some(n=>!n||!Number.isFinite(n.time)||typeof n.text!=='string'))throw Error(srText('De gemte noter er ugyldige.'));
  notes=chronologicalNotes(saved);
  if(notes.some((n,i)=>n!==saved[i]))SRStorage.setItem('sr2026-notes',JSON.stringify(notes));
 }
-let activePresentationNote=null,presentationOwnsFullscreen=false;
-let editingNote=null,eventDraft=null,eventEditorInitialFields=null;
+let activePresentationNote=null,openedEvent=null,editingNote=null,newEventDraft=null;
 let placingNote=false;
-const annotationHelp='Skriv en tekst, og placér den på kortet. Noten husker tidspunkt, udsnit og valgte lag.';
+let sceneCameraBaseline=null,sceneCameraEdited=false,followedScene=false;
+let sceneUndo=null,sceneFeedback='';
 const eventDateFormatter=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Copenhagen',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
 function eventTimeInputValue(time){
  const p=Object.fromEntries(eventDateFormatter.formatToParts(new Date(time*1000)).map(p=>[p.type,p.value]));
@@ -30,43 +30,55 @@ function parseEventTimeInput(value){
 function stopPlayback() {
  if(interval) {clearInterval(interval);interval=null;}
  syncPlaybackControls();
- if(eventPlaybackTarget){$('presentationMessage').textContent='';$('nextEvent').title='Afspil frem til næste event';}
+ if(eventPlaybackTarget){$('presentationMessage').textContent='';srBind($('nextEvent'),'title',()=>srText('Afspil frem til næste event'));}
  eventPlaybackTarget=null;
  syncPlaybackAvailability();
 }
-function cancelPlacement() {
+function cancelPlacement(){
  placingNote=false;$('map').classList.remove('placing');$('cancelNote').hidden=true;
- $('placeNote').textContent=editingNote?'Flyt / tilføj markør':'Placér på kortet';
- $('annotationStatus').textContent=editingNote?'Tryk Gem ændringer for at gemme rettelser til dette event.':annotationHelp;
+ srBind($('placeNote'),'textContent',()=>srText('Placér markør'));
 }
 function persistNotes(next){
  if(window.SR_READONLY)return false;
- try {SRStorage.setItem('sr2026-notes',JSON.stringify(chronologicalNotes(next)));return true;}
- catch {$('annotationStatus').textContent='Browseren kan ikke gemme noter. Eksportér dem før du lukker.';return false;}
+ try{SRStorage.setItem('sr2026-notes',JSON.stringify([...next].sort((a,b)=>a.time-b.time)));return true;}
+ catch{srBind($('annotationStatus'),'textContent',()=>srText('Browseren kunne ikke gemme eventet i kladden.'));return false;}
+}
+function eventHasContent(note){return !!(note.text.trim()||note.image||validatedEventVideo(note.video));}
+function updateEventContent(target,changes){
+ if(window.SR_READONLY||!target||(target!==newEventDraft&&!notes.includes(target)))return false;
+ const next={...target,...changes};
+ if(target!==newEventDraft&&('text' in changes||'image' in changes||'video' in changes)&&!eventHasContent(next)){
+  srBind($('annotationStatus'),'textContent',()=>srText('Eventet skal have tekst, et billede eller en video.'));return false;
+ }
+ if(target!==newEventDraft&&!persistNotes(notes.map(note=>note===target?next:note)))return false;
+ Object.assign(target,changes);
+ if(target===editingNote)$('annotationStatus').textContent='';
+ return true;
 }
 function sceneSettings() {
- return {wind:$('wind').checked,windModel:$('windModel').value,windNumbers:$('windNumbers').checked,
-  rain:$('rain').checked,rainOpacity:+$('rainOpacity').value,grid:$('grid').checked,traffic:$('traffic').checked,military:$('military').checked,annotationsVisible:$('annotationsVisible').checked,boats:[...chosen],boatNames:boats.map(boat=>boat.id),
+ return {wind:$('wind').checked,rain:$('rain').checked,grid:$('grid').checked,
+  ...sceneOverlays,boats:[...chosen],boatNames:boats.map(boat=>boat.id),
   mapVersion:1,comparison:{...comparison},referenceBoatId,trackLengthSeconds,handicapTracksEnabled,boatSearchQuery,boatFavouritesOnly,boatCourseFilter,boatClassFilter};
 }
 function eventSettings(settings={}){
- if(!settings||typeof settings!=='object'||Array.isArray(settings))throw Error('Eventets kortkonfiguration er ugyldig.');
- if(settings.mapVersion!==undefined&&settings.mapVersion!==1)throw Error('Eventets kortkonfiguration har en ukendt version.');
- const next={boatCourseFilter:'',boatClassFilter:'',...(settings.mapVersion===1?settings:{wind:false,windModel:'dmi_harmonie_arome_europe',windNumbers:false,rain:false,rainOpacity:.75,
+ if(!settings||typeof settings!=='object'||Array.isArray(settings))throw Error(srText('Eventets kortkonfiguration er ugyldig.'));
+ if(settings.mapVersion!==undefined&&settings.mapVersion!==1)throw Error(srText('Eventets kortkonfiguration har en ukendt version.'));
+ const next={boatCourseFilter:'',boatClassFilter:'',...(settings.mapVersion===1?settings:{wind:false,rain:false,
   grid:true,traffic:true,military:true,annotationsVisible:true,boats:[],boatNames:boats.map(boat=>boat.id),
   comparison:{enabled:false,basis:'absolute',boatColour:false},referenceBoatId:window.SR_EVENT.defaultReference,
   trackLengthSeconds:7200,handicapTracksEnabled:false,boatSearchQuery:'',boatFavouritesOnly:Array.isArray(settings.boats),...settings,mapVersion:1})};
  if(!validBoatRaceFilters(next.boatCourseFilter,next.boatClassFilter)||!validComparison(next.comparison)||!TRACK_LENGTHS.has(next.trackLengthSeconds)||!boats.some(boat=>boat.id===next.referenceBoatId)
   ||typeof next.handicapTracksEnabled!=='boolean'||typeof next.boatFavouritesOnly!=='boolean'||typeof next.boatSearchQuery!=='string'
   ||!['boats','boatNames'].every(key=>Array.isArray(next[key])&&next[key].every(value=>typeof value==='string'))
-  ||!['wind','windNumbers','rain','grid','traffic','military','annotationsVisible'].every(key=>typeof next[key]==='boolean')
-  ||!D.wind_models[next.windModel]||!Number.isFinite(next.rainOpacity)||next.rainOpacity<0||next.rainOpacity>1)throw Error('Eventets kortkonfiguration er ugyldig.');
+  ||!['wind','rain','grid','traffic','military','annotationsVisible'].every(key=>typeof next[key]==='boolean'))throw Error(srText('Eventets kortkonfiguration er ugyldig.'));
  // Keep the legacy boatNames field in documents; names are always shown.
- return {...next,traffic:next.traffic&&window.SR_EVENT.layers.traffic,military:next.military&&window.SR_EVENT.layers.military,boatNames:boats.map(boat=>boat.id)};
+ return {...next,wind:next.wind&&window.SR_EVENT.features.weather,rain:next.rain&&window.SR_EVENT.features.weather,
+  traffic:next.traffic&&window.SR_EVENT.layers.traffic,military:next.military&&window.SR_EVENT.layers.military,boatNames:boats.map(boat=>boat.id)};
 }
 function applySceneSettings(settings){
  const next=eventSettings(settings);
  applyLayerSettings(next);
+ sceneOverlays={traffic:next.traffic,military:next.military,annotationsVisible:next.annotationsVisible};
  chosen.clear();next.boats.forEach(name=>chosen.add(name));
  boatSearchQuery=next.boatSearchQuery;boatFavouritesOnly=next.boatFavouritesOnly;
  boatCourseFilter=next.boatCourseFilter;boatClassFilter=next.boatClassFilter;
@@ -77,302 +89,289 @@ function applySceneSettings(settings){
  }
  syncComparisonRoute();
  clearTrackHover();syncBoatChoices();syncHandicapTracks();syncNavigationControls();renderTrackSpeedLegend();
- lastLayerSettings=layerSettings();
-}
-function eventEditorFields(){return {text:$('note').value,time:$('noteTime').value,video:$('noteVideo').value};}
-function hasEventChanges(){
- return !!editingNote&&(JSON.stringify(eventDraft)!==JSON.stringify(editingNote)||JSON.stringify(eventEditorFields())!==JSON.stringify(eventEditorInitialFields));
-}
-function stageEventChanges(target,changes){
- if(!target)return true;
- if(target!==editingNote)syncEventEditor();
- if(target!==editingNote)return false;
- eventDraft={...eventDraft,...changes};return true;
-}
-function stageEventSettings(target,changes){
- if(target&&target!==editingNote)syncEventEditor();
- return !target||stageEventChanges(target,{settings:{...eventSettings(eventDraft?.settings||target.settings),...changes}});
 }
 function changeEventConfiguration(change){
- const before=sceneSettings(),time=currentTime(),active=activePresentationNote,target=editableSettingsEvent();
- if(!finishInlineTextEditing()){applySceneSettings(before);requestRender();return false;}
- const keys=[REFERENCE_BOAT_KEY,TRACK_COMPARISON_KEY,TRACK_LENGTH_KEY,HANDICAP_TRACKS_KEY];
- const preferences=keys.map(key=>eventStorage.getItem(key));
  const result=change();
- const next=sceneSettings(),changes=Object.fromEntries(Object.keys(next).filter(key=>JSON.stringify(next[key])!==JSON.stringify(before[key])).map(key=>[key,next[key]]));
- if(!Object.keys(changes).length)return result;
- if(result===false||!stageEventSettings(target,changes)){
-  applySceneSettings(before);
-  keys.forEach((key,index)=>{if(preferences[index]===null)eventStorage.removeItem(key);else eventStorage.setItem(key,preferences[index]);});
-  updateTimeline();selectedTime=time;$('time').value=offsetAtTime(time);activePresentationNote=active;
-  requestRender();return false;
- }
- if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
- requestRender();return result;
+ updateEventSceneControls();
+ return result;
 }
-const EVENT_LAYER_KEYS=['wind','windNumbers','rain','grid','traffic','military','annotationsVisible','windModel','rainOpacity'];
-function layerSettings(){
- const settings=sceneSettings();
- return Object.fromEntries(EVENT_LAYER_KEYS.map(key=>[key,settings[key]]));
-}
+const EVENT_LAYER_KEYS=['wind','rain','grid'];
 function applyLayerSettings(settings){
- for(const id of EVENT_LAYER_KEYS){
-  if(typeof settings[id]==='boolean')$(id).checked=settings[id];
- }
- if(D.wind_models[settings.windModel])$('windModel').value=settings.windModel;
- if(Number.isFinite(settings.rainOpacity))$('rainOpacity').value=settings.rainOpacity;
+ for(const id of EVENT_LAYER_KEYS)$(id).checked=settings[id];
 }
+for(const id of EVENT_LAYER_KEYS)$(id).onchange=()=>{updateEventSceneControls();requestRender();};
 function currentMapEvent(){
  const time=currentTime();
  return notes.includes(activePresentationNote)&&activePresentationNote.time===time?activePresentationNote:notes.find(note=>note.time===time)||null;
 }
-function editableSettingsEvent(){
- return window.SR_READONLY||document.body.classList.contains('presenting')?null:currentMapEvent();
-}
-function syncEventEditor(){
- const target=editableSettingsEvent();
- if(target===editingNote){
-  if(target)$('noteEditorTitle').textContent=`Event ${notes.indexOf(target)+1} · tryk Gem ændringer for at gemme`;
-  return;
- }
- finishNoteEditing();
- if(!target)return;
- editingNote=target;eventDraft=JSON.parse(JSON.stringify(target));activePresentationNote=target;
- $('noteTimeField').hidden=false;$('noteTime').min=eventTimeInputValue(D.start);$('noteTime').max=eventTimeInputValue(VIEWER_DATA_END);$('noteTime').value=eventTimeInputValue(target.time);
- $('note').value=target.text;$('noteVideo').value=validatedEventVideo(target.video)?.url||'';
- $('drawingTools').hidden=false;$('save').hidden=false;$('cancelEdit').hidden=false;
- eventEditorInitialFields=eventEditorFields();
- $('noteEditorTitle').textContent=`Event ${notes.indexOf(target)+1} · tryk Gem ændringer for at gemme`;
- updateVideoEditor();updateImageEditor();updateDrawingControls();cancelPlacement();
-}
-function stageEventText(){
- const target=editableSettingsEvent();if(!target||target!==editingNote)return true;
- const value=$('note').value;
- if(value===eventDraft.text)return true;
- const text=value.trim();
- if(text===eventDraft.text)return true;
- if(!text&&!eventDraft.image&&!validatedEventVideo(eventDraft.video)){
-  $('annotationStatus').textContent='Skriv en tekst, eller tilføj et billede eller en video.';return false;
- }
- if(!stageEventChanges(target,{text}))return false;
- $('annotationStatus').textContent='Ændringen er i kladden. Tryk Gem ændringer.';return true;
-}
-let lastLayerSettings=layerSettings();
-function changeEventLayers(event){
- const next=layerSettings(),key=event.currentTarget.id,changes={[key]:next[key]};
- if(!finishInlineTextEditing()){applyLayerSettings(lastLayerSettings);requestRender();return;}
- if(!stageEventSettings(editableSettingsEvent(),changes)){
-  applyLayerSettings(lastLayerSettings);requestRender();return;
- }
- lastLayerSettings=next;requestRender();
-}
-for(const id of EVENT_LAYER_KEYS)$(id).onchange=changeEventLayers;
 function changeBoatSelection(change){
- if(!finishInlineTextEditing()){syncBoatChoices();return;}
- stopPlayback();
- const before=[...chosen],time=currentTime();
- const target=editableSettingsEvent();
- change();
- if(!stageEventSettings(target,{boats:[...chosen]})){
-  chosen.clear();before.forEach(name=>chosen.add(name));syncBoatChoices();
-  $('eventBoatStatus').textContent='Bådvalget kunne ikke gemmes til eventet.';return;
- }
- prepareSelectedTracks();
- $('eventBoatStatus').textContent='';syncBoatChoices();updateTimeline();
- if(target){activePresentationNote=target;selectedTime=time;$('time').value=offsetAtTime(time);$('time').setAttribute('aria-valuetext',fmt(time));}
- requestRender();
+ stopPlayback();change();prepareSelectedTracks();syncBoatChoices();updateTimeline();
+ updateEventSceneControls();requestRender();
 }
-function saveAnnotation(point) {
- if(!finishInlineTextEditing())return;
- const text=$('note').value.trim();
- if(eventImageLoading)return;
- if(!validateEventVideoInput())return;
- if(!text&&!currentAttachedImage()&&!currentAttachedVideo()){$('annotationStatus').textContent='Skriv en tekst, vælg et billede, eller indsæt et YouTube-link til eventet.';$('note').focus();return;}
- if(editingNote){
-  if(point){
-   if(stageEventChanges(editingNote,{point,lon:9.5+point[0]*4.5/1000,lat:57-point[1]*3/1180})){cancelPlacement();renderAnnotations();}
-   return;
-  }
-  const time=parseEventTimeInput($('noteTime').value);
-  if(!$('noteTime').validity.valid||time===null||time<D.start||time>VIEWER_DATA_END){$('annotationStatus').textContent='Vælg et gyldigt tidspunkt inden for sejladsens tidsrum.';return;}
-  const target=editingNote,updated={...eventDraft,text};
-  if(time!==Math.floor(target.time)){updated.time=time;updated.utc=new Date(time*1000).toISOString();}
-  if(!persistNotes(notes.map(note=>note===target?updated:note)))return;
-  Object.assign(target,updated);eventDraft=JSON.parse(JSON.stringify(target));
-  selectedTime=target.time;$('note').value=target.text;eventEditorInitialFields=eventEditorFields();
-  cancelDrawingGesture();showNotes();updateTimeline();render();
-  $('annotationStatus').textContent='Eventet er gemt.';return true;
+function eventToolsVisible(){return !$('eventPanel').hidden&&!document.body.classList.contains('event-panel-collapsed');}
+function syncEventEditor(){
+ const target=!window.SR_READONLY&&eventToolsVisible()&&!interval?(newEventDraft||openedEvent):null;
+ if(target===editingNote)return;
+ endEventTool();editingNote=target;
+ $('eventOptions').open=false;
+ $('annotationStatus').textContent='';
+ if(target){
+  $('noteTime').min=eventTimeInputValue(D.start);
+  $('noteTime').max=eventTimeInputValue(VIEWER_DATA_END);
+  $('noteTime').value=eventTimeInputValue(target.time);
+  $('noteVideo').value=validatedEventVideo(target.video)?.url||'';
+  $('noteVideo').setCustomValidity('');$('noteVideo').removeAttribute('aria-invalid');
+  $('noteVideoStatus').textContent='';
  }
+ updateVideoEditor();updateDrawingControls();
+}
+function endEventTool(){
+ cancelPlacement();setDrawingTool('pan');$('drawingTools').hidden=true;
+ $('startDrawing').setAttribute('aria-expanded','false');
+}
+function leaveOpenedEvent(){
+ if(openedEvent){openedEvent=null;sceneUndo=null;sceneFeedback='';}
+ endEventTool();
+}
+function finishEventEditing(){
+ if(!finishInlineTextEditing())return false;
+ if(newEventDraft){
+  if((eventHasContent(newEventDraft)||eventImageUploads.has(newEventDraft))&&!confirm(srText('Forlad det nye event uden at oprette det?')))return false;
+  newEventDraft=null;syncEventEditor();
+ }
+ return true;
+}
+function noteNavigationAllowed(){return finishEventEditing();}
+function beginNoteEditing(note){
+ if(!note||!finishEventEditing())return;
+ setEventPanelExpanded(true);restoreNote(note);
+}
+function refreshEditedEvent(){
+ refreshPresentationEvents();updateTimeline();requestRender();
+}
+function eventTimeFromField(){
+ const input=$('noteTime'),time=parseEventTimeInput(input.value);
+ if(!input.validity.valid||time===null||time<D.start||time>VIEWER_DATA_END){
+  srBind($('annotationStatus'),'textContent',()=>srText('Vælg et gyldigt tidspunkt inden for sejladsens tidsrum.'));return null;
+ }
+ return time;
+}
+$('noteTime').onchange=()=>{
+ const target=editingNote;if(!target)return;
+ const time=eventTimeFromField();
+ if(time===null){$('noteTime').value=eventTimeInputValue(target.time);return;}
+ if(Math.floor(target.time)===time)return;
+ if(!updateEventContent(target,{time,utc:new Date(time*1000).toISOString()})){
+  $('noteTime').value=eventTimeInputValue(target.time);return;
+ }
+ if(target!==newEventDraft){notes.sort((a,b)=>a.time-b.time);selectedTime=time;}
+ refreshEditedEvent();
+};
+$('newEvent').onclick=()=>{
+ if(!finishEventEditing())return;
  const time=currentTime();
- const note={time,utc:new Date(time*1000).toISOString(),text,view:[...view],settings:sceneSettings(),measurement:measurement.map(point=>[...point]),gates:currentGateMeasurement().map(point=>[...point])};
- if(pendingEventImage)note.image=pendingEventImage;
- if(pendingEventVideo)note.video=pendingEventVideo;
- if(point){note.point=point;note.lon=9.5+point[0]*4.5/1000;note.lat=57-point[1]*3/1180;}
- const next=chronologicalNotes([...notes,note]);
- if(!persistNotes(next))return;
- notes=next;measurement=[];gateMeasurement=[];gateOverride=null;playbackGateMeasurement=null;pendingEventImage=null;clearPendingEventImage();clearPendingEventVideo();$('note').value='';
- activePresentationNote=note;cancelPlacement();showNotes();updateTimeline();renderAnnotations();return true;
-}
-$('placeNote').onclick=()=>{
+ if(time<D.start||time>VIEWER_DATA_END){
+  srBind($('annotationStatus'),'textContent',()=>srText('Vælg et tidspunkt inden for sejladsens tidsrum.'));return;
+ }
+ stopPlayback();followedBoatId=null;hideMapEventImage();
+ newEventDraft={time,utc:new Date(time*1000).toISOString(),text:'',...captureScene()};
+ updatePresentationControls();beginInlineTextEditing();
+};
+$('cancelNewEvent').onclick=()=>{
+ finishInlineTextEditing(true);newEventDraft=null;syncEventEditor();renderAnnotations();
+};
+$('save').onclick=()=>{
+ const target=newEventDraft;
+ if(!target||!finishInlineTextEditing())return;
+ if(eventImageUploads.has(target)){srBind($('annotationStatus'),'textContent',()=>srText('Vent, mens billedet klargøres.'));return;}
  if(!validateEventVideoInput())return;
- if(!$('note').value.trim()&&!currentAttachedImage()&&!currentAttachedVideo()) {$('annotationStatus').textContent='Skriv en tekst, vælg et billede, eller indsæt et YouTube-link til eventet.';$('note').focus();return;}
- stopPlayback();setDrawingTool('pan');placingNote=true;$('map').classList.add('placing');$('cancelNote').hidden=false;
- $('placeNote').textContent='Klik på kortet …';$('annotationStatus').textContent='Klik dér, hvor hændelsen skete. Du kan stadig zoome og trække. Escape annullerer.';
+ const time=eventTimeFromField();if(time===null)return;
+ if(time!==Math.floor(target.time)){target.time=time;target.utc=new Date(time*1000).toISOString();}
+ if(!eventHasContent(target)){
+  srBind($('annotationStatus'),'textContent',()=>srText('Skriv en tekst, eller tilføj et billede eller en video.'));return;
+ }
+ const next=chronologicalNotes([...notes,target]);
+ if(!persistNotes(next))return;
+ notes=next;newEventDraft=null;restoreNote(target);refreshEditedEvent();
+};
+$('openEvent').onclick=()=>beginNoteEditing(activePresentationNote||notes[0]);
+$('deleteNote').onclick=()=>{
+ const target=editingNote;
+ if(!target||target===newEventDraft||!finishInlineTextEditing()||!confirm(srText('Slet dette event fra kladden?')))return;
+ const index=notes.indexOf(target),next=notes.filter(note=>note!==target);
+ if(!persistNotes(next))return;
+ notes=next;leaveOpenedEvent();activePresentationNote=null;
+ const replacement=notes[Math.min(index,notes.length-1)];
+ if(replacement)restoreNote(replacement);else {hideMapEventImage();resetMapMeasurement();}
+ refreshEditedEvent();
+ srBind($('annotationStatus'),'textContent',()=>srText('Eventet er slettet fra kladden.'));
+ (replacement?$('presentationEventSelect'):$('newEvent')).focus();
+};
+$('placeNote').onclick=()=>{
+ if(!editingNote||!finishInlineTextEditing())return;
+ stopPlayback();endEventTool();if(navigationMode)cancelMapLine();hideMapEventImage();followedBoatId=null;
+ placingNote=true;$('map').classList.add('placing');$('cancelNote').hidden=false;
+ srBind($('placeNote'),'textContent',()=>srText('Klik på kortet …'));
 };
 $('cancelNote').onclick=cancelPlacement;
-function placeAnnotation(e) {
- const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse);
- saveAnnotation([p.x,p.y]);
-}
-$('save').onclick=()=>saveAnnotation();
-
-let pendingEventAction=null;
-function promptEventChanges(continueAction){
- const dialog=$('eventChangesDialog');
- if(dialog.open)return;
- pendingEventAction=continueAction;
- $('eventChangesStatus').textContent='';
- const index=notes.indexOf(activePresentationNote);if(index>=0)$('eventSelect').value=String(index);
- dialog.showModal();
-}
-function resolveEventChanges(save){
- if(save){
-  if(eventImageLoading){$('eventChangesStatus').textContent='Vent, mens billedet klargøres, eller vælg Gem ikke.';return;}
-  if(saveAnnotation()!==true){
-   $('eventChangesStatus').textContent=$('inlineTextStatus').textContent||(!$('noteVideo').validity.valid?$('noteVideoStatus').textContent:$('annotationStatus').textContent);
-   return;
-  }
- }else if(editingNote){
-  $('cancelEdit').onclick();
- }else{
-  finishInlineTextEditing(true);clearPendingEventImage();finishNoteEditing();render();
- }
- const action=pendingEventAction;pendingEventAction=null;
- $('eventChangesDialog').close();
- action?.();
-}
-$('eventChangesSave').onclick=()=>resolveEventChanges(true);
-$('eventChangesDiscard').onclick=()=>resolveEventChanges(false);
-$('eventChangesCancel').onclick=()=>{$('eventChangesDialog').close();};
-$('eventChangesDialog').addEventListener('close',()=>{if(!$('eventChangesDialog').open)pendingEventAction=null;});
-// Escape cancels only this prompt, preserving the draft and the current scene.
-$('eventChangesDialog').addEventListener('keydown',event=>event.stopPropagation());
-function finishEventEditing(continueAction){
- const inlineFinished=finishInlineTextEditing();
- if(editingNote&&(eventImageLoading||hasEventChanges()||!inlineFinished)){
-  promptEventChanges(continueAction);return false;
- }
- return inlineFinished;
-}
-function noteNavigationAllowed(continueAction){
- if(!finishEventEditing(continueAction))return false;
- if(!eventImageLoading&&(editingNote||(!pendingEventImage&&!hasPendingEventVideo())))return true;
- promptEventChanges(continueAction);return false;
-}
-function beginNoteEditing(n){
- if(!noteNavigationAllowed(()=>beginNoteEditing(n)))return;
- restoreNote(n);$('note').scrollIntoView({block:'center'});$('note').focus({preventScroll:true});
-}
-function finishNoteEditing(){
- imageUploadToken++;eventImageLoading=false;$('noteImage').value='';
- cancelDrawingGesture();setDrawingTool('pan');editingNote=null;eventDraft=null;eventEditorInitialFields=null;
- clearPendingEventVideo();
- $('note').value='';$('drawingTools').hidden=true;$('cancelEdit').hidden=true;
- $('noteTimeField').hidden=true;$('noteTime').value='';
- $('noteEditorTitle').textContent='Nyt event · vælg et tidspunkt, og gem eventet.';
- $('save').hidden=false;
- updateImageEditor();cancelPlacement();updateTimeline();
-}
-$('cancelEdit').onclick=()=>{
- if(!editingNote)return;
- finishInlineTextEditing(true);
- const target=editingNote;finishNoteEditing();restoreNote(target);
+$('removeNotePoint').onclick=()=>{
+ if(updateEventContent(editingNote,{point:undefined,lon:undefined,lat:undefined}))renderAnnotations();
 };
-function restoreNote(n,{showImage=false,restoreView=true}={}) {
- if(!noteNavigationAllowed(()=>restoreNote(n,{showImage,restoreView})))return;
- prepareGateTiming(eventGates(n));
+function placeAnnotation(e){
+ const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(mapViewport().inverse),point=[p.x,p.y];
+ if(updateEventContent(editingNote,{point,lon:9.5+p.x*4.5/1000,lat:57-p.y*3/1180})){
+  cancelPlacement();renderAnnotations();
+ }
+}
+function captureScene(){
+ const settings=sceneSettings();
+ if(settings.boatSearchQuery){
+  const displayed=boats.filter(boatIsDisplayed).map(boat=>boat.name);
+  settings.boats=[...new Set(displayed)];settings.boatFavouritesOnly=true;settings.boatSearchQuery='';
+ }
+ return {view:[...view],settings,measurement:currentMeasurement().map(point=>[...point]),gates:currentGateMeasurement().map(point=>[...point])};
+}
+const SCENE_BOAT_KEYS=['boats','boatSearchQuery','boatFavouritesOnly','boatCourseFilter','boatClassFilter'];
+const SCENE_TRACK_KEYS=['comparison','referenceBoatId','trackLengthSeconds','handicapTracksEnabled'];
+const sceneValue=value=>JSON.stringify(value);
+function sameCamera(a,b){
+ return a&&b&&a.every((value,index)=>Math.abs(value-b[index])<1e-7);
+}
+function markEventCameraChange(){
+ if(!openedEvent)return;
+ sceneCameraEdited=!sameCamera(view,sceneCameraBaseline);sceneFeedback='';
+ updateEventSceneControls();
+}
+function resizedSceneCamera(viewBox,oldRect,newRect){
+ const [x,y,width,height]=viewBox;
+ const unitsPerPixel=Math.max(width/oldRect.width,height/oldRect.height);
+ const nextWidth=newRect.width*unitsPerPixel,nextHeight=newRect.height*unitsPerPixel;
+ return [x+(width-nextWidth)/2,y+(height-nextHeight)/2,nextWidth,nextHeight];
+}
+function resizeEventSceneBaseline(oldRect,newRect){
+ if(sceneCameraBaseline)sceneCameraBaseline=resizedSceneCamera(sceneCameraBaseline,oldRect,newRect);
+}
+function sceneDifferences(target){
+ const settings=sceneSettings(),saved=eventSettings(target.settings);
+ const normalized=(value,key)=>{
+  if(key==='boats')return [...new Set(value)].sort();
+  if(key==='comparison'&&value)return [value.enabled,value.basis,!!value.boatColour];
+  return value;
+ };
+ const differs=keys=>keys.some(key=>sceneValue(normalized(settings[key],key))!==sceneValue(normalized(saved[key],key)));
+ const changes=[];
+ if(sceneCameraEdited)changes.push(srText('Udsnit'));
+ if(differs(SCENE_BOAT_KEYS))changes.push(srText('Både'));
+ if(differs(SCENE_TRACK_KEYS))changes.push(srText('Spor'));
+ if(differs(EVENT_LAYER_KEYS))changes.push(srText('Lag'));
+ if(sceneValue(currentGateMeasurement())!==sceneValue(eventGates(target)))changes.push(srText('Gates'));
+ if(sceneValue(currentMeasurement())!==sceneValue(eventMeasurement(target)))changes.push(srText('Lineal'));
+ return changes;
+}
+function updateEventSceneControls(){
+ const target=eventToolsVisible()&&!interval&&!newEventDraft&&!window.SR_READONLY?openedEvent:null;
+ $('eventScene').hidden=!target;
+ if(!target)return;
+ const changes=sceneDifferences(target),count=boatSearchQuery?boats.filter(boatIsDisplayed).length:null;
+ const following=followedScene||!!followedBoatId;
+ const base=changes.length?srText('Ændret ')+changes.join(' · ')
+  :sceneFeedback?srText(sceneFeedback):(following?srText('Fulgt udsnit'):srText('Eventets gemte visning'));
+ const status=base+(count===null?'':srText(" · {0} {1} i eventet",count,count===1?srText('båd'):srText('både')));
+ setBoatListText($('eventSceneStatus'),status);
+ $('captureEventScene').disabled=!changes.length;
+ $('restoreEventScene').disabled=!changes.length&&!following;
+ $('undoEventScene').hidden=sceneUndo?.target!==target;
+}
+$('captureEventScene').onclick=()=>{
+ const target=openedEvent;
+ if(!target||target!==editingNote||!finishInlineTextEditing()||!sceneDifferences(target).length)return;
+ const previous={view:target.view,settings:target.settings,gates:target.gates,measurement:target.measurement},scene=captureScene();
+ if(!sceneCameraEdited)scene.view=target.view;
+ const capturedCamera=sceneCameraEdited;
+ if(!updateEventContent(target,scene))return;
+ if(capturedCamera){followedBoatId=null;followedScene=false;}
+ applySceneSettings(scene.settings);
+ sceneCameraBaseline=[...view];sceneCameraEdited=false;
+ sceneUndo={target,previous};
+ sceneFeedback='✓ Kortvisning gemt i kladden';
+ updateTimeline();updateEventSceneControls();requestRender();
+};
+$('restoreEventScene').onclick=()=>{
+ if(openedEvent&&finishInlineTextEditing())restoreNote(openedEvent);
+};
+$('undoEventScene').onclick=()=>{
+ const undo=sceneUndo;
+ if(!undo||undo.target!==openedEvent||!finishInlineTextEditing())return;
+ if(updateEventContent(undo.target,undo.previous)){
+  sceneUndo=null;restoreNote(undo.target);sceneFeedback='Forrige kortvisning gendannet i kladden';updateEventSceneControls();
+ }
+};
+function restoreNote(note,{showImage=false,restoreView=true}={}){
+ if(!noteNavigationAllowed()||!notes.includes(note))return;
+ prepareGateTiming(eventGates(note));
  hideMapEventImage();hideEventVideo();
- activePresentationNote=n;
- stopPlayback();cancelPlacement();selectedTime=n.time;resetMapMeasurement();
- applySceneSettings(n.settings);
- prepareSelectedTracks();
- if(restoreView&&Array.isArray(n.view)&&n.view.length===4&&n.view.every(Number.isFinite)&&n.view[2]>0&&n.view[3]>0) {view=[...n.view];setview();}
- updateTimeline();selectedTime=n.time;$('time').value=offsetAtTime(n.time);
- $('time').setAttribute('aria-valuetext',fmt(n.time));
- render();updatePresentationControls();
- if(showImage&&n.image)showMapEventImage(n.image,n);
-}
-function showNotes() {
- notes.sort((a,b)=>a.time-b.time);
- $('notes').replaceChildren();
- for(const [i,n] of notes.entries()) {
-  const row=document.createElement('div');row.className='note'+(n===editingNote?' editing':'');
-  const jump=document.createElement('button');jump.className='note-jump';
-  jump.textContent=`${i+1}. ${fmt(n.time)} — ${eventNoteLabel(n)}`;jump.onclick=()=>restoreNote(n,{showImage:true});
-  const actions=document.createElement('div');actions.className='note-actions';
-  const edit=document.createElement('button');edit.className='note-edit';edit.textContent='Redigér';
-  edit.setAttribute('aria-label',`Redigér note: ${n.text}`);edit.onclick=()=>beginNoteEditing(n);
-  const remove=document.createElement('button');remove.className='note-delete';remove.textContent='Slet';
-  remove.setAttribute('aria-label',`Slet note: ${n.text}`);
-  remove.onclick=()=>{if(!noteNavigationAllowed(()=>remove.onclick()))return;const next=notes.filter(note=>note!==n);if(!persistNotes(next))return;notes=next;showNotes();updateTimeline();renderAnnotations();};
-  actions.append(edit,remove);row.append(jump,actions);$('notes').append(row);
+ if(openedEvent!==note){sceneUndo=null;editingNote=null;}
+ endEventTool();followedBoatId=null;
+ activePresentationNote=openedEvent=note;
+ stopPlayback();selectedTime=note.time;resetMapMeasurement();
+ applySceneSettings(note.settings);prepareSelectedTracks();
+ if(restoreView){
+  const saved=note.view;
+  view=Array.isArray(saved)&&saved.length===4&&saved.every(Number.isFinite)&&saved[2]>0&&saved[3]>0?[...saved]:[...window.SR_EVENT.initialView];
+  setview();
  }
- refreshPresentationEvents();
+ sceneCameraBaseline=[...view];sceneCameraEdited=false;followedScene=!restoreView;sceneFeedback='';
+ updateTimeline();render();updatePresentationControls();
+ if(showImage&&note.image)showMapEventImage(note.image,note);
 }
-
 function refreshPresentationEvents(){
- const select=$('eventSelect');select.replaceChildren();
- for(const [i,n] of notes.entries()){
-  const option=document.createElement('option');option.value=i;
-  option.textContent=`${i+1} · ${fmt(n.time)} · ${eventNoteLabel(n).replace(/\s+/g,' ')}`;
-  select.append(option);
- }
- if(!notes.length){
-  const option=document.createElement('option');option.textContent='Ingen events endnu';select.append(option);
- }
- updatePresentationControls();
+ const select=$('presentationEventSelect');
+ select.replaceChildren(...notes.map((note,index)=>new Option(`${index+1} · ${fmt(note.time)} · ${eventNoteLabel(note).replace(/\s+/g,' ')}`,String(index))));
+ if(!notes.length)select.append(new Option(srText('Ingen events endnu'),''));
+ presentationControlsKey=null;updatePresentationControls();
 }
 let presentationControlsKey=null,presentationControlsNote=null;
 function updatePresentationControls(){
- syncEventEditor();
- const index=Math.max(0,notes.indexOf(activePresentationNote)),note=notes[index];
- const pendingMedia=!!pendingEventImage||hasPendingEventVideo();
- const preview=editingNote?{...eventDraft,text:$('note').value}:pendingMedia?{time:currentTime(),text:$('note').value,image:pendingEventImage,video:pendingEventVideo}:note;
- const key=JSON.stringify([index,notes.length,preview?.time,preview?.text,preview?.image,preview?.video,!!editingNote,pendingMedia,eventImageLoading,document.body.classList.contains('presenting'),notes.indexOf(nextPresentationNote()),!!eventPlaybackTarget]);
- const source=editingNote||note;
- if(key===presentationControlsKey&&source===presentationControlsNote)return;
- presentationControlsKey=key;presentationControlsNote=source;
- $('previousEvent').disabled=!note||index===0;
- $('nextEvent').disabled=document.body.classList.contains('presenting')?!nextPresentationNote():!note||index===notes.length-1;
- $('nextEvent').title=eventPlaybackTarget?'Spring direkte til næste event':document.body.classList.contains('presenting')?'Afspil frem til næste event':'Næste event';
- $('eventSelect').disabled=!note;
- if(note)$('eventSelect').value=String(index);
- if(preview){
-  $('eventCounter').textContent=pendingMedia?'Nyt event':`Event ${index+1} af ${notes.length}${editingNote?' · redigerer':''}`;
-  $('eventTime').textContent=fmt(preview.time);
-  $('eventTime').dateTime=new Date(preview.time*1000).toISOString();
-  $('eventText').textContent=preview.text;
- }else{
-  $('eventCounter').textContent='0 events';$('eventTime').textContent='';$('eventTime').removeAttribute('datetime');
-  $('eventText').textContent='Ingen events endnu. Tryk Redigér, og gem dine events som noter på kortet.';
- }
- renderEventImage(preview?.image,editingNote||(pendingMedia?null:note));
- renderEventVideo(preview?.video,editingNote||(pendingMedia?null:note));
- const editable=!!preview&&!!editingNote&&!document.body.classList.contains('presenting')&&!eventImageLoading;
+ syncEventEditor();updateEventSceneControls();
+ const index=notes.indexOf(activePresentationNote),note=notes[index],preview=newEventDraft||note;
+ const editable=!!editingNote;
+ const key=JSON.stringify([index,notes.length,preview?.time,preview?.text,preview?.image,preview?.video,preview?.point,editable,!!newEventDraft,notes.indexOf(nextPresentationNote()),!!eventPlaybackTarget]);
+ if(key===presentationControlsKey&&preview===presentationControlsNote)return;
+ presentationControlsKey=key;presentationControlsNote=preview;
+ $('previousEvent').disabled=!notes.length||index===0;
+ $('nextEvent').disabled=!nextPresentationNote();
+ srBind($('nextEvent'),'title',()=>eventPlaybackTarget?srText('Spring direkte til næste event'):srText('Afspil frem til næste event'));
+ $('presentationEventSelect').disabled=!notes.length;
+ $('presentationEventSelect').selectedIndex=notes.length?index:0;
+ srBind($('eventCounter'),'textContent',()=>newEventDraft?srText('Nyt event'):note?srText("Event {0} af {1}",index+1,notes.length):'');
+ $('eventTime').textContent=preview?fmt(preview.time):'';
+ if(preview)$('eventTime').dateTime=new Date(preview.time*1000).toISOString();else $('eventTime').removeAttribute('datetime');
+ if(!inlineTextSession)$('eventText').textContent=preview?.text??(notes.length?srText('Vælg et event.'):srText('Ingen events endnu.'));
+ renderEventImage(preview?.image,preview);renderEventVideo(preview?.video,preview);
  $('eventText').classList.toggle('inline-editable',editable);
- if(editable){$('eventText').setAttribute('tabindex','0');$('eventText').setAttribute('role','button');$('eventText').title='Klik for at redigere teksten';}
- else{$('eventText').removeAttribute('tabindex');$('eventText').removeAttribute('role');$('eventText').removeAttribute('title');}
+ if(editable){
+  $('eventText').tabIndex=0;$('eventText').setAttribute('role','button');srBind($('eventText'),'title',()=>srText('Klik for at redigere teksten'));
+ }else{
+  $('eventText').removeAttribute('tabindex');$('eventText').removeAttribute('role');$('eventText').removeAttribute('title');
+ }
+ $('eventEditor').hidden=window.SR_READONLY;
+ $('eventContentTools').hidden=!editable;
+ $('newEvent').hidden=!!newEventDraft;
+ $('newEventActions').hidden=!newEventDraft;
+ $('openEvent').hidden=!note||!!openedEvent||!!newEventDraft;
+ $('deleteNote').hidden=!editable||!!newEventDraft;
+ $('removeNotePoint').hidden=!editingNote?.point;
+ updateImageEditor();
 }
 function showPresentationEvent(index,{expandPanel=true}={}){
- if(!notes.length)return;
+ if(!notes.length||!noteNavigationAllowed())return;
  const target=notes[Math.max(0,Math.min(notes.length-1,index))];
- const show=()=>{if(expandPanel)setEventPanelExpanded(true);restoreNote(target,{showImage:true});};
- if(!noteNavigationAllowed(show))return;
- show();
+ if(expandPanel)setEventPanelExpanded(true);
+ restoreNote(target,{showImage:true});
 }
 function movePresentationEvent(delta){
- if(delta===1&&document.body.classList.contains('presenting')){playToNextPresentationEvent();return;}
- showPresentationEvent(Math.max(0,notes.indexOf(activePresentationNote))+delta);
+ if(delta===1){playToNextPresentationEvent();return;}
+ showPresentationEvent(notes.indexOf(activePresentationNote)+delta);
 }
 function nextPresentationNote(){
  if(eventPlaybackTarget&&notes.includes(eventPlaybackTarget))return eventPlaybackTarget;
@@ -382,7 +381,7 @@ function nextPresentationNote(){
 }
 function playToNextPresentationEvent(){
  if(hasRenderingFailure())return;
- if(!noteNavigationAllowed(playToNextPresentationEvent))return;
+ if(!noteNavigationAllowed())return;
  const target=nextPresentationNote();if(!target)return;
  setEventPanelExpanded(true);
  const onEvent=notes.some(note=>Math.abs(note.time-currentTime())<1e-6);
@@ -391,37 +390,22 @@ function playToNextPresentationEvent(){
  }
  stopPlayback();hideMapEventImage();hideEventVideo();cancelPlacement();
  startPlayback({target});
- $('presentationMessage').textContent=`Afspiller frem til event ${notes.indexOf(target)+1}. Tryk Næste event igen for at springe frem.`;
+ srBind($('presentationMessage'),'textContent',()=>srText("Afspiller frem til event {0}. Tryk Næste event igen for at springe frem.",notes.indexOf(target)+1));
  updatePresentationControls();
-}
-function setPresentationMode(enabled){
- if(!enabled&&window.SR_READONLY)return;
- if(document.body.classList.contains('presenting')===enabled)return;
- if(enabled&&!noteNavigationAllowed(()=>setPresentationMode(enabled)))return;
- if(!enabled&&!finishInlineTextEditing())return;
- if(!enabled){hideMapEventImage();hideEventVideo();}
- stopPlayback();cancelPlacement();
- document.body.classList.toggle('presenting',enabled);
- pickedTrackSpeed=null;viewingSpeedPins=null;
- $('editingTimeline').hidden=false;$('presentationFooter').hidden=false;
- $('startPresentation').hidden=enabled;$('endPresentation').hidden=!enabled;
- $('presentationMessage').textContent='';refreshPresentationEvents();
- if(enabled){
-  if(notes.length)showPresentationEvent(Math.max(0,notes.indexOf(activePresentationNote)),{expandPanel:false});
-  else {updateTimeline();render();}
-  ($('nextEvent').disabled?$('endPresentation'):$('nextEvent')).focus();
- }else{
-  if(presentationOwnsFullscreen&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
-  presentationOwnsFullscreen=false;updateTimeline();render();$('startPresentation').focus();
- }
 }
 function handlePresentationKey(event){
  if(eventVideoView)return;
- if(!document.body.classList.contains('presenting')||event.altKey||event.ctrlKey||event.metaKey)return;
+ if(window.SR_RHUMBLINE_SETUP||event.altKey||event.ctrlKey||event.metaKey)return;
  if(event.target.closest('[data-gate-results-scroll]'))return;
  if(event.key==='Escape'){
-  event.preventDefault();event.stopImmediatePropagation();
-  if(pickedTrackSpeed)closeTrackSpeedSelection();else setPresentationMode(false);return;
+  if(!event.target.closest('input,textarea,select,dialog')&&(placingNote||drawingTool!=='pan')){event.preventDefault();event.stopImmediatePropagation();endEventTool();requestRender();return;}
+  if(navigationMode||event.target.closest('input,textarea,select,dialog,[contenteditable="true"]'))return;
+  if(followedBoatId||pickedTrackSpeed){
+   event.preventDefault();event.stopImmediatePropagation();
+   if(followedBoatId){followedBoatId=null;updateEventSceneControls();}
+   closeTrackSpeedSelection();
+  }
+  return;
  }
  if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
  if(event.target.closest('[data-boat-marker],[data-speed-key]')&&['Enter',' '].includes(event.key))return;
@@ -436,18 +420,19 @@ function handlePresentationKey(event){
 }
 function updateFullscreenButton(){
  const active=!!document.fullscreenElement;
- const label=active?'Forlad fuld skærm':'Fuld skærm';
+ const label=active?srText('Forlad fuld skærm'):srText('Fuld skærm');
  $('presentationFullscreen').hidden=!document.fullscreenEnabled;
  $('presentationFullscreen').setAttribute('aria-label',label);$('presentationFullscreen').title=label;
  $('presentationFullscreen').setAttribute('aria-pressed',String(active));
  $('fullscreenEnterIcon').toggleAttribute('hidden',active);$('fullscreenExitIcon').toggleAttribute('hidden',!active);
 }
 updateFullscreenButton();
-$('startPresentation').onclick=()=>setPresentationMode(true);
-$('endPresentation').onclick=()=>setPresentationMode(false);
 $('previousEvent').onclick=()=>movePresentationEvent(-1);
 $('nextEvent').onclick=()=>movePresentationEvent(1);
-$('eventSelect').onchange=()=>showPresentationEvent(Number($('eventSelect').value));
+$('presentationEventSelect').onchange=()=>{
+ showPresentationEvent(Number($('presentationEventSelect').value));
+ $('presentationEventSelect').selectedIndex=notes.length?notes.indexOf(activePresentationNote):0;
+};
 document.addEventListener('keydown',handlePresentationKey,true);
 document.addEventListener('fullscreenchange',()=>{
  updateFullscreenButton();requestRender({viewportOnly:true});
@@ -455,9 +440,9 @@ document.addEventListener('fullscreenchange',()=>{
 $('presentationFullscreen').onclick=async()=>{
  $('presentationMessage').textContent='';
  try{
-  if(document.fullscreenElement){await document.exitFullscreen();presentationOwnsFullscreen=false;}
-  else{await document.documentElement.requestFullscreen();presentationOwnsFullscreen=true;}
- }catch{setEventPanelExpanded(true);$('presentationMessage').textContent='Browseren kunne ikke åbne fuld skærm. Du kan fortsætte præsentationen her.';}
+  if(document.fullscreenElement){await document.exitFullscreen();}
+  else{await document.documentElement.requestFullscreen();}
+ }catch{setEventPanelExpanded(true);srBind($('presentationMessage'),'textContent',()=>srText('Browseren kunne ikke åbne fuld skærm. Du kan fortsætte præsentationen her.'));}
  updateFullscreenButton();
 };
 function renderAnnotations() {
@@ -466,18 +451,16 @@ function renderAnnotations() {
  renderSpeedPins();
  renderNoteDrawings();
  updatePresentationControls();
- if(!$('annotationsVisible').checked) return;
+ if(!sceneOverlays.annotationsVisible&&!placingNote) return;
  const matrix=mapViewport()?.matrix;if(!matrix)return;
  const scale=Math.hypot(matrix.a,matrix.b);
- for(const [i,saved] of notes.entries()) {
-  if(!noteIsVisible(saved))continue;
-  const n=saved===editingNote?{...eventDraft,text:$('note').value}:saved;
-  if(n.time!==currentTime()||!Array.isArray(n.point)||!n.point.every(Number.isFinite))continue;
+ const n=newEventDraft||activePresentationNote,i=notes.indexOf(n);
+ if(n&&(n===newEventDraft||noteIsVisible(n))&&Array.isArray(n.point)&&n.point.every(Number.isFinite)){
   const [x,y]=n.point;
   const group=screenGroup(x,y,$('annotations'));group.dataset.noteIndex=i;
   group.setAttribute('transform',`translate(${x} ${y}) scale(${1/scale})`);
   el('title',{},group).textContent=eventNoteLabel(n);
-  el('circle',{r:10,fill:'#ffce5c',stroke:'#132d3d','stroke-width':2},group);
+  el('circle',{r:10,fill:'#fff',stroke:'#34404b','stroke-width':2},group);
   const number=el('text',{'text-anchor':'middle',y:4,fill:'#132d3d','font-size':11,'font-weight':800},group);number.textContent=i+1;
  }
 }
@@ -485,19 +468,12 @@ function download(blob,filename) {
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;
  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
 }
-$('export').onclick=exportEventNotes;
-
-$('note').addEventListener('input',()=>{
- if(editingNote){stageEventText();renderAnnotations();}
- else if(pendingEventImage||hasPendingEventVideo())updatePresentationControls();
+$('export').onclick=()=>{if(finishEventEditing())exportEventNotes();};
+window.addEventListener('beforeunload',event=>{
+ if((inlineTextSession&&$('eventTextEditor').value.trim()!==inlineTextSession.text)||newEventDraft&&eventHasContent(newEventDraft)||[...eventImageUploads.keys()].some(note=>notes.includes(note)||note===newEventDraft)){
+  event.preventDefault();event.returnValue=true;
+ }
 });
-$('noteTime').onchange=()=>{
- const target=editableSettingsEvent();if(!target)return;
- const time=parseEventTimeInput($('noteTime').value);
- if(!$('noteTime').validity.valid||time===null||time<D.start||time>VIEWER_DATA_END){$('annotationStatus').textContent='Vælg et gyldigt tidspunkt inden for sejladsens tidsrum.';return;}
- const changes=time===Math.floor(target.time)?{time:target.time,utc:target.utc}:{time,utc:new Date(time*1000).toISOString()};
- if(!stageEventChanges(target,changes))return;
- renderAnnotations();
-};
-updateTimeline();showNotes();render();
-new ResizeObserver(resizeMapViewport).observe($('map'));
+
+updateTimeline();refreshPresentationEvents();render();
+new ResizeObserver(()=>resizeMapViewport()).observe($('map'));

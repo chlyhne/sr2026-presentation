@@ -262,3 +262,19 @@ test('OAuth returns to the selected event canonical editor link',async()=>{
  const response=await worker.fetch(new Request(origin+'/auth/callback?state=event-state&code=code',{headers:{Cookie:'__Host-sr-oauth='+pending}}),env);
  assert.equal(response.status,302);assert.equal(response.headers.get('Location'),'/admin/events/silverrudder-2025/');
 });
+
+test('OAuth carries a supported tracker language to the authenticated tracker',async()=>{
+ const pending=await seal({state:'locale-state',verifier:'verifier',eventId:'silverrudder-2025',language:'de',exp:Math.floor(Date.now()/1000)+600},env,'oauth');
+ mockGithub('write');const githubFetch=globalThis.fetch;
+ globalThis.fetch=async(url,options)=>String(url)==='https://github.com/login/oauth/access_token'?reply({access_token:'token'}):githubFetch(url,options);
+ const response=await worker.fetch(new Request(origin+'/auth/callback?state=locale-state&code=code',{headers:{Cookie:'__Host-sr-oauth='+pending}}),env);
+ assert.equal(response.status,302);
+ assert.equal(response.headers.get('Location'),'/admin/events/silverrudder-2025/?lang=de');
+});
+
+
+test('a French login request receives a French error for an unknown regatta',async()=>{
+ const response=await request('/auth/login?event=unknown&lang=fr');
+ assert.equal(response.status,400);
+ assert.deepEqual(await response.json(),{error:'Régate inconnue.'});
+});

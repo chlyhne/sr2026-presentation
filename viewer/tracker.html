@@ -2,76 +2,18 @@
 <html lang="da" class="viewer-loading">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sejltracker</title>
+<title data-i18n>Sejltracker</title>
 <link rel="stylesheet" href="viewer.css">
+<link rel="stylesheet" href="i18n.css">
 <body class="event-panel-collapsed" aria-busy="true">
-<section id="viewerLoading" aria-label="Indlæsning">
-  <progress id="viewerLoadingProgress" max="100" value="0" aria-label="Indlæser præsentationen"></progress>
-  <p id="viewerLoadingStage" role="status" aria-live="polite">Starter …</p>
+<section id="viewerLoading" aria-label="Indlæsning" data-i18n-attrs="aria-label">
+  <progress id="viewerLoadingProgress" max="100" value="0" aria-label="Indlæser præsentationen" data-i18n-attrs="aria-label"></progress>
+  <p id="viewerLoadingStage" role="status" aria-live="polite" data-i18n>Starter …</p>
   <p id="viewerLoadingError" role="alert" hidden></p>
   <p data-client-report-status role="status" hidden></p>
-  <button id="viewerLoadingRetry" type="button" hidden>Genindlæs siden</button>
+  <button id="viewerLoadingRetry" type="button" hidden data-i18n>Genindlæs siden</button>
 </section>
-<main inert><aside>
-  <div class="editor-actions">
-    <button id="startPresentation" class="mode-switch">Start præsentation</button>
-  </div>
-  <label>Vindmodel<select id="windModel"><option value="dmi_harmonie_arome_europe">DMI HARMONIE · 2 km · prognosearkiv</option><option value="ecmwf_ifs">ECMWF IFS · 9 km · prognosearkiv</option><option value="era5">ERA5 · 0,25° · reanalyse</option></select></label>
-  <div id="windLegend" class="colour-legend" aria-label="DMI vindfarveskala i meter per sekund"></div>
-  <p class="help">Første blå: 8–10 m/s. De næste blå: 10–12 og 12–14 m/s. Gul begynder ved 14 m/s.</p>
-  <label><input id="windNumbers" type="checkbox"> Vis tal for vind / vindstød</label>
-  <p class="help">Vindfarver som på <a href="https://www.dmi.dk/vejrkort">DMI’s vindkort</a>, i m/s. Pilene peger med vinden og har fast afstand på skærmen ved alle zoomniveauer. Vinden ved pilene interpoleres fra modelpunkterne. Vindfeltet opdateres hver time; radaren hvert 10. minut.</p>
-  <label>Radarens synlighed<input id="rainOpacity" type="range" min="0" max="1" step=".05" value=".75"></label>
-  <div id="rainLegend" class="colour-legend" aria-label="Radarekkostyrke i dBZ, rød til violet"></div>
-  <p id="rainPeriod" class="legend"></p>
-  <p class="help">Rød → violet: stigende radarekkostyrke i dBZ. Gråt: manglende dækning. Ekkoer under 0 dBZ er gennemsigtige.</p>
-  <label><input id="traffic" type="checkbox" checked> Trafikseparering · TSS</label>
-  <p id="trafficInfo" class="help"><span class="tss-swatch" aria-hidden="true"></span> Sort kant og skravering som ved skydeområder. Kilde: <a href="https://wiki.openstreetmap.org/wiki/Tag:seamark:type=separation_zone">OpenSeaMap / OpenStreetMap</a>.</p>
-  <label><input id="military" type="checkbox" checked> Forbudte områder</label>
-  <p id="militaryInfo" class="help"><span class="tss-swatch military-swatch" aria-hidden="true"></span> Skraverede forbudte områder fra stævnets kortdata.</p>
-  <p id="trackLengthSummary">Spor: seneste 2 timer</p>
-  <p class="help">Sporfarven viser bådfart over grunden (SOG) fra TracTrac på jet-skalaen i kortet, 0–15 knob. Fart over 15 knob har samme farve som 15. Gråt spor betyder manglende fartdata. Prikker og navne har bådens egen farve.</p>
-  <p class="help">Spor og positioner interpoleres glidende mellem målepunkterne og følger kortets zoom. Huller over 5 minutter forbindes ikke.</p>
-  <div id="choices"></div>
-  <p class="help">Klik på et spor for at vise farten. Vælg Pin ved fartmærket for at beholde det i præsentationen. Klik på et pinnet mærke for at fjerne det igen.</p>
-  <div class="button-row"><button id="reset">Vis Sjælland</button></div>
-  <p class="help">Zoom med musehjulet, og træk kortet. Tidslinjen følger udsnittet og de valgte både. Både vises altid med navn. Klik i en bådrække for at skifte hjertet. Piletaster flytter tiden 1 sekund; hold Shift nede for 1 minut. Både med over 5 minutter gamle positioner skjules.</p>
-  <div class="annotation-tools">
-    <p id="noteEditorTitle" class="help">På et event: ret felterne, og tryk Gem ændringer.</p>
-    <label id="noteTimeField" hidden>Tidspunkt (dansk tid)<input id="noteTime" type="datetime-local" step="1"></label>
-    <label for="note">Hvad skete der her?</label>
-    <textarea id="note" rows="3" maxlength="900" placeholder="Fx: Vi skifter til Code-0"></textarea>
-    <label for="noteImage">Billede til event (valgfrit)</label>
-    <input id="noteImage" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-    <p class="help">Vælg et billede, og tryk Gem ændringer på eventet. Tekst er valgfri.</p>
-    <div class="button-row"><button id="cropNoteImage" type="button" hidden>Beskær billede</button><button id="removeNoteImage" hidden>Fjern billede</button></div>
-    <p id="noteImageStatus" class="help" role="status"></p>
-    <label for="noteVideo">YouTube-video til event (valgfri)</label>
-    <input id="noteVideo" type="url" maxlength="2048" placeholder="https://youtu.be/…" aria-describedby="noteVideoStatus">
-    <p class="help">Indsæt et YouTube-link. Klik på videoen i højrepanelet for at afspille i fuld skærm. Tekst er valgfri.</p>
-    <div class="button-row"><button id="removeNoteVideo" hidden>Fjern video</button></div>
-    <p id="noteVideoStatus" class="help" role="status"></p>
-    <div class="button-row"><button id="placeNote">Placér på kortet</button><button id="cancelNote" hidden>Annullér</button></div>
-    <p id="annotationStatus" class="help" role="status" aria-live="polite">Skriv en tekst, og placér den på kortet. Noten husker tidspunkt, udsnit og valgte lag.</p>
-    <fieldset id="drawingTools" hidden>
-      <legend>Tegn til denne note</legend>
-      <label for="drawingTool">Værktøj</label>
-      <select id="drawingTool"><option value="pan">Flyt kortet</option><option value="pen">Frihånd</option><option value="arrow">Pil</option><option value="line">Linje</option><option value="circle">Cirkel</option></select>
-      <div class="drawing-style">
-        <label>Farve <input id="drawingColour" type="color" value="#e02020"></label>
-        <label>Stregbredde <select id="drawingWidth"><option value="2">Tynd</option><option value="4" selected>Normal</option><option value="7">Tyk</option></select></label>
-      </div>
-      <div class="button-row"><button id="undoDrawing">Fortryd sidste streg</button><button id="clearDrawings">Ryd tegninger</button></div>
-      <p class="help">Træk på kortet for at tegne. Vælg Flyt kortet for at panorere. Tegningerne følger geografien ved zoom og vises kun sammen med denne note. Escape stopper tegneværktøjet.</p>
-      <p id="drawingCount" class="help" role="status"></p>
-    </fieldset>
-    <label><input id="annotationsVisible" type="checkbox" checked> Vis annotationer ved dette tidspunkt</label>
-    <div class="button-row"><button id="save">Gem tidspunkt uden markør</button><button id="cancelEdit" type="button" hidden>Annullér ændringer</button><button id="export">Eksportér noter</button></div>
-    <div id="notes"></div>
-  </div>
-  <p class="help">DMI og ECMWF er arkiverede prognoser; ERA5 er en efterfølgende reanalyse. Modellerne kan afvige fra den lokale vind og bygepust.</p>
-  <p class="help">Kilder: TracTrac · <a href="https://www.dmi.dk/friedata/dokumentation/radar-data">DMI radar</a> · <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo / Copernicus ERA5</a> · <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors · ODbL</a>. Klokkeslæt er dansk sommertid (UTC+2).</p>
-</aside>
+<main inert>
 <div id="mapSurface">
 <svg id="mapBase" viewBox="230 250 620 760" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <g id="windField"><image id="windImage" x="0" y="0" width="1000" height="1180"/></g>
@@ -80,160 +22,220 @@
   <g id="baseMap"><g id="coast"></g><g id="trafficSeparation"></g><g id="militaryAreas"></g><g id="routeT" pointer-events="none"></g><g id="courseLines" pointer-events="none"></g></g>
   <g id="winds"></g><g id="mapNavigation" pointer-events="none"></g>
 </svg>
-<svg id="map" viewBox="230 250 620 760" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Kort med bådspor, vind, nedbørsradar og annotationer">
+<svg id="map" viewBox="230 250 620 760" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Kort med bådspor, vind, nedbørsradar og annotationer" data-i18n-attrs="aria-label">
   <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#183b49"/></marker></defs>
   <path id="mapRhumbline" fill="none" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" pointer-events="none" hidden/>
-  <g id="routes"></g><g id="gateResults" pointer-events="none"></g><g id="boatMarkers"></g><g id="places"></g><g id="seamarks" pointer-events="none"></g><g id="speedMarkers"></g><g id="noteDrawings" pointer-events="none"></g><g id="drawingPreview" pointer-events="none"></g><g id="annotations"></g><g id="mapCredit" pointer-events="none"></g><g id="trackSpeedLegend" pointer-events="none" aria-label="Bådfart over grunden, jet-farveskala fra 0 til 15 knob"></g>
+  <g id="routes"></g><g id="gateResults" pointer-events="none"></g><g id="boatMarkers"></g><g id="places"></g><g id="seamarks" pointer-events="none"></g><g id="speedMarkers"></g><g id="noteDrawings" pointer-events="none"></g><g id="drawingPreview" pointer-events="none"></g><g id="annotations"></g><g id="mapCredit" pointer-events="none"></g><g id="trackSpeedLegend" pointer-events="none" aria-label="Bådfart over grunden, jet-farveskala fra 0 til 15 knob" data-i18n-attrs="aria-label"></g>
 </svg>
 </div>
-<h1 id="mapHeading"><select id="eventSelect" aria-label="Stævne" title="Vælg stævne"></select><span id="referenceBoatHeading"></span><a class="all-events" href="./" title="Alle stævner" aria-label="Alle stævner">⌂</a></h1>
+<h1 id="mapHeading"><select id="eventSelect" aria-label="Stævne" title="Vælg stævne" data-i18n-attrs="aria-label title"></select><span id="referenceBoatHeading"></span><a class="all-events" href="./" title="Alle stævner" aria-label="Alle stævner" data-i18n-attrs="title aria-label">⌂</a></h1>
 <div id="mapTools">
-<button id="presentationFullscreen" type="button" aria-label="Fuld skærm" title="Fuld skærm" aria-pressed="false" hidden>
+<div class="language-picker" data-language-picker>
+  <button type="button" aria-label="Vælg sprog" title="Sprog" aria-expanded="false" aria-controls="languageOptions" data-i18n-attrs="aria-label title">🇩🇰</button>
+  <nav id="languageOptions" aria-label="Sprog" data-languages hidden data-i18n-attrs="aria-label">
+    <a lang="da" hreflang="da">Dansk</a>
+    <a lang="en" hreflang="en">English</a>
+    <a lang="de" hreflang="de">Deutsch</a>
+    <a lang="fr" hreflang="fr">Français</a>
+  </nav>
+</div>
+<button id="presentationFullscreen" type="button" aria-label="Fuld skærm" title="Fuld skærm" aria-pressed="false" hidden data-i18n-attrs="aria-label title">
   <svg id="fullscreenEnterIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg>
   <svg id="fullscreenExitIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M3 8h5V3m8 0v5h5M8 21v-5H3m18 0h-5v5"/></svg>
 </button>
-<a id="loginLink" aria-label="Log ind og redigér" title="Log ind og redigér" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3h6v18h-6M3 12h12m-4-4 4 4-4 4"/></svg></a>
-<button id="endPresentation" type="button" aria-label="Redigér" title="Redigér" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5L8 21H3v-5ZM13 6l5 5"/></svg></button>
-<section id="mapMeasure" aria-label="Måleværktøj">
-  <button id="mapMeasureToggle" type="button" aria-label="Mål afstand" aria-pressed="false" title="Mål afstand: træk fra start til slut. Tryk igen for at fjerne målingen."><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m3 16 13-13 5 5L8 21Z M6 13l3 3 M9 10l2 2 M12 7l3 3 M15 4l2 2"/></svg></button>
+<a id="loginLink" aria-label="Log ind og redigér" title="Log ind og redigér" hidden data-i18n-attrs="aria-label title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3h6v18h-6M3 12h12m-4-4 4 4-4 4"/></svg></a>
+<section id="mapMeasure" aria-label="Måleværktøj" data-i18n-attrs="aria-label">
+  <button id="mapMeasureToggle" type="button" aria-label="Mål afstand" aria-pressed="false" title="Mål afstand: træk fra start til slut. Tryk igen for at fjerne målingen." data-i18n-attrs="aria-label title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m3 16 13-13 5 5L8 21Z M6 13l3 3 M9 10l2 2 M12 7l3 3 M15 4l2 2"/></svg></button>
 </section>
-<section id="mapGates" aria-label="Gate-måling">
-  <button id="mapGatesToggle" type="button" aria-label="Mål tid mellem gates" aria-pressed="false" title="Mål sejltid: træk gate 1, og træk derefter gate 2. Tryk igen for at fjerne gates."><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4v11M9 4v11M2 6h8M15 3v11M21 3v11M14 5h8M6 19h12m-3-3 3 3-3 3"/></svg></button>
+<section id="mapGates" aria-label="Gate-måling" data-i18n-attrs="aria-label">
+  <button id="mapGatesToggle" type="button" aria-label="Mål tid mellem gates" aria-pressed="false" title="Mål sejltid: træk gate 1, og træk derefter gate 2. Tryk igen for at fjerne gates." data-i18n-attrs="aria-label title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4v11M9 4v11M2 6h8M15 3v11M21 3v11M14 5h8M6 19h12m-3-3 3 3-3 3"/></svg></button>
 </section>
-<section id="rhumblineTools" aria-label="Tegn permanent rhumbline" hidden>
+<section id="rhumblineTools" aria-label="Tegn permanent rhumbline" hidden data-i18n-attrs="aria-label">
   <p id="measurementHelp"></p>
   <output id="measurementResult" aria-live="polite"></output>
-  <div class="map-tool-actions"><button id="finishMapLine" type="button" disabled>Gem permanent rhumbline</button><button id="undoMapPoint" type="button" disabled>Fortryd punkt</button></div>
+  <div class="map-tool-actions"><button id="finishMapLine" type="button" disabled data-i18n>Gem permanent rhumbline</button><button id="undoMapPoint" type="button" disabled data-i18n>Fortryd punkt</button></div>
 </section>
-<section id="mapTracks" aria-label="Sporindstillinger">
-  <button id="mapTracksToggle" type="button" aria-label="Spor" title="Spor" aria-expanded="false" aria-controls="mapTracksPanel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 20 16-8c3-1.5 2-4-1-4H7c-3 0-4-2.5-1-4l3-1"/></svg></button>
+<section id="mapTracks" aria-label="Sporindstillinger" data-i18n-attrs="aria-label">
+  <button id="mapTracksToggle" type="button" aria-label="Spor" title="Spor" aria-expanded="false" aria-controls="mapTracksPanel" data-i18n-attrs="aria-label title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 20 16-8c3-1.5 2-4-1-4H7c-3 0-4-2.5-1-4l3-1"/></svg></button>
   <div id="mapTracksPanel" hidden>
-    <label for="trackLength">Sporlængde</label>
-    <select id="trackLength"><option value="-1">Ingen spor</option><option value="900">15 minutter</option><option value="1800">30 minutter</option><option value="3600">1 time</option><option value="7200" selected>2 timer</option><option value="14400">4 timer</option><option value="28800">8 timer</option><option value="0">Hele forløbet</option></select>
-    <label for="referenceBoat">Referencebåd</label>
+    <label for="trackLength" data-i18n>Sporlængde</label>
+    <select id="trackLength"><option value="-1" data-i18n>Ingen spor</option><option value="900" data-i18n>15 minutter</option><option value="1800" data-i18n>30 minutter</option><option value="3600" data-i18n>1 time</option><option value="7200" selected data-i18n>2 timer</option><option value="14400" data-i18n>4 timer</option><option value="28800" data-i18n>8 timer</option><option value="0" data-i18n>Hele forløbet</option></select>
+    <label for="referenceBoat" data-i18n>Referencebåd</label>
     <select id="referenceBoat"></select>
-    <label for="trackStyle">Sportype</label>
-    <select id="trackStyle"><option value="speed">Fart over grunden · SOG</option><option value="boat">Bådfarve</option><option value="absolute">Mod referencebåd · absolut</option><option value="handicap">Mod referencebåd · handicap</option><option value="time">Tid pr. 100 m · alle passager</option></select>
-    <label id="handicapTracksLabel"><input id="handicapCompensatedTracks" type="checkbox"> Handicapkompenseret spor</label>
+    <label for="trackStyle" data-i18n>Sportype</label>
+    <select id="trackStyle"><option value="speed" data-i18n>Fart over grunden · SOG</option><option value="boat" data-i18n>Bådfarve</option><option value="absolute" data-i18n>Mod referencebåd · absolut</option><option value="handicap" data-i18n>Mod referencebåd · handicap</option><option value="time" data-i18n>Tid pr. 100 m · alle passager</option></select>
+    <label id="handicapTracksLabel" data-i18n><input id="handicapCompensatedTracks" type="checkbox"> Handicapkompenseret spor</label>
+    <p id="trackLengthSummary" hidden></p>
     <p id="ghostStatus" role="status" hidden></p>
   </div>
 </section>
-<section id="mapLayers" aria-label="Kortlag">
-  <button id="mapLayersToggle" type="button" aria-label="Lag" title="Lag" aria-expanded="false" aria-controls="mapLayersPanel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 5-10 5L2 8Z M2 12l10 5 10-5 M2 16l10 5 10-5"/></svg></button>
+<section id="mapLayers" aria-label="Kortlag" data-i18n-attrs="aria-label">
+  <button id="mapLayersToggle" type="button" aria-label="Lag" title="Lag" aria-expanded="false" aria-controls="mapLayersPanel" data-i18n-attrs="aria-label title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 5-10 5L2 8Z M2 12l10 5 10-5 M2 16l10 5 10-5"/></svg></button>
   <div id="mapLayersPanel" hidden>
-    <label title="Vind i 10 meters højde"><input id="wind" type="checkbox"> Vind</label>
-    <label title="Nedbørsradar fra DMI"><input id="rain" type="checkbox"> Byger</label>
-    <label title="Afstandsgrid tilpasset kortets zoom"><input id="grid" type="checkbox" checked> Grid <span id="gridSpacing"></span></label>
+    <label title="Vind i 10 meters højde" data-i18n data-i18n-attrs="title"><input id="wind" type="checkbox"> Vind</label>
+    <label title="Nedbørsradar fra DMI" data-i18n data-i18n-attrs="title"><input id="rain" type="checkbox"> Nedbør</label>
+    <label title="Afstandsgrid tilpasset kortets zoom" data-i18n data-i18n-attrs="title"><input id="grid" type="checkbox" checked> Grid</label>
+    <p id="windPeriod" role="status"></p>
+    <p id="rainPeriod" role="status"></p>
   </div>
 </section>
-<button id="boatCompareToggle" type="button" aria-label="Sammenlign både" title="Sammenlign både" aria-expanded="false" aria-controls="boatComparePanel">A/B</button>
-<button id="mapRhumblineToggle" type="button" aria-label="Rhumbline" title="Vis eller skjul rhumbline" aria-pressed="false" aria-controls="mapRhumbline" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 18 7-10 7-2"/><circle cx="4" cy="19.5" r="1.5"/><circle cx="20.5" cy="5.5" r="1.5"/></svg></button>
-<button id="eventPanelToggle" type="button" aria-label="Vis eventpanel" title="Vis eventpanel" aria-expanded="false" aria-controls="eventPanel presentationFooter"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5.5C9 3.5 5.5 3.5 2 4.5v15c3.5-1 7-1 10 1 3-2 6.5-2 10-1v-15c-3.5-1-7-1-10 1Z"/><path d="M12 5.5v15M5 8l4 .5M5 12l4 .5m6-4 4-.5m-4 4.5 4-.5"/></svg></button>
+<button id="boatCompareToggle" type="button" aria-label="Sammenlign både" title="Sammenlign både" aria-expanded="false" aria-controls="boatComparePanel" data-i18n-attrs="aria-label title">A/B</button>
+<button id="mapRhumblineToggle" type="button" aria-label="Rhumbline" title="Vis eller skjul rhumbline" aria-pressed="false" aria-controls="mapRhumbline" hidden data-i18n-attrs="aria-label title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 18 7-10 7-2"/><circle cx="4" cy="19.5" r="1.5"/><circle cx="20.5" cy="5.5" r="1.5"/></svg></button>
+<button id="eventPanelToggle" type="button" aria-label="Vis eventpanel" title="Vis eventpanel" aria-expanded="false" aria-controls="eventPanel presentationFooter" data-i18n-attrs="aria-label title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5.5C9 3.5 5.5 3.5 2 4.5v15c3.5-1 7-1 10 1 3-2 6.5-2 10-1v-15c-3.5-1-7-1-10 1Z"/><path d="M12 5.5v15M5 8l4 .5M5 12l4 .5m6-4 4-.5m-4 4.5 4-.5"/></svg></button>
 <p id="comparisonStatus" role="status" hidden></p>
 <p id="trackDataStatus" role="status" hidden></p>
 </div>
-<button id="mapEventImage" type="button" aria-label="Luk billedet og vis kortet" title="Klik for at vise kortet igen" hidden>
+<button id="mapEventImage" type="button" aria-label="Luk billedet og vis kortet" title="Klik for at vise kortet igen" hidden data-i18n-attrs="aria-label title">
   <img id="mapEventImageContent" alt="" draggable="false" hidden>
   <span id="mapEventImageStatus" role="status"></span>
 </button>
 <section id="renderingError" role="alert" hidden>
   <p data-client-report-status role="status" hidden></p>
-  <h2>Kortets rendering er stoppet</h2>
-  <p>WebGL 2 er påkrævet. Der skiftes ikke til en alternativ tegnemetode.</p>
+  <h2 data-i18n>Kortets rendering er stoppet</h2>
+  <p data-i18n>WebGL 2 er påkrævet. Der skiftes ikke til en alternativ tegnemetode.</p>
   <pre id="renderingErrorDetails"></pre>
-  <button id="reloadRendering" type="button">Genindlæs siden</button>
+  <button id="reloadRendering" type="button" data-i18n>Genindlæs siden</button>
 </section>
-<section id="visibleBoats" aria-label="Både">
-  <button id="visibleBoatsToggle" type="button" aria-expanded="false" aria-controls="visibleBoatsPanel"><span><span id="visibleBoatsTitle">Både</span> <span id="visibleBoatsCount">· 0</span></span><span class="boat-list-chevron" aria-hidden="true">⌄</span></button>
+<section id="visibleBoats" aria-label="Både" data-i18n-attrs="aria-label">
+  <button id="visibleBoatsToggle" type="button" aria-expanded="false" aria-controls="visibleBoatsPanel"><span><span id="visibleBoatsTitle" data-i18n>Både</span> <span id="visibleBoatsCount">· 0</span></span><span class="boat-list-chevron" aria-hidden="true">⌄</span></button>
   <div id="visibleBoatsPanel" hidden>
     <div id="boatSearch">
       <div class="boat-search-heading">
         <div class="boat-race-filters">
-          <label><span class="sr-only">Bane</span><select id="boatCourseSelect" title="Bane"><option value="">Alle baner</option></select></label>
-          <label><span class="sr-only">Løb</span><select id="boatClassSelect" title="Løb"><option value="">Alle løb</option></select></label>
+          <label><span class="sr-only" data-i18n>Bane</span><select id="boatCourseSelect" title="Bane" data-i18n-attrs="title"><option value="" data-i18n>Alle baner</option></select></label>
+          <label><span class="sr-only" data-i18n>Løb</span><select id="boatClassSelect" title="Løb" data-i18n-attrs="title"><option value="" data-i18n>Alle løb</option></select></label>
         </div>
         <div class="boat-selection-actions">
-          <button id="boatFavouritesOnly" type="button" aria-label="Vis kun favoritter" title="Vis kun favoritter" aria-pressed="false" aria-controls="visibleBoatsList"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
-          <button id="boatClearFavourites" type="button" aria-label="Fjern alle favoritter" title="Fjern alle favoritter"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3.5a5.5 5.5 0 0 0-5.9 8.9L12 21l8.8-8.6A5.5 5.5 0 0 0 15 3.5M12 3l-2 5 4 3-4 3 2 7"/></svg></button>
+          <button id="boatFavouritesOnly" type="button" aria-label="Vis kun favoritter" title="Vis kun favoritter" aria-pressed="false" aria-controls="visibleBoatsList" data-i18n-attrs="aria-label title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <button id="boatClearFavourites" type="button" aria-label="Fjern alle favoritter" title="Fjern alle favoritter" data-i18n-attrs="aria-label title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3.5a5.5 5.5 0 0 0-5.9 8.9L12 21l8.8-8.6A5.5 5.5 0 0 0 15 3.5M12 3l-2 5 4 3-4 3 2 7"/></svg></button>
         </div>
       </div>
-      <label class="sr-only" for="boatSearchInput">Filter både</label>
-      <div class="boat-search-field"><input id="boatSearchInput" type="search" placeholder="Båd, skipper eller bådtype" title="Enter skifter hjertet for hver båd på listen" autocomplete="off" spellcheck="false" aria-controls="visibleBoatsList"></div>
+      <label class="sr-only" for="boatSearchInput" data-i18n>Filter både</label>
+      <div class="boat-search-field"><input id="boatSearchInput" type="search" placeholder="Båd, skipper eller bådtype" title="Enter skifter hjertet for hver båd på listen" autocomplete="off" spellcheck="false" aria-controls="visibleBoatsList" data-i18n-attrs="placeholder title"></div>
     </div>
-    <ul id="visibleBoatsList" aria-label="Filtrerede både"></ul>
-    <p id="visibleBoatsEmpty" hidden>Ingen både.</p>
+    <ul id="visibleBoatsList" aria-label="Filtrerede både" data-i18n-attrs="aria-label"></ul>
+    <p id="visibleBoatsEmpty" hidden data-i18n>Ingen både.</p>
   </div>
 </section>
 
-<section id="boatComparePanel" aria-label="Sammenlign både" hidden><h2>Sammenlign både</h2><label for="boatCompareReference">Referencebåd</label><select id="boatCompareReference"><option value="">Ingen referencebåd</option></select><label for="boatCompareMetric">Måling</label><select id="boatCompareMetric"><option value="speed">Hastighed · knob</option><option value="pace">Tempo · sekunder pr. sømil</option></select><button id="boatCompareResetZoom" type="button" title="Vis hele skalaen" hidden>1:1</button><p id="boatCompareScope"></p><div id="boatComparePlots"></div></section>
-<section id="eventPanel" aria-label="Valgt event">
+<section id="boatComparePanel" aria-label="Sammenlign både" hidden data-i18n-attrs="aria-label"><h2 data-i18n>Sammenlign både</h2><label for="boatCompareReference" data-i18n>Referencebåd</label><select id="boatCompareReference"><option value="" data-i18n>Ingen referencebåd</option></select><label for="boatCompareMetric" data-i18n>Måling</label><select id="boatCompareMetric"><option value="speed" data-i18n>Hastighed · knob</option><option value="pace" data-i18n>Tempo · sekunder pr. sømil</option></select><button id="boatCompareResetZoom" type="button" title="Vis hele skalaen" hidden data-i18n-attrs="title">1:1</button><p id="boatCompareScope"></p><div id="boatComparePlots"></div></section>
+<section id="eventPanel" aria-label="Valgt event" data-i18n-attrs="aria-label">
+  <div id="eventScene" class="event-scene" hidden>
+    <strong data-i18n>Kortvisning</strong>
+    <p id="eventSceneStatus" role="status"></p>
+    <div class="button-row">
+      <button id="captureEventScene" type="button" data-i18n>Brug i eventet</button>
+      <button id="restoreEventScene" type="button" data-i18n>Gendan kortvisning</button>
+      <button id="undoEventScene" type="button" hidden data-i18n>Fortryd</button>
+    </div>
+  </div>
   <div class="event-summary" aria-live="polite" aria-atomic="true">
     <div class="event-meta"><span id="eventCounter"></span><time id="eventTime"></time></div>
-    <p id="eventText"></p>
-    <textarea id="eventTextEditor" rows="4" maxlength="900" aria-label="Redigér eventtekst" title="Klik udenfor eller tryk Ctrl+Enter for at gemme. Escape annullerer." hidden></textarea>
+    <p id="eventText" data-empty-label="Klik for at tilføje tekst" data-i18n-attrs="data-empty-label"></p>
+    <textarea id="eventTextEditor" rows="4" maxlength="900" aria-label="Redigér eventtekst" title="Klik udenfor eller tryk Ctrl+Enter for at gemme i kladden. Escape annullerer." hidden data-i18n-attrs="aria-label title"></textarea>
     <p id="inlineTextStatus" class="help" role="status"></p>
   </div>
-  <figure id="eventImageFigure" hidden><button id="eventImageButton" type="button" aria-label="Vis billedet over kortet" aria-controls="mapEventImage" aria-expanded="false" title="Vis billedet over kortet"><img id="eventImage" alt=""></button><figcaption id="eventImageCaption"></figcaption></figure>
+  <figure id="eventImageFigure" hidden><button id="eventImageButton" type="button" aria-label="Vis billedet over kortet" aria-controls="mapEventImage" aria-expanded="false" title="Vis billedet over kortet" data-i18n-attrs="aria-label title"><img id="eventImage" alt=""></button><figcaption id="eventImageCaption"></figcaption></figure>
   <p id="eventImageStatus" class="help" role="status"></p>
   <figure id="eventVideoFigure" hidden>
-    <button id="eventVideoButton" type="button" aria-label="Afspil YouTube-video i fuld skærm" aria-controls="eventVideoOverlay" aria-expanded="false">
+    <button id="eventVideoButton" type="button" aria-label="Afspil YouTube-video i fuld skærm" aria-controls="eventVideoOverlay" aria-expanded="false" data-i18n-attrs="aria-label">
       <img id="eventVideoThumbnail" alt="" loading="lazy">
-      <span class="video-play" aria-hidden="true">▶</span><span class="video-caption">Afspil i fuld skærm</span>
+      <span class="video-play" aria-hidden="true">▶</span><span class="video-caption" data-i18n>Afspil i fuld skærm</span>
     </button>
   </figure>
   <p id="eventVideoStatus" class="help" role="status"></p>
   <p id="speedPinStatus" class="help" role="status"></p>
-  <p id="eventBoatStatus" class="help" role="status"></p>
+  <p id="annotationStatus" role="status"></p>
+  <div id="eventEditor" hidden>
+    <div class="button-row">
+      <button id="newEvent" type="button" data-i18n>Nyt event her</button>
+      <button id="openEvent" type="button" hidden data-i18n>Gå til event</button>
+      <button id="deleteNote" type="button" hidden data-i18n>Slet event</button>
+    </div>
+    <div id="eventContentTools" hidden>
+      <div class="button-row">
+        <button id="chooseNoteImage" type="button" data-i18n>Upload billede</button>
+        <input id="noteImage" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+        <button id="cropNoteImage" type="button" hidden data-i18n>Beskær</button>
+        <button id="removeNoteImage" type="button" hidden data-i18n>Fjern billede</button>
+        <button id="startDrawing" type="button" aria-controls="drawingTools" aria-expanded="false" data-i18n>Tegn</button>
+      </div>
+      <p id="noteImageStatus" role="status"></p>
+    <fieldset id="drawingTools" hidden>
+      <legend data-i18n>Tegn på kortet</legend>
+      <label for="drawingTool" data-i18n>Værktøj</label>
+      <select id="drawingTool"><option value="pen" data-i18n>Frihånd</option><option value="arrow" data-i18n>Pil</option><option value="line" data-i18n>Linje</option><option value="circle" data-i18n>Cirkel</option></select>
+      <div class="drawing-style">
+        <label data-i18n>Farve <input id="drawingColour" type="color" value="#e02020"></label>
+        <label data-i18n>Stregbredde <select id="drawingWidth"><option value="2" data-i18n>Tynd</option><option value="4" selected data-i18n>Normal</option><option value="7" data-i18n>Tyk</option></select></label>
+      </div>
+      <div class="button-row"><button id="undoDrawing" data-i18n>Fortryd sidste streg</button><button id="clearDrawings" data-i18n>Ryd tegninger</button></div>
+      <p class="help" data-i18n>Træk på kortet for at tegne. Tegningerne følger geografien ved zoom og vises kun sammen med denne note. Escape stopper tegneværktøjet.</p>
+      <button id="finishDrawing" type="button" data-i18n>Færdig</button>
+      <p id="drawingCount" class="help" role="status"></p>
+    </fieldset>
+      <details id="eventOptions">
+        <summary data-i18n>Flere handlinger</summary>
+        <label data-i18n>Tidspunkt (dansk tid)<input id="noteTime" type="datetime-local" step="1"></label>
+        <label data-i18n>YouTube-link<input id="noteVideo" type="text" inputmode="url" maxlength="2048" placeholder="https://youtu.be/…" aria-describedby="noteVideoStatus"></label>
+        <p id="noteVideoStatus" role="status"></p>
+        <div class="button-row">
+          <button id="removeNoteVideo" type="button" hidden data-i18n>Fjern video</button>
+          <button id="placeNote" type="button" data-i18n>Placér markør</button>
+          <button id="cancelNote" type="button" hidden data-i18n>Annullér placering</button>
+          <button id="removeNotePoint" type="button" hidden data-i18n>Fjern markør</button>
+        </div>
+      </details>
+      <div id="newEventActions" class="button-row" hidden>
+        <button id="save" type="button" data-i18n>Opret event</button>
+        <button id="cancelNewEvent" type="button" data-i18n>Annullér</button>
+      </div>
+    </div>
+    <details id="presentationOptions">
+      <summary data-i18n>Præsentation</summary>
+      <div class="editor-actions button-row"><button id="export" type="button" data-i18n>Eksportér noter</button></div>
+    </details>
+  </div>
 </section>
 <footer id="editingTimeline"><div class="controls">
-  <div class="transport-controls" role="group" aria-label="Afspilning og events">
-    <button id="previousEvent" class="transport-button" type="button" aria-label="Forrige event" title="Forrige event"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 5h2v14H5zM19 5v14L9 12z"/></svg></button>
-    <button id="back" class="transport-button" type="button" aria-label="Lavere hastighed" title="Lavere hastighed"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11 5v14L2 12zM22 5v14l-9-7z"/></svg></button>
-    <button id="play" class="transport-button" type="button" aria-label="Afspil" title="Afspil"><svg id="playIcon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4v16l13-8z"/></svg><svg id="pauseIcon" viewBox="0 0 24 24" aria-hidden="true" hidden><path fill="currentColor" d="M5 4h5v16H5zM14 4h5v16h-5z"/></svg></button>
-    <button id="next" class="transport-button" type="button" aria-label="Højere hastighed" title="Højere hastighed"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 5v14l9-7zM13 5v14l9-7z"/></svg></button>
-    <button id="nextEvent" class="transport-button" type="button" aria-label="Næste event" title="Næste event"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 5h2v14h-2zM5 5v14l10-7z"/></svg></button>
+  <div class="transport-controls" role="group" aria-label="Afspilning og events" data-i18n-attrs="aria-label">
+    <button id="previousEvent" class="transport-button" type="button" aria-label="Forrige event" title="Forrige event" data-i18n-attrs="aria-label title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 5h2v14H5zM19 5v14L9 12z"/></svg></button>
+    <button id="back" class="transport-button" type="button" aria-label="Lavere hastighed" title="Lavere hastighed" data-i18n-attrs="aria-label title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11 5v14L2 12zM22 5v14l-9-7z"/></svg></button>
+    <button id="play" class="transport-button" type="button" aria-label="Afspil" title="Afspil" data-i18n-attrs="aria-label title"><svg id="playIcon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4v16l13-8z"/></svg><svg id="pauseIcon" viewBox="0 0 24 24" aria-hidden="true" hidden><path fill="currentColor" d="M5 4h5v16H5zM14 4h5v16h-5z"/></svg></button>
+    <button id="next" class="transport-button" type="button" aria-label="Højere hastighed" title="Højere hastighed" data-i18n-attrs="aria-label title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 5v14l9-7zM13 5v14l9-7z"/></svg></button>
+    <button id="nextEvent" class="transport-button" type="button" aria-label="Næste event" title="Næste event" data-i18n-attrs="aria-label title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17 5h2v14h-2zM5 5v14l10-7z"/></svg></button>
   </div>
-  <label for="playbackSpeed" class="sr-only">Afspilningshastighed</label><select id="playbackSpeed" title="Afspilningshastighed"><option value="1">1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="20">20×</option><option value="100" selected>100×</option><option value="200">200×</option><option value="400">400×</option><option value="1000">1000×</option></select><time id="clock" aria-label="Kortets tid"></time><div id="timelineTrack"><input id="time" aria-label="Tidspunkt, perioder med valgte både i kortudsnittet" type="range" step="1"><div id="timelineEvents" aria-hidden="true"></div></div>
+  <label for="playbackSpeed" class="sr-only" data-i18n>Afspilningshastighed</label><select id="playbackSpeed" title="Afspilningshastighed" data-i18n-attrs="title"><option value="1">1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="20">20×</option><option value="100" selected>100×</option><option value="200">200×</option><option value="400">400×</option><option value="1000">1000×</option></select><time id="clock" aria-label="Kortets tid" data-i18n-attrs="aria-label"></time><div id="timelineTrack"><input id="time" aria-label="Tidspunkt, perioder med valgte både i kortudsnittet" type="range" step="1" data-i18n-attrs="aria-label"><div id="timelineEvents" aria-hidden="true"></div></div>
 </div><div id="timeWindow" hidden></div><div id="status" hidden></div></footer>
 <footer id="presentationFooter">
   <div class="event-navigation">
-    <nav aria-label="Præsentationens events">
-      <label for="eventSelect" class="sr-only">Vælg event</label><select id="eventSelect"></select>
+    <nav aria-label="Præsentationens events" data-i18n-attrs="aria-label">
+      <label for="presentationEventSelect" class="sr-only" data-i18n>Vælg event</label><select id="presentationEventSelect"></select>
     </nav>
     <p id="presentationMessage" class="help" role="status"></p>
   </div>
 </footer></main>
-<section id="eventVideoOverlay" role="dialog" aria-modal="true" aria-label="YouTube-video" hidden>
-  <div class="video-toolbar"><a id="eventVideoLink" target="_blank" rel="noopener">Åbn på YouTube</a><button id="closeEventVideo" type="button">Luk video ×</button></div>
+<section id="eventVideoOverlay" role="dialog" aria-modal="true" aria-label="YouTube-video" hidden data-i18n-attrs="aria-label">
+  <div class="video-toolbar"><a id="eventVideoLink" target="_blank" rel="noopener" data-i18n>Åbn på YouTube</a><button id="closeEventVideo" type="button" data-i18n>Luk video ×</button></div>
   <div id="eventVideoPlayer"></div>
 </section>
-<dialog id="eventChangesDialog" aria-labelledby="eventChangesTitle" aria-describedby="eventChangesHelp">
-  <h2 id="eventChangesTitle">Ugemte ændringer</h2>
-  <p id="eventChangesHelp">Vil du gemme ændringerne til eventet, før du fortsætter?</p>
-  <p id="eventChangesStatus" role="alert"></p>
-  <div class="button-row">
-    <button id="eventChangesSave" type="button">Gem</button>
-    <button id="eventChangesDiscard" type="button">Gem ikke</button>
-    <button id="eventChangesCancel" type="button" autofocus>Annullér</button>
-  </div>
-</dialog>
 <dialog id="imageCropDialog" aria-labelledby="imageCropTitle" aria-describedby="imageCropHelp">
-  <h2 id="imageCropTitle">Beskær billede</h2>
-  <p id="imageCropHelp" class="help">Træk et udsnit på billedet. Flyt rammen eller træk i hjørnerne for at tilpasse den. Du kan også angive udsnittet i pixels.</p>
+  <h2 id="imageCropTitle" data-i18n>Beskær billede</h2>
+  <p id="imageCropHelp" class="help" data-i18n>Træk et udsnit på billedet. Flyt rammen eller træk i hjørnerne for at tilpasse den. Du kan også angive udsnittet i pixels.</p>
   <div class="image-crop-preview"><div id="imageCropStage" hidden>
-    <img id="imageCropSource" alt="Billede til beskæring" draggable="false">
+    <img id="imageCropSource" alt="Billede til beskæring" draggable="false" data-i18n-attrs="alt">
     <div id="imageCropSelection"><span data-crop-corner="nw"></span><span data-crop-corner="ne"></span><span data-crop-corner="sw"></span><span data-crop-corner="se"></span></div>
   </div></div>
-  <fieldset id="imageCropFields" disabled><legend>Udsnit i pixels</legend><div class="image-crop-fields">
-    <label>Fra venstre<input id="imageCropX" type="number" min="0" step="1"></label>
-    <label>Fra toppen<input id="imageCropY" type="number" min="0" step="1"></label>
-    <label>Bredde<input id="imageCropWidth" type="number" min="1" step="1"></label>
-    <label>Højde<input id="imageCropHeight" type="number" min="1" step="1"></label>
+  <fieldset id="imageCropFields" disabled><legend data-i18n>Udsnit i pixels</legend><div class="image-crop-fields">
+    <label data-i18n>Fra venstre<input id="imageCropX" type="number" min="0" step="1"></label>
+    <label data-i18n>Fra toppen<input id="imageCropY" type="number" min="0" step="1"></label>
+    <label data-i18n>Bredde<input id="imageCropWidth" type="number" min="1" step="1"></label>
+    <label data-i18n>Højde<input id="imageCropHeight" type="number" min="1" step="1"></label>
   </div></fieldset>
   <p id="imageCropStatus" class="help" role="status" aria-live="polite"></p>
-  <p class="help">Beskæringen bruges kun til dette event. Gem eventet bagefter; online skal du også vælge Udgiv.</p>
-  <div class="button-row"><button id="applyImageCrop" type="button" disabled>Brug beskæring</button><button id="resetImageCrop" type="button" disabled>Hele billedet</button><button id="cancelImageCrop" type="button">Annullér</button></div>
+  <p class="help" data-i18n>Beskæringen gemmes i kladden til dette event.</p>
+  <div class="button-row"><button id="applyImageCrop" type="button" disabled data-i18n>Brug beskæring</button><button id="resetImageCrop" type="button" disabled data-i18n>Hele billedet</button><button id="cancelImageCrop" type="button" data-i18n>Annullér</button></div>
 </dialog>
-<script src="config.js"></script><script src="client-diagnostics.js"></script><script src="event-selection.js"></script><script src="boot.js"></script>
+<script src="i18n-messages.js"></script><script src="i18n.js"></script><script src="config.js"></script><script src="client-diagnostics.js"></script><script src="event-selection.js"></script><script src="boot.js"></script>
 </body>
 </html>

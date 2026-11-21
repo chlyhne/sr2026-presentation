@@ -19,7 +19,7 @@ let playbackGateMeasurement=null;
 function eventToolPoints(note,field,count){
  const points=note[field]===undefined?[]:note[field];
  if(!Array.isArray(points)||![0,count].includes(points.length)||!points.every(point=>Array.isArray(point)&&point.length===2
-  &&point.every(Number.isFinite)&&Math.abs(point[0])<=180&&Math.abs(point[1])<85))throw Error('Eventets '+field+' skal indeholde '+count+' gyldige geografiske punkter.');
+  &&point.every(Number.isFinite)&&Math.abs(point[0])<=180&&Math.abs(point[1])<85))throw Error(srText('Eventets {0} skal indeholde {1} gyldige geografiske punkter.',field,count));
  return points;
 }
 function eventMeasurement(note){return eventToolPoints(note,'measurement',2);}
@@ -28,17 +28,12 @@ function currentMeasurement(){
  const target=currentMapEvent();
  if(measurementOverride&&measurementOverride.target!==target)measurementOverride=null;
  if(measurementOverride)return measurementOverride.points;
- return target?eventMeasurement(target===editingNote?eventDraft:target):measurement;
+ return target?eventMeasurement(target):measurement;
 }
 function setMeasurement(points){
- const next=eventMeasurement({measurement:points}).map(point=>[...point]),target=currentMapEvent(),editable=editableSettingsEvent();
- if(editable){
-  if(!stageEventChanges(editable,{measurement:next}))return false;
-  measurement=[];measurementOverride=null;
- }else if(target){
-  // Presentation changes are temporary and never alter the saved event.
-  measurementOverride={target,points:next};
- }else{measurement=next;measurementOverride=null;}
+ const next=eventMeasurement({measurement:points}).map(point=>[...point]),target=currentMapEvent();
+ if(target)measurementOverride={target,points:next};else{measurement=next;measurementOverride=null;}
+ updateEventSceneControls();
  return true;
 }
 function currentGateMeasurement(){
@@ -47,16 +42,14 @@ function currentGateMeasurement(){
  const target=currentMapEvent();
  if(gateOverride&&gateOverride.target!==target)gateOverride=null;
  if(gateOverride)return gateOverride.points;
- return target?eventGates(target===editingNote?eventDraft:target):gateMeasurement;
+ return target?eventGates(target):gateMeasurement;
 }
 function setGateMeasurement(points){
  const next=eventGates({gates:points}).map(point=>[...point]);prepareGateTiming(next);
- const target=currentMapEvent(),editable=editableSettingsEvent();
- if(editable){if(!stageEventChanges(editable,{gates:next}))return false;gateMeasurement=[];gateOverride=null;}
- else if(target)gateOverride={target,points:next};
- else{gateMeasurement=next;gateOverride=null;}
+ const target=currentMapEvent();
+ if(target)gateOverride={target,points:next};else{gateMeasurement=next;gateOverride=null;}
  playbackGateMeasurement=null;
- requestRender();return true;
+ updateEventSceneControls();requestRender();return true;
 }
 function cancelNavigationGesture(){
  const gesture=navigationGesture;navigationGesture=null;
@@ -68,12 +61,12 @@ function resetMapMeasurement(){
 function comparisonMessage(message){$('comparisonStatus').textContent=message;$('comparisonStatus').hidden=!message;}
 try{
  const stored=eventStorage.getItem(TRACK_COMPARISON_KEY);
- if(stored){const value=JSON.parse(stored);if(!validComparison(value))throw Error('Ugyldigt sammenligningsvalg.');comparison=value;}
-}catch(error){comparisonMessage('Sammenligning kunne ikke indlæses: '+error.message);}
+ if(stored){const value=JSON.parse(stored);if(!validComparison(value))throw Error(srText('Ugyldigt sammenligningsvalg.'));comparison=value;}
+}catch(error){comparisonMessage(srText('Sammenligning kunne ikke indlæses: ')+error.message);}
 try{
  const stored=eventStorage.getItem(TRACK_LENGTH_KEY);
- if(stored!==null){const value=JSON.parse(stored);if(!TRACK_LENGTHS.has(value))throw Error('Ugyldig sporlængde.');trackLengthSeconds=value;}
-}catch(error){comparisonMessage('Sporlængde kunne ikke indlæses: '+error.message);}
+ if(stored!==null){const value=JSON.parse(stored);if(!TRACK_LENGTHS.has(value))throw Error(srText('Ugyldig sporlængde.'));trackLengthSeconds=value;}
+}catch(error){comparisonMessage(srText('Sporlængde kunne ikke indlæses: ')+error.message);}
 const courseRhumbRoutes=Object.fromEntries(Object.entries(window.SR_RHUMBLINES).map(([course,definition])=>[course,buildRhumbRoute(definition.points)]));
 const RHUMBLINE_COLOUR='#d21f26';
 const rhumblineToggle=$('mapRhumblineToggle'),rhumblineOverlay=$('mapRhumbline');
@@ -95,16 +88,16 @@ function syncComparisonRoute(){
   setAttr(rhumblineOverlay,'d',routePath);
   rhumblineToggle.disabled=!routePath;
  }
- comparisonMessage(rhumbRoute.legs.length?'':'Rhumbline for '+BOAT_COURSE_NAMES[course]+' er endnu ikke defineret.');
+ comparisonMessage(rhumbRoute.legs.length?'':srText('Rhumbline for ')+srText(BOAT_COURSE_NAMES[course])+srText(' er endnu ikke defineret.'));
 }
 syncComparisonRoute();
 function referenceAtProgress(progress,stations=trackProfileCache.get(referenceBoat()?.points)?.stations){
- if(!stations)throw Error('Referencebådens sporprofil er ikke forberedt.');
+ if(!stations)throw Error(srText('Referencebådens sporprofil er ikke forberedt.'));
  return referenceProfileAtProgress(progress,stations);
 }
 function referenceTimeAtProgress(progress){
  const boat=referenceBoat(),profile=trackProfileCache.get(boat.points);
- if(!profile)throw Error('Referencebådens sporprofil er ikke forberedt.');
+ if(!profile)throw Error(srText('Referencebådens sporprofil er ikke forberedt.'));
  const {samples}=profile;
  for(let index=0;index<boat.points.length-1;index++){
   const offset=index*3,start=samples[offset+1],end=samples[offset+4];
@@ -122,7 +115,7 @@ function correctedProjectedSpeed(speed,handicap,referenceHandicap){
 function trackGainLimit(){return comparison.basis==='time'?TRACK_TIME_GAIN_LIMIT:TRACK_GAIN_LIMIT;}
 function trackComparisonSample(boat,time){
  const ownProfile=trackProfileCache.get(boat.points),referenceProfile=trackProfileCache.get(referenceBoat()?.points);
- if(!ownProfile||!referenceProfile)throw Error('Sporenes sammenligningsprofiler er ikke forberedt.');
+ if(!ownProfile||!referenceProfile)throw Error(srText('Sporenes sammenligningsprofiler er ikke forberedt.'));
  const gains=webglTracks.comparisonSample(boat,time);if(!gains)return null;
  const index=timeBoundary(boat.points,time,true)-1;if(index<0)return null;
  const next=boat.points[index+1],connects=next&&next[2]>boat.points[index][2]&&next[2]-boat.points[index][2]<=TRACK_MAX_GAP;
@@ -141,10 +134,10 @@ function trackGainSample(boat,time){
 }
 function saveReferenceBoat(id){
  return changeEventConfiguration(()=>{
-  if(!boats.some(boat=>boat.id===id)){comparisonMessage('Ugyldig referencebåd.');return false;}
+  if(!boats.some(boat=>boat.id===id)){comparisonMessage(srText('Ugyldig referencebåd.'));return false;}
   if(id===referenceBoatId)return true;
-  try{eventStorage.setItem(REFERENCE_BOAT_KEY,id);}
-  catch{comparisonMessage('Referencebåden kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
+  try{if(!openedEvent)eventStorage.setItem(REFERENCE_BOAT_KEY,id);}
+  catch{comparisonMessage(srText('Referencebåden kunne ikke gemmes. Ændringen er ikke anvendt.'));return false;}
   referenceBoatId=id;comparisonRevision++;
   syncComparisonRoute();
   clearTrackHover();
@@ -163,30 +156,31 @@ function trackGainColour(value,limit=TRACK_GAIN_LIMIT){
 const TRACK_GAIN_COLOURS=Array.from({length:TRACK_SPEED_BINS},(_,i)=>trackGainColour(-TRACK_GAIN_LIMIT+2*TRACK_GAIN_LIMIT*i/(TRACK_SPEED_BINS-1)));
 function saveComparison(next){
  return changeEventConfiguration(()=>{
-  if(handicapTracksEnabled){comparisonMessage('Handicapkompenseret spor bruger bådfarver.');syncNavigationControls();return false;}
-  if(!validComparison(next)){comparisonMessage('Ugyldigt sammenligningsvalg.');return false;}
+  if(handicapTracksEnabled){comparisonMessage(srText('Handicapkompenseret spor bruger bådfarver.'));syncNavigationControls();return false;}
+  if(!validComparison(next)){comparisonMessage(srText('Ugyldigt sammenligningsvalg.'));return false;}
   if(next.enabled&&!rhumbRoute.legs.length){syncComparisonRoute();syncNavigationControls();return false;}
-  try{eventStorage.setItem(TRACK_COMPARISON_KEY,JSON.stringify(next));}
-  catch{comparisonMessage('Sammenligningsvalget kunne ikke gemmes. Ændringen er ikke anvendt.');return false;}
+  try{if(!openedEvent)eventStorage.setItem(TRACK_COMPARISON_KEY,JSON.stringify(next));}
+  catch{comparisonMessage(srText('Sammenligningsvalget kunne ikke gemmes. Ændringen er ikke anvendt.'));return false;}
   comparison=next;
   comparisonMessage('');syncNavigationControls();renderTrackSpeedLegend();requestRender();return true;
  });
 }
 function syncNavigationControls(){
  syncReferenceBoatControls();
- $('referenceBoat').title='Rhumbline: '+BOAT_COURSE_NAMES[referenceBoat().course]+(rhumbRoute.legs.length?'':' · endnu ikke tegnet');
+ $('referenceBoat').title=srText('Rhumbline: ')+srText(BOAT_COURSE_NAMES[referenceBoat().course])+(rhumbRoute.legs.length?'':srText(' · endnu ikke tegnet'));
  for(const basis of ['absolute','handicap','time'])$('trackStyle').querySelector(`option[value="${basis}"]`).disabled=!rhumbRoute.legs.length;
  $('trackStyle').value=trackUsesBoatColour()?'boat':comparison.enabled?comparison.basis:'speed';
  $('trackStyle').disabled=handicapTracksEnabled;$('trackLength').value=String(trackLengthSeconds);
  const lengthLabel=$('trackLength').selectedOptions[0].textContent;
- $('trackLengthSummary').textContent=trackLengthSeconds>0?`Spor: seneste ${lengthLabel}`:trackLengthSeconds===0?'Spor: hele forløbet':lengthLabel;
+ $('trackLengthSummary').textContent=trackLengthSeconds>0?srText("Spor: seneste {0}",lengthLabel):trackLengthSeconds===0?srText('Spor: hele forløbet'):lengthLabel;
  setAttr($('trackSpeedLegend'),'visibility',tracksAreVisible()?'visible':'hidden');
  $('finishMapLine').disabled=!navigationMode||navigationDraft.length<2;
  $('undoMapPoint').disabled=!navigationMode||!navigationDraft.length;
  $('map').classList.toggle('measuring',!!navigationMode);
 }
 function startMapLine(mode){
- stopPlayback();cancelPlacement();cancelDrawingGesture();setDrawingTool('pan');clearTrackHover();
+ if(!window.SR_RHUMBLINE_SETUP&&!finishInlineTextEditing())return;
+ stopPlayback();endEventTool();clearTrackHover();
  cancelNavigationGesture();navigationMode=mode;navigationDraft=[];gateDraft=[];
  setMapLayersExpanded(false);setMapTracksExpanded(false);$('comparisonStatus').hidden=true;
  syncNavigationControls();renderNavigation();
@@ -248,13 +242,13 @@ function renderNavigation(){
    const [x,y]=xy(point),group=screenGroup(x,y,layer);
    el('circle',{r:4,fill:colour,stroke:'#fff','stroke-width':1.5},group);
    el('text',{x:7,y:-7,fill:colour,'font-size':11,'font-weight':700,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},group).textContent=i+1;
-   if(i){const leg=rhumbLeg(points[i-1],point);el('title',{},group).textContent=`${leg.distance.toFixed(2)} sømil · ${leg.bearing.toFixed(0)}°`;
+   if(i){const leg=rhumbLeg(points[i-1],point);el('title',{},group).textContent=srText("{0} sømil · {1}°",leg.distance.toFixed(2),leg.bearing.toFixed(0));
     const [a,b]=xy(points[i-1]),mid=screenGroup((x+a)/2,(y+b)/2,layer);
-    el('text',{y:-8,'text-anchor':'middle',fill:colour,'font-size':11,'font-weight':650,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},mid).textContent=`${leg.distance.toLocaleString('da-DK',{maximumFractionDigits:2})} sm · ${Math.round(leg.bearing)}°`;
+    el('text',{y:-8,'text-anchor':'middle',fill:colour,'font-size':11,'font-weight':650,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},mid).textContent=srText("{0} sm · {1}°",leg.distance.toLocaleString(srLocale,{maximumFractionDigits:2}),Math.round(leg.bearing));
    }
   }
   const [x,y]=xy(points.at(-1)),group=screenGroup(x,y,layer),total=buildRhumbRoute(points).total;
-  el('text',{x:8,y:17,fill:colour,'font-size':12,'font-weight':700,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},group).textContent=`${label} · ${total.toLocaleString('da-DK',{maximumFractionDigits:2})} sm`;
+  el('text',{x:8,y:17,fill:colour,'font-size':12,'font-weight':700,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},group).textContent=srText("{0} · {1} sm",label,total.toLocaleString(srLocale,{maximumFractionDigits:2}));
  }
  function drawGate(points,number){
   if(points.length!==2)return;
@@ -263,17 +257,17 @@ function renderNavigation(){
   el('path',{d:path(points),fill:'none',stroke:colour,'stroke-width':3,'vector-effect':'non-scaling-stroke'},layer);
   for(const point of points){const [x,y]=xy(point);el('circle',{r:4,fill:colour,stroke:'#fff','stroke-width':1.5},screenGroup(x,y,layer));}
   const [a,b]=points.map(xy),label=screenGroup((a[0]+b[0])/2,(a[1]+b[1])/2,layer);
-  el('text',{y:-9,'text-anchor':'middle',fill:colour,'font-size':12,'font-weight':700,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},label).textContent='Gate '+number;
+  el('text',{y:-9,'text-anchor':'middle',fill:colour,'font-size':12,'font-weight':700,stroke:'#fff','stroke-width':3,'paint-order':'stroke'},label).textContent=srText('Gate {0}',number);
  }
- if(window.SR_RHUMBLINE_SETUP&&navigationMode!=='route'&&!shownMeasurement.length)draw(window.SR_RHUMBLINE.points,RHUMBLINE_COLOUR,'Rhumbline',true);
- if(navigationMode!=='measure')draw(shownMeasurement,window.SR_RHUMBLINE_SETUP?RHUMBLINE_COLOUR:'#173d4c',window.SR_RHUMBLINE_SETUP?'Rhumbline':'Måling',!!window.SR_RHUMBLINE_SETUP);
+ if(window.SR_RHUMBLINE_SETUP&&navigationMode!=='route'&&!shownMeasurement.length)draw(window.SR_RHUMBLINE.points,RHUMBLINE_COLOUR,srText('Rhumbline'),true);
+ if(navigationMode!=='measure')draw(shownMeasurement,window.SR_RHUMBLINE_SETUP?RHUMBLINE_COLOUR:'#173d4c',window.SR_RHUMBLINE_SETUP?srText('Rhumbline'):srText('Måling'),!!window.SR_RHUMBLINE_SETUP);
  if(navigationMode==='gates'){
   drawGate(gateDraft,1);drawGate(navigationDraft,gateDraft.length?2:1);
  }else for(let i=0;i<gates.length;i+=2)drawGate(gates.slice(i,i+2),i/2+1);
  if(results.length)drawGateResults(resultLayer,gates,results,scrollTop);
- if(navigationMode&&navigationMode!=='gates')draw(navigationDraft,navigationMode==='route'?RHUMBLINE_COLOUR:'#173d4c',navigationMode==='route'?'Rhumbline':'Måling',navigationMode==='route');
+ if(navigationMode&&navigationMode!=='gates')draw(navigationDraft,navigationMode==='route'?RHUMBLINE_COLOUR:'#173d4c',navigationMode==='route'?srText('Rhumbline'):srText('Måling'),navigationMode==='route');
  const active=navigationMode?navigationDraft:shownMeasurement;
- $('measurementResult').textContent=active.length?`${buildRhumbRoute(active).total.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} sømil` :'';
+ $('measurementResult').textContent=active.length?srText("{0} sømil",buildRhumbRoute(active).total.toLocaleString(srLocale,{minimumFractionDigits:2,maximumFractionDigits:2})) :'';
  resizeSymbols(layer);resizeSymbols(resultLayer);
 }
 function drawGateResults(layer,gates,results,scrollTop=0){
@@ -285,15 +279,15 @@ function drawGateResults(layer,gates,results,scrollTop=0){
  const direction=nx*(x-(firstA[0]+firstB[0])/2)+ny*(y-(firstA[1]+firstB[1])/2);
  if(direction<0||direction===0&&(nx<0||nx===0&&ny<0)){nx=-nx;ny=-ny;}
  const offset=24+Math.abs(nx)*width/2+Math.abs(ny)*height/2,anchor=screenGroup(x,y,layer);
- anchor.setAttribute('class','gate-results');anchor.setAttribute('role','table');anchor.setAttribute('aria-label','Sejltider fra gate 1 til gate 2, hurtigste først');
+ anchor.setAttribute('class','gate-results');anchor.setAttribute('role','table');anchor.setAttribute('aria-label',srText('Sejltider fra gate 1 til gate 2, hurtigste først'));
  const panel=el('g',{transform:`translate(${nx*offset-width/2} ${ny*offset-height/2})`,'pointer-events':'none',fill:'#173d4c','font-family':'monospace','font-size':12},anchor);
  el('rect',{class:'gate-results-background',width,height,rx:5,fill:'#fffffff0',stroke:'#b8cbd5'},panel);
- el('text',{x:10,y:18,'font-family':'system-ui, sans-serif','font-weight':700,'font-size':11},panel).textContent='Gate 1 → 2 · sejltid';
+ el('text',{x:10,y:18,'font-family':'system-ui, sans-serif','font-weight':700,'font-size':11},panel).textContent=srText('Gate 1 → 2 · sejltid');
  el('path',{d:`M0 26H${width}`,stroke:'#b8cbd5'},panel);
  const viewport=el('foreignObject',{x:0,y:27,width,height:height-27,'pointer-events':'all'},panel);
  const scroller=document.createElementNS('http://www.w3.org/1999/xhtml','div');
  scroller.setAttribute('data-gate-results-scroll','');scroller.setAttribute('data-gates',JSON.stringify(gates));
- scroller.setAttribute('tabindex','0');scroller.setAttribute('role','region');scroller.setAttribute('aria-label','Sejltider, rul for flere både');
+ scroller.setAttribute('tabindex','0');scroller.setAttribute('role','region');scroller.setAttribute('aria-label',srText('Sejltider, rul for flere både'));
  scroller.style.cssText='height:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;';
  for(const type of ['wheel','pointerdown','keydown'])scroller.addEventListener(type,event=>event.stopPropagation());
  viewport.append(scroller);
@@ -324,8 +318,8 @@ $('trackStyle').onchange=()=>{
 $('trackLength').onchange=()=>{
  changeEventConfiguration(()=>{
   const length=+$('trackLength').value;
-  try{if(!TRACK_LENGTHS.has(length))throw Error('Ugyldig sporlængde.');eventStorage.setItem(TRACK_LENGTH_KEY,JSON.stringify(length));}
-  catch{comparisonMessage('Sporlængden kunne ikke gemmes.');syncNavigationControls();return;}
+  try{if(!TRACK_LENGTHS.has(length))throw Error(srText('Ugyldig sporlængde.'));eventStorage.setItem(TRACK_LENGTH_KEY,JSON.stringify(length));}
+  catch{comparisonMessage(srText('Sporlængden kunne ikke gemmes.'));syncNavigationControls();return;}
   trackLengthSeconds=length;comparisonMessage('');syncNavigationControls();requestRender();
  });
 };

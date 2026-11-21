@@ -37,7 +37,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     if(scaleMeters!==level.meters||Math.abs(scaleWidth-gridWidth)>1e-6)throw Error('Scale must match one grid cell');
     if(scale.querySelector('text').textContent!==level.label)throw Error('Scale and grid must use the same label');
     if(scaleBounds.right>viewport.rect.right||scaleBounds.bottom>viewport.rect.bottom||scaleBounds.bottom<viewport.rect.bottom-90)throw Error('Scale must stay in the bottom right corner');
-    return {meters:level.meters,label:$('gridSpacing').textContent,scaleMeters};
+    return {meters:level.meters,label:scale.querySelector('text').textContent,scaleMeters};
    });
   });
   assert.deepEqual(levels.map(level=>level.meters),[27780,9260,3704,1852,400,100]);

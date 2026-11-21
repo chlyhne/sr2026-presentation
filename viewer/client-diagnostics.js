@@ -16,32 +16,28 @@
  }
  async function report(kind,error,extra={}){
   const message=clip(error?.message??error),state=snapshot(),key=[kind,message,state.stage].join(':');
-  const important=!['session','loading','reload','reload-blocked','control-ready','ready','gpu-ready','graphics-released','gpu-probe-step','gpu-probe-context','gpu-probe-second-context','gpu-probe-vertex','gpu-probe-upload','gpu-probe-feedback','gpu-probe-geometry','gpu-probe-draw'].includes(kind)&&!(kind==='gpu-probe-result'&&message==='Bestået');
-  if(important){if(seen.has(key)||errorCount>=20)return false;seen.add(key);errorCount++;recentErrors.push({kind,message:clip(message,600),stack:clip(error?.stack,800)});if(recentErrors.length>3)recentErrors.shift();status('Sender fejlrapport …');}
+  const important=!['session','loading','reload','reload-blocked','control-ready','ready','gpu-ready','graphics-released','gpu-probe-step','gpu-probe-context','gpu-probe-second-context','gpu-probe-vertex','gpu-probe-upload','gpu-probe-feedback','gpu-probe-geometry','gpu-probe-draw'].includes(kind)&&!(kind==='gpu-probe-result'&&message===srText('Bestået'));
+  if(important){if(seen.has(key)||errorCount>=20)return false;seen.add(key);errorCount++;recentErrors.push({kind,message:clip(message,600),stack:clip(error?.stack,800)});if(recentErrors.length>3)recentErrors.shift();status(srText('Sender fejlrapport …'));}
   const data={...extra,version:1,session,kind,message,stack:clip(error?.stack,5000),path:location.pathname,userAgent:clip(navigator.userAgent,512),time:new Date().toISOString(),state};
   try{
    const response=await fetch(endpoint,{method:'POST',mode:'same-origin',credentials:'omit',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),keepalive:true});
    if(!response.ok)throw Error('HTTP '+response.status);
-   if(important)status('Fejlrapport sendt til testserveren.');return true;
-  }catch(failure){if(important)status('Fejlrapporten kunne ikke afleveres: '+clip(failure.message));return false;}
+   if(important)status(srText('Fejlrapport sendt til testserveren.'));return true;
+  }catch(failure){if(important)status(srText('Fejlrapporten kunne ikke afleveres: ')+clip(failure.message));return false;}
  }
  window.SRClientDiagnostics={report,register:(name,read)=>renderers.set(name,read)};
  window.addEventListener('error',event=>{
   if(event.error||event.message)report('javascript',event.error||event.message,{source:clip(event.filename,1024),line:event.lineno,column:event.colno});
-  else if(event.target?.tagName==='SCRIPT')report('resource','JavaScript-modul kunne ikke indlæses',{source:new URL(event.target.src,location.href).pathname});
+  else if(event.target?.tagName==='SCRIPT')report('resource',srText('JavaScript-modul kunne ikke indlæses'),{source:new URL(event.target.src,location.href).pathname});
  },true);
  window.addEventListener('unhandledrejection',event=>report('unhandledrejection',event.reason));
  function reloadSafe(){
-  if(typeof hasEventChanges==='function'&&hasEventChanges())return false;
-  if(typeof eventImageLoading!=='undefined'&&eventImageLoading)return false;
-  if(typeof inlineTextSession!=='undefined'&&inlineTextSession&&document.getElementById('eventTextEditor').value!==inlineTextSession.originalText)return false;
+  if(typeof newEventDraft!=='undefined'&&newEventDraft)return false;
+  if(typeof eventImageUploads!=='undefined'&&eventImageUploads.size)return false;
+  if(typeof inlineTextSession!=='undefined'&&inlineTextSession&&document.getElementById('eventTextEditor').value!==inlineTextSession.text)return false;
   if(typeof drawingGesture!=='undefined'&&drawingGesture)return false;
   if(typeof drag!=='undefined'&&drag)return false;
   if(document.querySelector('dialog[open]'))return false;
-  if(typeof editingNote==='undefined'||!editingNote){
-   if(document.getElementById('note')?.value.trim()||document.getElementById('noteVideo')?.value.trim())return false;
-   if(typeof pendingEventImage!=='undefined'&&pendingEventImage)return false;
-  }
   return true;
  }
  if(config.clientControlUrl){
@@ -60,33 +56,33 @@
     if(command.target&& !['all','iphone',session].includes(command.target))return;
     if(sessionStorage.getItem(handledKey)===command.revision)return;
     if(document.body.getAttribute('aria-busy')==='true'){
-     status('Automatisk genindlæsning afventer igangværende indlæsning.');return;
+     status(srText('Automatisk genindlæsning afventer igangværende indlæsning.'));return;
     }
     if(!reloadSafe()){
-     status('Automatisk genindlæsning afventer ugemte ændringer.');
-     if(blockedRevision!==command.revision){blockedRevision=command.revision;await report('reload-blocked','Genindlæsning afventer kladden',{revision:command.revision});}
+     status(srText('Automatisk genindlæsning afventer ugemte ændringer.'));
+     if(blockedRevision!==command.revision){blockedRevision=command.revision;await report('reload-blocked',srText('Genindlæsning afventer kladden'),{revision:command.revision});}
      return;
     }
     // This acknowledgement persists current state and recent errors before reload.
-    if(!await report('reload','Genindlæser testside efter serverkommando',{revision:command.revision,recentErrors})){status('Genindlæsning afventer aflevering af fejlrapporten.');return;}
+    if(!await report('reload',srText('Genindlæser testside efter serverkommando'),{revision:command.revision,recentErrors})){status(srText('Genindlæsning afventer aflevering af fejlrapporten.'));return;}
     if(!reloadSafe())return;
     if(window.SRReleaseGraphics){
      await window.SRReleaseGraphics();
-     if(!await report('graphics-released','GPU-kontekster frigivet før genindlæsning',{revision:command.revision}))throw Error('GPU-oprydningens status kunne ikke afleveres.');
+     if(!await report('graphics-released',srText('GPU-kontekster frigivet før genindlæsning'),{revision:command.revision}))throw Error(srText('GPU-oprydningens status kunne ikke afleveres.'));
     }
     sessionStorage.setItem(handledKey,command.revision);reloading=true;
-    status('Genindlæser testside …');location.reload();
-   }catch(error){status('Automatisk genindlæsning afventer testserveren: '+clip(error.message));}
+    status(srText('Genindlæser testside …'));location.reload();
+   }catch(error){status(srText('Automatisk genindlæsning afventer testserveren: ')+clip(error.message));}
    finally{if(!reloading)setTimeout(poll,2000);}
   }
-  report('control-ready','Klienten er klar til serverstyret genindlæsning');
+  report('control-ready',srText('Klienten er klar til serverstyret genindlæsning'));
   setTimeout(poll,2000);
  }
- report('session','Klienten starter');
+ report('session',srText('Klienten starter'));
  // A stopped load may not produce an exception. Retain its last changed stage.
  const timer=setInterval(()=>{
   if(document.body.getAttribute('aria-busy')!=='true'||loadingReports>=30){clearInterval(timer);return;}
   const state=snapshot(),key=[state.stage,state.progress].join(':');
-  if(key!==lastLoadingState){lastLoadingState=key;loadingReports++;report('loading','Indlæsning i gang');}
+  if(key!==lastLoadingState){lastLoadingState=key;loadingReports++;report('loading',srText('Indlæsning i gang'));}
  },5000);
 })();
