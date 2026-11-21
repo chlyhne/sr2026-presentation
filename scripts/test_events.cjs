@@ -115,6 +115,35 @@ test('static event shells share a template and resolve their assets at the site 
  assert.ok(landing.includes('landing.js'));assert.ok(!landing.includes('boot.js'));
 });
 
+test('packaged tracker pages use one version for code and styles while config stays at the site root',()=>{
+ const {execFileSync}=require('node:child_process');
+ const output=execFileSync(process.platform==='win32'?'python':'python3',['-c',`
+import json, sys, tempfile
+from pathlib import Path
+sys.path.insert(0, 'scripts')
+from build_pages import package_tracker_assets
+from event_config import load_catalog, tracker_html
+with tempfile.TemporaryDirectory() as directory:
+    stage = Path(directory)
+    (stage / 'viewer.js').write_text('first')
+    first = package_tracker_assets(stage)
+    (stage / 'viewer.js').write_text('second')
+    second = package_tracker_assets(stage)
+    print(json.dumps([first, second, (stage / first / 'viewer.js').read_text(),
+        [tracker_html(event['id'], second) for event in load_catalog()['events']]]))
+`],{encoding:'utf8',windowsHide:true});
+ const [first,second,firstScript,pages]=JSON.parse(output);
+ assert.notEqual(first,second);
+ assert.equal(firstScript,'first');
+ for(const html of pages){
+  const assets=[...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))"/g)].map(match=>match[1]);
+  assert.ok(assets.includes(second+'boot.js'));
+  assert.ok(assets.includes(second+'viewer.css'));
+  assert.ok(assets.includes('config.js'));
+  assert.ok(assets.every(asset=>asset==='config.js'||asset.startsWith(second)));
+ }
+});
+
 test('landing builds event cards without loading tracks and redirects old explicit links',async()=>{
  for(const search of ['', '?event=silverrudder-2025']){
   const nodes=new Map(),make=()=>({children:[],append(...items){this.children.push(...items);},setAttribute(){}});

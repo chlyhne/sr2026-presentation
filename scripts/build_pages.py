@@ -1,4 +1,5 @@
 """Package only the public viewer and its published content for GitHub Pages."""
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -17,6 +18,21 @@ def prepare_track_profiles():
     if node is None:
         raise RuntimeError('Node.js is required to prepare track profiles. Install Node.js 24 and run this command again.')
     subprocess.run([node, str(ROOT / 'scripts' / 'prepare_track_profiles.cjs'), '--if-stale'], cwd=ROOT, check=True)
+
+
+def package_tracker_assets(stage):
+    scripts = [path for path in stage.glob('*.js') if path.name != 'config.js']
+    assets = sorted([*scripts, *stage.glob('*.css'), *(stage / 'vendor').rglob('*.js')])
+    digest = sha256((ROOT / 'viewer/tracker.html').read_bytes())
+    for asset in assets:
+        digest.update(asset.relative_to(stage).as_posix().encode())
+        digest.update(sha256(asset.read_bytes()).digest())
+    asset_root = f'assets/{digest.hexdigest()[:20]}/'
+    for asset in assets:
+        target = stage / asset_root / asset.relative_to(stage)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(asset, target)
+    return asset_root
 
 
 def build():
@@ -42,7 +58,6 @@ def build():
             event_target=stage/'events'/event['id']/'presentation.json'
             event_target.parent.mkdir(parents=True,exist_ok=True)
             event_target.write_text(json.dumps(event_document,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-            (event_target.parent/'index.html').write_text(tracker_html(event['id']),encoding='utf-8')
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
             if 'track-profiles' in relative.parts and relative.as_posix() not in profile_files:
@@ -55,6 +70,10 @@ def build():
                 target = stage / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, target)
+        asset_root = package_tracker_assets(stage)
+        for event in catalog['events']:
+            entry = stage / 'events' / event['id'] / 'index.html'
+            entry.write_text(tracker_html(event['id'], asset_root), encoding='utf-8')
         (stage / 'config.js').write_text('window.SR_CONFIG=' + json.dumps({'apiBase': api_base, 'admin': False}, ensure_ascii=True) + ';\n', encoding='utf-8')
         (stage / '.nojekyll').touch()
         if not (stage / 'index.html').is_file():

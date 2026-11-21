@@ -1,4 +1,5 @@
 const VIEWER_SCRIPT_TIMEOUT_MS=45000;
+const viewerScriptBase=new URL('.',document.currentScript.src);
 function setViewerLoadingStage(stage){document.getElementById('viewerLoadingStage').textContent=stage;}
 function updateViewerLoading(value){
  const progress=document.getElementById('viewerLoadingProgress');
@@ -91,7 +92,7 @@ function migrateHostedDrafts(){
  for(const file of files){
   setViewerLoadingStage(srText('Indlæser ')+file+'.js');
   await new Promise((resolve,reject)=>{
-   const script=document.createElement('script');script.src=file+'.js';
+   const script=document.createElement('script');script.src=new URL(file+'.js',viewerScriptBase).href;
    const timer=setTimeout(()=>{script.remove();finish(Error(srText('Indlæsningen af {0}.js svarede ikke inden for 45 sekunder.',file)));},VIEWER_SCRIPT_TIMEOUT_MS);
    const finish=error=>{
     clearTimeout(timer);window.removeEventListener('error',executionError);script.onload=script.onerror=null;
