@@ -3,6 +3,7 @@ import eventCatalog from '../viewer/events/catalog.json' with {type:'json'};
 const encoder = new TextEncoder(), decoder = new TextDecoder();
 const SESSION = '__Host-sr-session', OAUTH = '__Host-sr-oauth';
 const IMAGE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(webp|png|jpg)$/;
+const LOGIN_ATTEMPT = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const MAX_DOCUMENT = 4 * 1024 * 1024, MAX_IMAGE = 16 * 1024 * 1024;
 class HttpError extends Error { constructor(status, message) { super(message); this.status = status; } }
 const fail = (status, message) => { throw new HttpError(status, message); };
@@ -44,7 +45,7 @@ async function github(path, token, options = {}) {
   }});
   if (!response.ok) {
     if (response.status === 401) fail(401, 'Log ind med GitHub igen.');
-    if ([409, 422].includes(response.status)) fail(409, 'Præsentationen er ændret, eller GitHub afviste ændringen. Genindlæs før du udgiver igen.');
+    if ([409, 422].includes(response.status)) fail(409, 'Serverens eventsæt er ændret. Din kladde er stadig gemt.');
     if (response.status === 403) fail(403, 'GitHub afviste handlingen. Kontrollér rettigheder og eventuelle branch-regler.');
     if (response.status === 404) fail(404, 'Filen eller repositoryet findes ikke, eller du mangler adgang.');
     fail(502, 'GitHub kunne ikke gennemføre handlingen. Prøv igen senere.');
@@ -53,12 +54,25 @@ async function github(path, token, options = {}) {
 }
 async function identity(token, env) {
   const user = await (await github('/user', token)).json();
-  const permission = await (await github(`${repo(env)}/collaborators/${encodeURIComponent(user.login)}/permission`, token)).json();
-  return {id: user.id, login: user.login, canEdit: ['write', 'admin'].includes(permission.permission)};
+  try {
+    const permission = await (await github(`${repo(env)}/collaborators/${encodeURIComponent(user.login)}/permission`, token)).json();
+    return {id: user.id, login: user.login, canEdit: ['write', 'admin'].includes(permission.permission)};
+  } catch (error) {
+    if (![403, 404].includes(error.status)) throw error;
+    return {id: user.id, login: user.login, canEdit: false};
+  }
+}
+async function githubSession(request, env) {
+  const session = await unseal(cookies(request)[SESSION], env, 'session');
+  return session?.token && Number.isSafeInteger(session.id) && session.id > 0 ? session : null;
+}
+async function eventAccount(request,env){
+  const session=await githubSession(request,env);
+  return session?{id:session.id,canPublish:session.canPublish!==false,privateAvailable:!!env.PRIVATE_EVENTS}:null;
 }
 async function authorize(request, env) {
-  const session = await unseal(cookies(request)[SESSION], env, 'session');
-  if (!session?.token) fail(401, 'Log ind med GitHub for at udgive.');
+  const session = await githubSession(request, env);
+  if (!session) fail(401, 'Log ind med GitHub for at udgive.');
   const user = await identity(session.token, env);
   if (user.id !== session.id || !user.canEdit) fail(403, 'Du skal have skriverettighed til repositoryet.');
   return {...user, token: session.token};
@@ -83,10 +97,17 @@ async function readBody(request, limit) {
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
 const string = (value, max = 10000) => typeof value === 'string' && value.length <= max;
 const vector = (value, length) => Array.isArray(value) && value.length === length && value.every(Number.isFinite);
-export function validateDocument(doc) {
+export function validateDocument(doc, {privateEvents = false} = {}) {
   if (!object(doc) || doc.version !== 1 || !Array.isArray(doc.notes) || doc.notes.length > 5000 || !Array.isArray(doc.speedPins) || doc.speedPins.length > 10000) fail(400, 'Ugyldigt præsentationsformat.');
+  const ids = new Set();
   for (const note of doc.notes) {
     if (!object(note) || !Number.isFinite(note.time) || !string(note.text, 50000)) fail(400, 'Ugyldigt event.');
+    if (privateEvents) {
+      if (note.private !== true || !string(note.privateId, 36) || !IMAGE.test(note.privateId + '.png') || ids.has(note.privateId)) fail(400, 'Ugyldigt event.');
+      ids.add(note.privateId);
+    } else if ((note.private !== undefined && note.private !== false) || note.privateId !== undefined) {
+      fail(400, 'Private events må kun gemmes privat.');
+    }
     if (note.view !== undefined && (!vector(note.view, 4) || note.view[2] <= 0 || note.view[3] <= 0)) fail(400, 'Ugyldigt kortudsnit.');
     if (note.point !== undefined && !vector(note.point, 2)) fail(400, 'Ugyldig markør.');
     for (const [field, count] of [['measurement', 2], ['gates', 4]]) {
@@ -115,7 +136,11 @@ export function validateDocument(doc) {
       }
     }
     if (note.drawings !== undefined && (!Array.isArray(note.drawings) || note.drawings.length > 1000 || !note.drawings.every(d => object(d) && ['pen', 'arrow', 'line', 'circle'].includes(d.tool) && /^#[a-f0-9]{6}$/i.test(d.colour) && Number.isFinite(d.width) && d.width >= 1 && d.width <= 12 && Array.isArray(d.points) && d.points.length >= 2 && d.points.length <= 50000 && d.points.every(p => vector(p, 2))))) fail(400, 'Ugyldig tegning.');
-    if (note.image != null && (!object(note.image) || note.image.draft !== undefined || !string(note.image.id, 36) || !string(note.image.name, 500) || !string(note.image.url, 100) || !IMAGE.test(note.image.url?.replace(/^event-images\//, '')) || note.image.url !== `event-images/${note.image.url.split('/').at(-1)}` || !note.image.url.split('/').at(-1).startsWith(note.image.id + '.'))) fail(400, 'Ugyldigt billede.');
+    if (note.image != null) {
+      const image = note.image, directory = privateEvents ? 'private-event-images' : 'event-images';
+      const filename = typeof image.url === 'string' && image.url.split('/').at(-1);
+      if (!object(image) || image.draft !== undefined || !string(image.id, 36) || !string(image.name, 500) || !IMAGE.test(filename) || image.url !== `${directory}/${filename}` || !filename.startsWith(image.id + '.')) fail(400, 'Ugyldigt billede.');
+    }
     if (note.video != null && (!object(note.video) || note.video.provider !== 'youtube' || !/^[\w-]{11}$/.test(note.video.id) || !Number.isInteger(note.video.start) || note.video.start < 0 || note.video.start > 2147483647)) fail(400, 'Ugyldig video.');
   }
   for (const pin of doc.speedPins) if (!object(pin) || !string(pin.id, 200) || !string(pin.boatId, 200) || !Number.isFinite(pin.time)) fail(400, 'Ugyldigt fartmærke.');
@@ -145,6 +170,26 @@ async function putContent(env, token, path, content, message, sha) {
   return (await github(contentsPath(env, path), token, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({branch: branch(env), message, content: b64(content), ...(sha ? {sha} : {})})})).json();
 }
 const supportedLanguage=language=>language==='da'||globalThis.SR_MESSAGE_LANGUAGES.includes(language);
+function eventForURL(url) {
+  const id = url.searchParams.get('event') || eventCatalog.default;
+  const event = eventCatalog.events.find(event => event.id === id);
+  if (!event) fail(400, 'Ukendt stævne.');
+  return event;
+}
+function privatePrefix(session, event) {
+  return `users/${session.id}/${event.id}/`;
+}
+async function privateStorage(request, env, url) {
+  const session = await githubSession(request, env);
+  if (!session) fail(401, 'Log ind med GitHub for at se eller gemme private events.');
+  const owner=url.searchParams.get('owner');
+  if(owner!==null&&owner!==String(session.id))fail(403,'Log ind med den konto, der ejer disse private events.');
+  if (!env.PRIVATE_EVENTS) fail(503, 'Lageret til private events er ikke konfigureret.');
+  return {store: env.PRIVATE_EVENTS, prefix: privatePrefix(session, eventForURL(url))};
+}
+function imageType(name) {
+  return name.endsWith('.webp') ? 'image/webp' : name.endsWith('.png') ? 'image/png' : 'image/jpeg';
+}
 async function routes(request, env, locale) {
   const url = new URL(request.url), path = url.pathname, method = request.method;
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) checkOrigin(request);
@@ -152,39 +197,85 @@ async function routes(request, env, locale) {
     if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) fail(503, 'GitHub-login er ikke konfigureret.');
     const state = random(), verifier = random(), eventId=url.searchParams.get('event');
     if(eventId&&!eventCatalog.events.some(event=>event.id===eventId))fail(400,'Ukendt stævne.');
-    const language=url.searchParams.get('lang');
+    const language=url.searchParams.get('lang'),popup=url.searchParams.get('popup');
+    if(popup!==null&&!LOGIN_ATTEMPT.test(popup))fail(400,'Loginforsøget er udløbet eller ugyldigt. Prøv igen.');
     const challenge = url64(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier))));
     const destination = new URL('https://github.com/login/oauth/authorize');
     destination.search = new URLSearchParams({client_id: env.GITHUB_CLIENT_ID, redirect_uri: `${url.origin}/auth/callback`, state, code_challenge: challenge, code_challenge_method: 'S256'});
-    return new Response(null, {status: 302, headers: {Location: destination.href, 'Set-Cookie': cookie(OAUTH, await seal({state, verifier, ...(eventId?{eventId}:{}), ...(supportedLanguage(language)?{language}:{}), exp: now() + 600}, env, 'oauth'), 600), 'Cache-Control': 'no-store'}});
+    return new Response(null, {status: 302, headers: {Location: destination.href, 'Set-Cookie': cookie(OAUTH, await seal({state, verifier, popup, ...(eventId?{eventId}:{}), ...(supportedLanguage(language)?{language}:{}), exp: now() + 600}, env, 'oauth'), 600), 'Cache-Control': 'no-store'}});
   }
   if (method === 'GET' && path === '/auth/callback') {
     const pending = await unseal(cookies(request)[OAUTH], env, 'oauth');
     if (supportedLanguage(pending?.language)) locale.language=pending.language;
-    if (!pending || !url.searchParams.get('code') || url.searchParams.get('state') !== pending.state) fail(400, 'Loginforsøget er udløbet eller ugyldigt. Prøv igen.');
+    if (!pending || url.searchParams.get('state') !== pending.state) fail(400, 'Loginforsøget er udløbet eller ugyldigt. Prøv igen.');
+    if(pending.popup&&url.searchParams.get('error')==='access_denied'){
+      return new Response(null,{status:302,headers:{
+        Location:'/auth/complete?popup='+pending.popup+'&cancelled=1','Set-Cookie':cookie(OAUTH,'',0),'Cache-Control':'no-store'
+      }});
+    }
+    if(!url.searchParams.get('code'))fail(400,'Loginforsøget er udløbet eller ugyldigt. Prøv igen.');
     const response = await fetch('https://github.com/login/oauth/access_token', {method: 'POST', headers: {'Content-Type': 'application/json', Accept: 'application/json'}, body: JSON.stringify({client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code: url.searchParams.get('code'), code_verifier: pending.verifier, redirect_uri: `${url.origin}/auth/callback`})});
     const token = await response.json();
     if (!response.ok || !token.access_token || token.error) fail(401, 'GitHub-login kunne ikke gennemføres. Prøv igen.');
     const user = await identity(token.access_token, env);
-    if (!user.canEdit) fail(403, 'Du skal have skriverettighed til repositoryet.');
     const maxAge = Math.max(1, Math.min(8 * 3600, Number(token.expires_in) || 8 * 3600));
-    const value = await seal({id: user.id, token: token.access_token, exp: now() + maxAge}, env, 'session');
+    const value = await seal({id: user.id, canPublish: user.canEdit, token: token.access_token, exp: now() + maxAge}, env, 'session');
     if (value.length > 3800) fail(502, 'GitHub-sessionen kunne ikke oprettes.');
-    const location=pending.eventId?'/admin/events/'+encodeURIComponent(pending.eventId)+'/':'/admin/';
-    const headers = new Headers({Location: location+(pending.language?'?lang='+pending.language:''), 'Cache-Control': 'no-store'});
+    const location=pending.popup?'/auth/complete?popup='+pending.popup:pending.eventId?'/admin/events/'+encodeURIComponent(pending.eventId)+'/':'/admin/';
+    const headers = new Headers({Location: location+(!pending.popup&&pending.language?'?lang='+pending.language:''), 'Cache-Control': 'no-store'});
     headers.append('Set-Cookie', cookie(SESSION, value, maxAge)); headers.append('Set-Cookie', cookie(OAUTH, '', 0));
     return new Response(null, {status: 302, headers});
   }
+  if (method === 'GET' && path === '/auth/complete') {
+    const popup=url.searchParams.get('popup');
+    if(!LOGIN_ATTEMPT.test(popup))fail(400,'Loginforsøget er udløbet eller ugyldigt. Prøv igen.');
+    const status=url.searchParams.has('cancelled')?'cancelled':'ok';
+    return new Response(`<!doctype html><meta charset="utf-8"><title>GitHub</title><script>const channel=new BroadcastChannel("sr-event-login:${popup}");channel.postMessage("${status}");channel.close();window.close();</script>`, {
+      headers: {'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; script-src 'unsafe-inline'"}
+    });
+  }
   if (method === 'POST' && path === '/api/logout') return new Response('{}', {headers: {'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': cookie(SESSION, '', 0)}});
+  if (method === 'GET' && path === '/api/event-session') return json({account:await eventAccount(request,env)});
+  if (method === 'GET' && path === '/api/private-events') {
+    const {store,prefix}=await privateStorage(request,env,url);
+    const saved=await store.get(prefix+'events.json');
+    return json({document:saved?await saved.json():{version:1,notes:[],speedPins:[]},revision:saved?.etag??null});
+  }
+  if (method === 'PUT' && path === '/api/private-events') {
+    const {store, prefix} = await privateStorage(request, env, url);
+    const input = await new Response(await readBody(request, MAX_DOCUMENT)).json().catch(() => null);
+    if (!object(input) || (input.revision !== null && !/^[a-f0-9]{32}$/.test(input.revision || ''))) fail(400, 'Den indlæste version af private events mangler.');
+    const doc = validateDocument(input.document, {privateEvents: true});
+    if (doc.speedPins.length) fail(400, 'Ugyldigt præsentationsformat.');
+    const images = new Set(doc.notes.flatMap(note => note.image ? [note.image.url] : []));
+    for (const image of images) {
+      if (!await store.head(prefix + image)) fail(400, 'Et af præsentationens billeder mangler. Upload det igen før udgivelse.');
+    }
+    const onlyIf = new Headers(input.revision === null ? {'If-None-Match': '*'} : {'If-Match': `"${input.revision}"`});
+    const saved = await store.put(prefix + 'events.json', JSON.stringify(doc), {onlyIf});
+    if (!saved) fail(409, 'Serverens eventsæt er ændret. Din kladde er stadig gemt.');
+    return json({revision: saved.etag});
+  }
+  if (method === 'GET' && path.startsWith('/api/private-event-images/')) {
+    const {store, prefix} = await privateStorage(request, env, url);
+    const name = path.slice('/api/private-event-images/'.length);
+    if (!IMAGE.test(name)) fail(404, 'Billedet findes ikke.');
+    const image = await store.get(prefix + 'private-event-images/' + name);
+    if (!image) fail(404, 'Billedet findes ikke.');
+    return new Response(image.body, {headers: {'Content-Type': imageType(name), 'Cache-Control': 'private, no-store'}});
+  }
   if (path === '/api/presentation' && ['GET', 'PUT'].includes(method)) {
-    const eventId=url.searchParams.get('event')||eventCatalog.default;
-    const event = eventCatalog.events.find(event => event.id === eventId);
-    if (!event) fail(400, 'Ukendt stævne.');
-    const documentPath = event.presentationFile;
+    const event = eventForURL(url);
+    const setId=url.searchParams.get('set')??'default';
+    const set=setId==='default'?event:event.publicSets?.find(item=>item.id===setId);
+    if(!set)fail(404,'Eventsættet findes ikke.');
+    const documentPath=set.presentationFile;
     if (method === 'GET') {
       const response = await publicFile(env, documentPath, {cache:'no-store'});
       const bytes = new Uint8Array(await response.arrayBuffer());
-      return json({document:JSON.parse(decoder.decode(bytes)), sha:await gitBlobSha(bytes)});
+      const result = {document:JSON.parse(decoder.decode(bytes)), sha:await gitBlobSha(bytes)};
+      result.account=await eventAccount(request,env);
+      return json(result);
     }
     const user = await authorize(request, env);
     let input; try { input = JSON.parse(decoder.decode(await readBody(request, MAX_DOCUMENT))); } catch (e) { if (e.status) throw e; fail(400, 'Ugyldig JSON.'); }
@@ -192,7 +283,7 @@ async function routes(request, env, locale) {
     const doc = validateDocument(input.document);
     if (!/^[a-f0-9]{40}$/.test(input.sha || '')) fail(400, 'Den indlæste versions SHA mangler.');
     const current = await getContentMetadata(env, user.token, documentPath);
-    if (current.sha !== input.sha) fail(409, 'En anden version er udgivet. Eksportér din kladde og genindlæs før du udgiver igen.');
+    if (current.sha !== input.sha) fail(409, 'Serverens eventsæt er ændret. Din kladde er stadig gemt.');
     const imageURLs = [...new Set(doc.notes.filter(n => n.image).map(n => n.image.url))];
     if (imageURLs.length) {
       // One tree read avoids Worker subrequest limits for presentations with many images.
@@ -204,13 +295,26 @@ async function routes(request, env, locale) {
     const saved = await putContent(env, user.token, documentPath, encoder.encode(JSON.stringify(doc, null, 2) + '\n'), `Update presentation by ${user.login}`, input.sha);
     return json({sha: saved.content.sha, commit: saved.commit.sha});
   }
-  if (method === 'POST' && path === '/api/event-images') {
-    const user = await authorize(request, env), bytes = await readBody(request, MAX_IMAGE);
+  if (method === 'POST' && ['/api/event-images', '/api/private-event-images'].includes(path)) {
+    const privateImage = path === '/api/private-event-images';
+    const storage = privateImage ? await privateStorage(request, env, url) : null;
+    const user = privateImage ? null : await authorize(request, env);
+    const bytes = await readBody(request, MAX_IMAGE);
     const type = request.headers.get('Content-Type')?.split(';')[0], s = String.fromCharCode(...bytes.slice(0, 12));
     const extension = type === 'image/webp' && s.startsWith('RIFF') && s.slice(8, 12) === 'WEBP' ? 'webp' : type === 'image/png' && b64(bytes.slice(0, 8)) === 'iVBORw0KGgo=' ? 'png' : type === 'image/jpeg' && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255 ? 'jpg' : null;
     if (!extension) fail(415, 'Vælg et JPEG-, PNG- eller WebP-billede.');
-    const id = url.searchParams.get('id') ?? crypto.randomUUID(), imagePath = `event-images/${id}.${extension}`;
+    const id = url.searchParams.get('id') ?? crypto.randomUUID();
+    const imagePath = `${privateImage ? 'private-event-images' : 'event-images'}/${id}.${extension}`;
     if (!IMAGE.test(`${id}.${extension}`)) fail(400, 'Ugyldigt billede.');
+    if (storage) {
+      const key = storage.prefix + imagePath;
+      const saved = await storage.store.put(key, bytes, {onlyIf: new Headers({'If-None-Match': '*'})});
+      if (!saved) {
+        const existing = await storage.store.get(key);
+        if (!existing || await gitBlobSha(new Uint8Array(await existing.arrayBuffer())) !== await gitBlobSha(bytes)) fail(409, 'Billedet kunne ikke gemmes til eventet.');
+      }
+      return json({id, url: imagePath}, 201);
+    }
     const file = `viewer/${imagePath}`;
     try {
       await putContent(env, user.token, file, bytes, `Add event image by ${user.login}`);
@@ -222,10 +326,10 @@ async function routes(request, env, locale) {
     return json({id, url: imagePath}, 201);
   }
   if (method === 'GET' && path === '/admin/config.js') return new Response(`window.SR_CONFIG=${JSON.stringify({apiBase: url.origin, admin: true})};`, {headers: {'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store'}});
-  if (method === 'GET' && path.startsWith('/admin/event-images/')) {
-    const name = path.slice('/admin/event-images/'.length); if (!IMAGE.test(name)) fail(404, 'Billedet findes ikke.');
+  if (method === 'GET' && (path.startsWith('/admin/event-images/')||path.startsWith('/api/event-images/'))) {
+    const name = path.slice(path.indexOf('/event-images/')+'/event-images/'.length); if (!IMAGE.test(name)) fail(404, 'Billedet findes ikke.');
     const source = await publicFile(env, `viewer/event-images/${name}`);
-    return new Response(source.body, {headers: {'Content-Type': name.endsWith('.webp') ? 'image/webp' : name.endsWith('.png') ? 'image/png' : 'image/jpeg', 'Cache-Control': 'public, max-age=31536000, immutable'}});
+    return new Response(source.body, {headers: {'Content-Type': imageType(name), 'Cache-Control': 'public, max-age=31536000, immutable'}});
   }
   if (method === 'GET' && (path === '/' || path === '/admin')) return Response.redirect(`${url.origin}/admin/`, 302);
   if (method === 'GET' && path.startsWith('/admin/')) {

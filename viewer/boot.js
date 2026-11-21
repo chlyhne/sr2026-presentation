@@ -19,18 +19,41 @@ function validatePresentationDocument(document){
  if(!document||document.version!==1||!Array.isArray(document.notes)||!Array.isArray(document.speedPins))throw Error(srText('Ugyldige præsentationsdata: version 1, notes og speedPins er påkrævet.'));
  return document;
 }
-const hostedDraftKey='sr2026-draft:admin:';
-function migrateHostedDrafts(){
- const legacy=eventStorage.keys().filter(key=>key.startsWith(hostedDraftKey)&&/^[\w-]+(?::previous)?$/.test(key.slice(hostedDraftKey.length)));
- const accounts=new Set(legacy.map(key=>key.slice(hostedDraftKey.length).split(':')[0]));
- if(accounts.size!==1)return legacy;
- return legacy.filter(key=>{
-  const target=hostedDraftKey+(key.endsWith(':previous')?':previous':'');
-  if(eventStorage.getItem(target)!==null)return true;
-  eventStorage.setItem(target,eventStorage.getItem(key));
-  eventStorage.removeItem(key);
-  return false;
- });
+const localEventSource='local';
+const localEventSetKey='sr2026-local-event-set';
+const eventSetFields={'sr2026-notes':'notes','sr2026-speed-pins':'speedPins'};
+let eventSetSource=localEventSource;
+let eventSetRevision=null;
+let eventSetDocument=null;
+function eventSetDraftKey(source){return 'sr2026-event-set:'+source;}
+function readLocalEventSet(){
+ const saved=eventStorage.getItem(localEventSetKey);
+ if(saved!==null)return validatePresentationDocument(JSON.parse(saved));
+ return validatePresentationDocument({version:1,
+  notes:JSON.parse(eventStorage.getItem('sr2026-notes')??'[]'),
+  speedPins:JSON.parse(eventStorage.getItem('sr2026-speed-pins')??'[]')});
+}
+function initializeEventSetStorage(){
+ window.SRStorage={
+  getItem:key=>{
+   const field=eventSetFields[key];
+   if(!field)return null;
+   const document=eventSetSource===localEventSource?readLocalEventSet():eventSetDocument;
+   return JSON.stringify(document[field]);
+  },
+  setItem:(key,value)=>{
+   const field=eventSetFields[key];
+   if(!field||window.SR_READONLY)return;
+   if(eventSetSource===localEventSource){
+    const document={...readLocalEventSet(),[field]:JSON.parse(value)};
+    eventStorage.setItem(localEventSetKey,JSON.stringify(document));
+    return;
+   }
+   const document={...eventSetDocument,[field]:JSON.parse(value)};
+   eventStorage.setItem(eventSetDraftKey(eventSetSource),JSON.stringify({revision:eventSetRevision,document}));
+   eventSetDocument=document;
+  }
+ };
 }
 (async()=>{
  await loadEventSelection();
@@ -42,48 +65,18 @@ function migrateHostedDrafts(){
  window.SR_RHUMBLINE_SETUP=routeSetup;
  window.SR_SETUP_COURSE=new URLSearchParams(location.search).get('course')||Object.keys(event.courses)[0];
  if(!Object.hasOwn(event.courses,window.SR_SETUP_COURSE))throw Error(srText('Ukendt bane til rhumbline.'));
- window.SR_READONLY=!local&&!config.admin;
- window.SRStorage=eventStorage;
+ window.SR_READONLY=!local&&!eventServiceAvailable();
+ initializeEventSetStorage();
  if(routeSetup){
   window.SR_READONLY=true;
   const isolated=new Map([['sr2026-notes','[]'],['sr2026-speed-pins','[]']]);
   window.SRStorage={getItem:key=>isolated.get(key)??null,setItem:()=>{}};
  }
- if(!local){
-  let initial,sha=null;
-  try{
-   const url=config.admin?config.apiBase+eventAPI('/api/presentation'):'events/'+event.id+'/presentation.json';
-   const response=await fetch(url,{cache:'no-store'});
-   if(!response.ok)throw new Error(srText('Præsentationen kunne ikke indlæses (')+response.status+').');
-   const result=await response.json();initial=validatePresentationDocument(config.admin?result.document:result);sha=result.sha||null;
-
-  }catch(error){
-   showViewerLoadingError(error);return;
-  }
-  window.SR_SHA=sha;
-  const draftKey=config.admin?hostedDraftKey:null;
-  if(config.admin){
-   window.SR_LEGACY_DRAFT_KEYS=migrateHostedDrafts();
-   const draft=JSON.parse(eventStorage.getItem(draftKey));
-   if(draft){
-    validatePresentationDocument(draft.document);
-    if(draft.sha===sha){initial=draft.document;window.SR_RESTORED=true;}
-    else {
-     eventStorage.setItem(draftKey+':previous',JSON.stringify(draft));
-     eventStorage.removeItem(draftKey);
-    }
-   }
-   window.SR_PREVIOUS_DRAFT=JSON.parse(eventStorage.getItem(draftKey+':previous')??'null');
-   if(window.SR_PREVIOUS_DRAFT)validatePresentationDocument(window.SR_PREVIOUS_DRAFT.document);
-  }
-  const memory=new Map([['sr2026-notes',JSON.stringify(initial.notes)],['sr2026-speed-pins',JSON.stringify(initial.speedPins)]]);
-  window.SRStorage={getItem:key=>memory.get(key)??null,setItem:(key,value)=>{
-   if(window.SR_READONLY)return;
-   const next=new Map(memory);next.set(key,value);
-   if(config.admin){eventStorage.setItem(draftKey,JSON.stringify({sha:window.SR_SHA,document:{version:1,notes:JSON.parse(next.get('sr2026-notes')),speedPins:JSON.parse(next.get('sr2026-speed-pins'))}}));}
-   memory.set(key,value);
-  }};
-  window.SR_DRAFT_KEY=draftKey;
+ if(window.SR_READONLY&&!local){
+  const response=await fetch('events/'+event.id+'/presentation.json',{cache:'no-store'});
+  if(!response.ok)throw new SRMessageError('Præsentationen kunne ikke indlæses ({0}).',response.status);
+  eventSetDocument=validatePresentationDocument(await response.json());
+  eventSetSource='public:default';
  }
  updateViewerLoading(5);
  const files=['track-time','tracks','track-local-data','track-source-codec','prepared-track-codec','replay-data','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','rhumbline-geometry','navigation-math','navigation','track-files','track-preparation','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','boat-compare','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
@@ -162,5 +155,6 @@ function migrateHostedDrafts(){
   boatCompareRenderKey='';if(!SIMPLE_IPHONE_TRACKS)renderBoatCompare();
   if($('inlineTextStatus').textContent)$('inlineTextStatus').textContent=$('annotationStatus').textContent;
  });
+ initializeOnlineEvents();
  window.SRClientDiagnostics?.report('ready',srText('Kortet er klar'));
 })().catch(showViewerLoadingError);

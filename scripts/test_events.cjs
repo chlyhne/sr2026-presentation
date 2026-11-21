@@ -386,33 +386,44 @@ test('layout resize preserves the preview centre and geographic scale',()=>{
  assert.equal(Math.max(next[2]/changed.width,next[3]/changed.height),Math.max(view[2]/rect.width,view[3]/rect.height));
 });
 
-test('an edit made while publishing stays in the draft under the published revision',async()=>{
- const source=fs.readFileSync('viewer/online.js','utf8'),buttons=new Map(),draft=storage();
- let release,submitted;
+test('an edit made while publishing stays in the event-set draft under the new revision',async()=>{
+ const source=fs.readFileSync('viewer/online.js','utf8'),draft=storage();
+ const sent={version:1,notes:[{time:10,text:'Til udgivelse'}],speedPins:[]};
  const context=viewerTestContext({
-  notes:[{time:10,text:'Til udgivelse'}],speedPins:[],eventImageUploads:new Map(),eventStorage:draft,
-  window:{SR_CONFIG:{admin:true,apiBase:''},SR_SHA:'version-a',SR_DRAFT_KEY:'draft'},
-  document:{
-   body:{append(){}},
-   createElement:()=>({setAttribute(){}}),
-   querySelector:()=>({after(){},append(button){buttons.set(button.textContent,button);}})
-  },
-  showPresentationEvent(){},eventAPI:path=>path,noteNavigationAllowed:()=>true,
-  fetch:(path,request)=>{
-   assert.equal(path,'/api/presentation');
-   submitted=JSON.parse(request.body);
-   return new Promise(resolve=>{release=resolve;});
+  notes:[{time:10,text:'Rettet under udgivelse'}],speedPins:[],eventStorage:draft,
+  eventSetDraftKey:source=>'draft:'+source,refreshPresentationEvents(){},
+  eventSetDocument:null,eventSetRevision:'version-a'
+ });
+ vm.runInContext(source,context);
+ assert.equal(context.recordEventSetSave('public:default',sent,{revision:'version-b',document:sent}),true);
+ assert.deepEqual(JSON.parse(draft.getItem('draft:public:default')),{
+  revision:'version-b',document:{version:1,notes:[{time:10,text:'Rettet under udgivelse'}],speedPins:[]}
+ });
+});
+
+test('a private event set and its draft images use only owner-scoped private endpoints',async()=>{
+ const source=fs.readFileSync('viewer/online.js','utf8'),calls=[];
+ const id='12345678-1234-1234-1234-123456789abc',privateImage='private-event-images/'+id+'.webp';
+ const document={version:1,notes:[{time:20,text:'Privat tekst',private:true,privateId:id,
+  image:{id,name:'Foto',url:'event-images/'+id+'.webp',draft:true}}],speedPins:[]};
+ const context=viewerTestContext({
+  structuredClone,eventServiceURL:path=>path,privateEventSetAPI:path=>path+'?owner=7',
+  privateEventImage:image=>image.url.startsWith('private-event-images/'),
+  readDraftImage:async()=>({type:'image/webp'}),
+  sendEventImage:async(blob,imageId,isPrivate)=>{assert.equal(isPrivate,true);return {id:imageId,url:privateImage};},
+  fetch:async(path,request)=>{
+   calls.push([path,JSON.parse(request.body)]);
+   return {ok:true,json:async()=>({revision:'new-private'})};
   }
  });
  vm.runInContext(source,context);
- const publishing=buttons.get('Udgiv').onclick();
- assert.equal(submitted.document.notes[0].text,'Til udgivelse');
- context.notes[0].text='Rettet under udgivelse';
- release({ok:true,json:async()=>({sha:'version-b'})});
- await publishing;
- assert.deepEqual(JSON.parse(draft.getItem('draft')),{
-  sha:'version-b',document:{version:1,notes:[{time:10,text:'Rettet under udgivelse'}],speedPins:[]}
- });
+ const saved=await context.writeServerEventSet('private',null,document);
+ assert.equal(saved.revision,'new-private');
+ assert.equal(calls.length,1);
+ assert.equal(calls[0][0],'/api/private-events?owner=7');
+ assert.equal(calls[0][1].document.notes[0].image.url,privateImage);
+ assert.equal(calls[0][1].document.notes[0].image.draft,undefined);
+ assert.equal(document.notes[0].image.draft,true);
 });
 
 test('wind and rain have independent toolbar buttons and the grid needs no control',()=>{
@@ -485,8 +496,11 @@ test('deleting the opened event saves the remaining notes and selects the follow
  const first={time:1},current={time:2},next={time:3};
  const context=viewerTestContext({
   $:id=>{if(!nodes.has(id))nodes.set(id,{focus(){},setAttribute(){}});return nodes.get(id);},
-  notes:[first,current,next],editingNote:current,newEventDraft:null,
-  finishInlineTextEditing:()=>true,confirm:()=>false,
+  notes:[first,current,next],editingNote:current,newEventDraft:null,eventSetSource:'public:default',
+  finishInlineTextEditing:()=>true,confirm:question=>{
+   assert.match(question,/Tidligere kopier kan stadig findes/);
+   return false;
+  },
   persistNotes(remaining){context.saved=[...remaining];return true;},
   leaveOpenedEvent(){},refreshEditedEvent(){},restoreNote(note){context.opened=note;}
  });

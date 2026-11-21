@@ -4,12 +4,11 @@
 2. Vælg **Settings → Pages → Build and deployment → Source → GitHub Actions**.
 3. Opsæt backenden efter [backend/README.md](../backend/README.md).
 4. Tilføj repository-variablen **SR_API_URL** under **Settings → Secrets and variables → Actions → Variables**.
-   Værdien er backendens HTTPS-origin, fx `https://sr2026-api.example.workers.dev`, uden `/admin/`.
+   Værdien er trackerens HTTPS-origin, hvor Workerens `/api/*` og `/auth/*` er routet.
 5. Push til `main`, eller kør **Publish presentation** manuelt under Actions.
 
-Forsiden viser stævnevælgeren. Direkte links ligger symmetrisk på
-`events/<id>/`, og redigering på backendens `/admin/events/<id>/`.
-Det fælles layout bruger relative basisadresser og virker under Pages-repositoryets sti.
+Forsiden viser stævnevælgeren. Åbn `events/<id>/` for at se, redigere og skifte
+eventsæt. GitHub-login åbner i et separat vindue.
 
 Workflowet bygger kun de offentlige filer i `dist/`. Forskningsnoter, rådata,
 backendkode og øvrige projektfiler medtages ikke i Pages-artifaktet.
@@ -22,8 +21,8 @@ er fortsat Sjælland Rundts dokument; Silverrudder bruger
 
 Online gemninger sker gennem GitHub App på brugerens vegne og kan udløse Pages-workflowet.
 Brug ikke workflowets `GITHUB_TOKEN` til at gemme præsentationen med forventning om,
-at det starter et nyt push-workflow. Nye udgivelser bliver synlige efter et færdigt
-Pages-deploy; en allerede åben besøgsvisning skal genindlæses.
+at det starter et nyt push-workflow. Besøgende med onlinefunktionerne aktiveret kan hente et opdateret offentligt
+sæt fra serveren med eventvælgeren.
 
 GitHub App skal installeres på dette repository med **Contents: Read and write**
 og **Metadata: Read**. Workflow- og administratorrettigheder er ikke nødvendige

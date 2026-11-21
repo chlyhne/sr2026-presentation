@@ -9,6 +9,13 @@ async function loadEventCatalog(){
  for(const event of catalog.events){
   if(!/^[a-z0-9-]+$/.test(event.id)||ids.has(event.id)||!event.title||!Object.keys(event.courses||{}).length
    ||event.profileRoot!=='events/'+event.id+'/track-profiles/'||!event.boatStyle||!event.nameDisplay||!event.routeEditor||!event.storage||!event.layers)throw new SRMessageError('Ugyldig stævnekonfiguration.');
+  const setIds=new Set(['default']);
+  if(event.publicSets!==undefined&&!Array.isArray(event.publicSets))throw new SRMessageError('Ugyldig stævnekonfiguration.');
+  for(const set of event.publicSets||[]){
+   if(!set||!/^[-a-z0-9]+$/.test(set.id)||setIds.has(set.id)||typeof set.title!=='string'||!set.title.trim()
+    ||!/^presentation\/[-a-z0-9]+\.json$/.test(set.presentationFile))throw new SRMessageError('Ugyldig stævnekonfiguration.');
+   setIds.add(set.id);
+  }
   ids.add(event.id);
  }
  return catalog;
@@ -70,5 +77,13 @@ async function loadEventSelection(){
  document.getElementById('mapHeading').title=event.title;
 }
 function eventAPI(path){return path+'?event='+encodeURIComponent(window.SR_EVENT.id);}
-function eventLoginURL(){return window.SR_CONFIG.apiBase+eventAPI('/auth/login')+'&lang='+srLanguage;}
-function eventEditorURL(){return srLanguageURL(window.SR_CONFIG.apiBase+'/admin/events/'+encodeURIComponent(window.SR_EVENT.id)+'/');}
+function eventServiceAvailable(){return !!(window.SR_CONFIG.eventService||window.SR_CONFIG.admin);}
+function eventServiceURL(path){return (window.SR_CONFIG.eventService?'':window.SR_CONFIG.apiBase||'')+path;}
+function eventLoginURL(attempt){return eventServiceURL(eventAPI('/auth/login'))+'&lang='+srLanguage+'&popup='+encodeURIComponent(attempt);}
+function publicEventSets(){return [{id:'default',title:'Offentlige'},...(window.SR_EVENT.publicSets||[])];}
+function publicEventSetAPI(id){
+ return eventAPI('/api/presentation')+(id==='default'?'':'&set='+encodeURIComponent(id));
+}
+function privateEventSetAPI(path){
+ return eventAPI(path)+'&owner='+encodeURIComponent(window.SR_ACCOUNT.id);
+}

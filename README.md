@@ -309,11 +309,10 @@ Se [viewerens vejledning](viewer/README.md) for kortets betjening og datakilder.
 
 ## Online
 
-GitHub Pages viser den udgivne præsentation. Redaktøren åbnes på backendens
-`/admin/`, hvor login og API ligger på samme origin. Brugere med skriverettighed
-til dette repository kan redigere og udgive fra eventfanen i den fælles tracker.
-Andre kan se den offentlige visning.
-Backenden kontrollerer rettigheder ved gemning og upload.
+Eventfanen skifter mellem offentlige eventsæt, browserens lokale sæt og dine
+private serverevents. Du kan oprette og redigere lokale kladder uden login.
+GitHub-login kræves ved privat serveradgang og offentlig udgivelse.
+Offentlig udgivelse kræver skriverettighed til repositoryet.
 
 [Opsæt GitHub Pages](docs/hosting.md), følg [backendens opsætning](backend/README.md),
 og [flyt dine lokale noter med](docs/migration.md).
@@ -324,6 +323,5 @@ Byg de offentlige filer uden npm eller Python-pakker:
 python3 scripts/build_pages.py
 ```
 
-Angiv eventuelt backendens HTTPS-origin med `SR_API_URL`. Hemmeligheder hører
-kun til backendens secret-konfiguration. Workflowet læser den offentlige adresse
-fra repository-variablen `SR_API_URL`.
+Sæt repository-variablen `SR_API_URL` til trackerens HTTPS-origin for at aktivere
+onlinefunktionerne på trackerens domæne. Hemmeligheder konfigureres i Workeren.

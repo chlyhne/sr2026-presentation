@@ -38,11 +38,11 @@ test('event map settings survive validation while legacy documents remain valid'
   const invalid=structuredClone(doc);Object.assign(invalid.notes[0].settings,change);assert.throws(()=>validateDocument(invalid));
  }
 });
-async function request(path, options={}, session={id:7, token:'user-secret', exp:Math.floor(Date.now()/1000)+600}) {
+async function request(path, options={}, session={id:7, token:'user-secret', exp:Math.floor(Date.now()/1000)+600}, bindings=env) {
  const headers = new Headers(options.headers);
- if(session) headers.set('Cookie', '__Host-sr-session='+await seal(session,env,'session'));
+ if(session) headers.set('Cookie', '__Host-sr-session='+await seal(session,bindings,'session'));
  if(options.method && options.method!=='GET') headers.set('Origin', origin);
- return worker.fetch(new Request(origin+path,{...options,headers}),env);
+ return worker.fetch(new Request(origin+path,{...options,headers}),bindings);
 }
 function mockGithub(permission='write', extra) {
  const calls=[];
@@ -84,6 +84,70 @@ test('a token for a different identity is rejected',async()=>{
  mockGithub('write');
  assert.equal((await request('/api/presentation',{method:'PUT',body:'{}'}, {id:99,token:'secret',exp:Math.floor(Date.now()/1000)+600})).status,403);
 });
+test('private notes and images are scoped to the signed GitHub account and regatta',async()=>{
+ const data=new Map();
+ const store={
+  async get(key){
+   const item=data.get(key);
+   if(!item)return null;
+   const response=new Response(item.bytes);
+   return {etag:item.etag,body:response.body,json:()=>response.json(),arrayBuffer:()=>response.arrayBuffer()};
+  },
+  async head(key){return data.get(key)||null;},
+  async put(key,value,{onlyIf}){
+   const existing=data.get(key);
+   if(onlyIf.has('If-None-Match')&&existing)return null;
+   if(onlyIf.has('If-Match')&&onlyIf.get('If-Match')!==`"${existing?.etag}"`)return null;
+   const bytes=Buffer.from(value),etag=createHash('md5').update(bytes).digest('hex');
+   data.set(key,{bytes,etag});
+   return {etag};
+  }
+ };
+ globalThis.fetch=async url=>{
+  assert.match(String(url),/^https:\/\/raw\.githubusercontent\.com\//);
+  return reply(document);
+ };
+ const bindings={...env,PRIVATE_EVENTS:store};
+ const owner={id:7,token:'owner-token',canPublish:false,exp:Math.floor(Date.now()/1000)+600};
+ const stranger={...owner,id:8};
+ const call=(path,options,session=owner)=>request(path,options,session,bindings);
+ const id='12345678-1234-1234-1234-123456789abc',imageURL='private-event-images/'+id+'.webp';
+ const bytes=Buffer.from('RIFFXXXXWEBPprivate');
+ const endpoint='/api/private-events?event=silverrudder-2025';
+ const imageEndpoint='/api/'+imageURL+'?event=silverrudder-2025';
+ const privateDoc={version:1,notes:[{time:123,text:'Kun til ejeren',private:true,privateId:id,image:{id,url:imageURL,name:'Privat foto'}}],speedPins:[]};
+ assert.throws(()=>validateDocument(privateDoc),/Private events/);
+ const imageUpload={method:'POST',headers:{'Content-Type':'image/webp'},body:bytes};
+ assert.equal((await call('/api/private-event-images?event=silverrudder-2025&id='+id,imageUpload,null)).status,401);
+ assert.equal((await call('/api/private-event-images?event=silverrudder-2025&id='+id,imageUpload)).status,201);
+ assert.equal((await call(endpoint,{method:'PUT',body:JSON.stringify({revision:null,document:privateDoc})},stranger)).status,400);
+ const put=(revision,doc=privateDoc)=>call(endpoint,{method:'PUT',body:JSON.stringify({revision,document:doc})});
+ const saved=await put(null);
+ assert.equal(saved.status,200);
+ const {revision}=await saved.json();
+ assert.equal((await put(null)).status,409);
+ const presentation='/api/presentation?event=silverrudder-2025';
+ const loaded=await call(endpoint,{});
+ assert.equal(loaded.headers.get('cache-control'),'no-store');
+ const own=await loaded.json();
+ assert.deepEqual(own.document,privateDoc);
+ assert.equal(own.revision,revision);
+ const publicResult=await (await call(presentation,{})).json();
+ assert.equal(publicResult.account.canPublish,false);
+ assert.equal(publicResult.privateDocument,undefined);
+ assert.deepEqual((await (await call(endpoint,{},stranger)).json()).document.notes,[]);
+ assert.deepEqual((await (await call(endpoint.replace('2025','2024'),{})).json()).document.notes,[]);
+ assert.equal((await call(endpoint+'&owner=7',{},stranger)).status,403);
+ assert.equal((await call(endpoint,{},null)).status,401);
+ assert.equal((await call(imageEndpoint,{},null)).status,401);
+ assert.equal((await call(imageEndpoint,{},stranger)).status,404);
+ assert.equal((await call(imageEndpoint.replace('2025','2024'),{})).status,404);
+ const image=await call(imageEndpoint,{});
+ assert.equal(image.headers.get('cache-control'),'private, no-store');
+ assert.deepEqual(Buffer.from(await image.arrayBuffer()),bytes);
+ assert.equal((await put(revision,{...privateDoc,notes:[]})).status,200);
+ assert.deepEqual((await (await call(endpoint,{})).json()).document.notes,[]);
+});
 test('anyone can load the exact Unicode document revision and only a writer can publish it',async()=>{
  const raw=Buffer.from(JSON.stringify(document)+'\n'),revision=blobSha(raw);
  const calls=mockGithub('write',(url,options)=>{
@@ -100,7 +164,7 @@ test('anyone can load the exact Unicode document revision and only a writer can 
   }
   return reply({sha:revision});
  });
- const loaded=await request('/api/presentation',{},null);assert.deepEqual(await loaded.json(),{document,sha:revision});
+ const loaded=await request('/api/presentation',{},null);assert.deepEqual(await loaded.json(),{document,sha:revision,account:null});
  assert.equal((await request('/api/presentation',{method:'PUT',body:'{}'},null)).status,401);
  const saved=await request('/api/presentation',{method:'PUT',body:JSON.stringify({document,sha:revision})});
  assert.equal(saved.status,200);assert.equal((await saved.json()).sha,'b'.repeat(40));
@@ -301,4 +365,19 @@ test('a French login request receives a French error for an unknown regatta',asy
  const response=await request('/auth/login?event=unknown&lang=fr');
  assert.equal(response.status,400);
  assert.deepEqual(await response.json(),{error:'Régate inconnue.'});
+});
+
+test('popup OAuth returns to a same-origin completion page instead of navigating the tracker',async()=>{
+ const attempt='11111111-1111-4111-8111-111111111111';
+ const pending=await seal({state:'popup-state',verifier:'verifier',popup:attempt,exp:Math.floor(Date.now()/1000)+600},env,'oauth');
+ mockGithub('write');const githubFetch=globalThis.fetch;
+ globalThis.fetch=async(url,options)=>String(url)==='https://github.com/login/oauth/access_token'?reply({access_token:'token'}):githubFetch(url,options);
+ const response=await request('/auth/callback?state=popup-state&code=code',{headers:{Cookie:'__Host-sr-oauth='+pending}},null);
+ assert.equal(response.status,302);
+ assert.equal(response.headers.get('Location'),'/auth/complete?popup='+attempt);
+ assert.match(response.headers.get('Set-Cookie'),/__Host-sr-session=/);
+ const finished=await request('/auth/complete?popup='+attempt,{},null);
+ assert.match(await finished.text(),/BroadcastChannel\("sr-event-login:/);
+ const denied=await request('/auth/callback?state=popup-state&error=access_denied',{headers:{Cookie:'__Host-sr-oauth='+pending}},null);
+ assert.equal(denied.headers.get('Location'),'/auth/complete?popup='+attempt+'&cancelled=1');
 });

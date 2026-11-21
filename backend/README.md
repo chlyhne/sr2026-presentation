@@ -1,26 +1,29 @@
-# Lokale kladder og GitHub-login ved udgivelse
+# Eventsæt og GitHub-login
 
-Backend er en Cloudflare Worker uden runtime-afhængigheder. GitHub Pages viser den
-udgivne præsentation. Workerens `/admin/` viser den samme brugerflade på Workerens
-eget domæne, så login virker med en almindelig sikker cookie uden tredjepartscookies
-eller GitHub-tokens i browserens JavaScript.
+GitHub Pages leverer trackeren. Cloudflare Worker håndterer `/api/*` og
+`/auth/*` på trackerens domæne. GitHub-login åbner i et separat vindue, og
+trackeren bliver stående på kortet. Workerens eksisterende `/admin/`-links
+kan bruges til at åbne kladder, der ligger i browserlageret på det gamle domæne.
 
-Stævner kan åbnes og redigeres uden login. Kladdens events og billeder gemmes i
-browseren. Udgivelse af præsentationen og dens billeder kræver skriverettighed
-til det konfigurerede repository. Rettigheden hentes hos GitHub ved hver skrivning.
-GitHub App-tokenet handler på brugerens vegne og kan kun de handlinger, som både
-brugeren og appen har rettighed til. Branch protection og rulesets gælder stadig.
+Offentlige eventsæt kan hentes uden login. Lokale events og kladdebilleder gemmes
+i browseren. GitHub-login giver adgang til egne private events.
+Offentlig udgivelse kræver skriverettighed til repositoryet. Backenden kontrollerer
+rettigheden hos GitHub ved hver offentlig skrivning. Branch protection og rulesets
+gælder stadig.
 
 ## Opsætning
 
 1. Opret en Cloudflare Worker med dette projekts `wrangler.jsonc`. Ret `SITE_URL`
-   til den offentlige Pages-adresse **med afsluttende `/`** og
+   til trackerens offentlige adresse med afsluttende `/` og tilpas
+   Workerens routes til `/api/*` og `/auth/*` på samme domæne. Trackerens
+   DNS-record skal være proxied i Cloudflare. Ret
    `GITHUB_REPOSITORY` til det præcise `ejer/repo`. Standarden er
    `chlyhne/sr2026-presentation` og branch `main`. Repositoryet skal være offentligt
    for at kladdevisningen kan læse præsentationen uden login.
 2. Registrér en **GitHub App** under GitHub Settings → Developer settings → GitHub
    Apps. Sæt homepage til Pages-adressen og callback til
-   `https://<worker-domæne>/auth/callback`. Giv repository permissions:
+   `https://<tracker-domæne>/auth/callback`. Behold også callbacken på det
+   gamle admin-domæne, hvis de eksisterende admin-links stadig skal kunne logge ind. Giv repository permissions:
    **Contents: Read and write**, **Metadata: Read-only**. Ingen adgang til workflows
    eller administration er nødvendig. Webhooks kan deaktiveres. Installer appen
    på netop præsentationens repository. Behold udløbende user access tokens slået til.
@@ -38,10 +41,14 @@ brugeren og appen har rettighed til. Branch protection og rulesets gælder stadi
 
    `SESSION_SECRET` skal være mindst 32 tegn genereret tilfældigt, eksempelvis af en
    password manager. Den krypterer login-cookien; rotation logger alle ud.
-4. Udgiv Worker med `npx wrangler deploy`. Sæt den offentlige sides admin-adresse
-   til `https://<worker-domæne>/admin/`, og udgiv Pages igen.
-5. Åbn en stævneside under `/admin/events/`, redigér et event, og vælg Udgiv for
-   at kontrollere GitHub-login med din konto.
+4. Udgiv Worker med `npx wrangler deploy`. Sæt repository-variablen
+   `SR_API_URL` til trackerens HTTPS-origin for at aktivere onlinefunktionerne i
+   Pages-buildet. Udgiv derefter Pages.
+   Workerens `PRIVATE_EVENTS`-binding bruger R2-bucketen `sr2026-private-events`.
+   Bucketen skal have offentlig adgang slået fra. Behold det eksisterende,
+   fungerende `SITE_URL`, indtil et nyt Pages-domæne er aktivt.
+5. Åbn en stævneside, redigér et event med **Nyt event her**, og vælg **Gem privat**
+   eller **Udgiv offentligt** for at kontrollere GitHub-login med din konto.
    Kontrollér også, at en konto uden skriverettighed bliver afvist. De lokale
    tests simulerer GitHub; de erstatter ikke denne rigtige integrationskontrol.
 
@@ -62,17 +69,27 @@ refresh tokens.
 | Route | Funktion |
 | --- | --- |
 | `GET /auth/login` | Start GitHub-login |
-| `GET /auth/callback` | Afslut login og gå til `/admin/` |
+| `GET /auth/callback` | Sæt sessionscookien og afslut loginvinduet |
 | `POST /api/logout` | Slet session-cookie |
-| `GET /api/presentation` | Anonym læsning af `{document, sha}` fra repositoryets offentlige branch |
+| `GET /api/event-session` | Aktiv konto og rettigheder |
+| `GET /api/presentation` | Offentligt dokument og SHA for det valgte stævne og sæt, samt aktiv konto hvis logget ind |
+| `GET /api/private-events` | Egne private events og revision for det valgte stævne |
 | `PUT /api/presentation` | `{document, sha}` → `{sha, commit}` |
 | `POST /api/event-images?id=<uuid>` | Udgiv binært JPEG/PNG/WebP → `{id, url}` |
+| `PUT /api/private-events` | Gem egne private events for stævnet med kontrol af revision |
+| `POST /api/private-event-images` og `GET /api/private-event-images/<fil>` | Gem og hent billeder fra samme GitHub-konto og stævne |
 | `GET /admin/config.js` | `window.SR_CONFIG={apiBase:origin,admin:true}` |
-| `GET /admin/event-images/<uuid>.<ext>` | Offentlig adgang til billeder i repositoriet, også før Pages er opdateret |
+| `GET /api/event-images/<uuid>.<ext>` | Hent offentligt billede fra repositoryet |
 | `GET /admin/*` | Proxy til samme sti under Pages-basen |
 
-Præsentationen gemmes kun i `presentation/presentation.json` med formatet
-`{version:1,notes:[],speedPins:[]}`. Rhumbline er et fast projektaktiv i
+Hvert stævne har et offentligt standardsæt, angivet i katalogets `presentationFile`.
+Ekstra offentlige sæt kan registreres i stævnets `publicSets` med `id`, `title`
+og `presentationFile`. Sættene bruger formatet `{version:1,notes:[],speedPins:[]}`.
+Private events og billeder gemmes i R2 under brugerens numeriske GitHub-id og
+stævnet. **Gem privat** på et offentligt sæt laver en privat kopi. En offentlig
+version kan fjernes fra sættet via **Slet event** efterfulgt af **Udgiv offentligt**.
+Tidligere offentlige kopier kan stadig findes i GitHub-historikken eller hos andre.
+Rhumbline er et fast projektaktiv i
 `viewer/rhumbline.json` og indgår ikke i præsentationen. Billeder får
 UUID-navne under `viewer/event-images/` ved udgivelse. Billeder i onlinekladder
 opbevares i browserens IndexedDB. Relative billedadresser er `event-images/<uuid>.<ext>`;
@@ -87,9 +104,9 @@ Pages-pakningen kræver en eksisterende `presentation/presentation.json` med
 `version: 1` og listerne `notes` og `speedPins`. Et manglende eller ugyldigt dokument
 stopper pakningen med en fejl. Billeder pakkes direkte fra `viewer/event-images/`.
 
-Udgivelse kræver den SHA, som dokumentet blev indlæst med. Hvis en anden redaktør
-har udgivet en nyere version, svarer serveren `409`; klienten skal bevare kladden
-og lade brugeren eksportere/genindlæse. Upload af et billede ændrer ikke dokumentets
+Servergemning bruger den indlæste SHA eller R2-revision. Ved versionskonflikt
+bevares kladden. **Hent serverversion** læser et nyt sæt og arkiverer den
+tidligere kladde til download i eventfanen. Upload af et billede ændrer ikke dokumentets
 SHA. Afbrudte kladder kan efterlade ubenyttede billeder; de slettes ikke automatisk.
 Uploads committes straks og bliver offentlige, når repo/Pages er offentligt.
 

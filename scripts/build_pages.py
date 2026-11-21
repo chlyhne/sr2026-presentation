@@ -55,6 +55,10 @@ def build():
             event_document=json.loads((ROOT/config['presentationFile']).read_text(encoding='utf-8'))
             if event_document.get('version')!=1 or not isinstance(event_document.get('notes'),list) or not isinstance(event_document.get('speedPins'),list):
                 raise ValueError('Invalid presentation: '+config['presentationFile'])
+            if any(note.get('private') not in (None, False) or 'privateId' in note or
+                   (note.get('image') or {}).get('url', '').startswith('private-event-images/')
+                   for note in event_document['notes']):
+                raise ValueError('Private event in public presentation: '+config['presentationFile'])
             event_target=stage/'events'/event['id']/'presentation.json'
             event_target.parent.mkdir(parents=True,exist_ok=True)
             event_target.write_text(json.dumps(event_document,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
@@ -74,7 +78,11 @@ def build():
         for event in catalog['events']:
             entry = stage / 'events' / event['id'] / 'index.html'
             entry.write_text(tracker_html(event['id'], asset_root), encoding='utf-8')
-        (stage / 'config.js').write_text('window.SR_CONFIG=' + json.dumps({'apiBase': api_base, 'admin': False}, ensure_ascii=True) + ';\n', encoding='utf-8')
+        # Enable the authenticated API only where the Worker routes and cookies share the tracker origin.
+        (stage / 'config.js').write_text(
+            f'window.SR_CONFIG={{eventService:location.origin==={json.dumps(api_base)},admin:false}};\n',
+            encoding='utf-8',
+        )
         (stage / '.nojekyll').touch()
         if not (stage / 'index.html').is_file():
             raise ValueError('viewer/index.html is missing')

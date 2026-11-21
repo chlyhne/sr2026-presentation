@@ -19,8 +19,8 @@ main{--event-width:clamp(280px,28vw,440px);display:grid;grid-template-columns:mi
 #renderingError pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px system-ui;color:#922e25}
 .rendering-failed #mapSurface,.rendering-failed #mapEventImage,.rendering-failed #visibleBoats,.rendering-failed #mapTools{visibility:hidden}
 #mapTools{grid-column:1;grid-row:1;align-self:start;justify-self:end;position:relative;z-index:3;margin:12px;display:flex;align-items:start;gap:6px;color:#173d4c;font-size:13px}
-#eventPanelToggle,#presentationFullscreen,#loginLink,#mapSettingsToggle{display:grid;place-items:center;width:38px;height:36px;padding:8px;color:#173d4c;background:#fffffff0;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26;text-decoration:none}
-#eventPanelToggle:hover,#presentationFullscreen:hover,#loginLink:hover,#mapSettingsToggle:hover{background:#dcecf0}
+#eventPanelToggle,#presentationFullscreen,#mapSettingsToggle{display:grid;place-items:center;width:38px;height:36px;padding:8px;color:#173d4c;background:#fffffff0;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26;text-decoration:none}
+#eventPanelToggle:hover,#presentationFullscreen:hover,#mapSettingsToggle:hover{background:#dcecf0}
 #eventPanelToggle[aria-expanded=true],#mapSettingsToggle[aria-expanded=true],#presentationFullscreen[aria-pressed=true]{background:#dcecf0}
 #mapSettings{position:relative}
 #mapSettingsPanel{position:absolute;top:calc(100% + 6px);right:0;z-index:5;width:215px;padding:11px;background:#fff;color:#173d4c;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26}
@@ -68,7 +68,7 @@ body.rhumbline-setup #mapGates{display:none!important}
 #map.measuring,#map.measuring:active,#map.measuring .boat-marker{cursor:crosshair}
 #map.measuring.rhumbline-point-hover{cursor:grab}
 #map.measuring.rhumbline-point-drag{cursor:grabbing}
-body.rhumbline-setup #mapHeading,body.rhumbline-setup #presentationFullscreen,body.rhumbline-setup #loginLink,body.rhumbline-setup #onlineStatus,body.rhumbline-setup #eventPanel,body.rhumbline-setup footer,body.rhumbline-setup #visibleBoats,body.rhumbline-setup #trackSpeedLegend,body.rhumbline-setup #mapTracks,body.rhumbline-setup #mapMeasureToggle{display:none!important}
+body.rhumbline-setup #mapHeading,body.rhumbline-setup #presentationFullscreen,body.rhumbline-setup #onlineStatus,body.rhumbline-setup #eventPanel,body.rhumbline-setup footer,body.rhumbline-setup #visibleBoats,body.rhumbline-setup #trackSpeedLegend,body.rhumbline-setup #mapTracks,body.rhumbline-setup #mapMeasureToggle{display:none!important}
 body.rhumbline-setup main{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
 body.rhumbline-setup #mapSurface,body.rhumbline-setup #mapTools,body.rhumbline-setup #renderingError{grid-column:1;grid-row:1}
 body.rhumbline-setup #mapTools{display:block}
@@ -310,3 +310,7 @@ body.boat-compare-open main{--event-width:clamp(280px,28vw,440px)}
  #eventPanel,#boatComparePanel{grid-row:3;border-top:1px solid #d5d9de}
  #presentationFooter{grid-row:4}
 }
+
+#eventSetControls{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;margin-block:.45rem}
+#eventSetSelect,#publicEventTarget{max-width:100%;min-width:0}
+#onlineStatus:empty{display:none}

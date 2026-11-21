@@ -3,7 +3,8 @@ const eventImageUploads=new Map(),eventImageErrors=new WeakMap();
 let imageUploadToken=0;
 let shownEventImageId=null,eventImageRenderToken=0;
 let panelEventImage=null,panelEventImageNote=null,mapImageView=null,mapImageToken=0;
-const validEventImageURL=url=>/^\/?event-images\/[0-9a-f-]{36}\.(webp|png|jpg)$/.test(url||'');
+const validEventImageURL=url=>/^\/?(?:private-)?event-images\/[0-9a-f-]{36}\.(webp|png|jpg)$/.test(url||'');
+const privateEventImage=image=>image.url?.startsWith('private-event-images/');
 const eventImageExtensions={'image/webp':'webp','image/png':'png','image/jpeg':'jpg'};
 const draftImageURLs=new Map();
 let draftImageDB;
@@ -31,7 +32,10 @@ async function readDraftImage(image){
 }
 function eventImageSource(image){
  if(!validEventImageURL(image?.url))throw new SRMessageError('Billedets serveradresse mangler.');
- if(!image.draft)return image.url;
+ if(!image.draft){
+  if(privateEventImage(image))return eventServiceURL(privateEventSetAPI('/api/'+image.url));
+  return eventServiceAvailable()?eventServiceURL('/api/'+image.url.replace(/^\//,'')):image.url;
+ }
  if(!draftImageURLs.has(image.id))draftImageURLs.set(image.id,readDraftImage(image).then(blob=>URL.createObjectURL(blob)).catch(error=>{
   draftImageURLs.delete(image.id);throw error;
  }));
@@ -94,15 +98,15 @@ async function uploadEventImageCanvas(canvas,name){
   return {...await saveEventImage(blob),name,width:canvas.width,height:canvas.height,type:blob.type};
 }
 async function saveEventImage(blob){
-  if(!window.SR_CONFIG?.admin)return sendEventImage(blob);
   const extension=eventImageExtensions[blob.type];
   if(!extension)throw new SRMessageError('Billedet kunne ikke klargøres.');
   const id=crypto.randomUUID(),url='event-images/'+id+'.'+extension;
   await draftImageTransaction('readwrite',store=>store.put(blob,id));
   return {id,url,draft:true};
 }
-async function sendEventImage(blob,id){
-  const url=(window.SR_CONFIG?.apiBase||'')+'/api/event-images'+(id?'?id='+encodeURIComponent(id):'');
+async function sendEventImage(blob,id,isPrivate=false){
+  const path=isPrivate?privateEventSetAPI('/api/private-event-images')+'&id='+encodeURIComponent(id):'/api/event-images'+(id?'?id='+encodeURIComponent(id):'');
+  const url=eventServiceURL(path);
   const response=await fetch(url,{method:'POST',headers:{'Content-Type':blob.type},body:blob});
   if(!response.ok){
    const {error}=await response.json().catch(()=>({}));
@@ -153,7 +157,7 @@ $('removeNoteImage').onclick=()=>{
 async function renderEventImage(image,note){
  panelEventImage=image||null;panelEventImageNote=note||null;
  if(mapImageView&&(mapImageView.note!==panelEventImageNote||mapImageView.imageId!==image?.id))hideMapEventImage();
- const id=image?.id||null;if(id===shownEventImageId){syncEventImageVisibility();return;}
+ const id=image?JSON.stringify([image.id,image.url,image.draft]):null;if(id===shownEventImageId){syncEventImageVisibility();return;}
  shownEventImageId=id;const token=++eventImageRenderToken;
  $('eventImageFigure').hidden=true;$('eventImage').removeAttribute('src');$('eventImageStatus').textContent='';
  if(!id)return;

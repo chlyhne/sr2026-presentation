@@ -116,8 +116,11 @@ function updateTrackHover(e){
  },80);
 }
 function closeTrackSpeedSelection(){pickedTrackSpeed=null;renderSpeedPins();}
+function canSaveSpeedPins(){
+ return !window.SR_READONLY&&!eventSetSource.startsWith('private:')&&eventToolsVisible();
+}
 function toggleSpeedPin({save=false}={}){
- if(!pickedTrackSpeed||save&&(window.SR_READONLY||!eventToolsVisible()))return;
+ if(!pickedTrackSpeed||save&&!canSaveSpeedPins())return;
  const boat=boats.find(b=>b.id===pickedTrackSpeed.boatId),sample=boat&&trackSpeedSample(boat,pickedTrackSpeed.time);
  if(!sample)return;
  const pins=save?speedPins:visibleSpeedPins();
@@ -177,7 +180,7 @@ function renderSpeedPins(){
    const buttonWidth=entry.pinned?76:44;
    el('rect',{x:left,y:top+8,width:buttonWidth,height:24,rx:4,fill:'#f4fafb',stroke:'#365766','stroke-width':1},button);
    el('text',{x:left+buttonWidth/2,y:top+24,'text-anchor':'middle',fill:'#14212a','font-size':12,'font-weight':650},button).textContent=entry.pinned?srText('Fjern pin'):srText('Pin');
-   if(!window.SR_READONLY&&eventToolsVisible()){
+   if(canSaveSpeedPins()){
     const saved=speedPins.some(pin=>pin.boatId===entry.boatId&&Math.abs(pin.time-entry.time)<.05);
     const label=saved?srText('Fjern fra kladde'):srText('Gem i kladden');
     const save=el('g',{'data-speed-action':'save',role:'button',tabindex:0,'aria-label':label+': '+accessibleLabel},group);
