@@ -61,14 +61,13 @@ async function waitForMapReady(){
  await webglTracks.prepareComparison();
  assertRenderingReady();
  await document.fonts.ready;
- let radarPending,windPending;
+ let radarPending;
  do{
   flushRender();
-  radarPending=radarReady;windPending=windReady;await Promise.all([radarPending,windPending]);
-  await Promise.all([radarImageBuffer.paintReady,windImageBuffer.paintReady]);
- }while(renderRequestKind!==null||radarPending!==radarReady||windPending!==windReady);
+  radarPending=radarReady;await radarPending;
+  await radarImageBuffer.paintReady;
+ }while(renderRequestKind!==null||radarPending!==radarReady);
  assertRenderingReady();
- if($('wind').checked&&windFieldError)throw Error(srText('Vindkortet kunne ikke indlæses. Prøv igen.'));
  if($('rain').checked&&radarStatus==='kunne ikke indlæses')throw Error(srText('Radaren kunne ikke indlæses. Prøv igen, eller slå radarlaget fra.'));
 }
 $('reloadRendering').onclick=()=>location.reload();

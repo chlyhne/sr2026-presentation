@@ -35,7 +35,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     return ()=>{object[key]=original;};
    };
    if(instrument){
-    for(const name of ['advancePlayback','setCurrentTime','drawMap','renderWindField','renderRadar','status','renderWindArrows','renderTraffic','renderMilitary','renderTracks','renderAnnotations','renderNavigation','renderMapCredit','resizeSymbols','resizeBoatIcons','updateVisibleBoats','highlightVisibleBoat','mapViewport','trackSpeedLegendLayout','centerPlaybackOnReferenceBoat','setview','updateTimeline','visibleBoatRanges'])wrap(window,name);
+    for(const name of ['advancePlayback','setCurrentTime','drawMap','renderRadar','status','renderWindBarbs','renderTraffic','renderMilitary','renderTracks','renderAnnotations','renderNavigation','renderMapCredit','resizeSymbols','resizeBoatIcons','updateVisibleBoats','highlightVisibleBoat','mapViewport','trackSpeedLegendLayout','centerPlaybackOnReferenceBoat','setview','updateTimeline','visibleBoatRanges'])wrap(window,name);
     wrap(webglTracks,'render','tracks.render');wrap(webglBackground,'render','background.render');
     wrap(SVGGraphicsElement.prototype,'getScreenCTM','DOM.getScreenCTM');
     wrap(Element.prototype,'getBoundingClientRect','DOM.getBoundingClientRect');

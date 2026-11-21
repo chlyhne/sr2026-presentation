@@ -26,7 +26,7 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
     };
     restores.push(()=>{object[key]=original;});
    };
-   for(const name of ['setview','updateTimeline','drawMap','drawViewport','renderWindArrows','renderTraffic','renderMilitary','resizeSymbols','renderAnnotations','renderMapCredit','updateVisibleBoats','mapViewport'])wrap(window,name);
+   for(const name of ['setview','updateTimeline','drawMap','drawViewport','renderWindBarbs','renderTraffic','renderMilitary','resizeSymbols','renderAnnotations','renderMapCredit','updateVisibleBoats','mapViewport'])wrap(window,name);
    wrap(webglTracks,'render','tracks.render');wrap(webglBackground,'render','background.render');
    const frame=()=>new Promise(requestAnimationFrame),samples=[],before={...webglTracks.stats};
    const gl=webglTracks.gl;gl.finish();

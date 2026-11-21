@@ -262,41 +262,38 @@ function renderRadar(time){
 }
 
 function status(t){
- const hour=Math.floor(t/3600)*3600,windAvailable=!!D.wind_models[WIND_MODEL]?.[0]?.hourly.time.includes(hour);
+ const hour=Math.floor(t/3600)*3600,windAvailable=windBarbFrames.has(hour);
  if(!window.SR_EVENT.features.weather){$('status').textContent=srText("Tracks: {0} · Vejrdata er ikke importeret for dette stævne",fmt(t));return;}
- setBoatListText($('windPeriod'),$('wind').checked&&!windAvailable?srText("Vinddata mangler ved {0}",fmt(hour)):'');
+ setBoatListText($('windPeriod'),!$('wind').checked?'':windAvailable?srText('Halv fane 5 · hel fane 10 · vimpel 50 knob'):srText("Vinddata mangler ved {0}",fmt(hour)));
  $('status').textContent=srText("Vind: {0} {1} {2} · Tracks: interpoleret ved {3} · Noter gemmes i denne browser",WIND_MODEL_LABEL,windAvailable?fmt(hour):srText('data mangler ved ')+fmt(hour),$('rain').checked?srText(' · Radar {0}: {1}',radarSource,srText(radarStatus)):'',fmt(t));
 }
-const WIND_ARROW_SPACING=90;
-let windArrowKey=null;
-function renderWindArrows(t=currentTime()) {
+const windBarbFrames=window.SR_EVENT.features.weather?prepareWindBarbFrames(D.wind_models[WIND_MODEL],xy):new Map();
+let windBarbKey=null;
+function renderWindBarbs(t=currentTime()){
  const layer=$('winds');
  if(!$('wind').checked){
-  if(windArrowKey!==false)layer.replaceChildren();
-  windArrowKey=false;return;
+  if(windBarbKey!==null)layer.replaceChildren();
+  windBarbKey=null;return;
  }
- const map=$('map'),matrix=mapViewport()?.matrix;if(!matrix)return;
- const inverse=matrix.inverse(),scale=1/Math.hypot(matrix.a,matrix.b),rect=mapViewport().rect;
- const key=[Math.floor(t/3600),matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f,rect.width,rect.height].join(':');
- if(key===windArrowKey)return;
- windArrowKey=key;layer.replaceChildren();
- const samples=windSamplesAt(WIND_MODEL,t);
- // The lattice belongs to the visible map. Zoom and pan change the geographic
- // location sampled at each node, while its distance to the next stays 90 px.
- for(let sy=WIND_ARROW_SPACING/2;sy<rect.height;sy+=WIND_ARROW_SPACING) {
-  for(let sx=WIND_ARROW_SPACING/2;sx<rect.width;sx+=WIND_ARROW_SPACING) {
-   const point=new DOMPoint(rect.left+sx,rect.top+sy).matrixTransform(inverse);
-   const lon=9.5+point.x*4.5/1000,lat=57-point.y*3/1180;
-   const wind=interpolateWind(samples,lon,lat);if(!wind)continue;
-   const group=screenGroup(point.x,point.y,layer);
-   group.setAttribute('transform',`translate(${point.x} ${point.y}) scale(${scale})`);
-   if(wind.speed>0) {
-    const length=9+wind.speed*1.4,dx=wind.east/wind.speed*length,dy=-wind.north/wind.speed*length;
-    el('line',{x1:-dx/2,y1:-dy/2,x2:dx/2,y2:dy/2,stroke:'#183b49','stroke-width':2,'marker-end':'url(#arrow)'},group);
-   } else el('circle',{r:2,fill:'#183b49'},group);
-   srBind(el('title',{},group),'textContent',()=>srText("{0} · interpoleret: vind {1} m/s, vindstød {2}, {3}, {4}",WIND_MODEL_LABEL,wind.speed.toFixed(1),wind.gust==null?srText('mangler'):wind.gust.toFixed(1)+' m/s',wind.direction==null?srText('vindstille'):srText('fra {0}°',wind.direction.toFixed(0)),fmt(Math.floor(t/3600)*3600)));
-  }
+ const viewport=mapViewport();if(!viewport)return;
+ const {a:scale}=viewport.matrix,hour=Math.floor(t/3600)*3600;
+ // Select a stable subset of the source grid at lower zoom levels.
+ const stride=spacing=>2**Math.max(0,Math.ceil(Math.log2(56/(spacing*scale))));
+ const columns=stride(1000/18),rows=stride(1180/12),key=`${hour}:${columns}:${rows}`;
+ if(key===windBarbKey)return;
+ windBarbKey=key;
+ const fragment=document.createDocumentFragment();
+ for(const barb of windBarbFrames.get(hour)||[]){
+  if(barb.column%columns||barb.row%rows)continue;
+  const anchor=screenGroup(barb.x,barb.y,fragment);
+  const symbol=el('g',{class:'wind-barb',transform:barb.glyph.calm?'':`rotate(${barb.direction})`},anchor);
+  el('path',{d:barb.glyph.d,class:'wind-barb-halo'},symbol);
+  el('path',{d:barb.glyph.d,class:'wind-barb-mark',fill:barb.glyph.calm?'none':'currentColor'},symbol);
+  srBind(el('title',{},anchor),'textContent',()=>srText('{0} · vind {1}, vindstød {2}, {3}, {4}',
+   WIND_MODEL_LABEL,srText('{0} knob',barb.knots.toFixed(1)),barb.gust===null?srText('mangler'):srText('{0} knob',barb.gust.toFixed(1)),
+   barb.direction===null?srText('vindstille'):srText('fra {0}°',Math.round(barb.direction)%360),fmt(hour)));
  }
+ layer.replaceChildren(fragment);
 }
 // Keep state changes synchronous, but combine UI paint requests until the next
 // browser frame. Full redraws subsume viewport-only redraws, in either order.
@@ -319,7 +316,7 @@ function flushRender(){
 }
 // Retain an immediate path for exports, scene restoration and programmatic use.
 function render(){if(!viewerModulesReady){requestRender();return;}consumeRenderRequest();drawMap();}
-function drawMap(){if(hasRenderingFailure())return;if(followedBoatId&&centerViewOnBoat(boats.find(boat=>boat.id===followedBoatId)))setview();const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderWindField(t);renderRadar(t);webglBackground.render();status(t);renderWindArrows(t);renderTraffic();renderMilitary();
+function drawMap(){if(hasRenderingFailure())return;if(followedBoatId&&centerViewOnBoat(boats.find(boat=>boat.id===followedBoatId)))setview();const t=currentTime();$('clock').textContent=fmt(t);$('clock').dateTime=new Date(t*1000).toISOString();renderRadar(t);webglBackground.render();status(t);renderWindBarbs(t);renderTraffic();renderMilitary();
  renderTracks(t,{includeSpeedPins:false});
  renderAnnotations();
  renderNavigation();
@@ -327,7 +324,7 @@ function drawMap(){if(hasRenderingFailure())return;if(followedBoatId&&centerView
  renderMapCredit();
 }
 function drawViewport(){
- if(hasRenderingFailure())return;webglBackground.render();renderWindArrows();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderSpeedPins();renderNoteDrawings();
+ if(hasRenderingFailure())return;webglBackground.render();renderWindBarbs();renderTraffic();renderMilitary();webglTracks.redraw();resizeSymbols();renderSpeedPins();renderNoteDrawings();
  layoutVisibleBoats();if(!SIMPLE_IPHONE_TRACKS)renderBoatCompare();renderMapCredit();
 }
 const boatMarkerNodes=new Map();

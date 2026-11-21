@@ -16,14 +16,12 @@
 <main inert>
 <div id="mapSurface">
 <svg id="mapBase" viewBox="230 250 620 760" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <g id="windField"><image id="windImage" x="0" y="0" width="1000" height="1180"/></g>
   <g id="land" pointer-events="none"></g>
   <g id="precipitation"><image id="radarImage" x="0" y="0" width="1000" height="1180" visibility="hidden"/></g>
   <g id="baseMap"><g id="coast"></g><g id="trafficSeparation"></g><g id="militaryAreas"></g><g id="routeT" pointer-events="none"></g><g id="courseLines" pointer-events="none"></g></g>
   <g id="winds"></g><g id="mapNavigation" pointer-events="none"></g>
 </svg>
 <svg id="map" viewBox="230 250 620 760" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Kort med bådspor, vind, nedbørsradar og annotationer" data-i18n-attrs="aria-label">
-  <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#183b49"/></marker></defs>
   <path id="mapRhumbline" fill="none" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" pointer-events="none" hidden/>
   <g id="routes"></g><g id="gateResults" pointer-events="none"></g><g id="boatMarkers"></g><g id="places"></g><g id="seamarks" pointer-events="none"></g><g id="speedMarkers"></g><g id="noteDrawings" pointer-events="none"></g><g id="drawingPreview" pointer-events="none"></g><g id="annotations"></g><g id="mapCredit" pointer-events="none"></g><g id="trackSpeedLegend" pointer-events="none" aria-label="Bådfart over grunden, jet-farveskala fra 0 til 15 knob" data-i18n-attrs="aria-label"></g>
 </svg>

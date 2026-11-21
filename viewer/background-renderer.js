@@ -1,5 +1,5 @@
 // The sole background renderer:
-// wind texture -> land -> radar -> coast -> bridges. All geometry uses WebGL 2.
+// land -> radar -> coast -> bridges. All background geometry uses WebGL 2.
 const MAP_GRID_LEVELS=[{meters:15*1852,label:'15 sømil'},{meters:5*1852,label:'5 sømil'},
  {meters:2*1852,label:'2 sømil'},{meters:1852,label:'1 sømil'},{meters:.5*1852,label:'0,5 sømil'},{meters:400,label:'400 m'},{meters:200,label:'200 m'},{meters:100,label:'100 m'}];
 const MAP_SCALE_LEVELS=[...MAP_GRID_LEVELS,...[50,20,10,5,2,1].map(meters=>({meters,label:`${meters} m`}))];
@@ -55,7 +55,7 @@ function prepareBackgroundGeometry(polygons,chunks){
 class WebGLBackgroundRenderer {
  constructor(){
   this.active=false;this.geometry=null;this.uploads=0;this.textureUploads=0;this.draws=0;
-  this.sourceNodes=['windField','land','precipitation','coast'].map(id=>$(id));
+  this.sourceNodes=['land','precipitation','coast'].map(id=>$(id));
   for(const node of this.sourceNodes)node.setAttribute('display','none');
   this.host=document.createElement('div');this.host.dataset.webglBackground='';this.host.hidden=true;
   $('mapSurface').insertBefore(this.host,$('mapBase'));
@@ -72,7 +72,7 @@ class WebGLBackgroundRenderer {
   this.host.hidden=!active;
   if(active){
    clearRenderingFailure('Baggrund');
-   if(this.weatherSlots)for(const buffer of [windImageBuffer,radarImageBuffer])for(const entry of [buffer.front,buffer.back])if(entry?.ready)this.prepareWeather(buffer,entry);
+   if(this.weatherSlots)for(const entry of [radarImageBuffer.front,radarImageBuffer.back])if(entry?.ready)this.prepareWeather(radarImageBuffer,entry);
   }
  }
  fail(error){const failure=Error(error.message+(error.message.includes('Trin:')?'':' Trin: '+this.phase+'.'));this.error=failure.message;this.setActive(false);reportRenderingFailure('Baggrund',failure);}
@@ -161,9 +161,9 @@ void main(){
    this.quad=gl.createVertexArray();gl.bindVertexArray(this.quad);
    const quad=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0,1,0,0,1,0,1,1,0,1,1]),gl.STATIC_DRAW);
    gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,8,0);gl.bindVertexArray(null);
-   this.weatherSlots=new Map([windImageBuffer,radarImageBuffer].map(buffer=>[buffer.id,[0,1].map(()=>({texture:gl.createTexture(),entry:null,width:0,height:0}))]));
+   this.weatherSlots=new Map([[radarImageBuffer.id,[0,1].map(()=>({texture:gl.createTexture(),entry:null,width:0,height:0}))]]);
    // Explicit order is independent of SVG node creation or weather load order.
-   this.layers=[{id:'wind',buffer:windImageBuffer,node:$('windField')},{id:'land',mesh:this.landMesh,node:$('land'),fill:true,colour:[189/255,199/255,203/255,1]},
+   this.layers=[{id:'land',mesh:this.landMesh,node:$('land'),fill:true,colour:[189/255,199/255,203/255,1]},
     {id:'radar',buffer:radarImageBuffer,node:$('precipitation')},{id:'coast',mesh:this.coastMesh,node:$('coast'),width:1,colour:[54/255,87/255,102/255,1]},
     {id:'bridge-outline',mesh:this.bridgeMesh,node:$('coast'),width:3.5,colour:[.2,.28,.32,1]},
     {id:'bridge-deck',mesh:this.bridgeMesh,node:$('coast'),width:1.5,colour:[.88,.91,.92,1]},

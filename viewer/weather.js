@@ -1,4 +1,4 @@
-// Two decoded source image slots for WebGL textures; retain front until back is ready.
+// Two decoded radar image slots for WebGL; retain front until back is ready.
 class WeatherImageBuffer {
  constructor(id){
   this.id=id;this.frontNode=document.getElementById(id);this.backNode=this.frontNode.cloneNode(false);
@@ -22,7 +22,7 @@ class WeatherImageBuffer {
     await reusableAfter;
     if(this.back!==entry)return entry;
     node.onload=node.onerror=null;node.setAttribute('visibility','hidden');
-    // Yield before generating a future wind field so the current frame can finish.
+    // Let the current frame finish before decoding the future radar frame.
     await new Promise(resolve=>setTimeout(resolve,0));
     if(this.back!==entry)return entry;
     const href=createHref(),image=new Image();entry.image=image;image.src=href;
@@ -71,24 +71,6 @@ function nextWeatherTime(time,period){
  return null;
 }
 
-// DMI's wind legend, read from dmi.dk/vejrkort on 7 November 2026.
-// Values are in m/s. Keep the complete scale for storms as well as light winds.
-const WIND_COLOURS = [[0,'#dcfaf7'],[2,'#9ef2e9'],[4,'#7deee2'],[6,'#16e1cc'],
- [8,'#6dbff2'],[10,'#3dabee'],[12,'#008fe9'],[14,'#fff5bf'],[16,'#ffec7f'],
- [18,'#ffd900'],[20,'#ffb200'],[22,'#ff8e52'],[24,'#ff5252'],[26,'#e63939'],
- [28,'#cc1f1f'],[32,'#800000'],[50,'#5c0033']];
-// Each threshold is inclusive: the first blue covers 8 <= speed < 10 m/s.
-const WIND_PALETTE=WIND_COLOURS.map(([value,c])=>[value,c.match(/\w\w/g).map(h=>parseInt(h,16))]);
-function windColour(speed) {
- let colour=WIND_PALETTE[0][1];
- for(const [threshold,rgb] of WIND_PALETTE) {if(speed<threshold)break;colour=rgb;}
- return colour;
-}
-function windVector(speed,direction) {
- if(!Number.isFinite(speed)||speed<0||(!Number.isFinite(direction)&&speed!==0))return null;
- const angle=(direction||0)*Math.PI/180;
- return {east:-Math.sin(angle)*speed,north:-Math.cos(angle)*speed};
-}
 const WIND_MODEL='dmi_harmonie_arome_europe',WIND_MODEL_LABEL='DMI HARMONIE';
 const RADAR_OPACITY=.75;
 
@@ -124,111 +106,36 @@ async function loadEventWeather(event,data){
  data.radar=assets.radar;
 }
 
-// Interpolate the archived samples for a continuous background. This adds no
-// weather information or meteorological resolution.
-const windGrids = new Map();
-let windFieldKey=null,windReady=Promise.resolve(),windFieldError=null;
-const windImageBuffer=new WeatherImageBuffer('windImage');
-function windGrid(model) {
- if (windGrids.has(model)) return windGrids.get(model);
- const width=200, height=236, points=window.DATA.wind_models[model];
- const indices=new Int16Array(width*height*4).fill(-1);
- const weights=new Float32Array(indices.length);
- for(let y=0; y<height; y++) for(let x=0; x<width; x++) {
-  const lon=9.5+(x+.5)*4.5/width, lat=57-(y+.5)*3/height;
-  const nearest=[];
-  for(let i=0; i<points.length; i++) {
-   const p=points[i], distance=((p.longitude-lon)*Math.cos(lat*Math.PI/180))**2+(p.latitude-lat)**2;
-   if(nearest.length===4 && distance>=nearest[3][1]) continue;
-   nearest.push([i,distance]); nearest.sort((a,b)=>a[1]-b[1]); nearest.length=Math.min(nearest.length,4);
+// A north-facing staff is rotated clockwise by the meteorological direction.
+function windBarbPath(knots){
+ const units=Math.round(knots/5);
+ if(units===0)return {d:'M-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0',calm:true};
+ const flags=Math.floor(units/10),feathers=Math.floor(units%10/2),half=units%2;
+ let d='M0 0V-26',y=-26;
+ for(let i=0;i<flags;i++,y+=6)d+=`M0 ${y}H10L0 ${y+6}Z`;
+ for(let i=0;i<feathers;i++,y+=4)d+=`M0 ${y}L10 ${y-5}`;
+ if(half){
+  if(!flags&&!feathers)y+=4;
+  d+=`M0 ${y}L5 ${y-2.5}`;
+ }
+ return {d,calm:false};
+}
+function prepareWindBarbFrames(points,project){
+ const frames=new Map(),glyphs=new Map();
+ for(const {longitude,latitude,hourly} of points){
+  const [x,y]=project([longitude,latitude]);
+  // Nearest-model cell coordinates have a small offset from the request grid.
+  const column=Math.round((longitude-9.5)*4),row=Math.round((latitude-54)*4);
+  for(const [i,hour] of hourly.time.entries()){
+   const speed=hourly.wind_speed_10m[i],direction=hourly.wind_direction_10m[i];
+   if(!Number.isFinite(speed)||speed<0||(speed>0&&!Number.isFinite(direction)))continue;
+   const knots=speed*3600/1852,band=Math.round(knots/5)*5;
+   if(!glyphs.has(band))glyphs.set(band,windBarbPath(band));
+   const gust=hourly.wind_gusts_10m?.[i];
+   if(!frames.has(hour))frames.set(hour,[]);
+   frames.get(hour).push({x,y,column,row,knots,direction:Number.isFinite(direction)?direction:null,
+    gust:Number.isFinite(gust)?gust*3600/1852:null,glyph:glyphs.get(band)});
   }
-  // Do not extend the colour field across gaps larger than the sampling grid.
-  if(nearest[0][1]>.3**2) continue;
-  if(nearest[0][1]<1e-12)nearest.length=1;
-  for(let n=0; n<nearest.length; n++) {
-   const offset=(y*width+x)*4+n;
-   indices[offset]=nearest[n][0]; weights[offset]=1/Math.max(nearest[n][1],1e-12);
-  }
  }
- const grid={width,height,indices,weights}; windGrids.set(model,grid); return grid;
-}
-function prepareNextWind(time,model){
- const next=nextWeatherTime(time,3600);if(next===null)return;
- const hour=Math.floor(next/3600)*3600,key=`${model}:${hour}`;
- windImageBuffer.prepare(key,()=>buildWindField(model,hour));
-}
-function renderWindField(t){
- if(!document.getElementById('wind').checked){windFieldKey=null;windReady=Promise.resolve();windFieldError=null;windImageBuffer.hide();return;}
- const model=WIND_MODEL,hour=Math.floor(t/3600)*3600,key=`${model}:${hour}`;
- if(key===windFieldKey){if(windImageBuffer.front?.key===key)prepareNextWind(t,model);return;}
- windFieldKey=key;windFieldError=null;
- const entry=windImageBuffer.prepare(key,()=>buildWindField(model,hour),true);
- if(windImageBuffer.display(key)){windReady=Promise.resolve();prepareNextWind(t,model);return;}
- windReady=entry.promise.then(()=>{
-  if(windFieldKey!==key||!document.getElementById('wind').checked)return;
-  if(entry.error){windFieldError=entry.error;return;}
-  if(windImageBuffer.display(key))prepareNextWind(t,model);
- });
-}
-function buildWindField(model,hour){
- const grid=windGrid(model), points=window.DATA.wind_models[model];
- const values=points.map(p=>{
-  const i=p.hourly.time.indexOf(hour);
-  return windVector(p.hourly.wind_speed_10m[i],p.hourly.wind_direction_10m[i]);
- });
- const canvas=document.createElement('canvas'); canvas.width=grid.width; canvas.height=grid.height;
- const ctx=canvas.getContext('2d'), pixels=ctx.createImageData(grid.width,grid.height);
- for(let p=0; p<grid.width*grid.height; p++) {
-  let east=0,north=0,total=0;
-  for(let n=0; n<4; n++) {
-   const i=p*4+n, value=values[grid.indices[i]];
-   if(!value)continue;
-   east+=value.east*grid.weights[i];north+=value.north*grid.weights[i];total+=grid.weights[i];
-  }
-  if(!total) continue;
-  const speed=Math.hypot(east/total,north/total);
-  pixels.data.set([...windColour(speed),255],p*4);
- }
- ctx.putImageData(pixels,0,0);return canvas.toDataURL('image/png');
-}
-
-let windSampleKey=null,windSamples=[];
-function windSamplesAt(model,time) {
- const hour=Math.floor(time/3600)*3600,key=`${model}:${hour}`;
- if(key===windSampleKey)return windSamples;
- windSamples=[];
- for(const p of window.DATA.wind_models[model]) {
-  const i=p.hourly.time.indexOf(hour),speed=p.hourly.wind_speed_10m[i],direction=p.hourly.wind_direction_10m[i];
-  const vector=windVector(speed,direction);if(!vector)continue;
-  windSamples.push({lon:p.longitude,lat:p.latitude,...vector,gust:p.hourly.wind_gusts_10m?.[i]});
- }
- windSampleKey=key;return windSamples;
-}
-
-function interpolateWind(samples,lon,lat) {
- // Match the geographic extent of the colour field and avoid extrapolating
- // across gaps larger than the original sampling grid.
- if(lon<9.5||lon>14||lat<54||lat>57)return null;
- const nearest=[],lonScale=Math.cos(lat*Math.PI/180);
- for(const sample of samples) {
-  const distance=((sample.lon-lon)*lonScale)**2+(sample.lat-lat)**2;
-  if(nearest.length===4&&distance>=nearest[3].distance)continue;
-  nearest.push({sample,distance});nearest.sort((a,b)=>a.distance-b.distance);
-  if(nearest.length>4)nearest.pop();
- }
- if(!nearest.length||nearest[0].distance>.3**2)return null;
- // Preserve source values exactly when a grid point coincides with a sample.
- if(nearest[0].distance<1e-12)nearest.length=1;
- let east=0,north=0,total=0,gust=0,gustWeight=0;
- for(const {sample,distance} of nearest) {
-  const weight=1/Math.max(distance,1e-12);
-  east+=sample.east*weight;north+=sample.north*weight;total+=weight;
-  if(Number.isFinite(sample.gust)){gust+=sample.gust*weight;gustWeight+=weight;}
- }
- east/=total;north/=total;
- const speed=Math.hypot(east,north);
- // Average vector components, never angles: 359° and 1° must remain northerly.
- return {east,north,speed:speed<1e-9?0:speed,
-  direction:speed<1e-9?null:(Math.atan2(-east,-north)*180/Math.PI+360)%360,
-  gust:gustWeight?gust/gustWeight:null};
+ return frames;
 }

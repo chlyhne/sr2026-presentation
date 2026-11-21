@@ -412,7 +412,7 @@ deres betydning ved referencevalg, genindlæsning, manglende data og præsentati
 - Zoom og træk kortet. Alle både har samme faste sporbredde på skærmen:
   2,7 pixels farve med 4,7 pixels mørk kant. Det gælder ved alle zoomniveauer,
   også når en båd vælges til efter zoom. Der er ingen særlig bredde for standardbådene.
-  Bådnavne, stednavne, vindtal og vindpile har fast skærmstørrelse.
+  Bådnavne, stednavne og vindfaner har fast skærmstørrelse.
   Mindste kortbredde er 0,05 kortenheder, så der kan zoomes
   yderligere 30 gange ind. Tidslinjen bruger hele den faktisk synlige kortflade.
 - Vindpilene ligger i et kvadratisk gitter med 90 skærmpixels mellem centrene,
@@ -426,7 +426,7 @@ deres betydning ved referencevalg, genindlæsning, manglende data og præsentati
   sort kant og skravering. Laget kan vælges uafhængigt af TSS og gemmes med noter.
   Skraveringen har samme faste størrelse som TSS.
   Kyst, trafikseparering, skydeområde og Rute T ligger samlet i landkortets SVG-lag
-  `baseMap`, over vindfarver, landfyld og radarbyger, men under vindpile og bådspor.
+  `baseMap`, over land og nedbørsradar, men under vindfaner og bådspor.
   Landfyldet er et separat lag under radaren.
 - **Rute T** tegnes som en åben, sort linje gennem brugerens 11 koordinater i
   den angivne rækkefølge. Linjen har fast stregbredde ved zoom.
@@ -435,7 +435,7 @@ deres betydning ved referencevalg, genindlæsning, manglende data og præsentati
   brugerens sejladsbestemmelser ikke måtte krydses.
 - **Start og mål** er indtegnet fra TracTrac event 3539 og markeret med tekst og
   endepunkter. Startlinjen er grøn; mållinjen er rød og stiplet. Begge linjer
-  ligger i `baseMap`, over radaren og under vindpile og bådspor.
+  ligger i `baseMap`, over radaren og under vindfaner og bådspor.
   Stregbredde, endepunkter og tekst har fast størrelse ved zoom.
   De to replaybaner har samme linjer og tegnes derfor kun én gang.
 
@@ -586,33 +586,16 @@ Vindlaget bruger DMI HARMONIE (ca. 2 km) fra prognosearkivet via Open-Meteo.
 Modellen er forespurgt ved 247 punkter i 0,25° trin med
 `cell_selection=nearest` og `elevation=nan`.
 Det er en sampling af de oprindelige modelgitre. De returnerede gitterkoordinater
-bruges i kortet. Vindfelterne har timeopløsning i UTC.
+bruges i kortet. Vinddataene har timeopløsning i UTC.
 
-Vindens baggrundsfarver og grænser i m/s følger DMI’s aktuelle vindkort:
-https://www.dmi.dk/vejrkort . Skalaen er aflæst fra DMI’s offentlige
-`ReactBundle/index.bundle.js` den 7. november 2026 (vindlagets `legend`).
-Den komplette skala fra 0 til 50+ m/s ligger i `weather.js`.
-Første blå er `#6dbff2` ved 8 ≤ vind < 10 m/s; derefter `#3dabee`
-ved 10–12 og `#008fe9` ved 12–14 m/s. Gul begynder ved 14 m/s.
-
-Baggrunden interpolerer vindens øst- og nordkomponenter med invers
-afstandsvægtning mellem de fire nærmeste samplingpunkter til et 200 × 236
-billedgitter. Vindstyrken beregnes fra den resulterende vektor, ligesom ved pilene,
-og farven vælges derefter med de faste intervalgrænser. Det er kun en visuel interpolation,
-ikke flere observationer eller højere meteorologisk opløsning. Områder mere end
-ca. 0,3 breddegrader fra nærmeste punkt farves ikke. Baggrunden ligger under
-radaren, kystlinjen og sporene.
-
-Vindpilene bruger de fire nærmeste gyldige modelpunkter med samme afstandsvægtning.
-Øst- og nordkomponenterne interpoleres hver for sig, så retninger omkring
-0°/360° behandles korrekt. Pilens retning og styrke beregnes fra den resulterende
-vektor. Præcis ved et modelpunkt bruges dets uændrede vind. Vindstød interpoleres
-separat som en skalar; manglende værdier udelades. Vindstille vises som en prik.
-Uden for kortets datadækning og ved større huller tegnes ingen pile. Interpolationen
-tilføjer ingen nye observationer eller meteorologisk detalje. Værktøjstippet ved
-pilen viser kilden, timen og interpolerede værdier for vind og vindstød i m/s.
-Pilene viser den almindelige vindstyrke og retning. Kortet bruger data fra den
-seneste hele time.
+Vind vises som traditionelle meteorologiske vindfaner ved de returnerede
+modelpunkter. Staven peger mod den retning, vinden kommer fra. En halv fane
+svarer til 5 knob, en hel fane til 10 knob og en vimpel til 50 knob.
+Hastigheden afrundes til nærmeste 5 knob, og vindstille vises som en ring.
+Symbolerne har fast skærmstørrelse. Ved zoom ud vises et fast udsnit af
+gitterpunkterne for at holde afstand mellem symbolerne. Vindlaget bruger
+data fra den seneste hele time.
+[National Weather Service](https://www.weather.gov/hfo/windbarbinfo).
 
 Prognosearkiver er sammenstykkede korte prognosehorisonter fra flere kørsler,
 ikke én bestemt prognose fra før start. Modeller kan afvige fra lokale forhold.
@@ -625,7 +608,7 @@ Radar: observerede DMI-kompositter fra `radardata/collections/composite`.
 Der er 253 fullRange-billeder, ét for hvert 10-minutters trin. Kildens pixels er
 500 m. De originale ODIM HDF5-filer ligger i `../data/radar/`.
 Ved sekundtrin bruges radarbilledet for det seneste nominelle 10-minutters
-tidspunkt; radarens eget tidspunkt står ved laget. Vindfeltet følger fortsat
+tidspunkt; radarens eget tidspunkt står ved laget. Vindfanerne følger
 seneste hele time. Der opfindes ingen nye vejrbilleder mellem kildetidspunkterne.
 
 Radaren vises i **dBZ (ekkostyrke)**. Det er observationer af radarreflektivitet,
@@ -741,7 +724,7 @@ Denne filtrering ændrer kun kortforenklingen; bådsporene i appen ændres ikke.
 
 Landmasserne fyldes med lys grå `#bdc7cb`; kyststregen bevarer `#365766`.
 Landpolygonerne er dannet fra samme OSM-kystlinje. Lagrækkefølgen
-er vindfarver nederst, derefter landfyld, radar og kystomrids. Vindpile og spor
+er landfyld, radar og kystomrids. Vindfaner og spor
 ligger over disse lag.
 Kystlinjerne samles til flader
 inden for udtrækkets geografiske grænse, og land/hav bestemmes af OSM-linjernes
@@ -875,7 +858,7 @@ Navne har fortsat fast skriftstørrelse; farver, klik og præsentation bevares.
 
 Menuen **Lag** har afbrydere til **Vind**, **Nedbør** og **Grid**. Eventfanens
 **Brug i eventet** gemmer de tre valg sammen med resten af kortvisningen.
-Vejrets farver, vindmodel og radarens opacitet er faste.
+Vindmodellen, radarens farver og radarens opacitet er faste.
 
 Forrige, Næste og direkte eventvalg genskaber de gemte lag. Snap på tidslinjen
 bevarer de aktuelle lag og skriver ikke til events. Onlineændringer ligger
@@ -1109,12 +1092,12 @@ tilbagespoling, klik og genbrug af GPU-buffere med den nominelle renderer.
 ved flere zoomniveauer, samlinger uden striber, kantudjævning og runde ender i lokal Firefox.
 
 Baggrunden bruger én WebGL 2-flade i `background-renderer.js`, med fast
-lagrækkefølge: vindfarvefelt, land, radar og kyst. Landpolygoner, inklusive
+lagrækkefølge: land, radar og kyst. Landpolygoner, inklusive
 huller, trianguleres én gang med den lokalt medfølgende Earcut 3.0.2
 (`vendor/earcut.js`, ISC-licens i filen). Kysten bruger faste trekantbuffere med
 én skærmpixels bredde. Alle kildepunkter bevares. Panorering og zoom ændrer kun
 kamera og synlige tegningsintervaller; geometri og vejrteksturer uploades ikke
-igen. Vindpile, trafikseparering, skydeområder, ruter, ikoner og redigering
+igen. Vindfaner, trafikseparering, skydeområder, ruter, ikoner og redigering
 bevarer deres eksisterende lag.
 
 Baggrunden og sporene deler `mapViewport()` og `positionMapCanvas()`, så både
@@ -1137,12 +1120,11 @@ synlig browser som standard (`SR_HEADLESS=1` vælger headless).
 106 både. Benchmarken bruger en synlig Firefox med grafikkort som standard;
 `SR_HEADLESS=1` kan bruges til automatisering, men måler ofte softwaregrafik.
 
-## Dobbelt buffer til vejrkort
+## Dobbelt buffer til nedbørsradar
 
-Radar og vindfarvefelt har hver to billedbuffere til indlæsning og
-to teksturer pr. lag i WebGL-baggrunden. De skjulte billednoder bruges kun til
-indlæsning og lagtilstand; de tegnes ikke selv på kortet. Det næste radartidspunkt
-og næste vindtime indlæses, afkodes og uploades på forhånd. Indlæsningen må
+Radaren har to billedbuffere til indlæsning og to teksturer i WebGL-baggrunden.
+De skjulte billednoder bruges til indlæsning og lagtilstand. Det næste
+radarbillede indlæses, afkodes og uploades på forhånd. Indlæsningen må
 aldrig overskrive teksturen til det viste billede. Den færdige buffer vises ved
 tidsskiftet. Den gamle buffer beholdes gennem den første tegnecyklus, før
 den skjules og må genbruges, så skiftet ikke efterlader et tomt billede. Et uventet tidsspring beholder det aktuelle billede, indtil det

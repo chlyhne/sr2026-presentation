@@ -27,7 +27,7 @@ test('Silverrudder merges seven source races on one course, with distinct starts
 });
 test('Silverrudder loads complete weather with its own radar source and asset paths',async()=>{
  const source=fs.readFileSync('viewer/weather.js','utf8');
- const implementation=source.slice(source.indexOf('const WIND_MODEL='),source.indexOf('// Interpolate the archived samples'));
+ const implementation=source.slice(source.indexOf('const WIND_MODEL='));
  for(const [year,radar,count] of [[2024,'OPERA',328],[2025,'OPERA',290],[2026,'DMI',241]]){
   const {context}=await load('silverrudder-'+year,storage()),event=context.window.SR_EVENT;
   assert.equal(event.features.weather,true);
@@ -41,6 +41,10 @@ test('Silverrudder loads complete weather with its own radar source and asset pa
   const data={};await context.loadEventWeather(event,data);
   assert.equal(data.radar.source,radar);
   assert.equal(data.radar.frames.length,count);
+  const points=data.wind_models.dmi_harmonie_arome_europe;
+  const barbs=context.prepareWindBarbFrames(points,p=>p).get(points[0].hourly.time[0]);
+  assert.equal(barbs.length,247);
+  assert.equal(barbs[0].direction,points[0].hourly.wind_direction_10m[0]);
   for(const frame of data.radar.frames)assert.ok(fs.existsSync('viewer/'+frame.file),frame.file);
   const incomplete={...manifest,radar:{...manifest.radar,frames:manifest.radar.frames.slice(1)}};
   assert.throws(()=>context.validateWeatherAssets(incomplete,event),/ufuldstændige vejrdata/);
@@ -48,6 +52,21 @@ test('Silverrudder loads complete weather with its own radar source and asset pa
  const {context}=await load(catalog.default,storage());
  assert.equal(context.window.SR_EVENT.weather.embedded,true);
  assert.equal(context.window.SR_EVENT.weather.radar,'DMI');
+});
+
+test('wind barbs round to five knots and use the traditional calm, feather and pennant shapes',()=>{
+ const context=viewerTestContext({}),source=fs.readFileSync('viewer/weather.js','utf8');
+ vm.runInContext(source,context);
+ const shape=knots=>context.windBarbPath(knots);
+ assert.equal(shape(2.49).calm,true);
+ assert.equal(shape(2.5).d,'M0 0V-26M0 -22L5 -24.5');
+ assert.equal(shape(10).d,'M0 0V-26M0 -26L10 -31');
+ assert.equal(shape(65).d,'M0 0V-26M0 -26H10L0 -20ZM0 -20L10 -25M0 -16L5 -18.5');
+ const hourly={time:[0,3600],wind_speed_10m:[10*1852/3600,0],wind_direction_10m:[90,null]};
+ const frames=context.prepareWindBarbFrames([{longitude:9.508,latitude:54.007,hourly}],p=>p);
+ assert.equal(frames.get(0)[0].direction,90);
+ assert.ok(Math.abs(frames.get(0)[0].knots-10)<1e-10);
+ assert.equal(frames.get(3600)[0].glyph.calm,true);
 });
 
 test('an unknown stævne produces an explicit error',async()=>{await assert.rejects(load('unknown',storage()),/Ukendt/);});

@@ -1,24 +1,24 @@
 const assert=require('node:assert/strict'),path=require('node:path');
 const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[process.cwd(),path.resolve(__dirname,'../../racetimer')]}));
 async function check(type){
- const browser=await type.launch({headless:process.env.SR_HEADLESS==='1'});
+ const browser=await type.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/');await page.waitForSelector('main:not([inert])',{timeout:120000});
+  await page.goto(new URL('events/sjaelland-rundt-2026/',process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/').href);await page.waitForSelector('main:not([inert])',{timeout:120000});
   await page.evaluate(()=>{
    if(!webglBackground.active)throw Error(webglBackground.error);
-   chosen.clear();notes=[];setPresentationMode(true);
+   chosen.clear();notes=[];
    for(const id of ['winds','trafficSeparation','militaryAreas','routeT','courseLines','routes','boatMarkers','places','seamarks','speedMarkers','noteDrawings','drawingPreview','annotations','mapCredit','trackSpeedLegend'])$(id).setAttribute('visibility','hidden');
   });
   await page.evaluate(async()=>{
    if(document.fullscreenElement)await document.exitFullscreen();
-   view=[230,250,620,760];$('wind').checked=$('rain').checked=true;setview();render();
-   await Promise.all([windReady,radarReady,windImageBuffer.paintReady,radarImageBuffer.paintReady]);flushRender();
+   view=[230,250,620,760];$('grid').checked=false;$('rain').checked=true;setview();render();
+   visibleTimeRanges=[];renderRadar(1781164800);await radarReady;await radarImageBuffer.paintReady;flushRender();
   });
-  // All four weather textures are prepared before exercising pan/zoom; there
+  // Both radar textures are prepared before exercising pan/zoom; there
   // must be no geometry allocation or image upload while moving the camera.
-  await page.waitForFunction(()=>windImageBuffer.back?.ready&&radarImageBuffer.back?.ready);
+  await page.waitForFunction(()=>radarImageBuffer.back?.ready);
   const stats=await page.evaluate(()=>{
    const bg=webglBackground,uploads=bg.uploads,textures=bg.textureUploads,geometry=bg.geometry;
    for(let i=0;i<8;i++){view=[view[0]+.05,view[1]+.1,view[2]*.99,view[3]*.99];setview();flushRender();}
@@ -32,40 +32,35 @@ async function check(type){
   // A prepared weather swap selects a texture synchronously and never clears
   // the displayed image while waiting for a future frame.
   await page.evaluate(()=>{
-   renderRadar(D.start+600);renderWindField(D.start+3600);flushRender();
-   for(const buffer of [windImageBuffer,radarImageBuffer])if(!webglBackground.weatherSlots.get(buffer.id).some(s=>s.entry===buffer.front))throw Error('Swapped to an unprepared texture');
+   renderRadar(1781165400);flushRender();
+   if(!webglBackground.weatherSlots.get(radarImageBuffer.id).some(s=>s.entry===radarImageBuffer.front))throw Error('Swapped to an unprepared texture');
   });
   const holes=await page.evaluate(async()=>{
-   const bg=webglBackground,layer=bg.layers.find(l=>l.id==='land'),originalMesh=layer.mesh,originalView=[...view],originalOpacity=$('rainOpacity').value;
+   const bg=webglBackground,layer=bg.layers.find(l=>l.id==='land'),originalMesh=layer.mesh,originalView=[...view];
    const coastVisibility=$('coast').getAttribute('visibility');
    const point=(x,y)=>[9.5+x*4.5/1000,57-y*3/1180];
    const polygon={rings:[[[200,200],[400,200],[400,400],[200,400],[200,200]],[[260,260],[340,260],[340,340],[260,340],[260,260]]].map(r=>r.map(p=>point(...p))),west:10,east:12,south:55,north:57};
    layer.mesh=bg.mesh(prepareBackgroundGeometry([polygon],[]).land,4);$('coast').setAttribute('visibility','hidden');
    const image=colour=>{const c=document.createElement('canvas');c.width=c.height=1;c.getContext('2d').fillStyle=colour;c.getContext('2d').fillRect(0,0,1,1);return c.toDataURL();};
    try{
-    const blue=windImageBuffer.prepare('test-blue',()=>image('blue')),red=radarImageBuffer.prepare('test-red',()=>image('red'));
-    await Promise.all([blue.promise,red.promise]);windImageBuffer.display('test-blue');radarImageBuffer.display('test-red');
+    const red=radarImageBuffer.prepare('test-red',()=>image('red'));
+    await red.promise;radarImageBuffer.display('test-red');
     view=[180,180,240,240];$('map').setAttribute('viewBox',view.join(' '));
     const pixel=(x,y)=>{
      const {rect,matrix}=mapViewport(),p=new DOMPoint(x,y).matrixTransform(matrix),gl=bg.gl,out=new Uint8Array(4);
      gl.readPixels(Math.floor((p.x-rect.left)/rect.width*gl.drawingBufferWidth),gl.drawingBufferHeight-1-Math.floor((p.y-rect.top)/rect.height*gl.drawingBufferHeight),1,1,gl.RGBA,gl.UNSIGNED_BYTE,out);return [...out];
     };
-    const verify=(x,y,rgb)=>{const actual=pixel(x,y);if(actual[3]!==255||rgb.some((v,i)=>Math.abs(actual[i]-v)>2))throw Error('Layer/land hole mismatch: '+JSON.stringify({actual,rgb}));};
-    for(const opacity of [0,.5,1]){
-     $('rainOpacity').value=opacity;bg.render(true);
-     const water=[255*opacity,0,255*(1-opacity)],land=[255*opacity+189*(1-opacity),199*(1-opacity),203*(1-opacity)];
-     verify(190,300,water);verify(220,300,land);verify(300,300,water);
-    }
-    $('rainOpacity').value=0;
-    const green=windImageBuffer.prepare('test-green',()=>image('lime'));await green.promise;
-    bg.render(true);verify(300,300,[0,0,255]); // Prefetch must leave the blue front intact.
-    windImageBuffer.display('test-green');bg.render(true);verify(300,300,[0,255,0]);
-    windImageBuffer.display('test-blue');bg.render(true);verify(300,300,[0,0,255]);
+    const verify=(x,y,rgba)=>{const actual=pixel(x,y);if(rgba.some((v,i)=>Math.abs(actual[i]-v)>2))throw Error('Layer/land hole mismatch: '+JSON.stringify({actual,rgba}));};
+    bg.render(true);
+    verify(190,300,[191,0,0,191]);verify(220,300,[238,50,51,255]);verify(300,300,[191,0,0,191]);
+    const green=radarImageBuffer.prepare('test-green',()=>image('lime'));await green.promise;
+    bg.render(true);verify(300,300,[191,0,0,191]);
+    radarImageBuffer.display('test-green');bg.render(true);verify(300,300,[0,191,0,191]);
     return true;
    }finally{
-    layer.mesh=originalMesh;view=originalView;$('map').setAttribute('viewBox',view.join(' '));$('rainOpacity').value=originalOpacity;
+    layer.mesh=originalMesh;view=originalView;$('map').setAttribute('viewBox',view.join(' '));
     if(coastVisibility===null)$('coast').removeAttribute('visibility');else $('coast').setAttribute('visibility',coastVisibility);
-    windFieldKey=radarKey=null;render();await Promise.all([windReady,radarReady,windImageBuffer.paintReady,radarImageBuffer.paintReady]);flushRender();
+    radarKey=null;render();await radarReady;await radarImageBuffer.paintReady;flushRender();
    }
   });assert.equal(holes,true);
   const lost=await page.evaluate(()=>{
