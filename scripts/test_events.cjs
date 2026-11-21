@@ -578,6 +578,30 @@ test('translated labels never replace the saved comparison identifiers',()=>{
  }
 });
 
+test('the actual course lines and endpoint names are localized in all four languages',()=>{
+ const {gunzipSync}=require('node:zlib'),viewer=fs.readFileSync('viewer/viewer.js','utf8'),boatList=fs.readFileSync('viewer/boat-list.js','utf8');
+ const lines=['sjaelland-rundt-2026','silverrudder-2025'].flatMap(id=>{
+  const background=JSON.parse(gunzipSync(fs.readFileSync(configs.get(id).backgroundFile)));
+  return background.course_lines.features.map(feature=>feature.properties);
+ });
+ const expected={
+  da:['Start','Mål','Start / mål','Start / mål A','Helsingør Mål Bøje','Start 3 - Løb 5 Two-Racing'],
+  en:['Start','Finish','Start / finish','Start / finish A','Helsingør finish buoy','Start 3 - Race 5 Two-Racing'],
+  de:['Start','Ziel','Start / Ziel','Start / Ziel A','Helsingør Zielboje','Start 3 - Lauf 5 Two-Racing'],
+  fr:['Départ','Arrivée','Départ / arrivée','Départ / arrivée A','Bouée d’arrivée à Helsingør','Départ 3 - Course 5 Two-Racing']
+ };
+ for(const [language,labels] of Object.entries(expected)){
+  const context=viewerTestContext({},language);
+  vm.runInContext(viewer.slice(viewer.indexOf('function courseLineEndpointLabel('),viewer.indexOf('for(const feature of D.course_lines.features)')),context);
+  vm.runInContext(boatList.slice(boatList.indexOf('function raceClassLabel('),boatList.indexOf('function syncBoatRaceControls(')),context);
+  assert.deepEqual(lines.map(line=>context.srText(line.name)),labels.slice(0,3));
+  assert.equal(context.courseLineEndpointLabel(lines[2].endpoints[0].name),labels[3]);
+  assert.equal(context.courseLineEndpointLabel(lines[1].endpoints[1].name),labels[4]);
+  assert.equal(context.raceClassLabel('Start 3 - Løb 5 Two-Racing'),labels[5]);
+  assert.equal(context.courseLineEndpointLabel('Et lokalt mærkenavn'),'Et lokalt mærkenavn');
+ }
+});
+
 test('every translation keeps the placeholders of its Danish key',()=>{
  const context=viewerTestContext();
  const all=vm.runInContext('SR_MESSAGES',context),languages=vm.runInContext('SR_MESSAGE_LANGUAGES',context);

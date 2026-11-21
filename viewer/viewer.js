@@ -205,7 +205,10 @@ for(const [id,lon,lat,title] of window.SR_EVENT.marks){
  el('circle',{id,cx:0,cy:0,r:5,fill:'#e02020',stroke:'#ffffff','stroke-width':1},group);
  srBind(el('title',{},group),'textContent',()=>srText(title));
 }
-// Rute T is an open line through the user's waypoints, in the base map layer.
+function courseLineEndpointLabel(name){
+ const numbered=/^Start(-Finish)? ([A-Z])$/.exec(name);
+ return numbered?srText(numbered[1]?'Start / mål {0}':'Start {0}',numbered[2]):srText(name);
+}
 for(const feature of D.course_lines.features){
  const {kind,name,reference_boat,reference_utc}=feature.properties,coordinates=feature.geometry.coordinates;
  const colour=kind==='start'||kind==='start-finish'?'#087b3d':'#c62738';
@@ -217,18 +220,19 @@ for(const feature of D.course_lines.features){
  for(const [i,coordinate] of coordinates.entries()){
   const [x,y]=xy(coordinate),marker=screenGroup(x,y,group);
   el('circle',{r:3,fill:colour,stroke:'#ffffff','stroke-width':1},marker);
-  srBind(el('title',{},marker),'textContent',()=>srText(feature.properties.endpoints[i].name));
+  srBind(el('title',{},marker),'textContent',()=>courseLineEndpointLabel(feature.properties.endpoints[i].name));
  }
  const [x,y]=xy([(coordinates[0][0]+coordinates[1][0])/2,(coordinates[0][1]+coordinates[1][1])/2]);
  const label=screenGroup(x,y,group);
  srBind(el('text',{x:0,y:-10,'text-anchor':'middle',fill:colour,'font-size':12,'font-weight':750,
   stroke:'#ffffff','stroke-width':3,'paint-order':'stroke'},label),'textContent',()=>srText(name));
 }
+// Rute T is an open line through the user's waypoints, in the base map layer.
 for(const feature of D.route_t.features){
  const line=el('path',{'data-route-id':feature.id,d:path(feature.geometry.coordinates),fill:'none',
   stroke:'#000000','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round',
   'vector-effect':'non-scaling-stroke'},$('routeT'));
- srBind(el('title',{},line),'textContent',()=>feature.properties.name+srText(' · måtte ikke krydses under sejladsen'));
+ srBind(el('title',{},line),'textContent',()=>srText(feature.properties.name)+srText(' · måtte ikke krydses under sejladsen'));
 }
 let interval=null;
 

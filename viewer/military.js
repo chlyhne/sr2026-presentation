@@ -18,12 +18,17 @@ function renderMilitary(){
  militaryKey=key;
  for(const feature of militaryFeatures){
   const b=feature.bounds;if(b.east<bounds.west||b.west>bounds.east||b.north<bounds.south||b.south>bounds.north){feature.node?.remove();continue;}
-  if(feature.node){if(!feature.node.parentNode)layer.append(feature.node);continue;}
-  const group=el('g',{'data-military-id':feature.id,'aria-label':feature.properties.name},layer);
-  feature.node=group;
-  srBind(el('title',{},group),'textContent',()=>feature.properties.name+srText(' · områdets afgrænsning'));
-  el('path',{d:feature.d,fill:'#000000','fill-opacity':.035,stroke:'none','fill-rule':'evenodd'},group);
-  el('path',{d:feature.d,fill:'url(#militaryHatch)','fill-rule':'evenodd',stroke:'#000000',
-   'stroke-width':1.4,'stroke-linejoin':'round','vector-effect':'non-scaling-stroke'},group);
+  if(!feature.node){
+   const group=feature.node=el('g',{'data-military-id':feature.id});
+   el('title',{},group);
+   el('path',{d:feature.d,fill:'#000000','fill-opacity':.035,stroke:'none','fill-rule':'evenodd'},group);
+   el('path',{d:feature.d,fill:'url(#militaryHatch)','fill-rule':'evenodd',stroke:'#000000',
+    'stroke-width':1.4,'stroke-linejoin':'round','vector-effect':'non-scaling-stroke'},group);
+  }
+  if(!feature.node.parentNode){
+   layer.append(feature.node);
+   srBindAttribute(feature.node,'aria-label',()=>srText(feature.properties.name));
+   srBind(feature.node.querySelector('title'),'textContent',()=>srText(feature.properties.name)+srText(' · områdets afgrænsning'));
+  }
  }
 }

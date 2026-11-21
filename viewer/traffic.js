@@ -26,11 +26,14 @@ function renderTraffic(){
   if(b.east<bounds.west||b.west>bounds.east||b.north<bounds.south||b.south>bounds.north){feature.node?.remove();continue;}
   if(!feature.node){
    const group=feature.node=el('g',{'data-tss-id':feature.id,'data-tss-kind':'restricted_area'});
-   el('title',{},group).textContent=feature.properties.name;
+   el('title',{},group);
    el('path',{d:feature.d,fill:'#000000','fill-opacity':.035,stroke:'none','fill-rule':'evenodd'},group);
    el('path',{d:feature.d,fill:'url(#trafficHatch)','fill-rule':'evenodd',stroke:'#000000',
     'stroke-width':1.4,'stroke-linejoin':'round','vector-effect':'non-scaling-stroke'},group);
   }
-  if(!feature.node.parentNode)layer.append(feature.node);
+  if(!feature.node.parentNode){
+   layer.append(feature.node);
+   srBind(feature.node.querySelector('title'),'textContent',()=>srText(feature.properties.name));
+  }
  }
 }

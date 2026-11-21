@@ -77,12 +77,18 @@ new ResizeObserver(entries=>{
 }).observe($('visibleBoatsList'));
 let boatListSource=[],boatListOrder=[];
 let boatRaceControlsKey=null;
+function raceClassLabel(name){
+ const numbered=/^Start (\d+) - Løb (\d+) (.+)$/.exec(name);
+ return numbered?srText('Start {0} - Løb {1} {2}',...numbered.slice(1)):name;
+}
 function syncBoatRaceControls(){
  const key=boatCourseFilter+':'+boatClassFilter;
  if(key===boatRaceControlsKey)return;boatRaceControlsKey=key;
  $('boatCourseSelect').value=boatCourseFilter;
  const classes=boatCourseFilter?boatRaceClasses.get(boatCourseFilter):new Map([...boatRaceClasses.values()].flatMap(classes=>[...classes]));
- $('boatClassSelect').replaceChildren(new Option(srText('Alle løb'),''),...[...classes].sort((a,b)=>a[1].localeCompare(b[1],srLocale,{numeric:true})).map(([id,name])=>new Option(name,id)));
+ const options=[...classes].map(([id,name])=>[id,raceClassLabel(name)]);
+ options.sort((a,b)=>a[1].localeCompare(b[1],srLocale,{numeric:true}));
+ $('boatClassSelect').replaceChildren(new Option(srText('Alle løb'),''),...options.map(([id,label])=>new Option(label,id)));
  $('boatClassSelect').value=boatClassFilter;
  $('boatCourseSelect').title=srText('Bane: ')+$('boatCourseSelect').selectedOptions[0].textContent;
  $('boatClassSelect').title=srText('Løb: ')+$('boatClassSelect').selectedOptions[0].textContent;
@@ -152,7 +158,7 @@ function createVisibleBoatRow(boat){
  skipperField.append(skipper);typeField.append(type);details.append(skipperField,separator,typeField);
  const extra=document.createElement('div');extra.className='visible-boat-extra';extra.id='boat-details-'+boat.id;
  extra.hidden=!expandedBoatRows.has(boat.id);node.setAttribute('aria-expanded',String(!extra.hidden));node.setAttribute('aria-controls',extra.id);
- const raceClass=document.createElement('div');raceClass.className='visible-boat-class';srBind(raceClass,'textContent',()=>srText('Klasse: ')+(boat.raceClassName||srText('Ikke oplyst')));
+ const raceClass=document.createElement('div');raceClass.className='visible-boat-class';srBind(raceClass,'textContent',()=>srText('Klasse: ')+(raceClassLabel(boat.raceClassName)||srText('Ikke oplyst')));
  extra.append(raceClass);
  if(boat.country){
   const startNumber=document.createElement('div'),country=document.createElement('div');
