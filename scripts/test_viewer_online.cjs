@@ -81,13 +81,35 @@ async function test(){
    await selector.selectOption(source);
    await page.waitForFunction(value=>document.querySelector('#eventSetSelect').value===value&&!document.querySelector('#eventSetSelect').disabled,source);
   };
+  const setOptions=page.locator('#presentationOptions');
+  const openSetOptions=async()=>{
+   if(await setOptions.getAttribute('open')===null)await setOptions.locator('summary').click();
+  };
+  const setAction=async id=>{await openSetOptions();await page.locator('#'+id).click();};
+  const assertReading=async()=>{
+   for(const id of ['eventContentTools','eventScene','noteTime','startDrawing','chooseNoteImage','deleteNote','finishEventEdit','savePrivateEvents','publishPublicEvents'])
+    assert.equal(await page.locator('#'+id).isVisible(),false,id+' is hidden while reading');
+  };
   assert.equal(await page.locator('#loginLink').count(),0);
+  await assertReading();
   const initial=await mapState();
   await edit('Min private rettelse');
   assert.equal(await page.evaluate(()=>notes.length),1,'New event here edits the chosen event at its timestamp');
   assert.deepEqual(await mapState(),initial);
+  assert.equal(await page.locator('#chooseNoteImage').isVisible(),true);
+  assert.equal(await page.locator('#captureEventScene').isVisible(),false);
+  await page.locator('#eventScene summary').click();
+  assert.equal(await page.locator('#captureEventScene').isVisible(),true);
+  assert.equal(await page.locator('#noteTime').isVisible(),false);
+  await page.locator('#eventOptions summary').click();
+  assert.equal(await page.locator('#noteTime').isVisible(),true);
+  await page.locator('#finishEventEdit').click();
+  await assertReading();
+  assert.equal(await page.evaluate(()=>notes[0].text),'Min private rettelse');
+  await edit('Min private rettelse');
+  assert.equal(await page.locator('#captureEventScene').isVisible(),false);
   assert.equal(logins,0);
-  await page.locator('#savePrivateEvents').click();
+  await setAction('savePrivateEvents');
   await page.waitForFunction(()=>document.querySelector('#onlineStatus').textContent==='Privat kopi er gemt.');
   assert.equal(logins,1);
   assert.deepEqual(writes,['private-image','private']);
@@ -95,6 +117,7 @@ async function test(){
   assert.equal(privateDocument.notes[0].text,'Min private rettelse');
   assert.equal(privateDocument.notes[0].image.url,'private-event-images/'+imageId+'.png');
   await choose('public:opsamling');
+  await assertReading();
   assert.equal(await page.evaluate(()=>notes[0].text),'Fra opsamling');
   assert.deepEqual(await mapState(),initial);
   await choose('local');
@@ -106,9 +129,10 @@ async function test(){
   assert.equal(await page.evaluate(()=>readLocalEventSet().notes[0].text),'Nyt lokalt event');
   await choose('private');
   assert.equal(await page.evaluate(()=>notes[0].text),'Min private rettelse');
+  await openSetOptions();
   assert.equal(await page.locator('#publishPublicEvents').isVisible(),false);
   assert.deepEqual(await mapState(),initial);
-  await page.locator('#eventSetLogout').click();
+  await setAction('eventSetLogout');
   await page.waitForFunction(()=>eventSetSource==='local');
   assert.deepEqual(await mapState(),initial);
   assert.equal(await page.evaluate(()=>notes.some(note=>note.private)),false);
@@ -117,26 +141,26 @@ async function test(){
   assert.equal(await page.evaluate(()=>notes[0].text),'Min private rettelse','public draft is restored independently');
   await edit('Offentlig kladde ved konflikt');
   published.notes[0].text='Ny offentlig serverversion';publicRevision='new';
-  await page.locator('#publishPublicEvents').click();
+  await setAction('publishPublicEvents');
   await page.waitForFunction(()=>document.querySelector('#onlineStatus').textContent.includes('Serverens eventsæt er ændret'));
   assert.equal(await page.evaluate(()=>notes[0].text),'Offentlig kladde ved konflikt');
   page.once('dialog',dialog=>dialog.accept());
-  await page.locator('#loadServerEventSet').click();
+  await setAction('loadServerEventSet');
   await page.waitForFunction(()=>notes[0].text==='Ny offentlig serverversion');
   assert.equal(await page.evaluate(()=>JSON.parse(eventStorage.getItem(eventSetDraftKey(eventSetSource)+':previous')).document.notes[0].text),'Offentlig kladde ved konflikt');
   await edit('Udgivet uden reload');
-  await page.locator('#publishPublicEvents').click();
+  await setAction('publishPublicEvents');
   await page.waitForFunction(()=>document.querySelector('#onlineStatus').textContent==='Det offentlige eventsæt er gemt.');
   assert.equal(published.notes[0].text,'Udgivet uden reload');
   assert.deepEqual(await mapState(),initial);
   assert.equal(navigations,0);
-  await page.locator('#presentationOptions summary').click();
+  await openSetOptions();
   const download=page.waitForEvent('download');
   await page.locator('#export').click();
   const exported=JSON.parse(fs.readFileSync(await (await download).path(),'utf8'));
   assert.match(exported.notes[0].image.dataUrl,/^data:image\/png;base64,/);
   assert.deepEqual(errors,[]);
-  console.log('Firefox: event sources, login popup, permissions, private image, conflict, export and no tracker navigation.');
+  console.log('Firefox: explicit event editing, event sources, login popup, permissions, private image, conflict, export and no tracker navigation.');
  }finally{await browser.close();}
 }
 test().catch(error=>{console.error(error);process.exit(1);});

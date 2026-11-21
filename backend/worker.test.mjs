@@ -235,7 +235,8 @@ test('OAuth callback exchanges code and gives encrypted session without exposing
  assert.equal(calls.length,2);
 });
 test('admin config overrides public config and proxy does not forward credentials',async()=>{
- const config=await request('/admin/config.js');assert.match(await config.text(),/"admin":true/);
+ const config=await request('/admin/config.js');
+ assert.equal(await config.text(),'window.SR_CONFIG={"eventService":true,"admin":true};');
  globalThis.fetch=async(url,options)=>{
   assert.equal(String(url),'https://owner.github.io/repo/index.html');assert.equal(options.headers,undefined);
   return new Response('page',{headers:{'Content-Type':'text/html'}});

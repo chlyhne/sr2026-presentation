@@ -8,8 +8,10 @@ srOnLanguageChange(updateEventPanelLabel);
 function setEventPanelExpanded(expanded){
  if(expanded&&!SIMPLE_IPHONE_TRACKS)closeBoatCompare();
  if(expanded===!document.body.classList.contains('event-panel-collapsed'))return;
- if(!expanded&&!finishInlineTextEditing())return;
- if(!expanded)endEventTool();
+ if(!expanded){
+  if(!finishEventEditing())return;
+  closeEventEditor();
+ }
  const viewport=mapViewport();
  const active=document.activeElement;
  if(!expanded&&(active?.closest('#eventPanel')||active?.closest('#presentationFooter')))

@@ -1,7 +1,7 @@
 function presentationJSON(){return JSON.stringify({version:1,notes,speedPins});}
 
 async function eventSetRequest(path,request){
- const response=await fetch(eventServiceURL(path),{cache:'no-store',...request});
+ const response=await fetch(path,{cache:'no-store',...request});
  const result=await response.json().catch(()=>null);
  if(!response.ok||result===null){
   const error=new SRMessageError(result?.error||'Eventsættet kunne ikke hentes eller gemmes.');
@@ -56,7 +56,7 @@ function activateEventSet(source,revision,document){
  if(!finishInlineTextEditing())finishInlineTextEditing(true);
  newEventDraft=null;
  stopPlayback();hideMapEventImage();hideEventVideo();
- leaveOpenedEvent();activePresentationNote=null;editingNote=null;
+ leaveOpenedEvent();activePresentationNote=null;
  eventSetSource=source;eventSetRevision=revision;eventSetDocument=document;
  notes=nextNotes;speedPins=structuredClone(document.speedPins);viewingSpeedPins=null;
  activePresentationNote=currentMapEvent();
@@ -122,8 +122,9 @@ function initializeOnlineEvents(){
  const savePrivate=$('savePrivateEvents'),publish=$('publishPublicEvents'),logout=$('eventSetLogout');
  const reloadSet=$('loadServerEventSet'),recover=$('downloadPreviousEventDraft'),cancelLogin=$('cancelEventLogin');
  const target=$('publicEventTarget'),targetLabel=$('publicEventTargetLabel'),service=eventServiceAvailable();
- const publicSources=service?publicEventSets():[];
- const sources=new Map([[localEventSource,{title:'Lokale'}],...publicSources.map(set=>['public:'+set.id,set])]);
+ const publicSources=service||window.SR_READONLY?publicEventSets():[];
+ const sources=new Map(publicSources.map(set=>['public:'+set.id,set]));
+ if(!window.SR_READONLY)sources.set(localEventSource,{title:'Lokale'});
  if(service)sources.set('private',{title:'Mine private'});
  let busy=false,publicTarget='public:default';
  const message=(key,...values)=>srBind(status,'textContent',()=>key?srText(key,...values):'');
@@ -138,7 +139,7 @@ function initializeOnlineEvents(){
   target.value=publicTarget;target.disabled=busy;
   recover.hidden=selectedSource()===localEventSource||!eventStorage.getItem(eventSetDraftKey(eventSetSource)+':previous');
   recover.disabled=busy;
-  reloadSet.hidden=selectedSource()===localEventSource;reloadSet.disabled=busy;
+  reloadSet.hidden=!service||selectedSource()===localEventSource;reloadSet.disabled=busy;
  }
  function updateSourceOptions(){
   select.replaceChildren(...Array.from(sources,([value,set])=>new Option(value==='public:default'?srText('Offentlige'):
@@ -170,6 +171,11 @@ function initializeOnlineEvents(){
   if(!window.SR_ACCOUNT)throw new SRMessageError('GitHub-login kunne ikke gennemføres. Prøv igen.');
  }
  async function load(source,{discard=false,initial=false}={}){
+  if(window.SR_READONLY){
+   const document=await readPublishedEventSet(source.slice('public:'.length));
+   activateEventSet(source,null,document);
+   message('');return;
+  }
   if(source===localEventSource){
    activateEventSet(source,null,readLocalEventSet());
    message('');return;
@@ -267,8 +273,9 @@ function initializeOnlineEvents(){
  }
  savePrivate.onclick=()=>save('private');
  publish.onclick=()=>save(publicTarget);
- controls.hidden=!service;
- if(service){updateSourceOptions();srOnLanguageChange(updateSourceOptions);run(()=>load(publicTarget,{initial:true}));}
+ controls.hidden=!service&&publicSources.length<2;
+ if(!controls.hidden){updateSourceOptions();srOnLanguageChange(updateSourceOptions);}
+ if(service)run(()=>load(publicTarget,{initial:true}));
  else if(notes.length)showPresentationEvent(0,{expandPanel:false});
 
  if(window.SR_READONLY)return;

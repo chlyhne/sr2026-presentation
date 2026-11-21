@@ -144,6 +144,27 @@ with tempfile.TemporaryDirectory() as directory:
  }
 });
 
+test('Pages packages the standard presentation and every named public set',()=>{
+ const {execFileSync}=require('node:child_process');
+ const output=execFileSync(process.platform==='win32'?'python':'python3',['-c',`
+import json, sys, tempfile
+from pathlib import Path
+sys.path.insert(0, 'scripts')
+from build_pages import package_public_event_sets
+from event_config import event_config
+with tempfile.TemporaryDirectory() as directory:
+    stage = Path(directory)
+    event = event_config('sjaelland-rundt-2026')
+    package_public_event_sets(stage, event)
+    base = stage / 'events' / event['id']
+    print(json.dumps([json.loads((base / 'presentation.json').read_text(encoding='utf-8')),
+        json.loads((base / 'presentations/stikord.json').read_text(encoding='utf-8'))]))
+`],{encoding:'utf8',windowsHide:true});
+ assert.deepEqual(JSON.parse(output),[
+  require('../presentation/presentation.json'),require('../presentation/sjaelland-rundt-2026-stikord.json')
+ ]);
+});
+
 test('landing builds event cards without loading tracks and redirects old explicit links',async()=>{
  for(const search of ['', '?event=silverrudder-2025']){
   const nodes=new Map(),make=()=>({children:[],append(...items){this.children.push(...items);},setAttribute(){}});
@@ -407,7 +428,7 @@ test('a private event set and its draft images use only owner-scoped private end
  const document={version:1,notes:[{time:20,text:'Privat tekst',private:true,privateId:id,
   image:{id,name:'Foto',url:'event-images/'+id+'.webp',draft:true}}],speedPins:[]};
  const context=viewerTestContext({
-  structuredClone,eventServiceURL:path=>path,privateEventSetAPI:path=>path+'?owner=7',
+  structuredClone,privateEventSetAPI:path=>path+'?owner=7',
   privateEventImage:image=>image.url.startsWith('private-event-images/'),
   readDraftImage:async()=>({type:'image/webp'}),
   sendEventImage:async(blob,imageId,isPrivate)=>{assert.equal(isPrivate,true);return {id:imageId,url:privateImage};},

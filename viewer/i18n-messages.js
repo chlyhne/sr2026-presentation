@@ -1,6 +1,7 @@
 // Danish message keys with English, German and French translations. Keep placeholder indices in every language.
 globalThis.SR_MESSAGE_LANGUAGES=['en','de','fr'];
 globalThis.SR_MESSAGES={
+ "Indstillinger for eventsæt":["Event set settings","Einstellungen für Ereignissätze","Paramètres de l’ensemble d’événements"],
  "Annullér login":["Cancel sign-in","Anmeldung abbrechen","Annuler la connexion"],
  "Privat kopi er gemt.":["Private copy saved.","Private Kopie gespeichert.","Copie privée enregistrée."],
  "Slet eventet fra kladden? Ved udgivelse fjernes det fra det offentlige sæt. Tidligere kopier kan stadig findes.":["Delete the event from the draft? Publishing removes it from the public set. Earlier copies may still exist.","Ereignis aus dem Entwurf löschen? Mit der Veröffentlichung wird es aus dem öffentlichen Satz entfernt. Frühere Kopien können weiterhin vorhanden sein.","Supprimer l’événement du brouillon ? La publication le retire de l’ensemble public. Des copies précédentes peuvent subsister."],

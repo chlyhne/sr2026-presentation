@@ -325,7 +325,7 @@ async function routes(request, env, locale) {
     }
     return json({id, url: imagePath}, 201);
   }
-  if (method === 'GET' && path === '/admin/config.js') return new Response(`window.SR_CONFIG=${JSON.stringify({apiBase: url.origin, admin: true})};`, {headers: {'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store'}});
+  if (method === 'GET' && path === '/admin/config.js') return new Response(`window.SR_CONFIG=${JSON.stringify({eventService: true, admin: true})};`, {headers: {'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store'}});
   if (method === 'GET' && (path.startsWith('/admin/event-images/')||path.startsWith('/api/event-images/'))) {
     const name = path.slice(path.indexOf('/event-images/')+'/event-images/'.length); if (!IMAGE.test(name)) fail(404, 'Billedet findes ikke.');
     const source = await publicFile(env, `viewer/event-images/${name}`);

@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import tempfile
 from urllib.parse import urlsplit
-from event_config import load_catalog, tracker_html
+from event_config import load_catalog, public_event_files, tracker_html
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_SUFFIXES = {'.geojson', '.html', '.js', '.css', '.json', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.ico', '.woff', '.woff2', '.gz'}
@@ -35,6 +35,20 @@ def package_tracker_assets(stage):
     return asset_root
 
 
+def package_public_event_sets(stage, event):
+    for url, source in public_event_files(event):
+        document = json.loads((ROOT / source).read_text(encoding='utf-8'))
+        if document.get('version') != 1 or not isinstance(document.get('notes'), list) or not isinstance(document.get('speedPins'), list):
+            raise ValueError('Invalid presentation: ' + source)
+        if any(note.get('private') not in (None, False) or 'privateId' in note or
+               (note.get('image') or {}).get('url', '').lstrip('/').startswith('private-event-images/')
+               for note in document['notes']):
+            raise ValueError('Private event in public presentation: ' + source)
+        target = stage / 'events' / event['id'] / url
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(document, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+
 def build():
     api_base = os.environ.get('SR_API_URL', '').strip().rstrip('/')
     if api_base:
@@ -52,16 +66,7 @@ def build():
             manifest_file=config['profileRoot']+'manifest.json'
             profile_manifest=json.loads((ROOT/'viewer'/manifest_file).read_text(encoding='utf-8'))
             profile_files.update([manifest_file,profile_manifest['replayFile'],profile_manifest['dataFile'],profile_manifest['prepared']['common']['file']])
-            event_document=json.loads((ROOT/config['presentationFile']).read_text(encoding='utf-8'))
-            if event_document.get('version')!=1 or not isinstance(event_document.get('notes'),list) or not isinstance(event_document.get('speedPins'),list):
-                raise ValueError('Invalid presentation: '+config['presentationFile'])
-            if any(note.get('private') not in (None, False) or 'privateId' in note or
-                   (note.get('image') or {}).get('url', '').startswith('private-event-images/')
-                   for note in event_document['notes']):
-                raise ValueError('Private event in public presentation: '+config['presentationFile'])
-            event_target=stage/'events'/event['id']/'presentation.json'
-            event_target.parent.mkdir(parents=True,exist_ok=True)
-            event_target.write_text(json.dumps(event_document,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+            package_public_event_sets(stage, event)
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
             if 'track-profiles' in relative.parts and relative.as_posix() not in profile_files:

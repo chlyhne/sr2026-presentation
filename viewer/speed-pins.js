@@ -117,7 +117,7 @@ function updateTrackHover(e){
 }
 function closeTrackSpeedSelection(){pickedTrackSpeed=null;renderSpeedPins();}
 function canSaveSpeedPins(){
- return !window.SR_READONLY&&!eventSetSource.startsWith('private:')&&eventToolsVisible();
+ return !!editingNote&&!eventSetSource.startsWith('private:');
 }
 function toggleSpeedPin({save=false}={}){
  if(!pickedTrackSpeed||save&&!canSaveSpeedPins())return;

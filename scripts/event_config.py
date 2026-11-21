@@ -12,6 +12,15 @@ def load_catalog():
 def event_config(event_id):
     return next(event for event in load_catalog()['events'] if event['id'] == event_id)
 
+def public_event_files(event):
+    yield 'presentation.json', event['presentationFile']
+    for event_set in event.get('publicSets', []):
+        set_id = event_set['id']
+        if not re.fullmatch(r'[a-z0-9-]+', set_id) or set_id == 'default':
+            raise ValueError(f'Invalid public event set: {set_id}')
+        yield f'presentations/{set_id}.json', event_set['presentationFile']
+
+
 def tracker_html(event_id, asset_root=''):
     event_config(event_id)
     template = (ROOT / 'viewer/tracker.html').read_text(encoding='utf-8')

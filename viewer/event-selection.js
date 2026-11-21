@@ -77,10 +77,15 @@ async function loadEventSelection(){
  document.getElementById('mapHeading').title=event.title;
 }
 function eventAPI(path){return path+'?event='+encodeURIComponent(window.SR_EVENT.id);}
-function eventServiceAvailable(){return !!(window.SR_CONFIG.eventService||window.SR_CONFIG.admin);}
-function eventServiceURL(path){return (window.SR_CONFIG.eventService?'':window.SR_CONFIG.apiBase||'')+path;}
-function eventLoginURL(attempt){return eventServiceURL(eventAPI('/auth/login'))+'&lang='+srLanguage+'&popup='+encodeURIComponent(attempt);}
+function eventServiceAvailable(){return window.SR_CONFIG.eventService===true;}
+function eventLoginURL(attempt){return eventAPI('/auth/login')+'&lang='+srLanguage+'&popup='+encodeURIComponent(attempt);}
 function publicEventSets(){return [{id:'default',title:'Offentlige'},...(window.SR_EVENT.publicSets||[])];}
+async function readPublishedEventSet(id){
+ const path=id==='default'?'presentation.json':'presentations/'+encodeURIComponent(id)+'.json';
+ const response=await fetch('events/'+window.SR_EVENT.id+'/'+path,{cache:'no-store'});
+ if(!response.ok)throw new SRMessageError('Præsentationen kunne ikke indlæses ({0}).',response.status);
+ return validatePresentationDocument(await response.json());
+}
 function publicEventSetAPI(id){
  return eventAPI('/api/presentation')+(id==='default'?'':'&set='+encodeURIComponent(id));
 }

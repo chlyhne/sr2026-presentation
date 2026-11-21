@@ -15,7 +15,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from build_pages import prepare_track_profiles
-from event_config import CATALOG_FILE, load_catalog, event_config, tracker_html
+from event_config import CATALOG_FILE, load_catalog, event_config, public_event_files, tracker_html
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE_DIR = ROOT / 'viewer' / 'event-images'
@@ -60,13 +60,12 @@ class ViewerHandler(SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         route = urlsplit(path).path
-        if route.startswith('/events/') and route.endswith('/presentation.json'):
-            event_id=route.split('/')[2]
-            catalog=load_catalog()
-            if event_id not in {event['id'] for event in catalog['events']}:
-                return str(ROOT/'viewer/_not_found')
-            definition=event_config(event_id)
-            return str(ROOT/definition['presentationFile'])
+        match = re.fullmatch(r'/events/([a-z0-9-]+)/(presentation\.json|presentations/[a-z0-9-]+\.json)', route)
+        if match:
+            event_id, public_file = match.groups()
+            event = next((item for item in load_catalog()['events'] if item['id'] == event_id), None)
+            source = dict(public_event_files(event)).get(public_file) if event else None
+            return str(ROOT / source if source else ROOT / 'viewer/_not_found')
         if route.startswith('/event-images/'):
             name = route.removeprefix('/event-images/')
             return str(IMAGE_DIR / name) if IMAGE_NAME.fullmatch(name) else str(IMAGE_DIR / '_not_found')

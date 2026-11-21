@@ -10,7 +10,7 @@ function chronologicalNotes(list){
  if(notes.some((n,i)=>n!==saved[i]))SRStorage.setItem('sr2026-notes',JSON.stringify(notes));
 }
 let activePresentationNote=null,openedEvent=null,editingNote=null,newEventDraft=null;
-let placingNote=false;
+let eventEditTarget=null,placingNote=false;
 let sceneCameraBaseline=null,sceneCameraEdited=false,followedScene=false;
 let sceneUndo=null,sceneFeedback='';
 const eventDateFormatter=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Copenhagen',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
@@ -113,7 +113,7 @@ function changeBoatSelection(change){
 }
 function eventToolsVisible(){return !$('eventPanel').hidden&&!document.body.classList.contains('event-panel-collapsed');}
 function syncEventEditor(){
- const candidate=newEventDraft||openedEvent;
+ const candidate=newEventDraft||eventEditTarget;
  const target=eventToolsVisible()&&!interval&&mayEditEvent(candidate)?candidate:null;
  if(target===editingNote)return;
  endEventTool();editingNote=target;
@@ -133,9 +133,15 @@ function endEventTool(){
  cancelPlacement();setDrawingTool('pan');$('drawingTools').hidden=true;
  $('startDrawing').setAttribute('aria-expanded','false');
 }
+function closeEventEditor(){
+ eventEditTarget=null;
+ $('eventScene').open=false;
+ $('presentationOptions').open=false;
+ syncEventEditor();
+}
 function leaveOpenedEvent(){
+ closeEventEditor();
  if(openedEvent){openedEvent=null;sceneUndo=null;sceneFeedback='';}
- endEventTool();
 }
 function finishEventEditing(){
  if(!finishInlineTextEditing())return false;
@@ -146,7 +152,7 @@ function finishEventEditing(){
  return true;
 }
 function noteNavigationAllowed(){return finishEventEditing();}
-function beginNoteEditing(note){
+function openPresentationNote(note){
  if(!note||!finishEventEditing())return;
  setEventPanelExpanded(true);restoreNote(note);
 }
@@ -176,7 +182,7 @@ $('newEvent').onclick=()=>{
  const existing=currentMapEvent();
  if(mayEditEvent(existing)){
   stopPlayback();hideMapEventImage();hideEventVideo();
-  leaveOpenedEvent();activePresentationNote=openedEvent=existing;
+  leaveOpenedEvent();activePresentationNote=openedEvent=eventEditTarget=existing;
   updatePresentationControls();beginInlineTextEditing();
   return;
  }
@@ -206,7 +212,11 @@ $('save').onclick=()=>{
  if(!persistNotes(next))return;
  notes=next;newEventDraft=null;restoreNote(target);refreshEditedEvent();
 };
-$('openEvent').onclick=()=>beginNoteEditing(activePresentationNote||notes[0]);
+$('finishEventEdit').onclick=()=>{
+ if(!finishInlineTextEditing())return;
+ closeEventEditor();updatePresentationControls();
+ $('newEvent').focus();
+};
 $('deleteNote').onclick=()=>{
  const target=editingNote;
  if(!target||target===newEventDraft||!finishInlineTextEditing())return;
@@ -285,7 +295,7 @@ function sceneDifferences(target){
  return changes;
 }
 function updateEventSceneControls(){
- const target=eventToolsVisible()&&!interval&&!newEventDraft&&mayEditEvent(openedEvent)?openedEvent:null;
+ const target=editingNote===openedEvent?editingNote:null;
  $('eventScene').hidden=!target;
  if(!target)return;
  const changes=sceneDifferences(target),count=boatSearchQuery?boats.filter(boatIsDisplayed).length:null;
@@ -313,21 +323,22 @@ $('captureEventScene').onclick=()=>{
  updateTimeline();updateEventSceneControls();requestRender();
 };
 $('restoreEventScene').onclick=()=>{
- if(openedEvent&&finishInlineTextEditing())restoreNote(openedEvent);
+ if(editingNote===openedEvent&&openedEvent&&finishInlineTextEditing())restoreNote(openedEvent,{keepEditing:true});
 };
 $('undoEventScene').onclick=()=>{
  const undo=sceneUndo;
- if(!undo||undo.target!==openedEvent||!finishInlineTextEditing())return;
+ if(!undo||undo.target!==editingNote||!finishInlineTextEditing())return;
  if(updateEventContent(undo.target,undo.previous)){
-  sceneUndo=null;restoreNote(undo.target);sceneFeedback='Forrige kortvisning gendannet i kladden';updateEventSceneControls();
+  sceneUndo=null;restoreNote(undo.target,{keepEditing:true});sceneFeedback='Forrige kortvisning gendannet i kladden';updateEventSceneControls();
  }
 };
-function restoreNote(note,{showImage=false,restoreView=true}={}){
+function restoreNote(note,{showImage=false,restoreView=true,keepEditing=false}={}){
  if(!noteNavigationAllowed()||!notes.includes(note))return;
  prepareGateTiming(eventGates(note));
  hideMapEventImage();hideEventVideo();
- if(openedEvent!==note){sceneUndo=null;editingNote=null;}
- endEventTool();followedBoatId=null;
+ if(keepEditing)endEventTool();else closeEventEditor();
+ if(openedEvent!==note)sceneUndo=null;
+ followedBoatId=null;
  activePresentationNote=openedEvent=note;
  stopPlayback();selectedTime=note.time;resetMapMeasurement();
  applySceneSettings(note.settings);prepareSelectedTracks();
@@ -373,9 +384,9 @@ function updatePresentationControls(){
  }
  $('eventEditor').hidden=window.SR_READONLY;
  $('eventContentTools').hidden=!editable;
- $('newEvent').hidden=!!newEventDraft;
+ $('newEvent').hidden=editable;
+ $('finishEventEdit').hidden=!editable||!!newEventDraft;
  $('newEventActions').hidden=!newEventDraft;
- $('openEvent').hidden=!note||!!openedEvent||!!newEventDraft;
  $('deleteNote').hidden=!editable||!!newEventDraft;
  $('removeNotePoint').hidden=!editingNote?.point;
  updateImageEditor();

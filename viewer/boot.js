@@ -73,9 +73,7 @@ function initializeEventSetStorage(){
   window.SRStorage={getItem:key=>isolated.get(key)??null,setItem:()=>{}};
  }
  if(window.SR_READONLY&&!local){
-  const response=await fetch('events/'+event.id+'/presentation.json',{cache:'no-store'});
-  if(!response.ok)throw new SRMessageError('Præsentationen kunne ikke indlæses ({0}).',response.status);
-  eventSetDocument=validatePresentationDocument(await response.json());
+  eventSetDocument=await readPublishedEventSet('default');
   eventSetSource='public:default';
  }
  updateViewerLoading(5);

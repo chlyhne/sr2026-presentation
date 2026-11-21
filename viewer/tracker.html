@@ -132,29 +132,19 @@
 
 <section id="boatComparePanel" aria-label="Sammenlign både" hidden data-i18n-attrs="aria-label"><h2 data-i18n>Sammenlign både</h2><label for="boatCompareReference" data-i18n>Referencebåd</label><select id="boatCompareReference"><option value="" data-i18n>Ingen referencebåd</option></select><label for="boatCompareMetric" data-i18n>Måling</label><select id="boatCompareMetric"><option value="speed" data-i18n>Hastighed · knob</option><option value="pace" data-i18n>Tempo · sekunder pr. sømil</option></select><button id="boatCompareResetZoom" type="button" title="Vis hele skalaen" hidden data-i18n-attrs="title">1:1</button><p id="boatCompareScope"></p><div id="boatComparePlots"></div></section>
 <section id="eventPanel" aria-label="Valgt event" data-i18n-attrs="aria-label">
-  <div id="eventScene" class="event-scene" hidden>
-    <strong data-i18n>Kortvisning</strong>
-    <p id="eventSceneStatus" role="status"></p>
-    <div class="button-row">
-      <button id="captureEventScene" type="button" data-i18n>Brug i eventet</button>
-      <button id="restoreEventScene" type="button" data-i18n>Gendan kortvisning</button>
-      <button id="undoEventScene" type="button" hidden data-i18n>Fortryd</button>
-    </div>
-  </div>
   <div id="eventSetControls" hidden>
     <label for="eventSetSelect" data-i18n>Eventsæt</label>
     <select id="eventSetSelect"></select>
     <button id="cancelEventLogin" type="button" hidden data-i18n>Annullér login</button>
-    <button id="eventSetLogout" type="button" hidden data-i18n>Log ud</button>
-    <label for="publicEventTarget" id="publicEventTargetLabel" hidden data-i18n>Offentligt målsæt</label>
-    <select id="publicEventTarget" hidden></select>
   </div>
+  <p id="onlineStatus" role="status"></p>
   <div class="event-summary" aria-live="polite" aria-atomic="true">
     <div class="event-meta"><span id="eventCounter"></span><time id="eventTime"></time><span id="privateEventBadge" hidden data-i18n>Privat</span></div>
     <p id="eventText" data-empty-label="Klik for at tilføje tekst" data-i18n-attrs="data-empty-label"></p>
     <textarea id="eventTextEditor" rows="4" maxlength="900" aria-label="Redigér eventtekst" title="Klik udenfor eller tryk Ctrl+Enter for at gemme i kladden. Escape annullerer." hidden data-i18n-attrs="aria-label title"></textarea>
     <p id="inlineTextStatus" class="help" role="status"></p>
   </div>
+  <p id="presentationMessage" class="help" role="status"></p>
   <figure id="eventImageFigure" hidden><button id="eventImageButton" type="button" aria-label="Vis billedet over kortet" aria-controls="mapEventImage" aria-expanded="false" title="Vis billedet over kortet" data-i18n-attrs="aria-label title"><img id="eventImage" alt=""></button><figcaption id="eventImageCaption"></figcaption></figure>
   <p id="eventImageStatus" class="help" role="status"></p>
   <figure id="eventVideoFigure" hidden>
@@ -169,8 +159,7 @@
   <div id="eventEditor" hidden>
     <div class="button-row">
       <button id="newEvent" type="button" data-i18n>Nyt event her</button>
-      <button id="openEvent" type="button" hidden data-i18n>Gå til event</button>
-      <button id="deleteNote" type="button" hidden data-i18n>Slet event</button>
+      <button id="finishEventEdit" type="button" hidden data-i18n>Færdig</button>
     </div>
     <div id="eventContentTools" hidden>
       <div class="button-row">
@@ -181,19 +170,28 @@
         <button id="startDrawing" type="button" aria-controls="drawingTools" aria-expanded="false" data-i18n>Tegn</button>
       </div>
       <p id="noteImageStatus" role="status"></p>
-    <fieldset id="drawingTools" hidden>
-      <legend data-i18n>Tegn på kortet</legend>
-      <label for="drawingTool" data-i18n>Værktøj</label>
-      <select id="drawingTool"><option value="pen" data-i18n>Frihånd</option><option value="arrow" data-i18n>Pil</option><option value="line" data-i18n>Linje</option><option value="circle" data-i18n>Cirkel</option></select>
-      <div class="drawing-style">
-        <label data-i18n>Farve <input id="drawingColour" type="color" value="#e02020"></label>
-        <label data-i18n>Stregbredde <select id="drawingWidth"><option value="2" data-i18n>Tynd</option><option value="4" selected data-i18n>Normal</option><option value="7" data-i18n>Tyk</option></select></label>
-      </div>
-      <div class="button-row"><button id="undoDrawing" data-i18n>Fortryd sidste streg</button><button id="clearDrawings" data-i18n>Ryd tegninger</button></div>
-      <p class="help" data-i18n>Træk på kortet for at tegne. Tegningerne følger geografien ved zoom og vises kun sammen med denne note. Escape stopper tegneværktøjet.</p>
-      <button id="finishDrawing" type="button" data-i18n>Færdig</button>
-      <p id="drawingCount" class="help" role="status"></p>
-    </fieldset>
+      <fieldset id="drawingTools" hidden>
+        <legend data-i18n>Tegn på kortet</legend>
+        <label for="drawingTool" data-i18n>Værktøj</label>
+        <select id="drawingTool"><option value="pen" data-i18n>Frihånd</option><option value="arrow" data-i18n>Pil</option><option value="line" data-i18n>Linje</option><option value="circle" data-i18n>Cirkel</option></select>
+        <div class="drawing-style">
+          <label data-i18n>Farve <input id="drawingColour" type="color" value="#e02020"></label>
+          <label data-i18n>Stregbredde <select id="drawingWidth"><option value="2" data-i18n>Tynd</option><option value="4" selected data-i18n>Normal</option><option value="7" data-i18n>Tyk</option></select></label>
+        </div>
+        <div class="button-row"><button id="undoDrawing" data-i18n>Fortryd sidste streg</button><button id="clearDrawings" data-i18n>Ryd tegninger</button></div>
+        <p class="help" data-i18n>Træk på kortet for at tegne. Tegningerne følger geografien ved zoom og vises kun sammen med denne note. Escape stopper tegneværktøjet.</p>
+        <button id="finishDrawing" type="button" data-i18n>Færdig</button>
+        <p id="drawingCount" class="help" role="status"></p>
+      </fieldset>
+      <details id="eventScene" hidden>
+        <summary data-i18n>Kortvisning</summary>
+        <p id="eventSceneStatus" role="status"></p>
+        <div class="button-row">
+          <button id="captureEventScene" type="button" data-i18n>Brug i eventet</button>
+          <button id="restoreEventScene" type="button" data-i18n>Gendan kortvisning</button>
+          <button id="undoEventScene" type="button" hidden data-i18n>Fortryd</button>
+        </div>
+      </details>
       <details id="eventOptions">
         <summary data-i18n>Flere handlinger</summary>
         <label data-i18n>Tidspunkt (dansk tid)<input id="noteTime" type="datetime-local" step="1"></label>
@@ -204,6 +202,7 @@
           <button id="placeNote" type="button" data-i18n>Placér markør</button>
           <button id="cancelNote" type="button" hidden data-i18n>Annullér placering</button>
           <button id="removeNotePoint" type="button" hidden data-i18n>Fjern markør</button>
+          <button id="deleteNote" type="button" hidden data-i18n>Slet event</button>
         </div>
       </details>
       <div id="newEventActions" class="button-row" hidden>
@@ -211,15 +210,15 @@
         <button id="cancelNewEvent" type="button" data-i18n>Annullér</button>
       </div>
     </div>
-    <div class="button-row">
+    <details id="presentationOptions">
+      <summary data-i18n>Indstillinger for eventsæt</summary>
+      <div class="editor-actions button-row">
+        <button id="eventSetLogout" type="button" hidden data-i18n>Log ud</button>
+        <label for="publicEventTarget" id="publicEventTargetLabel" hidden data-i18n>Offentligt målsæt</label>
+        <select id="publicEventTarget" hidden></select>
         <button id="savePrivateEvents" type="button" hidden data-i18n>Gem privat</button>
         <button id="publishPublicEvents" type="button" hidden data-i18n>Udgiv offentligt</button>
         <button id="loadServerEventSet" type="button" hidden data-i18n>Hent serverversion</button>
-    </div>
-    <p id="onlineStatus" role="status"></p>
-    <details id="presentationOptions">
-      <summary data-i18n>Præsentation</summary>
-      <div class="editor-actions button-row">
         <button id="export" type="button" data-i18n>Eksportér noter</button>
         <button id="downloadPreviousEventDraft" type="button" hidden data-i18n>Hent tidligere kladde</button>
       </div>
@@ -241,7 +240,6 @@
     <nav aria-label="Præsentationens events" data-i18n-attrs="aria-label">
       <label for="presentationEventSelect" class="sr-only" data-i18n>Vælg event</label><select id="presentationEventSelect"></select>
     </nav>
-    <p id="presentationMessage" class="help" role="status"></p>
   </div>
 </footer></main>
 <section id="eventVideoOverlay" role="dialog" aria-modal="true" aria-label="YouTube-video" hidden data-i18n-attrs="aria-label">

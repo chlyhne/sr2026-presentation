@@ -643,7 +643,7 @@ function endPan(e){
   if(windMode==='off'||navigationMode==='route'||placingNote||noteIndex!==undefined||speedKey!==undefined||boatId)closeWindSelection();
   if(navigationMode==='route')addNavigationPoint(e);
   else if(placingNote)placeAnnotation(e);
-  else if(noteIndex!==undefined)beginNoteEditing(notes[+noteIndex]);
+  else if(noteIndex!==undefined)openPresentationNote(notes[+noteIndex]);
   else if(speedKey!==undefined)handleSpeedPinClick(speedAction,speedKey);
   else if(boatId)focusBoatInList(boatId);
   else if(windMode!=='off')chooseWind(e);

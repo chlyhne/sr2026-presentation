@@ -197,10 +197,10 @@ Kør fra denne projektmappe:
 python3 scripts/serve_viewer.py
 ```
 
-Åbn en sejlads og klik på bogikonet for at åbne eventfanen. Vælg et event for at
-redigere teksten direkte eller tilføje et billede eller en tegning. Ændringer af
-eventindholdet gemmes i browserens kladde. Med **Nyt event her** oprettes et event
-ved kortets aktuelle tidspunkt. **Slet event** fjerner det åbne event fra kladden.
+Åbn en sejlads og klik på bogikonet for at åbne eventfanen. Brug **Nyt event her**
+for at redigere eventet ved kortets aktuelle tidspunkt eller oprette et nyt.
+**Færdig** lukker værktøjerne. Ændringer gemmes i browserens kladde. Du kan
+slette et event under **Flere handlinger**, mens du redigerer det.
 
 Sprogknappen i kortets værktøjslinje og på stævneoversigten skifter mellem dansk,
 engelsk, tysk og fransk på den åbne side. Valget gemmes i browseren. Direkte links
@@ -209,8 +209,7 @@ kan også bruge `?lang=da`, `?lang=en`, `?lang=de` eller `?lang=fr`.
 Brug kortet, lagene og bådlisten til at afprøve eventets visning. Eventfanen viser,
 hvilke dele af visningen der afviger. **Brug i eventet** gemmer visningen i kladden.
 **Gendan kortvisning** henter eventets gemte opsætning, og **Fortryd** kan rulle den
-seneste lagring af kortvisningen tilbage. Online gør **Udgiv** under
-**Præsentation** kladden offentlig.
+seneste lagring af kortvisningen tilbage. Online gør **Udgiv offentligt** under **Indstillinger for eventsæt** kladden offentlig.
 
 Node.js 24 og Python 3 skal være installeret. Serveren forbereder den
 komprimerede kildepakke før opstart og genbruger den, når kildefingeraftrykket

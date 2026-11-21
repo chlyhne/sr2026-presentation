@@ -33,8 +33,9 @@ async function readDraftImage(image){
 function eventImageSource(image){
  if(!validEventImageURL(image?.url))throw new SRMessageError('Billedets serveradresse mangler.');
  if(!image.draft){
-  if(privateEventImage(image))return eventServiceURL(privateEventSetAPI('/api/'+image.url));
-  return eventServiceAvailable()?eventServiceURL('/api/'+image.url.replace(/^\//,'')):image.url;
+  if(privateEventImage(image))return privateEventSetAPI('/api/'+image.url);
+  const path=image.url.replace(/^\//,'');
+  return eventServiceAvailable()?'/api/'+path:path;
  }
  if(!draftImageURLs.has(image.id))draftImageURLs.set(image.id,readDraftImage(image).then(blob=>URL.createObjectURL(blob)).catch(error=>{
   draftImageURLs.delete(image.id);throw error;
@@ -106,8 +107,7 @@ async function saveEventImage(blob){
 }
 async function sendEventImage(blob,id,isPrivate=false){
   const path=isPrivate?privateEventSetAPI('/api/private-event-images')+'&id='+encodeURIComponent(id):'/api/event-images'+(id?'?id='+encodeURIComponent(id):'');
-  const url=eventServiceURL(path);
-  const response=await fetch(url,{method:'POST',headers:{'Content-Type':blob.type},body:blob});
+  const response=await fetch(path,{method:'POST',headers:{'Content-Type':blob.type},body:blob});
   if(!response.ok){
    const {error}=await response.json().catch(()=>({}));
    const failure=new SRMessageError(error||'Serveren kunne ikke gemme billedet. Start vieweren med python3 scripts/serve_viewer.py.');

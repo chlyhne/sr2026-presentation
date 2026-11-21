@@ -78,13 +78,14 @@ refresh tokens.
 | `POST /api/event-images?id=<uuid>` | Udgiv binært JPEG/PNG/WebP → `{id, url}` |
 | `PUT /api/private-events` | Gem egne private events for stævnet med kontrol af revision |
 | `POST /api/private-event-images` og `GET /api/private-event-images/<fil>` | Gem og hent billeder fra samme GitHub-konto og stævne |
-| `GET /admin/config.js` | `window.SR_CONFIG={apiBase:origin,admin:true}` |
+| `GET /admin/config.js` | Bekræft at Workerens event-API er tilgængeligt på samme domæne |
 | `GET /api/event-images/<uuid>.<ext>` | Hent offentligt billede fra repositoryet |
 | `GET /admin/*` | Proxy til samme sti under Pages-basen |
 
 Hvert stævne har et offentligt standardsæt, angivet i katalogets `presentationFile`.
 Ekstra offentlige sæt kan registreres i stævnets `publicSets` med `id`, `title`
-og `presentationFile`. Sættene bruger formatet `{version:1,notes:[],speedPins:[]}`.
+og `presentationFile`. Pages pakker alle offentlige sæt, så de også kan læses uden Worker.
+Sættene bruger formatet `{version:1,notes:[],speedPins:[]}`.
 Private events og billeder gemmes i R2 under brugerens numeriske GitHub-id og
 stævnet. **Gem privat** på et offentligt sæt laver en privat kopi. En offentlig
 version kan fjernes fra sættet via **Slet event** efterfulgt af **Udgiv offentligt**.
