@@ -317,6 +317,13 @@
       "nativeFile": "data/events/sjaelland-rundt-2026/native.json.gz",
       "backgroundFile": "data/events/sjaelland-rundt-2026/background.json.gz",
       "presentationFile": "presentation/presentation.json",
+      "publicSets": [
+        {
+          "id": "stikord",
+          "title": "Stikord",
+          "presentationFile": "presentation/sjaelland-rundt-2026-stikord.json"
+        }
+      ],
       "profileRoot": "events/sjaelland-rundt-2026/track-profiles/",
       "description": "To baner rundt om Sjælland · Grønsund og Bøgestrømmen",
       "storage": {
