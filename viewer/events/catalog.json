@@ -2770,6 +2770,11 @@
       "radar": "DMI"
     }
   },
+  "boatCountries": {
+    "silverrudder-2024": "events/silverrudder-2024/boat-countries.json",
+    "silverrudder-2025": "events/silverrudder-2025/boat-countries.json",
+    "silverrudder-2026": "events/silverrudder-2026/boat-countries.json"
+  },
   "mapLayers": {
     "bridges": {
       "file": "bridges.geojson",

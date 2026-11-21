@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {gzipSync}=require('node:zlib'),{test}=require('node:test');
+const viewerTestContext=require('./viewer-test-locale.cjs');
 const root=path.resolve(__dirname,'..');
 const source=name=>fs.readFileSync(path.join(root,'viewer',name+'.js'),'utf8');
 function codec(){const c=vm.createContext({});vm.runInContext(source('track-source-codec'),c);return c;}
@@ -42,9 +43,10 @@ function fixture(){
  };
 }
 function load(input){
- const requests=[],context=vm.createContext({Response,DecompressionStream,TextDecoder,window:{SR_EVENT:{profileRoot:'track-profiles/'}},fetch:async url=>{
+ const requests=[],context=viewerTestContext({Response,DecompressionStream,TextDecoder,window:{SR_EVENT:{profileRoot:'track-profiles/',boatCountryFile:input.boatCountryFile}},fetch:async url=>{
   requests.push(url);
   if(url===input.missing)return new Response('',{status:404});
+  if(url===input.boatCountryFile)return new Response(JSON.stringify(input.countries));
   if(url.endsWith('manifest.json'))return new Response(JSON.stringify(input.manifest));
   if(url.endsWith('data.json.gz'))return new Response(input.dataGzip??gzipSync(JSON.stringify(input.data)));
   if(url.endsWith('common.bin.gz'))return new Response(input.commonGzip??gzipSync(input.common));
@@ -64,6 +66,20 @@ test('gzip source load preserves original times, gaps and native SOG before publ
  assert.equal(requests.length,4);assert.ok(requests.includes(input.manifest.replayFile));assert.ok(requests.includes(input.manifest.dataFile));assert.equal(requests.some(url=>url.endsWith('/data.json')),false);
  assert.equal(vm.runInContext('trackTimeIndexes.has(window.DATA.boats[0].points)',context),true);
  assert.equal(vm.runInContext('trackModelCache.has(window.DATA.boats[0].points)',context),true);
+});
+test('Silverrudder attaches nationality to the boat matching each start number',async()=>{
+ const input=fixture();
+ input.boatCountryFile='events/silverrudder-2024/boat-countries.json';
+ input.data.boatDetails={one:{startNumber:'57'}};
+ input.countries=JSON.parse(fs.readFileSync(path.join(root,'viewer',input.boatCountryFile),'utf8'));
+ const {context,requests,promise}=load(input);await promise;
+ assert.equal(context.window.DATA.boatDetails.one.country,'SI');
+ assert.ok(requests.includes(input.boatCountryFile));
+
+ input.countries={};
+ const incomplete=load(input);
+ await assert.rejects(incomplete.promise,/Nationalitet mangler/);
+ assert.equal(incomplete.context.window.DATA,undefined);
 });
 for(const [name,mutate] of [
  ['missing prepared files',input=>delete input.manifest.prepared],

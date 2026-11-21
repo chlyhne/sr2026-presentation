@@ -23,6 +23,36 @@ def boat_identity(competitor,policy):
     match=re.fullmatch(r'(\d+)\s*-\s*(.+)',competitor['nameShort']) if policy['startNumberPrefix'] else None
     return (match[2],match[1]) if match else (competitor['nameShort'],None)
 
+# TracTrac uses sporting country codes. The viewer uses ISO 3166-1 regions.
+COUNTRY_REGIONS = {
+    'CZE':'CZ', 'DEN':'DK', 'FIN':'FI', 'FRA':'FR', 'GBR':'GB', 'GER':'DE',
+    'HUN':'HU', 'IRL':'IE', 'ITA':'IT', 'LAT':'LV', 'NED':'NL', 'NOR':'NO',
+    'POL':'PL', 'SLO':'SI', 'SUI':'CH', 'SWE':'SE',
+}
+OFFICIAL_COUNTRIES = {
+    # https://silverrudder.com/userfiles/downloads/FinalResult_2024_2.pdf
+    'silverrudder-2024': {'36':'DE', '57':'SI', '58':'SI', '239':'DE', '330':'DE',
+                          '354':'DE', '364':'DK', '387':'DK', '400':'PL', '410':'DE'},
+    # https://silverrudder.com/userfiles/downloads/Resultat%20SR2025.pdf
+    'silverrudder-2025': {'76':'DK'},
+}
+
+def boat_countries(event, folder):
+    countries = {}
+    official = OFFICIAL_COUNTRIES.get(event['id'], {})
+    for entry in event['source']['races']:
+        race = read(folder / ('race_' + entry['id'] + '.json'))
+        for competitor in race['competitors'].values():
+            _, number = boat_identity(competitor, event['nameDisplay'])
+            if not number or number in countries:
+                raise ValueError('Missing or duplicate start number: ' + competitor['nameShort'])
+            code = competitor.get('nationality')
+            region = official.get(number) if code in (None, '', 'NON') else COUNTRY_REGIONS.get(code)
+            if not region:
+                raise ValueError(f'Unknown nationality for start number {number}: {code}')
+            countries[number] = region
+    return {number: countries[number] for number in sorted(countries, key=int)}
+
 def source_lines(race,payload):
     features=[];start_ms=epoch(race['raceStartTime'])*1000
     for item in race['mapItems']:
@@ -65,6 +95,8 @@ def import_event(event_id,refresh=False):
         if refresh or not target.exists():
             response=requests.get(race['source'],headers={'Referer':'https://live.tractrac.com/','Origin':'https://live.tractrac.com'},timeout=60)
             response.raise_for_status();target.write_text(json.dumps(response.json(),ensure_ascii=False,indent=2),encoding='utf-8')
+    country_file = catalog.get('boatCountries', {}).get(event_id)
+    countries = boat_countries(config, folder) if country_file else None
     if refresh or any(not (folder/('speeds_'+r['id']+'.json')).exists() for r in races):
         subprocess.run(['node',str(ROOT/'scripts/collect_track_speeds.mjs'),'--data-dir',str(folder)],check=True,cwd=ROOT)
     boats=[];seen=set()
@@ -113,6 +145,10 @@ def import_event(event_id,refresh=False):
         background_file.write_bytes(gzip.compress(json.dumps(background,ensure_ascii=False,separators=(',',':')).encode(),mtime=0))
     output=ROOT/config['nativeFile']
     output.write_bytes(gzip.compress(json.dumps({'version':1,'boats':boats},ensure_ascii=False,separators=(',',':')).encode(),mtime=0))
+    if country_file:
+        target = ROOT / 'viewer' / country_file
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(countries, indent=2) + '\n', encoding='utf-8')
     pattern=config['boatStyle'].get('featuredModelPattern')
     if pattern is not None:
         config['boatStyle']['featured']=[boat['name'] for boat in boats if re.search(pattern,boat['details']['boatType'],re.I)]

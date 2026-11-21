@@ -10,6 +10,18 @@ async function fetchReplayGzip(file,expectedBytes){
  if(buffer.byteLength!==expectedBytes)throw Error(srText('Opstartsdata har forkert filstørrelse: ')+file+'.');
  return buffer;
 }
+async function loadReplayBoatCountries(file){
+ const response=await fetch(file);
+ if(!response.ok)throw new SRMessageError('Nationaliteter kunne ikke hentes ({0}).',response.status);
+ return response.json();
+}
+function applyReplayBoatCountries(countries,data){
+ for(const boat of data.boats){
+  const details=data.boatDetails?.[boat.id],country=countries?.[details?.startNumber];
+  if(typeof country!=='string'||!/^[A-Z]{2}$/.test(country))throw new SRMessageError('Nationalitet mangler for {0}.',boat.name);
+  details.country=country;
+ }
+}
 async function loadReplayData(){
  const fail=message=>{throw Error(srText('Sporenes kildedata kunne ikke indlæses: ')+message);};
  const response=await fetch(window.SR_EVENT.profileRoot+'manifest.json',{cache:'no-store'});
@@ -25,11 +37,14 @@ async function loadReplayData(){
   ||!Number.isSafeInteger(manifest.replayBytes)||manifest.replayBytes<0||!Array.isArray(manifest.boats))fail(srText('ugyldigt manifest. Genbyg dataene.'));
  if(manifest.prepared?.version!==4)fail(srText('færdige sporfiler mangler. Genbyg siden.'));
  validatePreparedAsset(manifest.prepared.common,manifest.sourceFingerprint,window.SR_EVENT.profileRoot);
- const [dataBytes,source,commonBytes]=await Promise.all([
-  fetchReplayGzip(manifest.dataFile,manifest.dataBytes),fetchReplayGzip(manifest.replayFile,manifest.replayBytes),fetchReplayGzip(manifest.prepared.common.file,manifest.prepared.common.bytes)
+ const countryFile=window.SR_EVENT.boatCountryFile;
+ const [dataBytes,source,commonBytes,countries]=await Promise.all([
+  fetchReplayGzip(manifest.dataFile,manifest.dataBytes),fetchReplayGzip(manifest.replayFile,manifest.replayBytes),fetchReplayGzip(manifest.prepared.common.file,manifest.prepared.common.bytes),
+  countryFile?loadReplayBoatCountries(countryFile):null
  ]);
  const data=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(dataBytes));
  if(data.start!==manifest.start||!Array.isArray(data.boats)||data.boats.length!==manifest.boats.length)fail(srText('forkert starttid eller bådantal.'));
+ if(countryFile)applyReplayBoatCountries(countries,data);
  const entries=new Map(manifest.boats.map(entry=>[entry.id,entry])),seen=new Set(),bytes=new Uint8Array(source);
  if(entries.size!==manifest.boats.length)fail(srText('gentagne båd-ID i manifestet.'));
  let sourceOffset=0;

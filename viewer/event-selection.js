@@ -40,8 +40,8 @@ async function loadEventSelection(){
  if(weather&&(!['DMI','OPERA'].includes(weather.radar)||
    (weather.embedded===true?weather.file!==undefined:weather.file!==`weather/${id}/manifest.json`)))
   throw new SRMessageError('Ugyldig vejrkonfiguration for {0}.',id);
- // Keep the separately prepared weather outside the track fingerprint.
- window.SR_EVENT={...event,weather,features:{...event.features,weather:!!weather}};
+ // Weather and country metadata are prepared separately from the track files.
+ window.SR_EVENT={...event,weather,boatCountryFile:catalog.boatCountries?.[id],features:{...event.features,weather:!!weather}};
  window.SR_BRIDGE_FEATURES=await loadEventBridgeFeatures(catalog,id);
  const prefix='sr-event:'+id+':',legacy=event.storage.legacyPrefix;
  if(legacy&&!localStorage.getItem(prefix+'migrated')){

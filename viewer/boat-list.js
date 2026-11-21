@@ -133,6 +133,9 @@ function focusBoatInList(id){
  row.node.focus({preventScroll:true});scrollVisibleBoatRow(row.node);
  refreshVisibleBoatHighlight();scheduleBoatHoverRefresh();
 }
+const boatCountryNames=Object.fromEntries(Object.values(SR_LANGUAGES).map(({locale})=>[
+ locale,new Intl.DisplayNames(locale,{type:'region'})
+]));
 function createVisibleBoatRow(boat){
  const node=document.createElement('li');node.className='visible-boat';node.dataset.boatId=boat.id;node.tabIndex=0;
  node.style.setProperty('--boat-colour',colours[boat.name]);
@@ -150,10 +153,17 @@ function createVisibleBoatRow(boat){
  const extra=document.createElement('div');extra.className='visible-boat-extra';extra.id='boat-details-'+boat.id;
  extra.hidden=!expandedBoatRows.has(boat.id);node.setAttribute('aria-expanded',String(!extra.hidden));node.setAttribute('aria-controls',extra.id);
  const raceClass=document.createElement('div');raceClass.className='visible-boat-class';srBind(raceClass,'textContent',()=>srText('Klasse: ')+(boat.raceClassName||srText('Ikke oplyst')));
+ extra.append(raceClass);
+ if(boat.country){
+  const startNumber=document.createElement('div'),country=document.createElement('div');
+  srBind(startNumber,'textContent',()=>srText('Startnummer: {0}',boat.startNumber));
+  srBind(country,'textContent',()=>srText('Nationalitet: {0}',boatCountryNames[srLocale].of(boat.country)));
+  extra.append(startNumber,country);
+ }
  const colourLabel=document.createElement('label');colourLabel.className='visible-boat-colour';const colourCaption=document.createElement('span');srBind(colourCaption,'textContent',()=>srText('Bådfarve'));colourLabel.append(colourCaption);
  const colour=document.createElement('input');colour.type='color';srBindAttribute(colour,'aria-label',()=>srText('Bådfarve: ')+boat.name);
  boatDetailMeasure.fillStyle=colours[boat.name];colour.value=boatDetailMeasure.fillStyle;
- colour.oninput=()=>setLocalBoatColour(boat,colour.value);colourLabel.append(colour);extra.append(raceClass,colourLabel);
+ colour.oninput=()=>setLocalBoatColour(boat,colour.value);colourLabel.append(colour);extra.append(colourLabel);
  heartLabel.append(choice,heart);heading.append(heartLabel,name,speed);node.append(heading,details,extra);
  const row={node,choice,name,speed,skipper,type,details,extra,colour};
  node.onclick=event=>{
