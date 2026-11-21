@@ -36,6 +36,7 @@ def package_tracker_assets(stage):
 
 
 def package_public_event_sets(stage, event):
+    titles = {}
     for url, source in public_event_files(event):
         document = json.loads((ROOT / source).read_text(encoding='utf-8'))
         if document.get('version') != 1 or not isinstance(document.get('notes'), list) or not isinstance(document.get('speedPins'), list):
@@ -44,9 +45,15 @@ def package_public_event_sets(stage, event):
                (note.get('image') or {}).get('url', '').lstrip('/').startswith('private-event-images/')
                for note in document['notes']):
             raise ValueError('Private event in public presentation: ' + source)
+        if 'title' in document:
+            title = document['title']
+            if not isinstance(title, str) or not title.strip() or len(title.encode('utf-16-le')) > 200:
+                raise ValueError('Invalid presentation title: ' + source)
+            titles['default' if url == 'presentation.json' else Path(url).stem] = title
         target = stage / 'events' / event['id'] / url
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(json.dumps(document, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    return titles
 
 
 def build():
@@ -66,7 +73,9 @@ def build():
             manifest_file=config['profileRoot']+'manifest.json'
             profile_manifest=json.loads((ROOT/'viewer'/manifest_file).read_text(encoding='utf-8'))
             profile_files.update([manifest_file,profile_manifest['replayFile'],profile_manifest['dataFile'],profile_manifest['prepared']['common']['file']])
-            package_public_event_sets(stage, event)
+            titles = package_public_event_sets(stage, event)
+            if titles:
+                event['publicSetTitles'] = titles
         for path in (ROOT / 'viewer').rglob('*'):
             relative = path.relative_to(ROOT / 'viewer')
             if 'track-profiles' in relative.parts and relative.as_posix() not in profile_files:
@@ -79,6 +88,7 @@ def build():
                 target = stage / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, target)
+        (stage / 'events' / 'catalog.json').write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         asset_root = package_tracker_assets(stage)
         for event in catalog['events']:
             entry = stage / 'events' / event['id'] / 'index.html'

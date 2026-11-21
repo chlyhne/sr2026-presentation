@@ -309,7 +309,8 @@ Se [viewerens vejledning](viewer/README.md) for kortets betjening og datakilder.
 ## Online
 
 Eventfanen skifter mellem offentlige eventsæt, browserens lokale sæt og dine
-private serverevents. Du kan oprette og redigere lokale kladder uden login.
+private serverevents. Giv det valgte sæt et navn under **Indstillinger for
+eventsæt**. Navnet gemmes sammen med sættet. Du kan oprette og redigere lokale kladder uden login.
 GitHub-login kræves ved privat serveradgang og offentlig udgivelse.
 Offentlig udgivelse kræver skriverettighed til repositoryet.
 

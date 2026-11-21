@@ -23,6 +23,13 @@ test('measurements and gates round trip and the published history validates',()=
  assert.equal(validateDocument(published),published);
  assert.equal(published.version,1);assert.ok(published.notes.every(note=>Array.isArray(note.measurement)&&Array.isArray(note.gates)));
 });
+test('event set titles are optional and retained in the document',()=>{
+ const named={...document,title:'Præsentation KBL'};
+ assert.equal(validateDocument(named),named);
+ for(const title of [null,'','   ','a'.repeat(101)])
+  assert.throws(()=>validateDocument({...document,title}),/Navnet på eventsættet/);
+});
+
 test('route definitions do not belong to presentation documents',()=>{
  assert.equal(validateDocument(document),document);
  assert.throws(()=>validateDocument({...document,comparison:{route:[[12,55],[12.1,55]],enabled:true,basis:'absolute'}}),/præsentationsfelter/);

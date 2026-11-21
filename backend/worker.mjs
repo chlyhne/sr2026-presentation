@@ -99,6 +99,7 @@ const string = (value, max = 10000) => typeof value === 'string' && value.length
 const vector = (value, length) => Array.isArray(value) && value.length === length && value.every(Number.isFinite);
 export function validateDocument(doc, {privateEvents = false} = {}) {
   if (!object(doc) || doc.version !== 1 || !Array.isArray(doc.notes) || doc.notes.length > 5000 || !Array.isArray(doc.speedPins) || doc.speedPins.length > 10000) fail(400, 'Ugyldigt præsentationsformat.');
+  if(Object.hasOwn(doc,'title')&&(!string(doc.title,100)||!doc.title.trim()))fail(400,'Navnet på eventsættet skal være mellem 1 og 100 tegn.');
   const ids = new Set();
   for (const note of doc.notes) {
     if (!object(note) || !Number.isFinite(note.time) || !string(note.text, 50000)) fail(400, 'Ugyldigt event.');
@@ -145,7 +146,7 @@ export function validateDocument(doc, {privateEvents = false} = {}) {
   }
   for (const pin of doc.speedPins) if (!object(pin) || !string(pin.id, 200) || !string(pin.boatId, 200) || !Number.isFinite(pin.time)) fail(400, 'Ugyldigt fartmærke.');
   // JSON is served as data, never executable HTML; disallow unexpected bulk/secret fields.
-  if (Object.keys(doc).some(k => !['version', 'notes', 'speedPins'].includes(k))) fail(400, 'Ukendte præsentationsfelter.');
+  if (Object.keys(doc).some(k => !['version', 'notes', 'speedPins', 'title'].includes(k))) fail(400, 'Ukendte præsentationsfelter.');
   return doc;
 }
 const contentsPath = (env, path) => `${repo(env)}/contents/${path}`;

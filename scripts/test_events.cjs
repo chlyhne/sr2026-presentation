@@ -155,13 +155,17 @@ from event_config import event_config
 with tempfile.TemporaryDirectory() as directory:
     stage = Path(directory)
     event = event_config('sjaelland-rundt-2026')
-    package_public_event_sets(stage, event)
+    event['publicSets'] = [{
+        'id': 'testsaet',
+        'presentationFile': event_config('silverrudder-2025')['presentationFile'],
+    }]
+    titles = package_public_event_sets(stage, event)
     base = stage / 'events' / event['id']
-    print(json.dumps([json.loads((base / 'presentation.json').read_text(encoding='utf-8')),
-        json.loads((base / 'presentations/stikord.json').read_text(encoding='utf-8'))]))
+    print(json.dumps([titles, json.loads((base / 'presentation.json').read_text(encoding='utf-8')),
+        json.loads((base / 'presentations/testsaet.json').read_text(encoding='utf-8'))]))
 `],{encoding:'utf8',windowsHide:true});
  assert.deepEqual(JSON.parse(output),[
-  require('../presentation/presentation.json'),require('../presentation/sjaelland-rundt-2026-stikord.json')
+  {default:'Præsentation KBL'},require('../presentation/presentation.json'),require('../presentation/silverrudder-2025.json')
  ]);
 });
 
@@ -407,25 +411,51 @@ test('layout resize preserves the preview centre and geographic scale',()=>{
  assert.equal(Math.max(next[2]/changed.width,next[3]/changed.height),Math.max(view[2]/rect.width,view[3]/rect.height));
 });
 
+test('renaming a local event set updates its visible name and its exported document',async()=>{
+ const boot=fs.readFileSync('viewer/boot.js','utf8');
+ const online=fs.readFileSync('viewer/online.js','utf8');
+ const nodes=new Map(),element=()=>({setAttribute(){},append(){},replaceChildren(){}});
+ const context=viewerTestContext({
+  window:{SR_READONLY:false},notes:[],speedPins:[],eventStorage:storage(),
+  eventServiceAvailable:()=>false,$:id=>{if(!nodes.has(id))nodes.set(id,element());return nodes.get(id);},
+  Option:class{},document:{createElement:element,querySelector:element,body:element()}
+ });
+ context.window.SRStorage=null;
+ vm.runInContext(boot.slice(boot.indexOf('function validatePresentationDocument'),boot.indexOf('(async()=>{')),context);
+ vm.runInContext(online,context);
+ context.initializeOnlineEvents();
+ nodes.get('eventSetName').value='  Mit lokale sæt  ';
+ await nodes.get('eventSetNameForm').onsubmit({preventDefault(){}});
+ assert.equal(nodes.get('eventSetTitle').textContent,'Mit lokale sæt');
+ assert.equal(nodes.get('eventSetTitle').hidden,false);
+ assert.deepEqual(JSON.parse(context.presentationJSON()),{version:1,notes:[],speedPins:[],title:'Mit lokale sæt'});
+ const key=vm.runInContext('localEventSetKey',context);
+ assert.equal(JSON.parse(context.eventStorage.getItem(key)).title,'Mit lokale sæt');
+ nodes.get('eventSetName').value='';
+ await nodes.get('eventSetNameForm').onsubmit({preventDefault(){}});
+ assert.equal(nodes.get('eventSetTitle').hidden,true);
+ assert.equal(Object.hasOwn(JSON.parse(context.presentationJSON()),'title'),false);
+});
+
 test('an edit made while publishing stays in the event-set draft under the new revision',async()=>{
  const source=fs.readFileSync('viewer/online.js','utf8'),draft=storage();
- const sent={version:1,notes:[{time:10,text:'Til udgivelse'}],speedPins:[]};
+ const sent={version:1,notes:[{time:10,text:'Til udgivelse'}],speedPins:[],title:'Til udgivelse'};
  const context=viewerTestContext({
   notes:[{time:10,text:'Rettet under udgivelse'}],speedPins:[],eventStorage:draft,
   eventSetDraftKey:source=>'draft:'+source,refreshPresentationEvents(){},
-  eventSetDocument:null,eventSetRevision:'version-a'
+  currentEventSetData:()=>sent,eventSetDocument:null,eventSetRevision:'version-a'
  });
  vm.runInContext(source,context);
  assert.equal(context.recordEventSetSave('public:default',sent,{revision:'version-b',document:sent}),true);
  assert.deepEqual(JSON.parse(draft.getItem('draft:public:default')),{
-  revision:'version-b',document:{version:1,notes:[{time:10,text:'Rettet under udgivelse'}],speedPins:[]}
+  revision:'version-b',document:{version:1,notes:[{time:10,text:'Rettet under udgivelse'}],speedPins:[],title:'Til udgivelse'}
  });
 });
 
 test('a private event set and its draft images use only owner-scoped private endpoints',async()=>{
  const source=fs.readFileSync('viewer/online.js','utf8'),calls=[];
  const id='12345678-1234-1234-1234-123456789abc',privateImage='private-event-images/'+id+'.webp';
- const document={version:1,notes:[{time:20,text:'Privat tekst',private:true,privateId:id,
+ const document={version:1,title:'Mit private sæt',notes:[{time:20,text:'Privat tekst',private:true,privateId:id,
   image:{id,name:'Foto',url:'event-images/'+id+'.webp',draft:true}}],speedPins:[]};
  const context=viewerTestContext({
   structuredClone,privateEventSetAPI:path=>path+'?owner=7',
@@ -442,6 +472,7 @@ test('a private event set and its draft images use only owner-scoped private end
  assert.equal(saved.revision,'new-private');
  assert.equal(calls.length,1);
  assert.equal(calls[0][0],'/api/private-events?owner=7');
+ assert.equal(calls[0][1].document.title,document.title);
  assert.equal(calls[0][1].document.notes[0].image.url,privateImage);
  assert.equal(calls[0][1].document.notes[0].image.draft,undefined);
  assert.equal(document.notes[0].image.draft,true);

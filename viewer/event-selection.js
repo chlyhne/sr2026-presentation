@@ -79,7 +79,11 @@ async function loadEventSelection(){
 function eventAPI(path){return path+'?event='+encodeURIComponent(window.SR_EVENT.id);}
 function eventServiceAvailable(){return window.SR_CONFIG.eventService===true;}
 function eventLoginURL(attempt){return eventAPI('/auth/login')+'&lang='+srLanguage+'&popup='+encodeURIComponent(attempt);}
-function publicEventSets(){return [{id:'default',title:'Offentlige'},...(window.SR_EVENT.publicSets||[])];}
+function publicEventSets(){
+ const {publicSets=[],publicSetTitles={}}=window.SR_EVENT;
+ return [{id:'default'},...publicSets].map(set=>({...set,
+  publishedTitle:Object.hasOwn(publicSetTitles,set.id)?publicSetTitles[set.id]:undefined}));
+}
 async function readPublishedEventSet(id){
  const path=id==='default'?'presentation.json':'presentations/'+encodeURIComponent(id)+'.json';
  const response=await fetch('events/'+window.SR_EVENT.id+'/'+path,{cache:'no-store'});

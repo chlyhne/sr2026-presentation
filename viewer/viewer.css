@@ -314,3 +314,7 @@ body.boat-compare-open main{--event-width:clamp(280px,28vw,440px)}
 #eventSetControls{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;margin-block:.45rem}
 #eventSetSelect,#publicEventTarget{max-width:100%;min-width:0}
 #onlineStatus:empty{display:none}
+
+#eventSetTitle{margin:0 0 12px;font-size:16px;overflow-wrap:anywhere}
+.event-set-name-fields{display:flex;flex-wrap:wrap;gap:6px}
+.event-set-name-fields input{flex:1 1 10em;min-width:0;background:#fff;color:#20272d;border:1px solid #b9c1c8;border-radius:5px;padding:6px 8px}

@@ -1,6 +1,11 @@
 // Danish message keys with English, German and French translations. Keep placeholder indices in every language.
 globalThis.SR_MESSAGE_LANGUAGES=['en','de','fr'];
 globalThis.SR_MESSAGES={
+ "Eventsættets navn":["Event set name","Name des Ereignissatzes","Nom de l’ensemble d’événements"],
+ "Gem navn":["Save name","Namen speichern","Enregistrer le nom"],
+ "Navnet er gemt lokalt.":["The name was saved locally.","Der Name wurde lokal gespeichert.","Le nom a été enregistré localement."],
+ "Navnet er gemt i kladden.":["The name was saved to the draft.","Der Name wurde im Entwurf gespeichert.","Le nom a été enregistré dans le brouillon."],
+ "Navnet på eventsættet skal være mellem 1 og 100 tegn.":["The event set name must have 1 to 100 characters.","Der Name des Ereignissatzes muss 1 bis 100 Zeichen lang sein.","Le nom de l’ensemble doit contenir de 1 à 100 caractères."],
  "Indstillinger for eventsæt":["Event set settings","Einstellungen für Ereignissätze","Paramètres de l’ensemble d’événements"],
  "Annullér login":["Cancel sign-in","Anmeldung abbrechen","Annuler la connexion"],
  "Privat kopi er gemt.":["Private copy saved.","Private Kopie gespeichert.","Copie privée enregistrée."],

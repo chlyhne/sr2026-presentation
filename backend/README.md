@@ -85,7 +85,7 @@ refresh tokens.
 Hvert stævne har et offentligt standardsæt, angivet i katalogets `presentationFile`.
 Ekstra offentlige sæt kan registreres i stævnets `publicSets` med `id`, `title`
 og `presentationFile`. Pages pakker alle offentlige sæt, så de også kan læses uden Worker.
-Sættene bruger formatet `{version:1,notes:[],speedPins:[]}`.
+Sættene bruger formatet `{version:1,notes:[],speedPins:[]}` med et valgfrit `title`.
 Private events og billeder gemmes i R2 under brugerens numeriske GitHub-id og
 stævnet. **Gem privat** på et offentligt sæt laver en privat kopi. En offentlig
 version kan fjernes fra sættet via **Slet event** efterfulgt af **Udgiv offentligt**.

@@ -1,4 +1,6 @@
-function presentationJSON(){return JSON.stringify({version:1,notes,speedPins});}
+function presentationJSON(){
+ return JSON.stringify({version:1,notes,speedPins,title:currentEventSetData().title});
+}
 
 async function eventSetRequest(path,request){
  const response=await fetch(path,{cache:'no-store',...request});
@@ -122,6 +124,8 @@ function initializeOnlineEvents(){
  const savePrivate=$('savePrivateEvents'),publish=$('publishPublicEvents'),logout=$('eventSetLogout');
  const reloadSet=$('loadServerEventSet'),recover=$('downloadPreviousEventDraft'),cancelLogin=$('cancelEventLogin');
  const target=$('publicEventTarget'),targetLabel=$('publicEventTargetLabel'),service=eventServiceAvailable();
+ const nameForm=$('eventSetNameForm'),nameInput=$('eventSetName'),nameHeading=$('eventSetTitle');
+ const knownTitles=new Map();
  const publicSources=service||window.SR_READONLY?publicEventSets():[];
  const sources=new Map(publicSources.map(set=>['public:'+set.id,set]));
  if(!window.SR_READONLY)sources.set(localEventSource,{title:'Lokale'});
@@ -129,6 +133,11 @@ function initializeOnlineEvents(){
  let busy=false,publicTarget='public:default';
  const message=(key,...values)=>srBind(status,'textContent',()=>key?srText(key,...values):'');
  const selectedSource=()=>eventSetSource.startsWith('private:')?'private':eventSetSource;
+ function savedTitle(source){
+  const key=source==='private'?'private:'+window.SR_ACCOUNT?.id:source;
+  return knownTitles.get(key)??sources.get(source)?.publishedTitle;
+ }
+ function publicTitle(source){return savedTitle(source)||sources.get(source)?.title;}
  function updateActions(){
   select.value=selectedSource();select.disabled=busy;
   $('newEvent').disabled=busy;
@@ -140,14 +149,44 @@ function initializeOnlineEvents(){
   recover.hidden=selectedSource()===localEventSource||!eventStorage.getItem(eventSetDraftKey(eventSetSource)+':previous');
   recover.disabled=busy;
   reloadSet.hidden=!service||selectedSource()===localEventSource;reloadSet.disabled=busy;
+  nameInput.disabled=$('saveEventSetName').disabled=busy;
  }
  function updateSourceOptions(){
-  select.replaceChildren(...Array.from(sources,([value,set])=>new Option(value==='public:default'?srText('Offentlige'):
-   value.startsWith('public:')?srText('Offentlige · {0}',set.title):srText(set.title),value)));
-  target.replaceChildren(...Array.from(sources,([value,set])=>({value,set})).filter(({value})=>value.startsWith('public:'))
-   .map(({value,set})=>new Option(srText(set.title),value)));
+  select.replaceChildren(...Array.from(sources,([value,set])=>{
+   if(value.startsWith('public:')){
+    const title=publicTitle(value);
+    return new Option(title?srText('Offentlige · {0}',title):srText('Offentlige'),value);
+   }
+   return new Option(savedTitle(value)||srText(set.title),value);
+  }));
+  target.replaceChildren(...publicSources.map(set=>{
+   const value='public:'+set.id;
+   return new Option(publicTitle(value)||srText('Offentlige'),value);
+  }));
   updateActions();
  }
+ function updateSetName(){
+  const title=currentEventSetData().title||'';
+  knownTitles.set(eventSetSource,title);
+  nameInput.value=title;
+  nameHeading.textContent=title;
+  nameHeading.hidden=!controls.hidden||!title;
+  updateSourceOptions();
+ }
+ nameForm.onsubmit=event=>{
+  event.preventDefault();
+  if(window.SR_READONLY||busy)return;
+  return run(async()=>{
+   const title=nameInput.value.trim();
+   const current=currentEventSetData();
+   if(title===(current.title||''))return;
+   const document={...current};
+   if(title)document.title=title;
+   else delete document.title;
+   writeEventSetDraft(validatePresentationDocument(document));
+   message(selectedSource()===localEventSource?'Navnet er gemt lokalt.':'Navnet er gemt i kladden.');
+  });
+ };
  target.onchange=()=>{publicTarget=target.value;};
  async function run(action){
   if(busy)return;
@@ -161,7 +200,7 @@ function initializeOnlineEvents(){
    srBind(status,'textContent',()=>error.status===409?
     srText('Serverens eventsæt er ændret. Din kladde er stadig gemt.'):srErrorText(error));
   }
-  finally{busy=false;updateActions();}
+  finally{busy=false;updateSetName();}
  }
  async function ensureAccount(){
   if(window.SR_ACCOUNT)return;
@@ -274,7 +313,7 @@ function initializeOnlineEvents(){
  savePrivate.onclick=()=>save('private');
  publish.onclick=()=>save(publicTarget);
  controls.hidden=!service&&publicSources.length<2;
- if(!controls.hidden){updateSourceOptions();srOnLanguageChange(updateSourceOptions);}
+ updateSetName();srOnLanguageChange(updateSourceOptions);
  if(service)run(()=>load(publicTarget,{initial:true}));
  else if(notes.length)showPresentationEvent(0,{expandPanel:false});
 

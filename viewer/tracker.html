@@ -132,6 +132,7 @@
 
 <section id="boatComparePanel" aria-label="Sammenlign både" hidden data-i18n-attrs="aria-label"><h2 data-i18n>Sammenlign både</h2><label for="boatCompareReference" data-i18n>Referencebåd</label><select id="boatCompareReference"><option value="" data-i18n>Ingen referencebåd</option></select><label for="boatCompareMetric" data-i18n>Måling</label><select id="boatCompareMetric"><option value="speed" data-i18n>Hastighed · knob</option><option value="pace" data-i18n>Tempo · sekunder pr. sømil</option></select><button id="boatCompareResetZoom" type="button" title="Vis hele skalaen" hidden data-i18n-attrs="title">1:1</button><p id="boatCompareScope"></p><div id="boatComparePlots"></div></section>
 <section id="eventPanel" aria-label="Valgt event" data-i18n-attrs="aria-label">
+  <h2 id="eventSetTitle" hidden></h2>
   <div id="eventSetControls" hidden>
     <label for="eventSetSelect" data-i18n>Eventsæt</label>
     <select id="eventSetSelect"></select>
@@ -212,6 +213,13 @@
     </div>
     <details id="presentationOptions">
       <summary data-i18n>Indstillinger for eventsæt</summary>
+      <form id="eventSetNameForm">
+        <label for="eventSetName" data-i18n>Eventsættets navn</label>
+        <div class="event-set-name-fields">
+          <input id="eventSetName" type="text" maxlength="100">
+          <button id="saveEventSetName" type="submit" data-i18n>Gem navn</button>
+        </div>
+      </form>
       <div class="editor-actions button-row">
         <button id="eventSetLogout" type="button" hidden data-i18n>Log ud</button>
         <label for="publicEventTarget" id="publicEventTargetLabel" hidden data-i18n>Offentligt målsæt</label>

@@ -17,6 +17,8 @@ function showViewerLoadingError(error){
 document.getElementById('viewerLoadingRetry').onclick=()=>location.reload();
 function validatePresentationDocument(document){
  if(!document||document.version!==1||!Array.isArray(document.notes)||!Array.isArray(document.speedPins))throw Error(srText('Ugyldige præsentationsdata: version 1, notes og speedPins er påkrævet.'));
+ if(Object.hasOwn(document,'title')&&(typeof document.title!=='string'||!document.title.trim()||document.title.length>100))
+  throw new SRMessageError('Navnet på eventsættet skal være mellem 1 og 100 tegn.');
  return document;
 }
 const localEventSource='local';
@@ -33,25 +35,26 @@ function readLocalEventSet(){
   notes:JSON.parse(eventStorage.getItem('sr2026-notes')??'[]'),
   speedPins:JSON.parse(eventStorage.getItem('sr2026-speed-pins')??'[]')});
 }
+function currentEventSetData(){
+ return eventSetSource===localEventSource?readLocalEventSet():eventSetDocument;
+}
+function writeEventSetDraft(document){
+ if(eventSetSource===localEventSource){
+  eventStorage.setItem(localEventSetKey,JSON.stringify(document));return;
+ }
+ eventStorage.setItem(eventSetDraftKey(eventSetSource),JSON.stringify({revision:eventSetRevision,document}));
+ eventSetDocument=document;
+}
 function initializeEventSetStorage(){
  window.SRStorage={
   getItem:key=>{
    const field=eventSetFields[key];
-   if(!field)return null;
-   const document=eventSetSource===localEventSource?readLocalEventSet():eventSetDocument;
-   return JSON.stringify(document[field]);
+   return field?JSON.stringify(currentEventSetData()[field]):null;
   },
   setItem:(key,value)=>{
    const field=eventSetFields[key];
    if(!field||window.SR_READONLY)return;
-   if(eventSetSource===localEventSource){
-    const document={...readLocalEventSet(),[field]:JSON.parse(value)};
-    eventStorage.setItem(localEventSetKey,JSON.stringify(document));
-    return;
-   }
-   const document={...eventSetDocument,[field]:JSON.parse(value)};
-   eventStorage.setItem(eventSetDraftKey(eventSetSource),JSON.stringify({revision:eventSetRevision,document}));
-   eventSetDocument=document;
+   writeEventSetDraft({...currentEventSetData(),[field]:JSON.parse(value)});
   }
  };
 }

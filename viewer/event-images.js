@@ -182,7 +182,7 @@ async function embedEventImages(document,{draftOnly=false}={}){
 async function exportEventNotes(){
  const button=$('export');button.disabled=true;
  try{
-  const output=await embedEventImages(JSON.parse(JSON.stringify({version:1,notes,speedPins})));
+  const output=await embedEventImages(JSON.parse(presentationJSON()));
   download(new Blob([JSON.stringify(output,null,2)],{type:'application/json'}),window.SR_EVENT.id+'-haendelser.json');
  }catch(error){srBind($('annotationStatus'),'textContent',()=>error.message?srErrorText(error):srText('Noterne kunne ikke eksporteres.'));}
  finally{button.disabled=false;}
