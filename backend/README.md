@@ -8,8 +8,7 @@ kan bruges til at åbne kladder, der ligger i browserlageret på det gamle domæ
 Offentlige eventsæt kan hentes uden login. Lokale events og kladdebilleder gemmes
 i browseren. GitHub-login giver adgang til egne private events.
 Offentlig udgivelse kræver skriverettighed til repositoryet. Backenden kontrollerer
-rettigheden hos GitHub ved hver offentlig skrivning. Branch protection og rulesets
-gælder stadig.
+rettigheden hos GitHub ved hver offentlig skrivning.
 
 ## Opsætning
 
@@ -47,8 +46,8 @@ gælder stadig.
    Workerens `PRIVATE_EVENTS`-binding bruger R2-bucketen `sr2026-private-events`.
    Bucketen skal have offentlig adgang slået fra. Behold det eksisterende,
    fungerende `SITE_URL`, indtil et nyt Pages-domæne er aktivt.
-5. Åbn en stævneside, redigér et event med **Nyt event her**, og vælg **Gem privat**
-   eller **Udgiv offentligt** for at kontrollere GitHub-login med din konto.
+5. Åbn en stævneside, log ind fra eventsætvælgeren, og gem et event med disketten.
+   Kontrollér både et privat og et offentligt sæt.
    Kontrollér også, at en konto uden skriverettighed bliver afvist. De lokale
    tests simulerer GitHub; de erstatter ikke denne rigtige integrationskontrol.
 
@@ -72,44 +71,28 @@ refresh tokens.
 | `GET /auth/callback` | Sæt sessionscookien og afslut loginvinduet |
 | `POST /api/logout` | Slet session-cookie |
 | `GET /api/event-session` | Aktiv konto og rettigheder |
-| `GET /api/presentation` | Offentligt dokument og SHA for det valgte stævne og sæt, samt aktiv konto hvis logget ind |
-| `GET /api/private-events` | Egne private events og revision for det valgte stævne |
-| `PUT /api/presentation` | `{document, sha}` → `{sha, commit}` |
-| `POST /api/event-images?id=<uuid>` | Udgiv binært JPEG/PNG/WebP → `{id, url}` |
-| `PUT /api/private-events` | Gem egne private events for stævnet med kontrol af revision |
-| `POST /api/private-event-images` og `GET /api/private-event-images/<fil>` | Gem og hent billeder fra samme GitHub-konto og stævne |
-| `GET /admin/config.js` | Bekræft at Workerens event-API er tilgængeligt på samme domæne |
-| `GET /api/event-images/<uuid>.<ext>` | Hent offentligt billede fra repositoryet |
-| `GET /admin/*` | Proxy til samme sti under Pages-basen |
+| `GET /api/event-sets?event=<id>` | Offentlige sæt og egne private sæt |
+| `GET /api/event-sets?event=<id>&set=<id>` | Læs det valgte sæt og dets revision |
+| `PUT /api/event-sets?event=<id>&set=<id>` | Opret eller gem `{document, revision, visibility}` |
+| `POST /api/event-set-images/<uuid>?event=<id>&set=<id>` | Klargør et billede til sættet |
+| `GET /api/event-set-images/<fil>?event=<id>&set=<id>` | Læs et billede, som sættet henviser til |
+| `GET /admin/config.js` og `GET /admin/*` | Admin-konfiguration og proxy til Pages |
 
-Hvert stævne har et offentligt standardsæt, angivet i katalogets `presentationFile`.
-Ekstra offentlige sæt kan registreres i stævnets `publicSets` med `id`, `title`
-og `presentationFile`. Pages pakker alle offentlige sæt, så de også kan læses uden Worker.
-Sættene bruger formatet `{version:1,notes:[],speedPins:[]}` med et valgfrit `title`.
-Private events og billeder gemmes i R2 under brugerens numeriske GitHub-id og
-stævnet. **Gem privat** på et offentligt sæt laver en privat kopi. En offentlig
-version kan fjernes fra sættet via **Slet event** efterfulgt af **Udgiv offentligt**.
-Tidligere offentlige kopier kan stadig findes i GitHub-historikken eller hos andre.
-Rhumbline er et fast projektaktiv i
-`viewer/rhumbline.json` og indgår ikke i præsentationen. Billeder får
-UUID-navne under `viewer/event-images/` ved udgivelse. Billeder i onlinekladder
-opbevares i browserens IndexedDB. Relative billedadresser er `event-images/<uuid>.<ext>`;
-eksisterende UUID'er og billedadresser bevares ved samlingen af lageret.
-Andre repository-stier kan ikke angives af klienten. Billeder må højst fylde
-16 MiB, JSON højst 4 MiB. Indholdstyper, billedsignaturer og centrale eventfelter
-valideres på serveren. Ved udgivelse kontrolleres også, at refererede billeder
-findes som filer under `viewer/event-images/` i repositoryet. Editorens billedlæsning
-bruger samme mappe på den offentlige GitHub-branch. Backendens validering accepterer ingen eksterne billed-URL'er.
+Sættene bruger `{version:1,notes:[],speedPins:[]}` med et valgfrit `title`.
+Håndterede sæt og deres billeder gemmes i den private R2-bucket
+`sr2026-private-events`. Workerens API styrer adgangen efter sættets aktuelle
+synlighed. Et billede bliver først tilgængeligt, når et gemt sæt henviser
+til det. Kladdens billeder ligger i browserens IndexedDB.
 
-Pages-pakningen kræver en eksisterende `presentation/presentation.json` med
-`version: 1` og listerne `notes` og `speedPins`. Et manglende eller ugyldigt dokument
-stopper pakningen med en fejl. Billeder pakkes direkte fra `viewer/event-images/`.
+Ved første servergemning overtager R2 det pågældende sæts stabile ID fra stævnets
+`presentationFile` eller `publicSets`. Gamle private serverevents kan åbnes
+af ejeren og flyttes til samme lager ved næste gemning. Den statiske Pages-visning
+indeholder projektets gamle offentlige dokumenter og billeder, som også kan
+findes i GitHub-historikken. Ændring af et sæts synlighed gælder den aktuelle
+visning gennem Workerens API.
 
-Servergemning bruger den indlæste SHA eller R2-revision. Ved versionskonflikt
-bevares kladden. **Hent serverversion** læser et nyt sæt og arkiverer den
-tidligere kladde til download i eventfanen. Upload af et billede ændrer ikke dokumentets
-SHA. Afbrudte kladder kan efterlade ubenyttede billeder; de slettes ikke automatisk.
-Uploads committes straks og bliver offentlige, når repo/Pages er offentligt.
+Servergemning bruger den indlæste revision. Ved versionskonflikt bevares kladden.
+**Hent serverversion** arkiverer den tidligere kladde til download i eventfanen.
 
 ## Tests
 

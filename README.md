@@ -197,19 +197,19 @@ Kør fra denne projektmappe:
 python3 scripts/serve_viewer.py
 ```
 
-Åbn en sejlads og klik på bogikonet for at åbne eventfanen. Brug **Nyt event her**
-for at redigere eventet ved kortets aktuelle tidspunkt eller oprette et nyt.
-**Færdig** lukker værktøjerne. Ændringer gemmes i browserens kladde. Du kan
-slette et event under **Flere handlinger**, mens du redigerer det.
+Åbn eventfanen med bogikonet. Knappen øverst til højre viser plus mellem events,
+blyant ved et event og diskette, når du har ændret noget. Disketten gemmer eventet.
+**Annullér** lukker editoren og kasserer rettelserne. Kortvisning, billeder og
+tegneværktøjer vises under redigering.
 
 Sprogknappen i kortets værktøjslinje og på stævneoversigten skifter mellem dansk,
 engelsk, tysk og fransk på den åbne side. Valget gemmes i browseren. Direkte links
 kan også bruge `?lang=da`, `?lang=en`, `?lang=de` eller `?lang=fr`.
 
 Brug kortet, lagene og bådlisten til at afprøve eventets visning. Eventfanen viser,
-hvilke dele af visningen der afviger. **Brug i eventet** gemmer visningen i kladden.
+hvilke dele af visningen der afviger. **Brug i eventet** føjer visningen til det, disketten gemmer.
 **Gendan kortvisning** henter eventets gemte opsætning, og **Fortryd** kan rulle den
-seneste lagring af kortvisningen tilbage. Online gør **Udgiv offentligt** under **Indstillinger for eventsæt** kladden offentlig.
+seneste ændring af kortvisningen tilbage.
 
 Node.js 24 og Python 3 skal være installeret. Serveren forbereder den
 komprimerede kildepakke før opstart og genbruger den, når kildefingeraftrykket
@@ -308,11 +308,11 @@ Se [viewerens vejledning](viewer/README.md) for kortets betjening og datakilder.
 
 ## Online
 
-Eventfanen skifter mellem offentlige eventsæt, browserens lokale sæt og dine
-private serverevents. Giv det valgte sæt et navn under **Indstillinger for
-eventsæt**. Navnet gemmes sammen med sættet. Du kan oprette og redigere lokale kladder uden login.
-GitHub-login kræves ved privat serveradgang og offentlig udgivelse.
-Offentlig udgivelse kræver skriverettighed til repositoryet.
+Klik på eventsættets navn for at se offentlige sæt, dine private sæt og
+browserens lokale sæt. **Nyt eventsæt** opretter et privat sæt. Vælg navn og
+synlighed under **Indstillinger for eventsæt**. Disketten gemmer på serveren
+med en aktiv GitHub-session og skriverettighed til sættet. Offentliggørelse
+kræver skriverettighed til repositoryet.
 
 [Opsæt GitHub Pages](docs/hosting.md), følg [backendens opsætning](backend/README.md),
 og [flyt dine lokale noter med](docs/migration.md).

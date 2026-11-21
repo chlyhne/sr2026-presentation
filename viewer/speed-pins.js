@@ -1,7 +1,7 @@
 // Pins identify a boat and source time. Their values follow the visible track style.
 let speedPins=JSON.parse(SRStorage.getItem('sr2026-speed-pins')??'[]'),pickedTrackSpeed=null;
-let viewingSpeedPins=null;
-function visibleSpeedPins(){return viewingSpeedPins??speedPins;}
+let viewingSpeedPins=null,editedSpeedPins=null;
+function visibleSpeedPins(){return viewingSpeedPins??editedSpeedPins??speedPins;}
 if(!Array.isArray(speedPins)||speedPins.some(pin=>!pin||typeof pin.id!=='string'||typeof pin.boatId!=='string'||!Number.isFinite(pin.time)||!boats.some(boat=>boat.id===pin.boatId)))throw Error(srText('Ugyldige gemte fartmærker.'));
 function trackSpeedSample(boat,time){
  const points=boat.points,i=timeBoundary(points,time,true)-1;if(i<0)return null;
@@ -117,24 +117,22 @@ function updateTrackHover(e){
 }
 function closeTrackSpeedSelection(){pickedTrackSpeed=null;renderSpeedPins();}
 function canSaveSpeedPins(){
- return !!editingNote&&!eventSetSource.startsWith('private:');
+ return !!editingNote&&!eventSetBusy;
 }
 function toggleSpeedPin({save=false}={}){
  if(!pickedTrackSpeed||save&&!canSaveSpeedPins())return;
  const boat=boats.find(b=>b.id===pickedTrackSpeed.boatId),sample=boat&&trackSpeedSample(boat,pickedTrackSpeed.time);
  if(!sample)return;
- const pins=save?speedPins:visibleSpeedPins();
+ const pins=save?(editedSpeedPins??speedPins):visibleSpeedPins();
  const matches=pin=>pin.boatId===sample.boatId&&Math.abs(pin.time-sample.time)<.05;
  const existing=pins.find(matches);
  const pin=visibleSpeedPins().find(matches)||{id:crypto.randomUUID(),boatId:sample.boatId,time:sample.time};
  const next=existing?pins.filter(item=>item!==existing):[...pins,pin];
- try{
-  if(save){
-   SRStorage.setItem('sr2026-speed-pins',JSON.stringify(next));speedPins=next;
-   if(viewingSpeedPins)viewingSpeedPins=existing?viewingSpeedPins.filter(item=>!matches(item)):[...viewingSpeedPins.filter(item=>!matches(item)),pin];
-  }else viewingSpeedPins=next;
-  $('speedPinStatus').textContent=save?(existing?srText('Fartmærket er fjernet fra kladden.'):srText('Fartmærket er gemt i kladden.')):'';
- }catch{$('speedPinStatus').textContent=srText('Fartmærket kunne ikke gemmes i browseren.');}
+ if(save){
+  editedSpeedPins=next;
+  if(viewingSpeedPins)viewingSpeedPins=existing?viewingSpeedPins.filter(item=>!matches(item)):[...viewingSpeedPins.filter(item=>!matches(item)),pin];
+  updateEventAction();
+ }else viewingSpeedPins=next;
  renderSpeedPins();
 }
 function handleSpeedPinClick(action,key){
@@ -181,7 +179,7 @@ function renderSpeedPins(){
    el('rect',{x:left,y:top+8,width:buttonWidth,height:24,rx:4,fill:'#f4fafb',stroke:'#365766','stroke-width':1},button);
    el('text',{x:left+buttonWidth/2,y:top+24,'text-anchor':'middle',fill:'#14212a','font-size':12,'font-weight':650},button).textContent=entry.pinned?srText('Fjern pin'):srText('Pin');
    if(canSaveSpeedPins()){
-    const saved=speedPins.some(pin=>pin.boatId===entry.boatId&&Math.abs(pin.time-entry.time)<.05);
+    const saved=(editedSpeedPins??speedPins).some(pin=>pin.boatId===entry.boatId&&Math.abs(pin.time-entry.time)<.05);
     const label=saved?srText('Fjern fra kladde'):srText('Gem i kladden');
     const save=el('g',{'data-speed-action':'save',role:'button',tabindex:0,'aria-label':label+': '+accessibleLabel},group);
     el('rect',{x:left,y:top+34,width:104,height:24,rx:4,fill:'#fff',stroke:'#66717b'},save);

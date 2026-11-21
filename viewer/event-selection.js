@@ -90,9 +90,6 @@ async function readPublishedEventSet(id){
  if(!response.ok)throw new SRMessageError('Præsentationen kunne ikke indlæses ({0}).',response.status);
  return validatePresentationDocument(await response.json());
 }
-function publicEventSetAPI(id){
- return eventAPI('/api/presentation')+(id==='default'?'':'&set='+encodeURIComponent(id));
-}
 function privateEventSetAPI(path){
  return eventAPI(path)+'&owner='+encodeURIComponent(window.SR_ACCOUNT.id);
 }

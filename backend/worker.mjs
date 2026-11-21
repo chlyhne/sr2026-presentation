@@ -97,7 +97,7 @@ async function readBody(request, limit) {
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
 const string = (value, max = 10000) => typeof value === 'string' && value.length <= max;
 const vector = (value, length) => Array.isArray(value) && value.length === length && value.every(Number.isFinite);
-export function validateDocument(doc, {privateEvents = false} = {}) {
+export function validateDocument(doc, {privateEvents = false, managedSet = false} = {}) {
   if (!object(doc) || doc.version !== 1 || !Array.isArray(doc.notes) || doc.notes.length > 5000 || !Array.isArray(doc.speedPins) || doc.speedPins.length > 10000) fail(400, 'Ugyldigt præsentationsformat.');
   if(Object.hasOwn(doc,'title')&&(!string(doc.title,100)||!doc.title.trim()))fail(400,'Navnet på eventsættet skal være mellem 1 og 100 tegn.');
   const ids = new Set();
@@ -138,7 +138,8 @@ export function validateDocument(doc, {privateEvents = false} = {}) {
     }
     if (note.drawings !== undefined && (!Array.isArray(note.drawings) || note.drawings.length > 1000 || !note.drawings.every(d => object(d) && ['pen', 'arrow', 'line', 'circle'].includes(d.tool) && /^#[a-f0-9]{6}$/i.test(d.colour) && Number.isFinite(d.width) && d.width >= 1 && d.width <= 12 && Array.isArray(d.points) && d.points.length >= 2 && d.points.length <= 50000 && d.points.every(p => vector(p, 2))))) fail(400, 'Ugyldig tegning.');
     if (note.image != null) {
-      const image = note.image, directory = privateEvents ? 'private-event-images' : 'event-images';
+      const image = note.image;
+      const directory = privateEvents ? 'private-event-images' : managedSet&&typeof image.url==='string'&&image.url.startsWith('set-event-images/') ? 'set-event-images' : 'event-images';
       const filename = typeof image.url === 'string' && image.url.split('/').at(-1);
       if (!object(image) || image.draft !== undefined || !string(image.id, 36) || !string(image.name, 500) || !IMAGE.test(filename) || image.url !== `${directory}/${filename}` || !filename.startsWith(image.id + '.')) fail(400, 'Ugyldigt billede.');
     }
@@ -191,6 +192,129 @@ async function privateStorage(request, env, url) {
 function imageType(name) {
   return name.endsWith('.webp') ? 'image/webp' : name.endsWith('.png') ? 'image/png' : 'image/jpeg';
 }
+function seedEventSets(event){
+  return [{id:'default',title:event.title,presentationFile:event.presentationFile},...(event.publicSets||[])];
+}
+function setDocumentKey(event,id){return `event-sets/${event.id}/documents/${id}.json`;}
+function setImageKey(event,id,file){return `event-sets/${event.id}/images/${id}/${file}`;}
+function eventSetMeta(id,metadata,session){
+  return {id,title:metadata.title,visibility:metadata.visibility,
+    canEdit:!!session&&(metadata.visibility==='public'?session.canPublish!==false:metadata.owner===String(session.id)),
+    canSetVisibility:!!session&&(metadata.owner===String(session.id)||(!metadata.owner&&session.canPublish!==false))};
+}
+function setVisible(metadata,session){
+  return metadata.visibility==='public'||metadata.owner===String(session?.id);
+}
+async function legacyPersonalSet(store,event,id,session){
+  if(id!==`legacy-${session?.id}`||!session)return null;
+  return store.get(privatePrefix(session,event)+'events.json');
+}
+async function readManagedSet(store,env,event,id,session){
+  const stored=await store.get(setDocumentKey(event,id));
+  if(stored)return {stored,metadata:stored.customMetadata,revision:stored.etag};
+  const seed=seedEventSets(event).find(set=>set.id===id);
+  if(seed){
+    const source=await publicFile(env,seed.presentationFile,{cache:'no-store'});
+    const bytes=new Uint8Array(await source.arrayBuffer()),document=JSON.parse(decoder.decode(bytes));
+    return {document,metadata:{title:document.title||seed.title,visibility:'public',owner:''},revision:await gitBlobSha(bytes)};
+  }
+  const legacy=await legacyPersonalSet(store,event,id,session);
+  if(!legacy)return null;
+  const document=await legacy.json();
+  for(const note of document.notes){delete note.private;delete note.privateId;}
+  return {document,metadata:{title:document.title||'',visibility:'private',owner:String(session.id)},revision:legacy.etag};
+}
+async function listManagedSets(store,event,session){
+  const sets=new Map(seedEventSets(event).map(seed=>[seed.id,{title:seed.title,visibility:'public',owner:''}]));
+  let cursor;
+  do{
+    const result=await store.list({prefix:`event-sets/${event.id}/documents/`,include:['customMetadata'],cursor});
+    for(const item of result.objects)sets.set(item.key.split('/').at(-1).slice(0,-5),item.customMetadata);
+    cursor=result.truncated?result.cursor:undefined;
+  }while(cursor);
+  const oldId=`legacy-${session?.id}`;
+  const legacy=sets.has(oldId)?null:await legacyPersonalSet(store,event,oldId,session);
+  if(legacy)sets.set(oldId,{title:(await legacy.json()).title||'',visibility:'private',owner:String(session.id)});
+  return Array.from(sets,([id,metadata])=>setVisible(metadata,session)?eventSetMeta(id,metadata,session):null).filter(Boolean);
+}
+function requireSetOwner(current,session){
+  if(current?.metadata.visibility==='private'&&current.metadata.owner!==String(session.id))fail(404,'Eventsættet findes ikke.');
+}
+async function requireSetWrite(request,env,current,session,visibility){
+  if(!session)fail(401,'Log ind med GitHub igen.');
+  requireSetOwner(current,session);
+  if(current?.metadata.visibility==='public'||visibility==='public'){
+    if(session.canPublish===false)fail(403,'Du skal have skriverettighed til repositoryet.');
+    await authorize(request,env);
+  }
+  if(current&&visibility!==current.metadata.visibility&&current.metadata.owner&&current.metadata.owner!==String(session.id))
+    fail(403,'Kun ejeren kan ændre eventsættets synlighed.');
+}
+function eventImageExtension(request,bytes){
+  const type=request.headers.get('Content-Type')?.split(';')[0],s=String.fromCharCode(...bytes.slice(0,12));
+  if(type==='image/webp'&&s.startsWith('RIFF')&&s.slice(8,12)==='WEBP')return 'webp';
+  if(type==='image/png'&&b64(bytes.slice(0,8))==='iVBORw0KGgo=')return 'png';
+  if(type==='image/jpeg'&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255)return 'jpg';
+  fail(415,'Vælg et JPEG-, PNG- eller WebP-billede.');
+}
+async function managedEventSets(request,env,url){
+  const store=env.PRIVATE_EVENTS,event=eventForURL(url),session=await githubSession(request,env);
+  if(!store)fail(503,'Lageret til private events er ikke konfigureret.');
+  const id=url.searchParams.get('set'),method=request.method;
+  const images=url.pathname.startsWith('/api/event-set-images/');
+  if(!id&&method==='GET'&&!images)return json({sets:await listManagedSets(store,event,session),account:await eventAccount(request,env)});
+  if(typeof id!=='string'||!/^[a-z0-9-]{1,64}$/.test(id))fail(404,'Eventsættet findes ikke.');
+  if(images&&method==='GET'){
+    const file=url.pathname.slice('/api/event-set-images/'.length);
+    if(!IMAGE.test(file))fail(404,'Billedet findes ikke.');
+    const entry=await store.get(setDocumentKey(event,id));
+    if(!entry||!setVisible(entry.customMetadata,session))fail(404,'Billedet findes ikke.');
+    const {document}=await entry.json();
+    if(!document.notes.some(note=>note.image?.url==='set-event-images/'+file))fail(404,'Billedet findes ikke.');
+    const image=await store.get(setImageKey(event,id,file));
+    if(!image)fail(404,'Billedet findes ikke.');
+    return new Response(image.body,{headers:{'Content-Type':imageType(file),'Cache-Control':'private, no-store'}});
+  }
+  const current=await readManagedSet(store,env,event,id,session);
+  if(method==='GET'){
+    if(!current||!setVisible(current.metadata,session))fail(404,'Eventsættet findes ikke.');
+    return json({document:current.document??(await current.stored.json()).document,revision:current.revision,...eventSetMeta(id,current.metadata,session)});
+  }
+  if(!current&&!LOGIN_ATTEMPT.test(id))fail(404,'Eventsættet findes ikke.');
+  if(images&&method==='POST'){
+    await requireSetWrite(request,env,current,session,current?.metadata.visibility||'private');
+    const bytes=await readBody(request,MAX_IMAGE),extension=eventImageExtension(request,bytes);
+    const imageId=url.pathname.slice('/api/event-set-images/'.length),file=imageId+'.'+extension;
+    if(!IMAGE.test(file))fail(400,'Ugyldigt billede.');
+    const key=setImageKey(event,id,file);
+    const saved=await store.put(key,bytes,{onlyIf:new Headers({'If-None-Match':'*'}),customMetadata:{uploader:String(session.id)}});
+    if(!saved){
+      const existing=await store.get(key);
+      if(!existing||await gitBlobSha(new Uint8Array(await existing.arrayBuffer()))!==await gitBlobSha(bytes))
+        fail(409,'Billedet kunne ikke gemmes til eventet.');
+    }
+    return json({id:imageId,url:'set-event-images/'+file},201);
+  }
+  if(method!=='PUT')fail(405,'Metoden understøttes ikke.');
+  const input=await new Response(await readBody(request,MAX_DOCUMENT)).json().catch(()=>null);
+  if(!object(input)||!['private','public'].includes(input.visibility))fail(400,'Ugyldigt præsentationsformat.');
+  await requireSetWrite(request,env,current,session,input.visibility);
+  if(input.revision!==(current?.revision??null))fail(409,'Serverens eventsæt er ændret. Din kladde er stadig gemt.');
+  const document=validateDocument(input.document,{managedSet:true});
+  const currentDocument=current?.document??(current?.stored?(await current.stored.json()).document:null);
+  const knownImages=new Set(currentDocument?.notes.map(note=>note.image?.url));
+  for(const url of new Set(document.notes.map(note=>note.image?.url).filter(Boolean))){
+    if(knownImages.has(url))continue;
+    const image=url.startsWith('set-event-images/')?await store.head(setImageKey(event,id,url.split('/').at(-1))):null;
+    if(image?.customMetadata?.uploader!==String(session.id))
+      fail(400,'Et af præsentationens billeder mangler. Upload det igen før udgivelse.');
+  }
+  const metadata={title:document.title||'',visibility:input.visibility,owner:current?.metadata.owner||String(session.id)};
+  const onlyIf=new Headers(current?.stored?{'If-Match':'"'+current.revision+'"'}:{'If-None-Match':'*'});
+  const saved=await store.put(setDocumentKey(event,id),JSON.stringify({document,nonce:crypto.randomUUID()}),{onlyIf,customMetadata:metadata});
+  if(!saved)fail(409,'Serverens eventsæt er ændret. Din kladde er stadig gemt.');
+  return json({revision:saved.etag,...eventSetMeta(id,metadata,session)});
+}
 async function routes(request, env, locale) {
   const url = new URL(request.url), path = url.pathname, method = request.method;
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) checkOrigin(request);
@@ -237,6 +361,7 @@ async function routes(request, env, locale) {
   }
   if (method === 'POST' && path === '/api/logout') return new Response('{}', {headers: {'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': cookie(SESSION, '', 0)}});
   if (method === 'GET' && path === '/api/event-session') return json({account:await eventAccount(request,env)});
+  if(path==='/api/event-sets'||path.startsWith('/api/event-set-images/'))return managedEventSets(request,env,url);
   if (method === 'GET' && path === '/api/private-events') {
     const {store,prefix}=await privateStorage(request,env,url);
     const saved=await store.get(prefix+'events.json');
@@ -301,9 +426,7 @@ async function routes(request, env, locale) {
     const storage = privateImage ? await privateStorage(request, env, url) : null;
     const user = privateImage ? null : await authorize(request, env);
     const bytes = await readBody(request, MAX_IMAGE);
-    const type = request.headers.get('Content-Type')?.split(';')[0], s = String.fromCharCode(...bytes.slice(0, 12));
-    const extension = type === 'image/webp' && s.startsWith('RIFF') && s.slice(8, 12) === 'WEBP' ? 'webp' : type === 'image/png' && b64(bytes.slice(0, 8)) === 'iVBORw0KGgo=' ? 'png' : type === 'image/jpeg' && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255 ? 'jpg' : null;
-    if (!extension) fail(415, 'Vælg et JPEG-, PNG- eller WebP-billede.');
+    const extension=eventImageExtension(request,bytes);
     const id = url.searchParams.get('id') ?? crypto.randomUUID();
     const imagePath = `${privateImage ? 'private-event-images' : 'event-images'}/${id}.${extension}`;
     if (!IMAGE.test(`${id}.${extension}`)) fail(400, 'Ugyldigt billede.');

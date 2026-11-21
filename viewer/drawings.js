@@ -30,8 +30,8 @@ function drawNoteShape(d,parent){
 }
 function renderNoteDrawings(){
  const layer=$('noteDrawings');layer.replaceChildren();
- const note=newEventDraft||activePresentationNote;
- if(note&&(note===newEventDraft||noteIsVisible(note))){
+ const note=editingNote||activePresentationNote;
+ if(note&&(isEventEditDraft(note)||noteIsVisible(note))){
   const i=notes.indexOf(note);
   if(note.drawings?.length){
    const group=el('g',{'data-drawing-note-index':i},layer);

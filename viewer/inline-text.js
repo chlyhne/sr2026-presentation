@@ -24,12 +24,11 @@ $('eventText').onclick=beginInlineTextEditing;
 $('eventText').onkeydown=event=>{
  if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();beginInlineTextEditing();}
 };
-$('eventTextEditor').oninput=resizeInlineTextEditor;
-$('eventTextEditor').onblur=()=>{finishInlineTextEditing();};
+$('eventTextEditor').oninput=()=>{resizeInlineTextEditor();updateEventAction();};
 $('eventTextEditor').onkeydown=event=>{
  if(event.key==='Escape'){
-  event.preventDefault();event.stopPropagation();finishInlineTextEditing(true);$('eventText').focus();
+  event.preventDefault();event.stopPropagation();cancelEventEdit();
  }else if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){
-  event.preventDefault();event.stopPropagation();if(finishInlineTextEditing())$('eventText').focus();
+  event.preventDefault();event.stopPropagation();if(eventEditChanged())saveEventEdit();
  }
 };

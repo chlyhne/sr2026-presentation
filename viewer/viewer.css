@@ -184,7 +184,7 @@ footer{padding:8px 12px;background:#f6f7f8;min-width:0;min-height:0;border-top:1
 body.event-panel-collapsed main{--event-width:0px}
 body.event-panel-collapsed #eventPanel,body.event-panel-collapsed #presentationFooter,body.rhumbline-setup #eventPanelToggle{display:none}
 #presentationFooter{grid-column:2;grid-row:2;display:flex;align-items:center;border-left:1px solid #d5d9de}
-#eventPanel{padding:22px;overflow:auto;min-width:0;min-height:0;background:#fff;border-left:1px solid #d5d9de}
+#eventPanel{--event-panel-padding:22px;padding:var(--event-panel-padding);overflow:auto;min-width:0;min-height:0;background:#fff;border-left:1px solid #d5d9de}
 #eventImageFigure{margin:20px 0 0}#eventImage{display:block;width:100%;height:auto;object-fit:contain;border-radius:5px}
 #eventImageCaption{font-size:12px;color:#505a64;margin-top:8px;overflow-wrap:anywhere}
 #eventImageButton,#eventImageButton:hover{display:block;width:100%;padding:0;border:0;border-radius:5px;background:transparent;cursor:zoom-in}
@@ -237,14 +237,14 @@ body.event-panel-collapsed #eventPanel,body.event-panel-collapsed #presentationF
 .event-navigation select{min-width:0;height:var(--transport-control-height);text-overflow:ellipsis}
 #presentationMessage{margin:6px 0 0}
 #presentationMessage:empty{margin:0}
-@media(max-width:1050px){main{--event-width:280px}#eventPanel{padding:16px}#clock{font-size:16px}.controls{gap:6px}}
+@media(max-width:1050px){main{--event-width:280px}#eventPanel{--event-panel-padding:16px}#clock{font-size:16px}.controls{gap:6px}}
 @media(max-width:750px){
  main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(200px,1fr) auto minmax(0,180px) auto}
  body.event-panel-collapsed main{grid-template-rows:minmax(200px,1fr) auto}
  body.boat-compare-open main{grid-template-rows:minmax(200px,1fr) auto minmax(0,180px)}
  #eventImage{max-height:230px;width:auto;max-width:100%}
 }
-@media(max-width:600px){#eventText{font-size:16px}.event-navigation button,.event-navigation select{font-size:12px;padding:7px}.event-meta{gap:10px}#eventPanel{padding:12px}.controls{display:grid;grid-template-columns:auto auto auto auto minmax(0,1fr)}#clock{justify-self:end}#timelineTrack{grid-column:1/-1}}
+@media(max-width:600px){#eventText{font-size:16px}.event-navigation button,.event-navigation select{font-size:12px;padding:7px}.event-meta{gap:10px}#eventPanel{--event-panel-padding:12px}.controls{display:grid;grid-template-columns:auto auto auto auto minmax(0,1fr)}#clock{justify-self:end}#timelineTrack{grid-column:1/-1}}
 
 /* iPhone uses two rows; popovers open below the complete toolbar. */
 html.iphone body:not(.rhumbline-setup) #mapTools{display:grid;grid-template-columns:repeat(3,38px)}
@@ -311,10 +311,18 @@ body.boat-compare-open main{--event-width:clamp(280px,28vw,440px)}
  #presentationFooter{grid-row:4}
 }
 
-#eventSetControls{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;margin-block:.45rem}
 #eventSetSelect,#publicEventTarget{max-width:100%;min-width:0}
 #onlineStatus:empty{display:none}
 
-#eventSetTitle{margin:0 0 12px;font-size:16px;overflow-wrap:anywhere}
-.event-set-name-fields{display:flex;flex-wrap:wrap;gap:6px}
-.event-set-name-fields input{flex:1 1 10em;min-width:0;background:#fff;color:#20272d;border:1px solid #b9c1c8;border-radius:5px;padding:6px 8px}
+.event-panel-header{position:sticky;top:calc(0px - var(--event-panel-padding));z-index:2;display:flex;align-items:center;gap:10px;margin-top:calc(0px - var(--event-panel-padding));margin-bottom:8px;padding:var(--event-panel-padding) 0 4px;background:#fff}
+#eventSetPicker{flex:1;min-width:0;padding:6px 0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent;font-weight:650;color:#365766}
+#eventSetPicker::after{content:" ▾";font-size:.85em}
+.event-action{display:grid;place-items:center;width:36px;height:34px;padding:6px;flex:none;color:#173d4c}
+.event-action svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.event-action svg:not(.active){display:none}
+#eventSetControls{display:block;margin:0 0 12px;padding:10px;background:#f6f7f8;border-radius:6px}
+#eventSetControls select{max-width:100%}
+#eventSetControls summary{cursor:pointer;margin:10px 0;font-size:13px;color:#365766}
+#eventSetName,#newEventSetName{width:100%;min-width:0;padding:7px;border:1px solid #b9c1c8;border-radius:5px}
+#eventSetNameForm button{margin-top:8px}
+#cancelEventEdit{margin-top:10px}

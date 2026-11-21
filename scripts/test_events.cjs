@@ -366,10 +366,10 @@ test('the tracker has separate selectors for the stævne and the presentation ev
 test('event scene changes stay in the preview until captured and undo leaves content edits intact',()=>{
  const source=fs.readFileSync('viewer/presentation.js','utf8'),nodes=new Map(),writes=[];
  const note={time:10,text:'Original',view:[0,0,100,100],settings:{boats:[],boatSearchQuery:'',boatFavouritesOnly:false,wind:true,windMode:'mean'}};
- const copy=value=>JSON.parse(JSON.stringify(value));
+ const copy=value=>JSON.parse(JSON.stringify(value)),draft=copy(note);
  const context=viewerTestContext({
   $:id=>{if(!nodes.has(id))nodes.set(id,{setAttribute(){}});return nodes.get(id);},window:{SR_READONLY:false},
-  openedEvent:note,editingNote:note,newEventDraft:null,interval:null,notes:[note],view:[0,0,100,100],
+  openedEvent:note,editingNote:draft,editedEventOriginal:note,eventEditTarget:draft,newEventDraft:null,interval:null,notes:[note],view:[0,0,100,100],
   sceneCameraBaseline:[0,0,100,100],sceneCameraEdited:false,followedScene:false,followedBoatId:null,
   sceneUndo:null,sceneFeedback:'',boatSearchQuery:'',boats:[{name:'Alpha'},{name:'Beta'}],
   boatIsDisplayed:boat=>boat.name==='Alpha',previewSettings:{...note.settings},EVENT_LAYER_KEYS:['windMode'],
@@ -377,7 +377,7 @@ test('event scene changes stay in the preview until captured and undo leaves con
   eventSettings:settings=>settings,eventGates:()=>[],eventMeasurement:()=>[],
   currentMeasurement:()=>[],currentGateMeasurement:()=>[],
   validatedEventVideo:()=>null,persistNotes:next=>{writes.push(copy(next));return true;},
-  restoreNote(){},finishInlineTextEditing:()=>true,updateTimeline(){},requestRender(){}
+  restoreNote(){},finishInlineTextEditing:()=>true,updateEventAction(){},updateTimeline(){},requestRender(){}
  });
  vm.runInContext(`
   function sceneSettings(){return {...previewSettings};}
@@ -389,17 +389,18 @@ test('event scene changes stay in the preview until captured and undo leaves con
  assert.equal(writes.length,0);
  assert.match(nodes.get('eventSceneStatus').textContent,/Udsnit · Både · Lag · 1 båd/);
  nodes.get('captureEventScene').onclick();
- assert.equal(writes.length,1);
- assert.deepEqual(writes[0][0].view,[-10,-20,80,80]);
- assert.deepEqual(writes[0][0].settings.boats,['Alpha']);
- assert.equal(writes[0][0].settings.windMode,'gust');
- assert.equal(writes[0][0].settings.boatSearchQuery,'');
- context.updateEventContent(note,{text:'Ny tekst'});
+ assert.equal(writes.length,0);
+ assert.deepEqual(copy(draft.view),[-10,-20,80,80]);
+ assert.deepEqual(copy(draft.settings.boats),['Alpha']);
+ assert.equal(draft.settings.windMode,'gust');
+ assert.equal(draft.settings.boatSearchQuery,'');
+ context.updateEventContent(draft,{text:'Ny tekst'});
  nodes.get('undoEventScene').onclick();
- assert.equal(writes.length,3);
- assert.equal(writes[2][0].text,'Ny tekst');
- assert.deepEqual(writes[2][0].view,[0,0,100,100]);
- assert.equal(writes[2][0].settings.windMode,'mean');
+ assert.equal(draft.text,'Ny tekst');
+ assert.deepEqual(copy(draft.view),[0,0,100,100]);
+ assert.equal(draft.settings.windMode,'mean');
+ assert.equal(note.text,'Original');
+ assert.equal(writes.length,0);
 });
 
 test('layout resize preserves the preview centre and geographic scale',()=>{
@@ -411,71 +412,24 @@ test('layout resize preserves the preview centre and geographic scale',()=>{
  assert.equal(Math.max(next[2]/changed.width,next[3]/changed.height),Math.max(view[2]/rect.width,view[3]/rect.height));
 });
 
-test('renaming a local event set updates its visible name and its exported document',async()=>{
- const boot=fs.readFileSync('viewer/boot.js','utf8');
- const online=fs.readFileSync('viewer/online.js','utf8');
- const nodes=new Map(),element=()=>({setAttribute(){},append(){},replaceChildren(){}});
- const context=viewerTestContext({
-  window:{SR_READONLY:false},notes:[],speedPins:[],eventStorage:storage(),
-  eventServiceAvailable:()=>false,$:id=>{if(!nodes.has(id))nodes.set(id,element());return nodes.get(id);},
-  Option:class{},document:{createElement:element,querySelector:element,body:element()}
- });
- context.window.SRStorage=null;
- vm.runInContext(boot.slice(boot.indexOf('function validatePresentationDocument'),boot.indexOf('(async()=>{')),context);
- vm.runInContext(online,context);
- context.initializeOnlineEvents();
- nodes.get('eventSetName').value='  Mit lokale sæt  ';
- await nodes.get('eventSetNameForm').onsubmit({preventDefault(){}});
- assert.equal(nodes.get('eventSetTitle').textContent,'Mit lokale sæt');
- assert.equal(nodes.get('eventSetTitle').hidden,false);
- assert.deepEqual(JSON.parse(context.presentationJSON()),{version:1,notes:[],speedPins:[],title:'Mit lokale sæt'});
- const key=vm.runInContext('localEventSetKey',context);
- assert.equal(JSON.parse(context.eventStorage.getItem(key)).title,'Mit lokale sæt');
- nodes.get('eventSetName').value='';
- await nodes.get('eventSetNameForm').onsubmit({preventDefault(){}});
- assert.equal(nodes.get('eventSetTitle').hidden,true);
- assert.equal(Object.hasOwn(JSON.parse(context.presentationJSON()),'title'),false);
-});
-
-test('an edit made while publishing stays in the event-set draft under the new revision',async()=>{
- const source=fs.readFileSync('viewer/online.js','utf8'),draft=storage();
- const sent={version:1,notes:[{time:10,text:'Til udgivelse'}],speedPins:[],title:'Til udgivelse'};
- const context=viewerTestContext({
-  notes:[{time:10,text:'Rettet under udgivelse'}],speedPins:[],eventStorage:draft,
-  eventSetDraftKey:source=>'draft:'+source,refreshPresentationEvents(){},
-  currentEventSetData:()=>sent,eventSetDocument:null,eventSetRevision:'version-a'
- });
- vm.runInContext(source,context);
- assert.equal(context.recordEventSetSave('public:default',sent,{revision:'version-b',document:sent}),true);
- assert.deepEqual(JSON.parse(draft.getItem('draft:public:default')),{
-  revision:'version-b',document:{version:1,notes:[{time:10,text:'Rettet under udgivelse'}],speedPins:[],title:'Til udgivelse'}
- });
-});
-
-test('a private event set and its draft images use only owner-scoped private endpoints',async()=>{
+test('saving an image for an eventsæt keeps the original reference until the set saves',async()=>{
  const source=fs.readFileSync('viewer/online.js','utf8'),calls=[];
- const id='12345678-1234-1234-1234-123456789abc',privateImage='private-event-images/'+id+'.webp';
- const document={version:1,title:'Mit private sæt',notes:[{time:20,text:'Privat tekst',private:true,privateId:id,
-  image:{id,name:'Foto',url:'event-images/'+id+'.webp',draft:true}}],speedPins:[]};
+ const id='12345678-1234-1234-1234-123456789abc';
+ const original={id,url:'event-images/'+id+'.webp',draft:true};
+ const note={time:20,text:'Foto',image:original};
  const context=viewerTestContext({
-  structuredClone,privateEventSetAPI:path=>path+'?owner=7',
-  privateEventImage:image=>image.url.startsWith('private-event-images/'),
-  readDraftImage:async()=>({type:'image/webp'}),
-  sendEventImage:async(blob,imageId,isPrivate)=>{assert.equal(isPrivate,true);return {id:imageId,url:privateImage};},
-  fetch:async(path,request)=>{
-   calls.push([path,JSON.parse(request.body)]);
-   return {ok:true,json:async()=>({revision:'new-private'})};
+  privateEventImage:()=>false,
+  readDraftImage:async image=>{assert.equal(image,original);return {type:'image/webp'};},
+  sendEventImage:async(blob,imageId,setId)=>{
+   calls.push([blob.type,imageId,setId]);return {id:imageId,url:'set-event-images/'+imageId+'.webp'};
   }
  });
  vm.runInContext(source,context);
- const saved=await context.writeServerEventSet('private',null,document);
- assert.equal(saved.revision,'new-private');
- assert.equal(calls.length,1);
- assert.equal(calls[0][0],'/api/private-events?owner=7');
- assert.equal(calls[0][1].document.title,document.title);
- assert.equal(calls[0][1].document.notes[0].image.url,privateImage);
- assert.equal(calls[0][1].document.notes[0].image.draft,undefined);
- assert.equal(document.notes[0].image.draft,true);
+ await context.prepareEventSetImage(note,'my-set',false);
+ assert.deepEqual(calls,[['image/webp',id,'my-set']]);
+ assert.equal(note.image.url,'set-event-images/'+id+'.webp');
+ assert.equal(note.image.draft,undefined);
+ assert.equal(original.draft,true);
 });
 
 test('wind and rain have independent toolbar buttons and the grid needs no control',()=>{
@@ -548,13 +502,13 @@ test('deleting the opened event saves the remaining notes and selects the follow
  const first={time:1},current={time:2},next={time:3};
  const context=viewerTestContext({
   $:id=>{if(!nodes.has(id))nodes.set(id,{focus(){},setAttribute(){}});return nodes.get(id);},
-  notes:[first,current,next],editingNote:current,newEventDraft:null,eventSetSource:'public:default',
+  notes:[first,current,next],editingNote:current,editedEventOriginal:current,eventSetMetadata:{visibility:'public'},
   finishInlineTextEditing:()=>true,confirm:question=>{
    assert.match(question,/Tidligere kopier kan stadig findes/);
    return false;
   },
   persistNotes(remaining){context.saved=[...remaining];return true;},
-  leaveOpenedEvent(){},refreshEditedEvent(){},restoreNote(note){context.opened=note;}
+  leaveOpenedEvent(){},refreshEditedEvent(){},syncActiveEventSet(){},restoreNote(note){context.opened=note;}
  });
  vm.runInContext(source.slice(source.indexOf("$('deleteNote').onclick"),source.indexOf("$('placeNote').onclick")),context);
  nodes.get('deleteNote').onclick();

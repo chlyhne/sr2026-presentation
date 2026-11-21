@@ -3,7 +3,7 @@ const eventImageUploads=new Map(),eventImageErrors=new WeakMap();
 let imageUploadToken=0;
 let shownEventImageId=null,eventImageRenderToken=0;
 let panelEventImage=null,panelEventImageNote=null,mapImageView=null,mapImageToken=0;
-const validEventImageURL=url=>/^\/?(?:private-)?event-images\/[0-9a-f-]{36}\.(webp|png|jpg)$/.test(url||'');
+const validEventImageURL=url=>/^\/?(?:(?:private|set)-)?event-images\/[0-9a-f-]{36}\.(webp|png|jpg)$/.test(url||'');
 const privateEventImage=image=>image.url?.startsWith('private-event-images/');
 const eventImageExtensions={'image/webp':'webp','image/png':'png','image/jpeg':'jpg'};
 const draftImageURLs=new Map();
@@ -30,10 +30,11 @@ async function readDraftImage(image){
  if(!blob)throw new SRMessageError('Billedet mangler i den lokale kladde.');
  return blob;
 }
-function eventImageSource(image){
+function eventImageSource(image,setId=eventSetMetadata.id){
  if(!validEventImageURL(image?.url))throw new SRMessageError('Billedets serveradresse mangler.');
  if(!image.draft){
   if(privateEventImage(image))return privateEventSetAPI('/api/'+image.url);
+  if(image.url.startsWith('set-event-images/'))return managedEventSetPath('/api/event-set-images/'+image.url.split('/').at(-1),setId);
   const path=image.url.replace(/^\//,'');
   return eventServiceAvailable()?'/api/'+path:path;
  }
@@ -105,16 +106,10 @@ async function saveEventImage(blob){
   await draftImageTransaction('readwrite',store=>store.put(blob,id));
   return {id,url,draft:true};
 }
-async function sendEventImage(blob,id,isPrivate=false){
-  const path=isPrivate?privateEventSetAPI('/api/private-event-images')+'&id='+encodeURIComponent(id):'/api/event-images'+(id?'?id='+encodeURIComponent(id):'');
-  const response=await fetch(path,{method:'POST',headers:{'Content-Type':blob.type},body:blob});
-  if(!response.ok){
-   const {error}=await response.json().catch(()=>({}));
-   const failure=new SRMessageError(error||'Serveren kunne ikke gemme billedet. Start vieweren med python3 scripts/serve_viewer.py.');
-   failure.status=response.status;throw failure;
-  }
-  const {id:savedId,url:savedURL}=await response.json();
-  return {id:savedId,url:savedURL};
+async function sendEventImage(blob,id,setId){
+  return eventSetRequest(managedEventSetPath('/api/event-set-images/'+id,setId),{
+   method:'POST',headers:{'Content-Type':blob.type},body:blob
+  });
 }
 function setAttachedEventImage(image,target=editingNote){
  return updateEventContent(target,{image});
@@ -123,7 +118,7 @@ function currentAttachedImage(){return editingNote?.image;}
 function updateImageEditor(){
  const image=currentAttachedImage(),loading=eventImageUploads.has(editingNote);
  $('removeNoteImage').hidden=$('cropNoteImage').hidden=!image;
- $('cropNoteImage').disabled=$('removeNoteImage').disabled=$('save').disabled=loading;
+ $('cropNoteImage').disabled=$('removeNoteImage').disabled=loading;
  srBind($('noteImageStatus'),'textContent',()=>loading?srText('Klargør billede …'):eventImageErrors.has(editingNote)?srErrorText(eventImageErrors.get(editingNote)):'');
 }
 $('chooseNoteImage').onclick=()=>{
@@ -132,21 +127,21 @@ $('chooseNoteImage').onclick=()=>{
 $('noteImage').onchange=async()=>{
  const file=$('noteImage').files[0],target=editingNote;if(!file||!target)return;
  const token=++imageUploadToken;eventImageUploads.set(target,token);eventImageErrors.delete(target);
- updateImageEditor();
+ updateImageEditor();updateEventAction();
  try{
   const image=await prepareEventImage(file);
-  if(eventImageUploads.get(target)!==token||(!notes.includes(target)&&target!==newEventDraft))return;
+  if(eventImageUploads.get(target)!==token||!isEventEditDraft(target))return;
   if(!setAttachedEventImage(image,target))throw new SRMessageError('Billedet kunne ikke gemmes til eventet.');
   refreshPresentationEvents();requestRender();
  }catch(error){
   if(eventImageUploads.get(target)===token){
    eventImageErrors.set(target,error);
-   if(target!==editingNote&&(notes.includes(target)||target===newEventDraft))
+   if(target!==editingNote&&isEventEditDraft(target))
     srBind($('presentationMessage'),'textContent',()=>srText('Billede til “{0}”: {1}',eventNoteLabel(target),srErrorText(error)));
   }
  }finally{
   if(eventImageUploads.get(target)===token)eventImageUploads.delete(target);
-  updateImageEditor();
+  updateImageEditor();updateEventAction();
  }
 };
 $('removeNoteImage').onclick=()=>{
@@ -157,7 +152,7 @@ $('removeNoteImage').onclick=()=>{
 async function renderEventImage(image,note){
  panelEventImage=image||null;panelEventImageNote=note||null;
  if(mapImageView&&(mapImageView.note!==panelEventImageNote||mapImageView.imageId!==image?.id))hideMapEventImage();
- const id=image?JSON.stringify([image.id,image.url,image.draft]):null;if(id===shownEventImageId){syncEventImageVisibility();return;}
+ const id=image?JSON.stringify([image.id,image.url,image.draft,eventSetMetadata.id]):null;if(id===shownEventImageId){syncEventImageVisibility();return;}
  shownEventImageId=id;const token=++eventImageRenderToken;
  $('eventImageFigure').hidden=true;$('eventImage').removeAttribute('src');$('eventImageStatus').textContent='';
  if(!id)return;
@@ -172,8 +167,9 @@ async function renderEventImage(image,note){
  }catch(error){if(token===eventImageRenderToken)srBind($('eventImageStatus'),'textContent',()=>srErrorText(error));}
 }
 async function embedEventImages(document,{draftOnly=false}={}){
+ const setId=eventSetMetadata.id;
  for(const note of document.notes)if(note.image?.id&&(!draftOnly||note.image.draft)){
-  const response=await fetch(await eventImageSource(note.image));if(!response.ok)throw new SRMessageError("Billedet til “{0}” mangler. Eksporten er ikke gemt.",note.text||note.image.name);
+  const response=await fetch(await eventImageSource(note.image,setId));if(!response.ok)throw new SRMessageError("Billedet til “{0}” mangler. Eksporten er ikke gemt.",note.text||note.image.name);
   const blob=await response.blob();delete note.image.draft;
   note.image.dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
  }

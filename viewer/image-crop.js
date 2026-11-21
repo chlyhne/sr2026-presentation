@@ -11,7 +11,7 @@ function renderImageCrop(){
 }
 function closeImageCrop(){
  const state=imageCropState;imageCropState=null;
- if(state?.uploadToken&&eventImageUploads.get(state.target)===state.uploadToken){eventImageUploads.delete(state.target);updateImageEditor();}
+ if(state?.uploadToken&&eventImageUploads.get(state.target)===state.uploadToken){eventImageUploads.delete(state.target);updateImageEditor();updateEventAction();}
  $('imageCropDialog').close();$('imageCropSource').removeAttribute('src');$('imageCropStage').hidden=true;
 }
 async function openImageCrop(){
@@ -86,7 +86,7 @@ $('applyImageCrop').onclick=async()=>{
  const {x,y,width,height}=state.rect;
  if(x===0&&y===0&&width===state.bitmap.naturalWidth&&height===state.bitmap.naturalHeight){closeImageCrop();return;}
  const token=++imageUploadToken;state.uploadToken=token;state.saving=true;state.gesture=null;
- eventImageUploads.set(state.target,token);updateImageEditor();
+ eventImageUploads.set(state.target,token);updateImageEditor();updateEventAction();
  $('imageCropFields').disabled=true;$('applyImageCrop').disabled=$('resetImageCrop').disabled=true;
  srBind($('imageCropStatus'),'textContent',()=>srText('Gemmer beskæring …'));
  try{
@@ -100,7 +100,7 @@ $('applyImageCrop').onclick=async()=>{
  }catch(error){if(imageCropState===state)srBind($('imageCropStatus'),'textContent',()=>error.message?srErrorText(error):srText('Beskæringen kunne ikke gemmes. Prøv igen.'));}
  finally{
   if(eventImageUploads.get(state.target)===token)eventImageUploads.delete(state.target);
-  updateImageEditor();refreshPresentationEvents();requestRender();
+  updateImageEditor();updateEventAction();refreshPresentationEvents();requestRender();
   if(imageCropState===state){state.saving=false;$('imageCropFields').disabled=false;$('applyImageCrop').disabled=$('resetImageCrop').disabled=false;}
  }
 };

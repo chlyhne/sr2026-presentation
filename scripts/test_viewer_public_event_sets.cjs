@@ -35,7 +35,8 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   await page.locator('#eventPanelToggle').click();
   const startTime=await page.evaluate(()=>currentTime());
   const nextSet=page.waitForResponse(response=>response.url().endsWith('/presentations/testsaet.json'));
-  await page.locator('#eventSetSelect').selectOption('public:testsaet');
+  await page.locator('#eventSetPicker').click();
+  await page.locator('#eventSetSelect').selectOption('set:testsaet');
   assert.equal((await nextSet).ok(),true);
   await page.waitForFunction(text=>notes[0].text===text,alternate.notes[0].text);
   assert.equal(await page.evaluate(()=>notes.length),alternate.notes.length);
@@ -46,6 +47,19 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
   assert.equal(await page.evaluate(()=>document.location.href),url.href);
   assert.ok(requests.some(request=>new URL(request).pathname.startsWith('/test/event-images/')));
   assert.ok(!requests.some(request=>new URL(request).pathname.startsWith('/api/')));
+  // The published view has a local editor even with the older config.
+  await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:'Redigér event',exact:true}).click();
+  await page.locator('#eventTextEditor').fill('Rettelse gemt i browseren');
+  await page.getByRole('button',{name:'Gem event',exact:true}).click();
+  await page.waitForFunction(()=>$('onlineStatus').textContent==='Gemt lokalt.');
+  await page.locator('#eventSetPicker').click();
+  await page.locator('#eventSetSelect').selectOption('set:default');
+  await page.waitForFunction(()=>eventSetSource==='set:default'&&!eventSetBusy);
+  await page.locator('#eventSetPicker').click();
+  await page.locator('#eventSetSelect').selectOption('set:testsaet');
+  await page.waitForFunction(()=>eventSetSource==='set:testsaet'&&!eventSetBusy);
+  assert.equal(await page.evaluate(()=>notes[0].text),'Rettelse gemt i browseren');
   assert.deepEqual(errors,[]);
   console.log('Firefox: standard and named sets and their published images load under a prefixed static viewer.');
  }finally{await browser.close();}

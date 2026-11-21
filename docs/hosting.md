@@ -19,15 +19,10 @@ er fortsat Sjælland Rundts dokument; Silverrudder bruger
 `presentation/silverrudder-2025.json`. Buildet kræver de konfigurerede dokumenter. Dine gamle browsernoter
 ændres ikke af et build. [Importér dem](migration.md), før du deler den færdige præsentation.
 
-Online gemninger sker gennem GitHub App på brugerens vegne og kan udløse Pages-workflowet.
-Brug ikke workflowets `GITHUB_TOKEN` til at gemme præsentationen med forventning om,
-at det starter et nyt push-workflow. Besøgende med onlinefunktionerne aktiveret kan hente et opdateret offentligt
-sæt fra serveren med eventvælgeren.
-
-GitHub App skal installeres på dette repository med **Contents: Read and write**
-og **Metadata: Read**. Workflow- og administratorrettigheder er ikke nødvendige
-for redigeringen. Branchbeskyttelse gælder stadig: hvis direkte skrivning til `main`
-er blokeret, skal udgivelsesarbejdsgangen tilpasses den politik.
+Med Workers serverfunktioner aktiveret gemmes eventsæt og deres billeder i R2.
+Eventsætvælgeren læser de aktuelle offentlige sæt direkte fra Workeren.
+GitHub App bekræfter identitet og udgivelsesrettigheder. Pages-workflowet bruges
+til selve trackeren og de statiske præsentationsfiler.
 
 Kilde: [GitHub Pages med egne workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 

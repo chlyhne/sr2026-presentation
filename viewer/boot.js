@@ -27,6 +27,8 @@ const eventSetFields={'sr2026-notes':'notes','sr2026-speed-pins':'speedPins'};
 let eventSetSource=localEventSource;
 let eventSetRevision=null;
 let eventSetDocument=null;
+let eventSetMetadata={visibility:'private',owner:null};
+let eventSetBusy=false;
 function eventSetDraftKey(source){return 'sr2026-event-set:'+source;}
 function readLocalEventSet(){
  const saved=eventStorage.getItem(localEventSetKey);
@@ -42,7 +44,7 @@ function writeEventSetDraft(document){
  if(eventSetSource===localEventSource){
   eventStorage.setItem(localEventSetKey,JSON.stringify(document));return;
  }
- eventStorage.setItem(eventSetDraftKey(eventSetSource),JSON.stringify({revision:eventSetRevision,document}));
+ eventStorage.setItem(eventSetDraftKey(eventSetSource),JSON.stringify({revision:eventSetRevision,document,...eventSetMetadata}));
  eventSetDocument=document;
 }
 function initializeEventSetStorage(){
@@ -68,17 +70,14 @@ function initializeEventSetStorage(){
  window.SR_RHUMBLINE_SETUP=routeSetup;
  window.SR_SETUP_COURSE=new URLSearchParams(location.search).get('course')||Object.keys(event.courses)[0];
  if(!Object.hasOwn(event.courses,window.SR_SETUP_COURSE))throw Error(srText('Ukendt bane til rhumbline.'));
- window.SR_READONLY=!local&&!eventServiceAvailable();
+ window.SR_READONLY=routeSetup;
  initializeEventSetStorage();
  if(routeSetup){
   window.SR_READONLY=true;
   const isolated=new Map([['sr2026-notes','[]'],['sr2026-speed-pins','[]']]);
   window.SRStorage={getItem:key=>isolated.get(key)??null,setItem:()=>{}};
  }
- if(window.SR_READONLY&&!local){
-  eventSetDocument=await readPublishedEventSet('default');
-  eventSetSource='public:default';
- }
+
  updateViewerLoading(5);
  const files=['track-time','tracks','track-local-data','track-source-codec','prepared-track-codec','replay-data','boat-details','boat-icons','weather','viewer','rendering','vendor/earcut','background-renderer','traffic','military','rhumbline-geometry','navigation-math','navigation','track-files','track-preparation','track-renderer','ghost-math','ghosts','speed-pins','boat-list','timeline','gate-timing','boat-compare','drawings','event-images','image-crop','event-videos','inline-text','event-panel','presentation','online',...(routeSetup?['rhumbline-editor']:[])];
  const preparationWeight=60,totalSteps=files.length+preparationWeight;
@@ -144,6 +143,7 @@ function initializeEventSetStorage(){
  updateViewerLoading(100);
  await new Promise(resolve=>requestAnimationFrame(resolve));
  assertRenderingReady();
+ await initializeOnlineEvents();
  $('viewerLoading').hidden=true;document.documentElement.classList.remove('viewer-loading');
  document.body.setAttribute('aria-busy','false');document.querySelector('main').inert=false;
  srOnLanguageChange(()=>{
@@ -156,6 +156,5 @@ function initializeEventSetStorage(){
   boatCompareRenderKey='';if(!SIMPLE_IPHONE_TRACKS)renderBoatCompare();
   if($('inlineTextStatus').textContent)$('inlineTextStatus').textContent=$('annotationStatus').textContent;
  });
- initializeOnlineEvents();
  window.SRClientDiagnostics?.report('ready',srText('Kortet er klar'));
 })().catch(showViewerLoadingError);

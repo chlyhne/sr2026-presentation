@@ -389,3 +389,66 @@ test('popup OAuth returns to a same-origin completion page instead of navigating
  const denied=await request('/auth/callback?state=popup-state&error=access_denied',{headers:{Cookie:'__Host-sr-oauth='+pending}},null);
  assert.equal(denied.headers.get('Location'),'/auth/complete?popup='+attempt+'&cancelled=1');
 });
+
+test('managed sets isolate private documents and images and list public sets after a visibility change',async()=>{
+ const objects=new Map();
+ const metadata=(key,item)=>({key,etag:item.etag,customMetadata:item.customMetadata});
+ const store={
+  async head(key){const item=objects.get(key);return item?metadata(key,item):null;},
+  async get(key){
+   const item=objects.get(key);if(!item)return null;
+   const response=new Response(item.bytes);
+   return {...metadata(key,item),body:response.body,json:()=>response.json(),arrayBuffer:()=>response.arrayBuffer()};
+  },
+  async list({prefix}){
+   return {truncated:false,objects:[...objects].filter(([key])=>key.startsWith(prefix)).map(([key,item])=>metadata(key,item))};
+  },
+  async put(key,body,{onlyIf,customMetadata}={}){
+   const current=objects.get(key);
+   if(onlyIf?.has('If-None-Match')&&current||onlyIf?.has('If-Match')&&onlyIf.get('If-Match')!=='"'+current?.etag+'"')return null;
+   const bytes=Buffer.from(body),etag=createHash('md5').update(bytes).digest('hex');
+   objects.set(key,{bytes,etag,customMetadata});
+   return {etag};
+  }
+ };
+ const bindings={...env,PRIVATE_EVENTS:store};
+ const owner={id:7,token:'member',canPublish:false,exp:Math.floor(Date.now()/1000)+600},stranger={...owner,id:8};
+ const author={...owner,canPublish:true};
+ mockGithub('write',(url)=>{
+  if(url==='https://api.github.com/user')return reply({id:7,login:'writer'});
+  if(url.startsWith('https://raw.githubusercontent.com/'))return reply(document);
+ });
+ const id='11111111-1111-4111-8111-111111111111',photo='22222222-2222-4222-8222-222222222222';
+ const list='/api/event-sets?event=sjaelland-rundt-2026';
+ const url=list+'&set='+id,assetPath='/api/event-set-images/'+photo;
+ const asset=assetPath+'.webp?event=sjaelland-rundt-2026&set='+id;
+ const call=(path,opts,session=owner)=>request(path,opts,session,bindings);
+ const payload={...document,title:'Mit nye sæt',notes:[{...document.notes[0],image:{id:photo,name:'Foto',url:'set-event-images/'+photo+'.webp'}}]};
+ const put=(visibility,revision,session=owner)=>call(url,{method:'PUT',body:JSON.stringify({revision,visibility,document:payload})},session);
+ const upload={method:'POST',headers:{'Content-Type':'image/webp'},body:Buffer.from('RIFFXXXXWEBPfoto')};
+ assert.equal((await call(assetPath+'?set='+id,upload,null)).status,401);
+ assert.equal((await call(assetPath+'?set='+id,upload)).status,201);
+ assert.equal((await call(asset,{})).status,404,'staged images are hidden until referenced');
+ assert.equal((await put('public',null)).status,403);
+ const created=await put('private',null);assert.equal(created.status,200);
+ const first=await created.json();assert.equal(first.visibility,'private');
+ assert.equal((await call(asset,{})).status,200);
+ assert.equal((await call(asset,{},stranger)).status,404);
+ assert.equal((await call(url,{},stranger)).status,404);
+ assert.equal((await (await call(list,{},stranger)).json()).sets.some(set=>set.id===id),false);
+ assert.equal((await (await call(list,{})).json()).sets.find(set=>set.id===id).title,'Mit nye sæt');
+ assert.equal((await put('private',first.revision,stranger)).status,404);
+ const promoted=await put('public',first.revision,author);assert.equal(promoted.status,200);
+ const second=await promoted.json();assert.notEqual(second.revision,first.revision);
+ assert.equal((await (await call(list,{},null)).json()).sets.find(set=>set.id===id).visibility,'public');
+ assert.equal((await call(asset,{},null)).status,200);
+ assert.equal((await put('private',first.revision,author)).status,409);
+ assert.equal((await put('private',second.revision,author)).status,200);
+ assert.equal((await call(asset,{},null)).status,404);
+ assert.equal((await call(url,{},null)).status,404);
+ const seedUrl=list+'&set=default',seed=await (await call(seedUrl,{},null)).json();
+ assert.equal(seed.visibility,'public');
+ assert.equal((await call(seedUrl,{method:'PUT',body:JSON.stringify({revision:seed.revision,visibility:'private',document})},author)).status,200);
+ assert.equal((await (await call(list,{},null)).json()).sets.some(set=>set.id==='default'),false);
+ assert.equal((await call(seedUrl,{},null)).status,404,'a private managed seed never exposes the old public document through the API');
+});

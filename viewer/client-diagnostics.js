@@ -32,7 +32,7 @@
  },true);
  window.addEventListener('unhandledrejection',event=>report('unhandledrejection',event.reason));
  function reloadSafe(){
-  if(typeof newEventDraft!=='undefined'&&newEventDraft)return false;
+  if(typeof editingNote!=='undefined'&&editingNote)return false;
   if(typeof eventImageUploads!=='undefined'&&eventImageUploads.size)return false;
   if(typeof inlineTextSession!=='undefined'&&inlineTextSession&&document.getElementById('eventTextEditor').value!==inlineTextSession.text)return false;
   if(typeof drawingGesture!=='undefined'&&drawingGesture)return false;

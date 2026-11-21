@@ -132,17 +132,56 @@
 
 <section id="boatComparePanel" aria-label="Sammenlign både" hidden data-i18n-attrs="aria-label"><h2 data-i18n>Sammenlign både</h2><label for="boatCompareReference" data-i18n>Referencebåd</label><select id="boatCompareReference"><option value="" data-i18n>Ingen referencebåd</option></select><label for="boatCompareMetric" data-i18n>Måling</label><select id="boatCompareMetric"><option value="speed" data-i18n>Hastighed · knob</option><option value="pace" data-i18n>Tempo · sekunder pr. sømil</option></select><button id="boatCompareResetZoom" type="button" title="Vis hele skalaen" hidden data-i18n-attrs="title">1:1</button><p id="boatCompareScope"></p><div id="boatComparePlots"></div></section>
 <section id="eventPanel" aria-label="Valgt event" data-i18n-attrs="aria-label">
-  <h2 id="eventSetTitle" hidden></h2>
-  <div id="eventSetControls" hidden>
-    <label for="eventSetSelect" data-i18n>Eventsæt</label>
-    <select id="eventSetSelect"></select>
-    <button id="cancelEventLogin" type="button" hidden data-i18n>Annullér login</button>
+  <div class="event-panel-header">
+    <button id="eventSetPicker" type="button" aria-expanded="false" aria-controls="eventSetControls"></button>
+    <button id="eventAction" type="button" class="event-action" hidden>
+      <svg data-event-action="add" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      <svg data-event-action="edit" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6 4 4M4 20l4-.8L20 7l-4-4L4.8 16z"/></svg>
+      <svg data-event-action="save" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h13l3 3v13H4zM8 4v6h8V4M8 20v-6h8v6"/></svg>
+    </button>
   </div>
+  <div id="eventSetControls" hidden>
+    <label for="eventSetSelect" class="sr-only" data-i18n>Eventsæt</label>
+    <select id="eventSetSelect" size="7"></select>
+    <div class="button-row">
+      <button id="newEventSet" type="button" data-i18n>Nyt eventsæt</button>
+      <button id="eventSetLogin" type="button" hidden data-i18n>Log ind med GitHub</button>
+      <button id="cancelEventLogin" type="button" hidden data-i18n>Annullér login</button>
+      <button id="eventSetLogout" type="button" hidden data-i18n>Log ud</button>
+    </div>
+    <details id="presentationOptions">
+      <summary data-i18n>Indstillinger for eventsæt</summary>
+      <form id="eventSetNameForm">
+        <label for="eventSetName" data-i18n>Eventsættets navn</label>
+        <input id="eventSetName" type="text" maxlength="100" required>
+        <label for="eventSetVisibility" data-i18n>Synlighed</label>
+        <select id="eventSetVisibility"><option value="private" data-i18n>Privat</option><option value="public" data-i18n>Offentligt</option></select>
+        <button type="submit" data-i18n>Gem indstillinger</button>
+      </form>
+      <div class="editor-actions button-row">
+        <button id="loadServerEventSet" type="button" hidden data-i18n>Hent serverversion</button>
+        <button id="export" type="button" data-i18n>Eksportér noter</button>
+        <button id="downloadPreviousEventDraft" type="button" hidden data-i18n>Hent tidligere kladde</button>
+      </div>
+    </details>
+  </div>
+  <dialog id="newEventSetDialog" aria-labelledby="newEventSetTitle">
+    <form id="newEventSetForm">
+      <h2 id="newEventSetTitle" data-i18n>Nyt eventsæt</h2>
+      <label for="newEventSetName" data-i18n>Eventsættets navn</label>
+      <input id="newEventSetName" type="text" maxlength="100" required>
+      <div class="button-row">
+        <button type="submit" data-i18n>Opret eventsæt</button>
+        <button id="cancelNewEventSet" type="button" data-i18n>Annullér</button>
+      </div>
+    </form>
+  </dialog>
   <p id="onlineStatus" role="status"></p>
+  <button id="retrySaveEventSet" type="button" hidden data-i18n>Prøv at gemme igen</button>
   <div class="event-summary" aria-live="polite" aria-atomic="true">
-    <div class="event-meta"><span id="eventCounter"></span><time id="eventTime"></time><span id="privateEventBadge" hidden data-i18n>Privat</span></div>
+    <div class="event-meta"><span id="eventCounter"></span><time id="eventTime"></time></div>
     <p id="eventText" data-empty-label="Klik for at tilføje tekst" data-i18n-attrs="data-empty-label"></p>
-    <textarea id="eventTextEditor" rows="4" maxlength="900" aria-label="Redigér eventtekst" title="Klik udenfor eller tryk Ctrl+Enter for at gemme i kladden. Escape annullerer." hidden data-i18n-attrs="aria-label title"></textarea>
+    <textarea id="eventTextEditor" rows="4" maxlength="900" aria-label="Redigér eventtekst" title="Ctrl+Enter gemmer eventet. Escape annullerer ændringerne." hidden data-i18n-attrs="aria-label title"></textarea>
     <p id="inlineTextStatus" class="help" role="status"></p>
   </div>
   <p id="presentationMessage" class="help" role="status"></p>
@@ -158,10 +197,6 @@
   <p id="speedPinStatus" class="help" role="status"></p>
   <p id="annotationStatus" role="status"></p>
   <div id="eventEditor" hidden>
-    <div class="button-row">
-      <button id="newEvent" type="button" data-i18n>Nyt event her</button>
-      <button id="finishEventEdit" type="button" hidden data-i18n>Færdig</button>
-    </div>
     <div id="eventContentTools" hidden>
       <div class="button-row">
         <button id="chooseNoteImage" type="button" data-i18n>Upload billede</button>
@@ -206,31 +241,8 @@
           <button id="deleteNote" type="button" hidden data-i18n>Slet event</button>
         </div>
       </details>
-      <div id="newEventActions" class="button-row" hidden>
-        <button id="save" type="button" data-i18n>Opret event</button>
-        <button id="cancelNewEvent" type="button" data-i18n>Annullér</button>
-      </div>
+      <button id="cancelEventEdit" type="button" data-i18n>Annullér</button>
     </div>
-    <details id="presentationOptions">
-      <summary data-i18n>Indstillinger for eventsæt</summary>
-      <form id="eventSetNameForm">
-        <label for="eventSetName" data-i18n>Eventsættets navn</label>
-        <div class="event-set-name-fields">
-          <input id="eventSetName" type="text" maxlength="100">
-          <button id="saveEventSetName" type="submit" data-i18n>Gem navn</button>
-        </div>
-      </form>
-      <div class="editor-actions button-row">
-        <button id="eventSetLogout" type="button" hidden data-i18n>Log ud</button>
-        <label for="publicEventTarget" id="publicEventTargetLabel" hidden data-i18n>Offentligt målsæt</label>
-        <select id="publicEventTarget" hidden></select>
-        <button id="savePrivateEvents" type="button" hidden data-i18n>Gem privat</button>
-        <button id="publishPublicEvents" type="button" hidden data-i18n>Udgiv offentligt</button>
-        <button id="loadServerEventSet" type="button" hidden data-i18n>Hent serverversion</button>
-        <button id="export" type="button" data-i18n>Eksportér noter</button>
-        <button id="downloadPreviousEventDraft" type="button" hidden data-i18n>Hent tidligere kladde</button>
-      </div>
-    </details>
   </div>
 </section>
 <footer id="editingTimeline"><div class="controls">
