@@ -21,10 +21,11 @@ def public_event_files(event):
         yield f'presentations/{set_id}.json', event_set['presentationFile']
 
 
-def tracker_html(event_id, asset_root=''):
+def tracker_html(event_id, asset_root='', config_url='config.js'):
     event_config(event_id)
     template = (ROOT / 'viewer/tracker.html').read_text(encoding='utf-8')
     if asset_root:
         template = re.sub(r'((?:src|href)=")((?!config\.js")[\w-]+\.(?:js|css))"', rf'\1{asset_root}\2"', template)
+    template = template.replace('src="config.js"', f'src="{config_url}"')
     return template.replace('<html lang="da"', f'<html lang="da" data-event-id="{event_id}"', 1).replace(
         '<meta charset="utf-8">', '<meta charset="utf-8">\n<base href="../../">', 1)

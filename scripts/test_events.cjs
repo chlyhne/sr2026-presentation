@@ -115,13 +115,13 @@ test('static event shells share a template and resolve their assets at the site 
  assert.ok(landing.includes('landing.js'));assert.ok(!landing.includes('boot.js'));
 });
 
-test('packaged tracker pages use one version for code and styles while config stays at the site root',()=>{
+test('packaged tracker pages version code and styles together and config independently',()=>{
  const {execFileSync}=require('node:child_process');
  const output=execFileSync(process.platform==='win32'?'python':'python3',['-c',`
 import json, sys, tempfile
 from pathlib import Path
 sys.path.insert(0, 'scripts')
-from build_pages import package_tracker_assets
+from build_pages import package_tracker_assets, package_tracker_config
 from event_config import load_catalog, tracker_html
 with tempfile.TemporaryDirectory() as directory:
     stage = Path(directory)
@@ -129,18 +129,23 @@ with tempfile.TemporaryDirectory() as directory:
     first = package_tracker_assets(stage)
     (stage / 'viewer.js').write_text('second')
     second = package_tracker_assets(stage)
-    print(json.dumps([first, second, (stage / first / 'viewer.js').read_text(),
-        [tracker_html(event['id'], second) for event in load_catalog()['events']]]))
+    config_before = package_tracker_config(stage, 'https://old.example.com')
+    config_after = package_tracker_config(stage, 'https://tracker.example.com')
+    assert package_tracker_config(stage, 'https://tracker.example.com') == config_after
+    print(json.dumps([first, second, (stage / first / 'viewer.js').read_text(), config_before, config_after,
+        [tracker_html(event['id'], second, config_after) for event in load_catalog()['events']]]))
 `],{encoding:'utf8',windowsHide:true});
- const [first,second,firstScript,pages]=JSON.parse(output);
+ const [first,second,firstScript,configBefore,configAfter,pages]=JSON.parse(output);
+ assert.notEqual(configBefore,configAfter);
+ assert.match(configAfter,/^config\.js\?v=[a-f0-9]{20}$/);
  assert.notEqual(first,second);
  assert.equal(firstScript,'first');
  for(const html of pages){
   const assets=[...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))"/g)].map(match=>match[1]);
   assert.ok(assets.includes(second+'boot.js'));
   assert.ok(assets.includes(second+'viewer.css'));
-  assert.ok(assets.includes('config.js'));
-  assert.ok(assets.every(asset=>asset==='config.js'||asset.startsWith(second)));
+  assert.ok(html.includes('src="'+configAfter+'"'));
+  assert.ok(assets.every(asset=>asset.startsWith(second)));
  }
 });
 

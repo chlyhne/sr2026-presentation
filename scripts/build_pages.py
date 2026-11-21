@@ -56,6 +56,13 @@ def package_public_event_sets(stage, event):
     return titles
 
 
+def package_tracker_config(stage, api_base):
+    # Enable the authenticated API only where the Worker routes and cookies share the tracker origin.
+    config = f'window.SR_CONFIG={{eventService:location.origin==={json.dumps(api_base)},admin:false}};\n'
+    (stage / 'config.js').write_text(config, encoding='utf-8')
+    return 'config.js?v=' + sha256(config.encode('utf-8')).hexdigest()[:20]
+
+
 def build():
     api_base = os.environ.get('SR_API_URL', '').strip().rstrip('/')
     if api_base:
@@ -90,14 +97,10 @@ def build():
                 shutil.copyfile(path, target)
         (stage / 'events' / 'catalog.json').write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         asset_root = package_tracker_assets(stage)
+        config_url = package_tracker_config(stage, api_base)
         for event in catalog['events']:
             entry = stage / 'events' / event['id'] / 'index.html'
-            entry.write_text(tracker_html(event['id'], asset_root), encoding='utf-8')
-        # Enable the authenticated API only where the Worker routes and cookies share the tracker origin.
-        (stage / 'config.js').write_text(
-            f'window.SR_CONFIG={{eventService:location.origin==={json.dumps(api_base)},admin:false}};\n',
-            encoding='utf-8',
-        )
+            entry.write_text(tracker_html(event['id'], asset_root, config_url), encoding='utf-8')
         (stage / '.nojekyll').touch()
         if not (stage / 'index.html').is_file():
             raise ValueError('viewer/index.html is missing')
