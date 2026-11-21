@@ -7,8 +7,8 @@ Grundlag: 106 både, 730.370 originale observationer og 41.709 ti-meterstationer
 
 ## Kontroller og genbrug
 
-`node scripts/test.cjs` forbliver den hurtige standardkontrol: 48 logiktests og
-syntakskontrol, cirka 0,4 sekund, uden browser/server eller fuldt datasæt.
+`node scripts/test.cjs` forbliver den hurtige standardkontrol: logiktests og
+syntakskontrol uden browser, server eller fuldt datasæt.
 
 Ved bestilt catch-up bruges `node scripts/test.cjs --extended catch_up` med
 `SR_VIEWER_URL` og eventuelt `PLAYWRIGHT_MODULE`. `SR_TEST_KEEP_GOING=1` lader
@@ -18,17 +18,16 @@ gentages kun ved en relevant ændring eller ny konkret usikkerhed.
 
 | Testnavne | Ansvar |
 | --- | --- |
-| `gpu_preparation` | Originalpunkter, GPU-PCHIP, præcis delt tid, Float32-profiler, otte basisfixtures og oprydning ved fejl. |
-| `gpu_profiles` | Hele feltet mod en uafhængig Float64-kontrol, numerisk proveniens og seks målrettede randtilfælde. |
+| `track_files` | Aktuelle sporfiler, begge geometrier, stationsopslag på GPU, referenceskift og synlige fejl ved filproblemer. |
 | `track_geometry`, `track_bindings`, `track_joins`, `track_time_layers` | Kubisk geometri, bindings-/rækkegrænser, antialiasing og nyeste passage ved krydsninger. |
 | `scale_overflow`, `time_profiles` | Overflowfarver, manglende data, returpassager, stilstand og faktisk renderede tidsfarver. |
-| `reference_boat`, `fleet_preparation` | Alle tre sammenligningskanaler, referencevalg, ressourcegenbrug, kontekstgendannelse og fejl i kildedata. |
+| `reference_boat` | Alle tre sammenligningskanaler, referencevalg, ressourcegenbrug, kontekstgendannelse og fejl i kildedata. |
 | `playback_camera` | Zoom under afspilning, datapauser, kontinuerlig tid og handicapvisning. |
 | `navigation`, `navigation_online`, `rhumbline_setup` | Måleværktøj, referencepalet, hover, præferencer og den separate permanente rute. |
 | `pin_units`, `speed_pins` | Værdier/enheder, picking, gem/indlæs, fejlet gemning samt tids-, båd- og viewportfiltrering. |
 | `gates`, `view_controls` | Gate-/eventadfærd, rangering, scroll, tastatur, lagrækkefølge og midlertidige pins i lokal/offentlig visning. |
 
-Alle ovenstående delkontroller er gennemført. Forældede 10-bit-forventninger og
+Tabellen viser de nuværende testnavne. De tidligere målinger nedenfor stammer fra 13. november. Forældede 10-bit-forventninger og
 kald til fjernede CPU-forberedelsesfunktioner er erstattet. Ren tidsmatematik og
 stationsformat er fjernet fra den store navigationstest, da de dækkes i det
 hurtige niveau. Renderede farver, brugerinteraktion og GPU-tilstand har særskilt
@@ -69,7 +68,7 @@ to stationer har forskellig finite/overflow-status ved grænsen til naboceller m
 uendeligt tidsforbrug. Ti-meterprofiler med højst otte meters kurvesampling er
 en rumlig tilnærmelse; meget korte ekstra genbesøg og store lokale gradienter
 giver ikke en bit-identisk profil. Disse repræsentationsforskelle er synlige i
-resultatet fra `gpu_profiles`, ikke skjult som bestået bit-perfektion.
+den historiske profilkontrol.
 
 ## Ressourcer og UI
 

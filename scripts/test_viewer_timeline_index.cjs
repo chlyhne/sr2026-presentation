@@ -1,6 +1,11 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const root=path.resolve(__dirname,'..'),context=vm.createContext({window:{},$:()=>({addEventListener(){}})});
-vm.runInContext(fs.readFileSync(root+'/viewer/data.js','utf8'),context);
+const root=path.resolve(__dirname,'..'),events={addEventListener(){}};
+const context=vm.createContext({window:{...events},document:events,$:()=>({...events})});
+const event=require('../viewer/events/catalog.json').events.find(e=>e.id==='sjaelland-rundt-2026');
+const {boats:native}=JSON.parse(require('node:zlib').gunzipSync(fs.readFileSync(path.join(root,event.nativeFile))));
+context.window.DATA={start:event.start,end:event.end,boats:native.map(({id,name,points})=>({
+ id,name,points:points.map(([lon,lat,ms])=>[lon,lat,ms/1000])
+}))};
 vm.runInContext(`const D=window.DATA,boats=D.boats,ghostClocks=new Map();
 function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>=b.south&&a.south<=b.north;}`,context);
 vm.runInContext(fs.readFileSync(root+'/viewer/tracks.js','utf8'),context);

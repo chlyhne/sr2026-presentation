@@ -136,12 +136,9 @@ async function gitBlobSha(bytes) {
   const digest = await crypto.subtle.digest('SHA-1', blob);
   return Array.from(new Uint8Array(digest), octet => octet.toString(16).padStart(2, '0')).join('');
 }
-async function getDocument(env, token, documentPath) {
-  const metadata = await (await github(`${contentsPath(env, documentPath)}?ref=${encodeURIComponent(branch(env))}`, token)).json();
-  let raw;
-  if (metadata.content) raw = decoder.decode(unb64(metadata.content.replace(/\s/g, '')));
-  else raw = await (await github(`${contentsPath(env, documentPath)}?ref=${encodeURIComponent(branch(env))}`, token, {headers: {Accept: 'application/vnd.github.raw+json'}})).text();
-  return {document: JSON.parse(raw), sha: metadata.sha};
+async function getContentMetadata(env, token, path) {
+  const response = await github(`${contentsPath(env, path)}?ref=${encodeURIComponent(branch(env))}`, token);
+  return response.json();
 }
 async function putContent(env, token, path, content, message, sha) {
   return (await github(contentsPath(env, path), token, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({branch: branch(env), message, content: b64(content), ...(sha ? {sha} : {})})})).json();
@@ -178,10 +175,6 @@ async function routes(request, env, locale) {
     return new Response(null, {status: 302, headers});
   }
   if (method === 'POST' && path === '/api/logout') return new Response('{}', {headers: {'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': cookie(SESSION, '', 0)}});
-  if (method === 'GET' && path === '/api/session') {
-    try { const user = await authorize(request, env); return json({authenticated: true, canEdit: true, login: user.login}); }
-    catch (error) { if ([401, 403, 404].includes(error.status)) return json({authenticated: false, canEdit: false}); throw error; }
-  }
   if (path === '/api/presentation' && ['GET', 'PUT'].includes(method)) {
     const eventId=url.searchParams.get('event')||eventCatalog.default;
     const event = eventCatalog.events.find(event => event.id === eventId);
@@ -197,7 +190,7 @@ async function routes(request, env, locale) {
     if (!object(input)) fail(400, 'Ugyldig JSON.');
     const doc = validateDocument(input.document);
     if (!/^[a-f0-9]{40}$/.test(input.sha || '')) fail(400, 'Den indlæste versions SHA mangler.');
-    const current = await getDocument(env, user.token, documentPath);
+    const current = await getContentMetadata(env, user.token, documentPath);
     if (current.sha !== input.sha) fail(409, 'En anden version er udgivet. Eksportér din kladde og genindlæs før du udgiver igen.');
     const imageURLs = [...new Set(doc.notes.filter(n => n.image).map(n => n.image.url))];
     if (imageURLs.length) {
@@ -222,7 +215,7 @@ async function routes(request, env, locale) {
       await putContent(env, user.token, file, bytes, `Add event image by ${user.login}`);
     } catch (error) {
       if (error.status !== 409 || !url.searchParams.has('id')) throw error;
-      const existing = await (await github(`${contentsPath(env, file)}?ref=${encodeURIComponent(branch(env))}`, user.token)).json();
+      const existing = await getContentMetadata(env, user.token, file);
       if (existing.sha !== await gitBlobSha(bytes)) throw error;
     }
     return json({id, url: imagePath}, 201);

@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{test}=require('node:test');
 const source=['track-time.js','tracks.js','track-local-data.js','rhumbline-geometry.js','track-preparation-math.js'].map(name=>fs.readFileSync(path.resolve(__dirname,'../viewer',name),'utf8')).join('\n');
-const api=vm.runInNewContext(source+'\n;({prepareTrackData,prepareLocalTrackData,restoreTrackTimeSamples,trackComparisonAt,compareTrackData,buildRhumbRoute});');
+const api=vm.runInNewContext(source+'\n;({prepareTrackData,prepareLocalTrackData,restoreTrackTimeSamples,trackComparisonAt,buildRhumbRoute});');
 const route=api.buildRhumbRoute([[12,55.6],[12.1,55.6]]),start=1780000000;
 const boat=(points,speeds)=>({id:'fixture',name:'Fixture',points:points.map((p,i)=>[...p,start+i*240]),speeds});
 const straight=speed=>boat([[12,55.6],[12.1,55.6]],[speed,speed]);
@@ -40,11 +40,10 @@ test('Stored Float32 overflow markers remain infinite during preparation and com
  const reference=prepare(straight(6)),input=straight(6);input.speeds[0]=0;
  const result=prepare(input),station=Math.floor(result.mirror.stations.length/2),infinity=Math.fround(1e15);
  assert.equal(result.profile[station*4+1],infinity);
- reference.profile[1]=infinity;result.knots[2]=infinity;
- const compared=api.compareTrackData(result.knots,2,reference.profile,600,500,result.mirror.stations.length);
- assert.ok(compared.colours[2][0]<-1e19,'Two infinite densities must stay missing, not appear equal');
- reference.profile[1]=1;const finite=api.compareTrackData(result.knots,2,reference.profile,600,500,result.mirror.stations.length);
- assert.ok(finite.colours[2][0]<-1e15);
+ reference.mirror.timeStations[0]=infinity;
+ assert.ok(api.trackComparisonAt(result.mirror,reference.mirror,0,600,500)[2]<-1e19,'Two infinite densities remain missing');
+ reference.mirror.timeStations[0]=1;
+ assert.ok(api.trackComparisonAt(result.mirror,reference.mirror,0,600,500)[2]<-1e15);
 });
 test('Straight and cubic presentations use identical prepared comparison profiles',()=>{
  const input=boat([[12,55.6],[12.04,55.603],[12.1,55.6]],[5,9,7]),line=prepare(input,true),curve=prepare(input,false);
@@ -52,13 +51,13 @@ test('Straight and cubic presentations use identical prepared comparison profile
  assert.equal(line.geometry.length*2,curve.geometry.length);assert.equal(line.record.capBytes,0);assert.ok(curve.record.capCount>0);
 });
 test('CPU comparison prepares all three bases with handicap and overflow semantics',()=>{
- const reference=prepare(straight(6)),own=prepare(straight(9)),count=own.mirror.stations.length;
- const result=api.compareTrackData(own.knots,2,reference.profile,600,500,count);
- near(result.colours[0][0],3);near(result.colours[1][0],6);
- near(result.colours[2][0],100*(3600/(1852*6)-3600/(1852*9)));
- const noHandicap=api.compareTrackData(own.knots,2,reference.profile,0,500,count);assert.ok(noHandicap.colours[1][0]<-1e19);
- const absent=api.compareTrackData(own.knots,2,new Float32Array(reference.profile.length).fill(-1e20),600,500,count);
- assert.ok(absent.colours.every(values=>values[0]<-1e19));
+ const reference=prepare(straight(6)).mirror,own=prepare(straight(9)).mirror;
+ const result=api.trackComparisonAt(own,reference,0,600,500);
+ near(result[0],3);near(result[1],6);
+ near(result[2],100*(3600/(1852*6)-3600/(1852*9)));
+ assert.ok(api.trackComparisonAt(own,reference,0,0,500)[1]<-1e19);
+ reference.stations.fill(-1e20);reference.timeStations.fill(-1e20);
+ assert.ok(api.trackComparisonAt(own,reference,0,600,500).every(value=>value< -1e19));
 });
 
 test('startup geometry preserves gap caps, precision splits and interpolation without route work',()=>{
@@ -72,15 +71,13 @@ test('startup geometry preserves gap caps, precision splits and interpolation wi
   assert.equal(local.record.capCount,simple?0:4);
  }
 });
-test('direct station lookup matches all three former pairwise colour channels',()=>{
- const input=prepare(straight(7)),reference=prepare(straight(6));
- const former=api.compareTrackData(input.knots,2,reference.profile,450,500,reference.mirror.stations.length);
+test('direct station lookup covers both knots and the terminal slot',()=>{
+ const own=prepare(straight(7)).mirror,reference=prepare(straight(6)).mirror;
  for(let i=0;i<=2;i++){
-  const direct=api.trackComparisonAt(input.mirror,reference.mirror,i,450,500);
-  for(let mode=0;mode<3;mode++)near(direct[mode],former.colours[mode][i]);
+  const direct=api.trackComparisonAt(own,reference,i,450,500);
+  near(direct[0],1);near(direct[1],7/(1+50*7/3600)-6);
+  near(direct[2],100*(3600/(1852*6)-3600/(1852*7)));
  }
- const inf=Math.fround(1e15),own={samples:new Float32Array([0,0,0]),timeSamples:new Float32Array([0,inf])},ref={stations:new Float32Array([0]),timeStations:new Float32Array([inf])};
- assert.ok(api.trackComparisonAt(own,ref,0,0,0)[2]<-1e19);
 });
 
 test('startup time samples restore reciprocal VMG including zero, reverse and missing values',()=>{

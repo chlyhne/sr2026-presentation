@@ -1,19 +1,22 @@
 """Prepare Silverrudder weather assets without rebuilding track profiles."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import io
 import json
 import math
 from pathlib import Path
 import re
 import tempfile
+import time
+
 from urllib.parse import quote
 from xml.etree import ElementTree
 
+import requests
+
 from event_config import ROOT, load_catalog
-from prepare_radar import COLOUR_SCHEME, HEIGHT, WIDTH, get, prepare_frame
-from prepare_viewer import wind
+from prepare_radar import COLOUR_SCHEME, HEIGHT, WIDTH, colour_metadata, get, prepare_frame
 
 INTERVAL = 600
 WIND_MODEL = 'dmi_harmonie_arome_europe'
@@ -60,10 +63,52 @@ def opera_catalog(expected):
     return result
 
 
+def get_wind(url, params):
+    for attempt in range(4):
+        try:
+            response = requests.get(url, params=params, timeout=60)
+            if response.status_code == 429 and attempt < 3:
+                print('Weather API rate limit; retrying in 60 seconds', flush=True)
+                time.sleep(60)
+                continue
+            response.raise_for_status()
+            return response
+        except requests.RequestException:
+            if attempt == 3:
+                raise
+            time.sleep(2 * (attempt + 1))
+
+
+def cached_wind(start_date, end_date, cache):
+    if cache.exists():
+        return json.loads(cache.read_text(encoding='utf-8'))
+    points = [(54 + i * .25, 9.5 + j * .25) for i in range(13) for j in range(19)]
+    checkpoint = cache.with_suffix('.partial.json')
+    result = json.loads(checkpoint.read_text(encoding='utf-8')) if checkpoint.exists() else []
+    for offset in range(len(result), len(points), 40):
+        batch = points[offset:offset + 40]
+        data = get_wind('https://historical-forecast-api.open-meteo.com/v1/forecast', dict(
+            latitude=','.join(str(p[0]) for p in batch),
+            longitude=','.join(str(p[1]) for p in batch),
+            start_date=start_date, end_date=end_date, hourly=','.join(WIND_VARIABLES),
+            models=WIND_MODEL, wind_speed_unit='ms', timezone='UTC', timeformat='unixtime',
+            cell_selection='nearest', elevation=','.join(['nan'] * len(batch)),
+        )).json()
+        result.extend(data if isinstance(data, list) else [data])
+        checkpoint.write_text(json.dumps(result), encoding='utf-8')
+    hours = ((date.fromisoformat(end_date) - date.fromisoformat(start_date)).days + 1) * 24
+    if len(result) != len(points) or any(
+        len(point['hourly']['time']) != hours or None in point['hourly']['wind_speed_10m']
+        for point in result
+    ):
+        raise ValueError('Incomplete wind grid from the historical forecast API')
+    cache.write_text(json.dumps(result), encoding='utf-8')
+    return result
+
 def wind_points(event, cache):
     expected = list(times(event, 3600))
-    points = wind(WIND_MODEL, utc(expected[0]).date().isoformat(),
-                  utc(expected[-1]).date().isoformat(), cache / 'wind.json')
+    points = cached_wind(utc(expected[0]).date().isoformat(),
+                         utc(expected[-1]).date().isoformat(), cache / 'wind.json')
     ready = []
     for point in points:
         hourly = point['hourly']
@@ -115,7 +160,7 @@ def prepare(event, source, cache, workers):
 
     manifest = dict(version=1, eventId=event_id, wind_models={WIND_MODEL: points}, radar=dict(
         source=source, quantity='DBZH', unit='dBZ', projection='EPSG:4326', bbox=[9.5, 54, 14, 57],
-        width=WIDTH, height=HEIGHT, interval_seconds=INTERVAL, colour_scheme=COLOUR_SCHEME, frames=frames))
+        width=WIDTH, height=HEIGHT, interval_seconds=INTERVAL, **colour_metadata(), frames=frames))
     temporary = out / 'manifest.json.tmp'
     temporary.write_text(json.dumps(manifest, separators=(',', ':'), allow_nan=False) + '\n', encoding='utf-8')
     temporary.replace(out / 'manifest.json')

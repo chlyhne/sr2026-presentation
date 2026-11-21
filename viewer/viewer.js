@@ -61,7 +61,6 @@ function mapBoundsIntersect(a,b){return a.east>=b.west&&a.west<=b.east&&a.north>
 // Cache the full geometry in small chunks, then draw only those in the viewport.
 // Shared end points keep the detailed coastline continuous at chunk boundaries.
 const coastChunks=[];
-const LAND_FILL='#bdc7cb';
 const landPolygons=D.land.features.map(feature=>{
  const rings=feature.geometry.coordinates,points=rings.flat();
  let west=Infinity,east=-Infinity,south=Infinity,north=-Infinity;

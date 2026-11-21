@@ -22,14 +22,3 @@ function timeBoundary(points,time,after=false){
  while(index<points.length&&(points[index][2]<time||(after&&points[index][2]===time)))index++;
  return index;
 }
-function visitTrackSampleTimes(segments,origin,visit){
- let previous=-Infinity;
- for(const [start,end] of segments){
-  if(!Number.isFinite(start)||!Number.isFinite(end)||start>end||start<=previous)throw Error('Invalid replay segment.');
-  visit(start);
-  let time=origin+(Math.floor((start-origin)/TRACK_SAMPLE_SECONDS)+1)*TRACK_SAMPLE_SECONDS;
-  for(;time<end;time+=TRACK_SAMPLE_SECONDS)visit(time);
-  if(end>start)visit(end);
-  previous=end;
- }
-}

@@ -13,7 +13,6 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
    let published=null;
    const origin=new URL(process.env.SR_VIEWER_URL||'http://127.0.0.1:18097/').origin;
    await page.route('**/config.js',route=>route.fulfill({contentType:'application/javascript',body:`window.SR_CONFIG=${JSON.stringify({admin,apiBase:admin?origin:''})};`}));
-   await page.route('**/api/session',route=>route.fulfill({json:{canEdit:true,login:'captain'}}));
    await page.route('**/presentation.json',route=>route.fulfill({json:initial}));
    await page.route('**/api/presentation',async route=>{
     if(route.request().method()==='PUT'){

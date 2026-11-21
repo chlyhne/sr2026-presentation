@@ -20,7 +20,7 @@ main{--event-width:clamp(280px,28vw,440px);display:grid;grid-template-columns:mi
 .rendering-failed #mapSurface,.rendering-failed #mapEventImage,.rendering-failed #visibleBoats,.rendering-failed #mapTools{visibility:hidden}
 #mapTools{grid-column:1;grid-row:1;align-self:start;justify-self:end;position:relative;z-index:3;margin:12px;display:flex;align-items:start;gap:6px;color:#173d4c;font-size:13px}
 #eventPanelToggle,#presentationFullscreen,#loginLink,#mapRhumblineToggle{display:grid;place-items:center;width:38px;height:36px;padding:8px;color:#173d4c;background:#fffffff0;border:1px solid #b8cbd5;border-radius:5px;box-shadow:0 2px 8px #10212d26;text-decoration:none}
-#eventPanelToggle:hover,#presentationFullscreen:hover,#loginLink:hover:hover,#mapRhumblineToggle:hover{background:#dcecf0}
+#eventPanelToggle:hover,#presentationFullscreen:hover,#loginLink:hover,#mapRhumblineToggle:hover{background:#dcecf0}
 #eventPanelToggle[aria-expanded=true],#presentationFullscreen[aria-pressed=true]{background:#dcecf0}
 #mapTools :is(button,a):focus-visible{outline:3px solid #d49416;outline-offset:2px}
 #mapLayers,#mapMeasure,#mapGates,#mapTracks{position:relative}
@@ -137,14 +137,12 @@ select,textarea{width:100%}input[type=range]{width:100%;accent-color:#48535e}
 #places{pointer-events:none}
 #map:active,#map.panning{cursor:grabbing}#map.placing,#map.placing:active{cursor:crosshair}
 #map .boat-marker{outline:none;cursor:pointer}
-#map .track-hit-target,#map .speed-marker{cursor:pointer;outline:none}
+#map .speed-marker{cursor:pointer;outline:none}
 #map.track-hover{cursor:pointer}
 #trackHover{position:fixed;z-index:30;pointer-events:none;max-width:calc(100vw - 8px);padding:5px 8px;border:1px solid #365766;border-radius:4px;background:#f4fafb;color:#14212a;font:12px system-ui,sans-serif;box-shadow:0 2px 8px #0003}
 #map .speed-marker:focus-visible>circle,#map [data-speed-action]:focus-visible rect{stroke:#ffce5c;stroke-width:3}
-#map.panning .track-hit-target,#map.panning .speed-marker{cursor:grabbing}
-#map.placing .track-hit-target,#map.drawing .track-hit-target{cursor:crosshair}
+#map.panning .speed-marker{cursor:grabbing}
 #speedPinStatus:empty{display:none}
-#eventBoatStatus:empty{display:none}
 #map .boat-marker:focus-visible .boat-hull{stroke:white;stroke-width:3}
 #map.panning .boat-marker{cursor:grabbing}#map.placing .boat-marker{cursor:crosshair}
 .legend{font-size:13px}.boat{position:relative;display:flex;align-items:center;gap:6px;margin:7px 0}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}

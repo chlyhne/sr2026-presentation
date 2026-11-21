@@ -76,7 +76,7 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 ### TEST-01 — Tilpas ældre udvidede fixtures til deploy-filer
 
 - **Område:** [fixturehjælper](./scripts/viewer-track-fixtures.cjs) og ældre udvidede spor-/profiltests.
-- **Udskudt:** Tilpasning af ældre browserfixtures fra root-vieweren til `/events/<id>/` samt migrering af ældre GPU-/CPU-klargøringsfixtures, som opretter profiler og syntetiske både direkte i klienten i stedet for at bruge et bygget fixture-datasæt.
+- **Udskudt:** De udfasede tests af GPU-klargøringen er fjernet. Den aktive filtest dækker den nuværende indlæsning. Tilpasning af resterende browserfixtures fra root-vieweren til `/events/<id>/` samt migrering af ældre GPU-/CPU-klargøringsfixtures, som opretter profiler og syntetiske både direkte i klienten i stedet for at bruge et bygget fixture-datasæt.
 - **Konsekvens/usikkerhed:** Deres gamle API-, beregnings- og lagerantagelser er overhalet. Den tidligere matematiske kontrol mod den uafhængige reference genbruges; den målrettede [filtest](./scripts/test_viewer_track_files.cjs) validerer begge geometrier og den nominelle lagring; hele den ældre catch-up-suite er ikke kørt på den nye arkitektur.
 - **Færdig når:** Fixtures afventer filklargøring og aktivering, lagerassertioner følger aktiv type, og relevante tests består ved et aftalt catch-up.
 
@@ -97,7 +97,7 @@ for afslutning. Nye punkter skal være konkrete og kunne handles på.
 ### UI-02 — Browserdækning af den fælles eventfane
 
 - **Område:** [eventfanen](./viewer/presentation.js), [afspilning](./viewer/timeline.js), [billeder](./viewer/event-images.js) og [udgivelse](./viewer/online.js).
-- **Udskudt:** Migrér browserfixtures fra den gamle redigeringsvisning og de fjernede kontroller for vindmodel og radaropacitet. Målret dem mod den fælles eventfane og de tre afbrydere i lagmenuen. Kontrollér også, hvordan længere engelske og tyske tekster fylder i værktøjslinjen og på kortet. Quick checks dækker eksplicit lagring af kortvisningen, bådudvalg, gendannelse, bevaret centrum/målestok og nyere rettelser under udgivelse.
+- **Udskudt:** Genetablér særskilt browsertest af nyt event, ændring af tidspunkt over midnat, tegninger og klargøring af billeder under eventskift i den fælles eventfane. Udgivelse, kladde efter login og billedimport dækkes af `online`. Kontrollér også, hvordan længere engelske og tyske tekster fylder i værktøjslinjen og på kortet. Quick checks dækker eksplicit lagring af kortvisningen, bådudvalg, gendannelse, bevaret centrum/målestok og nyere rettelser under udgivelse.
 - **Konsekvens/usikkerhed:** Samspillet mellem fulgt udsnit, aktivering af kortværktøjer, oprettelse med midlertidige gates og layoutskift er endnu ikke afprøvet i lokal Firefox. Et sent billedsvar er kodegennemgået.
 - **Udskudt billedoprydning:** Fjern kladdebilleder fra IndexedDB, når ingen aktiv eller tidligere kladde længere henviser til dem. Erstattede billeder bruger indtil da plads i browseren.
 - **Færdig når:** Målrettede kontroller i lokal Firefox dækker eventskift med kortforhåndsvisning, **Nyt event her** med aktive gates, upload over eventskift og kladdeændring under udgivelse.

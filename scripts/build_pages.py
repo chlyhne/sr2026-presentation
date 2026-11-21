@@ -47,7 +47,7 @@ def build():
             relative = path.relative_to(ROOT / 'viewer')
             if 'track-profiles' in relative.parts and relative.as_posix() not in profile_files:
                 continue
-            if any(part.startswith('.') for part in relative.parts) or path.name in {'tracker.html', 'rhumbline-editor.js', 'data.js', 'track-preparation-math.js', 'gpu-probe.html', 'gpu-probe.js'}:
+            if any(part.startswith('.') for part in relative.parts) or path.name in {'tracker.html', 'rhumbline-editor.js', 'track-preparation-math.js', 'gpu-probe.html', 'gpu-probe.js'}:
                 continue
             if path.is_symlink():
                 raise ValueError(f'Symbolic links cannot be published: {relative}')

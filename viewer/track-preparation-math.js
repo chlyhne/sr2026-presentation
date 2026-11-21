@@ -102,18 +102,3 @@ function trackProfileMirror(count,knots,profile,stationCount){
  for(let i=0;i<stationCount;i++){stations[i]=profile[i*4];timeStations[i]=profile[i*4+1];}
  return {samples,stations,timeSamples,timeStations};
 }
-function compareTrackData(knots,count,reference,handicap,referenceHandicap,stationCount){
- const size=1024*Math.max(1,Math.ceil((count+1)/1024)),gains=new Float32Array(size*4).fill(PREP_MISSING),colours=Array.from({length:3},()=>new Float32Array(size).fill(PREP_MISSING));
- for(let i=0;count>0&&i<=count;i++){
-  const at=Math.min(i,count-1)*8,station=Math.trunc(knots[at+6]),vmg=knots[at+1],cost=knots[at+2];
-  if(knots[at]<0||station<0||station>=stationCount)continue;
-  const speed=reference[station*4],time=reference[station*4+1];
-  if(vmg>-1e19&&speed>=0){
-   colours[0][i]=vmg-speed;const factor=1+(referenceHandicap-handicap)*vmg/3600;
-   if(handicap>0&&referenceHandicap>0&&factor>0)colours[1][i]=vmg/factor-speed;
-  }
-  if(cost>=0&&time>=0&&!(cost>=PREP_INFINITY&&time>=PREP_INFINITY))colours[2][i]=100*(time-cost);
-  for(let component=0;component<3;component++)gains[i*4+component]=colours[component][i];
- }
- return {gains,colours};
-}

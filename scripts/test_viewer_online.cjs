@@ -6,10 +6,11 @@ const {firefox}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwrig
 const localBase=new URL('events/sjaelland-rundt-2026/',process.env.SR_VIEWER_URL||'http://127.0.0.1:8097/').href;
 const publicBase=process.env.SR_PUBLIC_URL||localBase;
 const origin=new URL(publicBase).origin;
-const data=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../viewer/data.js'),'utf8').replace(/^window.DATA=/,'').replace(/;\s*$/,''));
+const event=require('../viewer/events/catalog.json').events.find(e=>e.id==='sjaelland-rundt-2026');
+const pin=require('../presentation/presentation.json').speedPins[0];
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
 const imageID='11111111-1111-4111-8111-111111111111';
-const fixture={version:1,notes:[{time:data.start+3600,text:'Udgivet event',view:[230,250,620,760],settings:{wind:false,rain:false,boats:[],boatNames:[]},image:{id:imageID,url:`event-images/${imageID}.png`,name:'Testbillede',width:1,height:1,type:'image/png'}}],speedPins:[{id:'test-pin',boatId:data.boats[0].id,time:data.boats[0].points[0][2]}]};
+const fixture={version:1,notes:[{time:event.start+3600,text:'Udgivet event',view:[230,250,620,760],settings:{wind:false,rain:false,boats:[],boatNames:[]},image:{id:imageID,url:`event-images/${imageID}.png`,name:'Testbillede',width:1,height:1,type:'image/png'}}],speedPins:[pin]};
 const copy=x=>JSON.parse(JSON.stringify(x));
 async function ready(page){
  await page.waitForFunction(()=>!document.querySelector('main').inert||!document.querySelector('#viewerLoadingError').hidden);

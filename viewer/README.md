@@ -51,24 +51,14 @@ python3 scripts/serve_viewer.py
   **Næste** frem til næste event med den valgte afspilningshastighed og stopper
   præcist ved eventets tidspunkt. Tryk **Næste** igen undervejs for at springe
   direkte frem. Ved ankomst indlæses eventets gemte kortindstillinger: lag,
-  vindmodel, sporlængde og sportype, referencebåd, handicapkompenserede spor,
+  sporlængde og sportype, referencebåd, handicapkompenserede spor,
   bådfavoritter, søgefilter, favoritfilter og annotationer samt eventuelt billede.
   Det gemte kortudsnit bruges kun ved direkte hop; afspilning hen til eventet
   beholder det udsnit, der følger referencebåden.
-  Når tiden står på et event i redigering, bliver ændringer til en kladde:
-  tekst, tidspunkt, billeder, videoer, markør, tegninger, måling, gates, lag, både, filtre,
-  sporindstillinger og kortudsnit ved zoom eller afsluttet panorering.
-  **Gem ændringer** opdaterer eventet; **Annullér ændringer** genskaber det gemte
-  event. Der kræves ikke et indledende klik på **Redigér**. Forsøger du at
-  forlade et event med ugemte ændringer, får du tre valg: **Gem** gemmer og
-  fortsætter den valgte handling, **Gem ikke** kasserer kladden og fortsætter,
-  og **Annullér** eller Escape bliver på eventet med kladden bevaret. Ved
-  ugyldige data eller gemmefejl bliver prompten stående med en fejlbesked.
-  Det gælder eventskift, tidsskift, afspilning, præsentation, sletning,
-  import og udgivelse. Mellem events
-  ændres kun visningen og kladden til et nyt event; **Gem event** opretter det.
-  `node scripts/test_viewer_event_save.cjs` kontrollerer kladde, eksplicit gemning,
-  annullering, eventisolation, gemmefejl og genindlæsning i lokal Firefox på PC.
+  Når eventfanen er åben, kan tekst, tidspunkt, billeder, videoer, markør og
+  tegninger redigeres direkte i browserens kladde. Gem den viste kortscene
+  med **Brug i eventet**. **Opret event** opretter et nyt event. **Udgiv**
+  kræver GitHub-login på den hostede redigeringsside.
   Gamle events og importerede historikker bevarer deres eksisterende indstillinger;
   manglende felter får faste standarder, ikke indstillinger fra det forrige event.
   Historiske bådvalg bliver favoritter med favoritfilteret slået til, så samme
@@ -77,15 +67,15 @@ python3 scripts/serve_viewer.py
   dokumentformatet er fortsat version 1. Ukendte kortversioner afvises.
   Er almindelig **Afspil** allerede i gang mellem events, springer **Næste**
   direkte til det næste kommende event. Events med samme tidspunkt skifter
-  direkte. I redigering hopper **Næste** fortsat direkte.
+  direkte.
   Eventets tekst og tidspunkt vises i eventpanelet, også for noter uden markør.
-  Gemte kortudsnit, vejrlag, vindmodel, både genskabes ved hvert hop.
+  Gemte kortudsnit, vejrlag og både genskabes ved hvert hop.
   Tidspunktet fastholdes, også når ingen valgte både er synlige i udsnittet og
   ved zoom, panorering, ændret vinduesstørrelse eller fuld skærm. Ved flere
   noter med samme tidspunkt vises kun det valgte events annotation på kortet.
 - Overskriften står i en hvid boks over farveskalaen med samme bredde.
-  Fuld skærm og log ind er ikoner ved lagvælgeren. Log ind vises på den offentlige
-  side, når loginserveren er konfigureret. Redigeringshandlinger ligger i venstrepanelet.
+  Fuld skærm og **Redigér events** er ikoner ved lagvælgeren. Redigering og
+  udgivelse ligger i eventfanen.
 - Knappen med den **åbne bog** ved lagvælgeren skjuler og viser højrepanelet,
   både i redigering og præsentation. Kort, tidslinje og kortværktøjer tilpasser
   sig pladsen, mens kortets centrum, zoom og tidspunkt bevares.
@@ -198,8 +188,8 @@ python3 scripts/serve_viewer.py
   når tiden afspilles eller flyttes videre. Den kommer tilbage ved tilbagevenden
   til eventet. Målinger i præsentation er midlertidige og ændrer ikke gemte events.
   Endepunkterne gemmes geografisk i eventets `measurement`-felt og følger
-  med genindlæsning, import/eksport og udgivelse. `node scripts/test_viewer_event_measurement.cjs` kontrollerer dette
-  i lokal headless Firefox på PC.
+  med genindlæsning, import/eksport og udgivelse. Standardkontrollen validerer
+  målepunkterne i udgivelsesformatet.
 - **Gateknappen** ved siden af linealen måler sejltiden mellem to gates.
   Træk først gate 1 (grøn), og træk derefter gate 2 (rød). Begge følger markøren
   under tegningen. Escape annullerer; Backspace fortryder den igangværende gate
@@ -463,8 +453,8 @@ De fulde kontrolpositioner fra begge replays bevares i
 `../data/tractrac/controls_groensund.json` og `controls_boegestroemmen.json`.
 Målkoordinaterne kommer fra de eksisterende `race_*.json`-filer; Mercutios
 starttid fra klasselisten i `races.json`. Genskab med
-`node scripts/collect_course_lines.mjs`, `python3 scripts/prepare_course_lines.py`
-og `python3 scripts/prepare_viewer.py` i den rækkefølge. Indsamlingen genbruger
+`node scripts/collect_course_lines.mjs` og `python3 scripts/prepare_course_lines.py`.
+De genererer TracTrac-udtrækket og GeoJSON-kilden. Indsamlingen genbruger
 TracTracs egen cachede MTB-worker. Begge baners koordinater sammenlignes før
 linjerne sammenlægges; der afrundes ikke.
 
@@ -574,10 +564,9 @@ Noterne opdateres først, når billed-upload og gemning er lykkedes.
   starttid i sekunder (`start`) og et normaliseret YouTube-link (`url`).
   Disse felter følger med i JSON-eksporten.
 
-Redigering, tegneværktøjer, annullering, genindlæsning, præsentation samt
-JSON-eksport er afprøvet i Chromium og Firefox. Testen kan gentages mod den lokale
-server med `node scripts/test_viewer_notes.cjs` fra projektroden; den kræver
-Playwright, som også kan angives med `PLAYWRIGHT_MODULE`.
+`node scripts/test.cjs --extended online` kontrollerer kladdens genindlæsning,
+login ved udgivelse og import/eksport i lokal Firefox. Testen kræver Playwright,
+som også kan angives med `PLAYWRIGHT_MODULE`.
 YouTube-funktionen testes med `node scripts/test_viewer_event_videos.cjs` i begge
 browsere. Testen erstatter YouTubes eksterne afspiller med en testside og kontrollerer
 linkvalidering, gemning, genindlæsning, redigering, fuld skærm, lukning, mobilvisning
@@ -661,8 +650,8 @@ kilde-ID, gain/offset, nodata/undetect og geografisk udstrækning.
 Radarlaget følger altid DMI, også hvis vindmodellen ændres.
 Kilde: https://www.dmi.dk/friedata/dokumentation/radar-data .
 
-Genskab radarlaget først med `.venv/bin/python scripts/prepare_radar.py`, derefter
-`python3 scripts/prepare_viewer.py`. Pakker til radarværktøjet står
+Genskab radarens PNG-filer og manifest med `.venv/bin/python scripts/prepare_radar.py`.
+Pakker til radarværktøjet står
 i `../scripts/requirements-radar.txt`.
 
 Tracks: TracTrac event 3539, SR Grønsund og SR Bøgestrømmen. Begge replayfiler er
@@ -715,8 +704,7 @@ jet-skalaens 128 farvetrin uden at ændre PCHIP-geometrien. Der farves ikke hen 
 Manglende eller negative fartværdier vises gråt og erstattes ikke med nul.
 Farver over 15 knob mættes uden at ændre eller afskære selve fartdataene.
 
-Genskab fartdata med `node scripts/collect_track_speeds.mjs` og derefter
-`python3 scripts/prepare_viewer.py`. Det første trin bruger den cachede
+Hent fartmålingerne med `node scripts/collect_track_speeds.mjs`. Scriptet bruger den cachede
 `worker_node.mjs` og de to løbsmetadatafiler til at hente replayet igen.
 `node scripts/test_viewer_speed.cjs` kontrollerer alle kildekonverteringer.
 `node scripts/test_viewer_webgl_tracks.cjs` kontrollerer renderede fartfarver,
@@ -778,8 +766,7 @@ alle bådes positioner på alle tidspunkter; der bygges ikke et groft raster.
 Kurvernes afstandsgrundlag har højst 0,1 m fladningsfejl, som trækkes fra
 afstanden før længdegrænsen beregnes. Metermålet bruger en lokal projektion ved 55° N.
 
-Genskab med `python scripts/prepare_adaptive_map.py --angle-degrees 0.2` og
-derefter `python scripts/prepare_viewer.py`. Shapely står i
+Genskab med `python scripts/prepare_adaptive_map.py --event sjaelland-rundt-2026 --angle-degrees 0.2`. Shapely står i
 [requirements-geography.txt](../scripts/requirements-geography.txt); Node.js
 genbruger appens interpolationsmodel. Alt beregnes før visning; bådvalg og zoom
 ændrer ikke kortgeometrien. Der er ét færdigt detaljeniveau, så zoom ikke
@@ -825,8 +812,7 @@ Den genererede GeoJSON med kildekoordinater og metadata ligger i
 områdekode er tilknyttet. Laget indeholder ingen oplysninger om aktivering
 eller skydetider under sejladsen.
 
-Genskab med `python3 scripts/prepare_military.py` og derefter
-`python3 scripts/prepare_viewer.py`. `--source <fil>` kan indlæse en anden
+Genskab GeoJSON-kilden med `python3 scripts/prepare_military.py`. `--source <fil>` kan indlæse en anden
 JSON-fil i samme format som kildefilen.
 
 Trafiksepareringslaget er et lokalt OpenSeaMap/OpenStreetMap-udtræk med 78
@@ -850,14 +836,12 @@ udeladt fra dette lag. Data beskriver OSM’s registreringer af systemerne.
 
 Råsvaret ligger i `../data/geography/osm-tss.json`; GeoJSON, forespørgsel,
 historisk tidspunkt og licensmetadata ligger i `../data/traffic-separation.geojson`.
-Genskab med `python3 scripts/prepare_tss.py` og derefter
-`python3 scripts/prepare_viewer.py`. Et eksisterende Overpass-svar kan indlæses
+Genskab GeoJSON-kilden med `python3 scripts/prepare_tss.py`. Et eksisterende Overpass-svar kan indlæses
 med `--source <fil>`. Også TSS-data er lokale, under ODbL-1.0, og krediteringen
 følger kortet.
 
-Fra projektroden: `python3 scripts/prepare_viewer.py` (kræver `requests`).
-Udtræk cachelagres. Manglende radartider findes i `radar/manifest.json` og vises som
-manglende i brugerfladen. Visningen kræver ingen npm-pakker.
+Sporfilerne klargøres fra stævnets kildefiler med
+`node scripts/prepare_track_profiles.cjs --if-stale`.
 
 ## Onlineudgaven
 
@@ -1267,7 +1251,7 @@ cirka 2,62 MB. Buildet kræver Node.js 24 og Python 3.
 afkomprimerer med `DecompressionStream`. Oprindelige tidspunkter, målinger og
 datahuller bevares; der dannes intet ekstra replaygitter. De 730.370 originale
 punkter skaleres til Float32 før GPU-upload. Pages publicerer kun det aktuelle
-manifest, metadata og kildepakken; `data.js` bruges kun offline. Fejl i format,
+manifest, metadata og kildepakken. Fejl i format,
 gzip eller GPU vises tydeligt uden fallback.
 
 [`prepare_track_profiles.cjs`](../scripts/prepare_track_profiles.cjs) beregner

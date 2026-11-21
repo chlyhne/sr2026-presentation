@@ -235,7 +235,6 @@ niveau 9. [Kildekodningen](viewer/track-source-codec.js) deles mellem build og k
 generatoren verificerer hvert enkelt kildepunkt efter kodning og afkodning.
 Kildepakken fylder cirka 2,62 MB. Stationsprofiler hentes i en separat fællespakke.
 Metadata og kildepakke hentes parallelt; gzip afkodes med `DecompressionStream`.
-Den oprindelige `data.js` er et ældre offline-eksportformat og publiceres ikke.
 Det nominelle build læser nu det valgte stævnes native- og baggrundssnapshots.
 
 Buildet beregner de tunge ruteprojektioner og stationsprofiler med

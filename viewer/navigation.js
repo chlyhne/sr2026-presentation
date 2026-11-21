@@ -1,5 +1,5 @@
 // The route comes only from the permanent project asset loaded by boot.js.
-const TRACK_GAIN_LIMIT=2,TRACK_GAIN_MISSING=-1e20,TRACK_COMPARISON_KEY='sr2026-track-comparison';
+const TRACK_GAIN_LIMIT=2,TRACK_COMPARISON_KEY='sr2026-track-comparison';
 const TRACK_TIME_GAIN_LIMIT=120;
 const TRACK_GAIN_UNDERFLOW_COLOUR='rgb(255,196,61)',TRACK_GAIN_OVERFLOW_COLOUR='rgb(255,0,255)';
 const NO_TRACKS=-1,TRACK_LENGTH_KEY='sr2026-track-length',TRACK_LENGTHS=new Set([NO_TRACKS,0,900,1800,3600,7200,14400,28800]);
@@ -91,10 +91,6 @@ function syncComparisonRoute(){
  comparisonMessage(rhumbRoute.legs.length?'':srText('Rhumbline for ')+srText(BOAT_COURSE_NAMES[course])+srText(' er endnu ikke defineret.'));
 }
 syncComparisonRoute();
-function referenceAtProgress(progress,stations=trackProfileCache.get(referenceBoat()?.points)?.stations){
- if(!stations)throw Error(srText('Referencebådens sporprofil er ikke forberedt.'));
- return referenceProfileAtProgress(progress,stations);
-}
 function referenceTimeAtProgress(progress){
  const boat=referenceBoat(),profile=trackProfileCache.get(boat.points);
  if(!profile)throw Error(srText('Referencebådens sporprofil er ikke forberedt.'));

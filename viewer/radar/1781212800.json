@@ -2,7 +2,7 @@
   "time": 1781212800,
   "observed_time": "2026-06-11T21:20:01+00:00",
   "file": "radar/1781212800.png",
-  "colour_scheme": "red-violet-v1",
+  "colour_scheme": "dmi-radar-legend-v1",
   "source_id": "dk.com.202606112120.500_max.h5",
   "source_pixel_size_m": 500,
   "source_quantity": "DBZH",

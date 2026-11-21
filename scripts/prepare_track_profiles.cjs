@@ -54,7 +54,7 @@ function prepareArtifacts(context,native,prefix,start,event){
  context.TextEncoder=TextEncoder;context.TextDecoder=TextDecoder;
  for(const name of ['track-time.js','tracks.js','track-local-data.js','rhumbline-geometry.js','track-preparation-math.js','prepared-track-codec.js'])vm.runInContext(fs.readFileSync(path.join(ROOT,'viewer',name),'utf8'),context);
  vm.runInContext('const boatDetails=window.DATA.boatDetails;',context);
- const api=vm.runInContext('({prepareTrackData,compareTrackData,buildRhumbRoute,packPreparedTracks,getTrackModel,prepareTrackTimeIndex,boatDetails})',context);
+ const api=vm.runInContext('({prepareTrackData,buildRhumbRoute,packPreparedTracks,getTrackModel,prepareTrackTimeIndex,boatDetails})',context);
  const routePoints=Object.fromEntries(Object.entries(event.courses).map(([id,course])=>[id,course.points]));
  const routes=Object.fromEntries(Object.entries(routePoints).map(([course,points])=>[course,api.buildRhumbRoute(points)])),prepared=[];
  const asset=(name,kind,entries)=>{

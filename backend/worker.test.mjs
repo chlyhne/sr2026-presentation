@@ -77,7 +77,8 @@ test('readers cannot publish or upload and permissions are rechecked',async()=>{
  const calls=mockGithub('read');
  const result=await request('/api/event-images',{method:'POST',body:'abc'});
  assert.equal(result.status,403);assert.equal(calls.length,2);
- const session=await request('/api/session');assert.equal((await session.json()).canEdit,false);
+ const publish=await request('/api/presentation',{method:'PUT',body:'{}'});
+ assert.equal(publish.status,403);assert.equal(calls.length,4);
 });
 test('a token for a different identity is rejected',async()=>{
  mockGithub('write');
@@ -97,7 +98,7 @@ test('anyone can load the exact Unicode document revision and only a writer can 
    assert.equal(url,'https://api.github.com/repos/owner/repo/contents/presentation/presentation.json');
    return reply({content:{sha:'b'.repeat(40)},commit:{sha:'c'.repeat(40)}});
   }
-  return reply({sha:revision,content:raw.toString('base64')});
+  return reply({sha:revision});
  });
  const loaded=await request('/api/presentation',{},null);assert.deepEqual(await loaded.json(),{document,sha:revision});
  assert.equal((await request('/api/presentation',{method:'PUT',body:'{}'},null)).status,401);

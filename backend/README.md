@@ -63,7 +63,6 @@ refresh tokens.
 | --- | --- |
 | `GET /auth/login` | Start GitHub-login |
 | `GET /auth/callback` | Afslut login og gå til `/admin/` |
-| `GET /api/session` | `{authenticated, canEdit, login?}` |
 | `POST /api/logout` | Slet session-cookie |
 | `GET /api/presentation` | Anonym læsning af `{document, sha}` fra repositoryets offentlige branch |
 | `PUT /api/presentation` | `{document, sha}` → `{sha, commit}` |

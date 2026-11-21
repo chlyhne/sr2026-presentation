@@ -13,8 +13,20 @@ RAW.mkdir(exist_ok=True);OUT.mkdir(exist_ok=True)
 START=1781164800;END=1781316000
 WIDTH=1000;HEIGHT=1180
 lon,lat=np.meshgrid(9.5+(np.arange(WIDTH)+.5)*4.5/WIDTH,57-(np.arange(HEIGHT)+.5)*3/HEIGHT)
-COLOUR_SCHEME='red-violet-v1'
-COLOURS=np.array([[244,67,54,255],[233,50,96,255],[214,36,135,255],[187,32,170,255],[152,35,197,255],[118,36,214,255],[84,22,168,255]],dtype=np.uint8)
+COLOUR_SCHEME='dmi-radar-legend-v1'
+# The 16 swatches of "Radar og lyn" at https://www.dmi.dk/radar, light to heavy.
+COLOURS=np.array([
+ [158,242,233,255], [125,238,226,255], [22,225,204,255], [109,191,242,255],
+ [61,171,238,255], [0,143,233,255], [255,217,0,255], [255,178,0,255],
+ [255,142,82,255], [255,181,181,255], [255,124,124,255], [255,82,82,255],
+ [230,57,57,255], [204,31,31,255], [128,0,0,255], [92,0,51,255],
+],dtype=np.uint8)
+# The legend gives qualitative labels. Use DMI's documented 20/35/45 dBZ
+# guidance for light/moderate/heavy when assigning the reflectivity bands.
+COLOUR_THRESHOLDS_DBZ=(0,8,14,20,24,28,32,35,38,40,43,45,48,51,55,60)
+
+def colour_metadata():
+ return dict(colour_scheme=COLOUR_SCHEME,colour_thresholds_dbz=list(COLOUR_THRESHOLDS_DBZ),colours_rgba=COLOURS.tolist())
 
 def get(url,params=None):
  for attempt in range(3):
@@ -66,8 +78,8 @@ def prepare_frame(raw,png,t,source_id,source,file):
   gain,offset=float(scalar(what,'gain')),float(scalar(what,'offset'))
   dbz=sampled*gain+offset
   rgba=np.zeros((HEIGHT,WIDTH,4),dtype=np.uint8)
-  detected=(~nodata)&(~undetect)&(dbz>=0)
-  rgba[detected]=COLOURS[np.searchsorted([10,20,30,40,50,60],dbz[detected],side='right')]
+  detected=(~nodata)&(~undetect)&(dbz>=COLOUR_THRESHOLDS_DBZ[0])
+  rgba[detected]=COLOURS[np.searchsorted(COLOUR_THRESHOLDS_DBZ[1:],dbz[detected],side='right')]
   rgba[nodata]=[130,140,150,80]
   temp=png.with_suffix('.png.tmp')
   Image.fromarray(rgba).save(temp,format='PNG')
@@ -108,7 +120,7 @@ if __name__=='__main__':
  records.sort(key=lambda x:x['time'])
  missing=sorted(set(range(START,END+1,600))-{r['time'] for r in records})
  manifest=dict(source='DMI radar composite fullRange',quantity='DBZH',unit='dBZ',projection='EPSG:4326',bbox=[9.5,54,14,57],
-  width=WIDTH,height=HEIGHT,source_pixel_size_m=500,interval_seconds=600,colour_thresholds_dbz=[0,10,20,30,40,50,60],
-  colour_scheme=COLOUR_SCHEME,colours_rgba=COLOURS.tolist(),missing_times=missing,failures=failures,frames=records)
+  width=WIDTH,height=HEIGHT,source_pixel_size_m=500,interval_seconds=600,
+  **colour_metadata(),missing_times=missing,failures=failures,frames=records)
  (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
  print('Ready:',len(records),'radar frames;',len(missing),'missing;',len(failures),'failures',flush=True)

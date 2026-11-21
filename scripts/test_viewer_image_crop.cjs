@@ -135,7 +135,6 @@ async function check(type){
   let onlineDocument={version:1,notes:fixtures,speedPins:[]},published=null;
   const origin=new URL(page.url()).origin;
   await page.route('**/config.js',route=>route.fulfill({contentType:'application/javascript',body:`window.SR_CONFIG=${JSON.stringify({admin:true,apiBase:origin})};`}));
-  await page.route('**/api/session',route=>route.fulfill({json:{authenticated:true,canEdit:true,login:'test-editor'}}));
   await page.route('**/api/presentation',route=>{
    if(route.request().method()==='GET')return route.fulfill({json:{document:onlineDocument,sha:'a'.repeat(40)}});
    published=route.request().postDataJSON();onlineDocument=published.document;
