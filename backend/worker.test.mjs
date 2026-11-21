@@ -1,7 +1,7 @@
 import test, {afterEach} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {webcrypto} from 'node:crypto';
+import {createHash,webcrypto} from 'node:crypto';
 import worker, {seal, validateDocument} from './worker.mjs';
 globalThis.crypto ||= webcrypto;
 const originalFetch = globalThis.fetch;
@@ -11,6 +11,7 @@ const origin = 'https://admin.example.com';
 const document = {version:1, notes:[{time:123, text:'En hændelse', view:[0,0,1000,1000], settings:{boats:['Mercutio'],rainOpacity:.5}}], speedPins:[]};
 const sha = 'a'.repeat(40);
 const reply = (value, status=200) => new Response(JSON.stringify(value), {status});
+const blobSha=bytes=>createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
 test('measurements and gates round trip and the published history validates',()=>{
  const doc=structuredClone(document),line=[[12,55],[12.1,55.1]];
  Object.assign(doc.notes[0],{measurement:line,gates:[...line,[12.2,55],[12.3,55.1]]});
@@ -67,9 +68,9 @@ test('cross-origin and absent-origin mutations are denied, including logout',asy
  }
 });
 test('expired and tampered sessions fail closed',async()=>{
- const expired=await request('/api/presentation',{}, {id:7,token:'secret',exp:1});
+ const expired=await request('/api/presentation',{method:'PUT',body:'{}'}, {id:7,token:'secret',exp:1});
  assert.equal(expired.status,401);
- const tampered=await worker.fetch(new Request(origin+'/api/presentation',{headers:{Cookie:'__Host-sr-session=invalid.invalid'}}),env);
+ const tampered=await worker.fetch(new Request(origin+'/api/presentation',{method:'PUT',headers:{Origin:origin,Cookie:'__Host-sr-session=invalid.invalid'},body:'{}'}),env);
  assert.equal(tampered.status,401);
 });
 test('readers cannot publish or upload and permissions are rechecked',async()=>{
@@ -80,27 +81,49 @@ test('readers cannot publish or upload and permissions are rechecked',async()=>{
 });
 test('a token for a different identity is rejected',async()=>{
  mockGithub('write');
- assert.equal((await request('/api/presentation',{}, {id:99,token:'secret',exp:Math.floor(Date.now()/1000)+600})).status,403);
+ assert.equal((await request('/api/presentation',{method:'PUT',body:'{}'}, {id:99,token:'secret',exp:Math.floor(Date.now()/1000)+600})).status,403);
 });
-test('writers can load and publish Unicode document; only fixed path written',async()=>{
+test('anyone can load the exact Unicode document revision and only a writer can publish it',async()=>{
+ const raw=Buffer.from(JSON.stringify(document)+'\n'),revision=blobSha(raw);
  const calls=mockGithub('write',(url,options)=>{
+  if(url.startsWith('https://raw.githubusercontent.com/')){
+   assert.equal(url,'https://raw.githubusercontent.com/owner/repo/main/presentation/presentation.json');
+   assert.equal(options.cache,'no-store');assert.equal(options.headers,undefined);
+   return new Response(raw);
+  }
   if(options.method==='PUT') {
-   const body=JSON.parse(options.body);assert.equal(body.sha,sha);assert.equal(body.branch,'main');
+   const body=JSON.parse(options.body);assert.equal(body.sha,revision);assert.equal(body.branch,'main');
    assert.deepEqual(JSON.parse(Buffer.from(body.content,'base64').toString('utf8')),document);
    assert.equal(url,'https://api.github.com/repos/owner/repo/contents/presentation/presentation.json');
    return reply({content:{sha:'b'.repeat(40)},commit:{sha:'c'.repeat(40)}});
   }
-  return reply({sha,content:Buffer.from(JSON.stringify(document)).toString('base64')});
+  return reply({sha:revision,content:raw.toString('base64')});
  });
- const loaded=await request('/api/presentation');assert.deepEqual(await loaded.json(),{document,sha});
- const saved=await request('/api/presentation',{method:'PUT',body:JSON.stringify({document,sha})});
+ const loaded=await request('/api/presentation',{},null);assert.deepEqual(await loaded.json(),{document,sha:revision});
+ assert.equal((await request('/api/presentation',{method:'PUT',body:'{}'},null)).status,401);
+ const saved=await request('/api/presentation',{method:'PUT',body:JSON.stringify({document,sha:revision})});
  assert.equal(saved.status,200);assert.equal((await saved.json()).sha,'b'.repeat(40));
- assert.equal(calls.filter(c=>c.url.endsWith('/permission')).length,2);
+ assert.equal(calls.filter(c=>c.url.endsWith('/permission')).length,1);
 });
 test('stale document SHA is a conflict and never overwritten',async()=>{
  const calls=mockGithub('write',()=>reply({sha:'b'.repeat(40),content:Buffer.from(JSON.stringify(document)).toString('base64')}));
  assert.equal((await request('/api/presentation',{method:'PUT',body:JSON.stringify({document,sha})})).status,409);
  assert.equal(calls.filter(c=>c.options.method==='PUT').length,0);
+});
+test('retrying a staged image succeeds only when the stored bytes match',async()=>{
+ const id='12345678-1234-1234-1234-123456789abc';
+ const bytes=Buffer.from([137,80,78,71,13,10,26,10,0,0,0,0]);
+ const url='https://api.github.com/repos/owner/repo/contents/viewer/event-images/'+id+'.png';
+ for(const matching of [true,false]){
+  const calls=mockGithub('write',(path,options)=>{
+   if(options.method==='PUT'){assert.equal(path,url);return reply({},422);}
+   assert.equal(path,url+'?ref=main');
+   return reply({sha:matching?blobSha(bytes):sha});
+  });
+  const response=await request('/api/event-images?id='+id,{method:'POST',headers:{'Content-Type':'image/png'},body:bytes});
+  assert.equal(response.status,matching?201:409);
+  assert.equal(calls.filter(call=>call.options.method==='PUT').length,1);
+ }
 });
 test('validation refuses external images, unsafe settings, malformed drawings and oversized request',async()=>{
  for(const change of [n=>n.image={id:'x',name:'x',url:'https://evil.example/image.png'},n=>n.image={id:'x',name:'x',url:{}},n=>n.settings={rainOpacity:2},n=>n.drawings=[{tool:'script'}]]) {
@@ -188,7 +211,7 @@ test('publishing rejects images present only under the removed data path',async(
  assert.equal(calls.filter(c=>c.url.includes('/contents/data/')).length,0);
 });
 
-test('protected image reads preserve bytes and use only canonical storage',async()=>{
+test('anonymous image reads preserve bytes and use only canonical storage',async()=>{
  const id='12345678-1234-1234-1234-123456789abc';
  for(const [extension,type,bytes] of [
   ['png','image/png',[137,80,78,71,13,10,26,10,0,255]],
@@ -196,15 +219,15 @@ test('protected image reads preserve bytes and use only canonical storage',async
   ['webp','image/webp',[82,73,70,70,0,0,0,0,87,69,66,80,255]]
  ]) {
   const calls=mockGithub('write',(url,options)=>{
-   assert.equal(url,`https://api.github.com/repos/owner/repo/contents/viewer/event-images/${id}.${extension}?ref=main`);
-   assert.equal(options.headers.Accept,'application/vnd.github.raw+json');
+   assert.equal(url,`https://raw.githubusercontent.com/owner/repo/main/viewer/event-images/${id}.${extension}`);
+   assert.equal(options.headers,undefined);
    return new Response(Uint8Array.from(bytes));
   });
-  const response=await request(`/admin/event-images/${id}.${extension}`);
+  const response=await request(`/admin/event-images/${id}.${extension}`,{},null);
   assert.equal(response.status,200);assert.equal(response.headers.get('Content-Type'),type);
-  assert.equal(response.headers.get('Cache-Control'),'private, no-store');
+  assert.equal(response.headers.get('Cache-Control'),'public, max-age=31536000, immutable');
   assert.deepEqual(new Uint8Array(await response.arrayBuffer()),Uint8Array.from(bytes));
-  assert.equal(calls.length,3);
+  assert.equal(calls.length,1);
  }
 });
 
@@ -212,12 +235,12 @@ test('failed canonical image reads expose errors without legacy or public reques
  const name='12345678-1234-1234-1234-123456789abc.webp';
  for(const status of [404,403,502]) {
   const calls=mockGithub('write',(url)=>{
-   assert.equal(url,`https://api.github.com/repos/owner/repo/contents/viewer/event-images/${name}?ref=main`);
+   assert.equal(url,`https://raw.githubusercontent.com/owner/repo/main/viewer/event-images/${name}`);
    return reply({message:'Image unavailable'},status);
   });
-  const response=await request(`/admin/event-images/${name}`);
-  assert.equal(response.status,status);assert.ok((await response.json()).error);
-  assert.equal(calls.length,3);
+  const response=await request(`/admin/event-images/${name}`,{},null);
+  assert.equal(response.status,status===404?404:502);assert.ok((await response.json()).error);
+  assert.equal(calls.length,1);
  }
 });
 test('static proxy uses manual redirects and rejects them without following',async()=>{
@@ -231,8 +254,8 @@ test('static proxy uses manual redirects and rejects them without following',asy
 });
 
 test('presentation reads use the selected stævne and reject unknown identities',async()=>{
- const calls=mockGithub('write',(url)=>{assert.match(url,/contents\/presentation\/silverrudder-2025\.json/);return reply({sha,content:Buffer.from(JSON.stringify({version:1,notes:[],speedPins:[]})).toString('base64')});});
- const response=await request('/api/presentation?event=silverrudder-2025');assert.equal(response.status,200);assert.equal((await response.json()).document.notes.length,0);
+ const calls=mockGithub('write',(url)=>{assert.equal(url,'https://raw.githubusercontent.com/owner/repo/main/presentation/silverrudder-2025.json');return reply({version:1,notes:[],speedPins:[]});});
+ const response=await request('/api/presentation?event=silverrudder-2025',{},null);assert.equal(response.status,200);assert.equal((await response.json()).document.notes.length,0);
  assert.ok(calls.some(call=>call.url.includes('/presentation/silverrudder-2025.json')));
  const unknown=await request('/api/presentation?event=unknown');assert.equal(unknown.status,400);
 });

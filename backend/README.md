@@ -1,13 +1,13 @@
-# GitHub-login og beskyttet redigering
+# Lokale kladder og GitHub-login ved udgivelse
 
 Backend er en Cloudflare Worker uden runtime-afhængigheder. GitHub Pages viser den
 udgivne præsentation. Workerens `/admin/` viser den samme brugerflade på Workerens
 eget domæne, så login virker med en almindelig sikker cookie uden tredjepartscookies
 eller GitHub-tokens i browserens JavaScript.
 
-Kun en bruger med **Write, Maintain eller Admin** til det konfigurerede repository
-kan læse redigeringsdata, uploade og udgive. Rettigheden hentes hos GitHub ved hver
-anmodning; en tidligere login-session giver ikke adgang efter fjernet repo-adgang.
+Stævner kan åbnes og redigeres uden login. Kladdens events og billeder gemmes i
+browseren. Udgivelse af præsentationen og dens billeder kræver skriverettighed
+til det konfigurerede repository. Rettigheden hentes hos GitHub ved hver skrivning.
 GitHub App-tokenet handler på brugerens vegne og kan kun de handlinger, som både
 brugeren og appen har rettighed til. Branch protection og rulesets gælder stadig.
 
@@ -16,7 +16,8 @@ brugeren og appen har rettighed til. Branch protection og rulesets gælder stadi
 1. Opret en Cloudflare Worker med dette projekts `wrangler.jsonc`. Ret `SITE_URL`
    til den offentlige Pages-adresse **med afsluttende `/`** og
    `GITHUB_REPOSITORY` til det præcise `ejer/repo`. Standarden er
-   `chlyhne/sr2026-presentation` og branch `main`.
+   `chlyhne/sr2026-presentation` og branch `main`. Repositoryet skal være offentligt
+   for at kladdevisningen kan læse præsentationen uden login.
 2. Registrér en **GitHub App** under GitHub Settings → Developer settings → GitHub
    Apps. Sæt homepage til Pages-adressen og callback til
    `https://<worker-domæne>/auth/callback`. Giv repository permissions:
@@ -39,7 +40,8 @@ brugeren og appen har rettighed til. Branch protection og rulesets gælder stadi
    password manager. Den krypterer login-cookien; rotation logger alle ud.
 4. Udgiv Worker med `npx wrangler deploy`. Sæt den offentlige sides admin-adresse
    til `https://<worker-domæne>/admin/`, og udgiv Pages igen.
-5. Åbn `/admin/`, vælg GitHub-login, og kontrollér upload/udgivelse med din konto.
+5. Åbn en stævneside under `/admin/events/`, redigér et event, og vælg Udgiv for
+   at kontrollere GitHub-login med din konto.
    Kontrollér også, at en konto uden skriverettighed bliver afvist. De lokale
    tests simulerer GitHub; de erstatter ikke denne rigtige integrationskontrol.
 
@@ -63,26 +65,24 @@ refresh tokens.
 | `GET /auth/callback` | Afslut login og gå til `/admin/` |
 | `GET /api/session` | `{authenticated, canEdit, login?}` |
 | `POST /api/logout` | Slet session-cookie |
-| `GET /api/presentation` | `{document, sha}` fra repositoryets aktuelle branch |
+| `GET /api/presentation` | Anonym læsning af `{document, sha}` fra repositoryets offentlige branch |
 | `PUT /api/presentation` | `{document, sha}` → `{sha, commit}` |
-| `POST /api/event-images` | Binært JPEG/PNG/WebP → `{id, url}` |
+| `POST /api/event-images?id=<uuid>` | Udgiv binært JPEG/PNG/WebP → `{id, url}` |
 | `GET /admin/config.js` | `window.SR_CONFIG={apiBase:origin,admin:true}` |
-| `GET /admin/event-images/<uuid>.<ext>` | Beskyttet adgang til nye billeder før Pages er opdateret |
+| `GET /admin/event-images/<uuid>.<ext>` | Offentlig adgang til billeder i repositoriet, også før Pages er opdateret |
 | `GET /admin/*` | Proxy til samme sti under Pages-basen |
 
 Præsentationen gemmes kun i `presentation/presentation.json` med formatet
 `{version:1,notes:[],speedPins:[]}`. Rhumbline er et fast projektaktiv i
 `viewer/rhumbline.json` og indgår ikke i præsentationen. Billeder får
-servergenererede UUID-navne under
-`viewer/event-images/`, som er det eneste billedlager for både lokale uploads og
-online-redigering. Relative billedadresser er `event-images/<uuid>.<ext>`;
+UUID-navne under `viewer/event-images/` ved udgivelse. Billeder i onlinekladder
+opbevares i browserens IndexedDB. Relative billedadresser er `event-images/<uuid>.<ext>`;
 eksisterende UUID'er og billedadresser bevares ved samlingen af lageret.
 Andre repository-stier kan ikke angives af klienten. Billeder må højst fylde
 16 MiB, JSON højst 4 MiB. Indholdstyper, billedsignaturer og centrale eventfelter
 valideres på serveren. Ved udgivelse kontrolleres også, at refererede billeder
-findes som filer under `viewer/event-images/` i repositoryet. Beskyttet billedlæsning
-bruger samme mappe; manglende billeder giver en tydelig fejl uden opslag i gamle
-mapper eller på Pages. Backendens validering accepterer ingen eksterne billed-URL'er.
+findes som filer under `viewer/event-images/` i repositoryet. Editorens billedlæsning
+bruger samme mappe på den offentlige GitHub-branch. Backendens validering accepterer ingen eksterne billed-URL'er.
 
 Pages-pakningen kræver en eksisterende `presentation/presentation.json` med
 `version: 1` og listerne `notes` og `speedPins`. Et manglende eller ugyldigt dokument

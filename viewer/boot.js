@@ -18,6 +18,19 @@ function validatePresentationDocument(document){
  if(!document||document.version!==1||!Array.isArray(document.notes)||!Array.isArray(document.speedPins))throw Error(srText('Ugyldige præsentationsdata: version 1, notes og speedPins er påkrævet.'));
  return document;
 }
+const hostedDraftKey='sr2026-draft:admin:';
+function migrateHostedDrafts(){
+ const legacy=eventStorage.keys().filter(key=>key.startsWith(hostedDraftKey)&&/^[\w-]+(?::previous)?$/.test(key.slice(hostedDraftKey.length)));
+ const accounts=new Set(legacy.map(key=>key.slice(hostedDraftKey.length).split(':')[0]));
+ if(accounts.size!==1)return legacy;
+ return legacy.filter(key=>{
+  const target=hostedDraftKey+(key.endsWith(':previous')?':previous':'');
+  if(eventStorage.getItem(target)!==null)return true;
+  eventStorage.setItem(target,eventStorage.getItem(key));
+  eventStorage.removeItem(key);
+  return false;
+ });
+}
 (async()=>{
  await loadEventSelection();
  const event=window.SR_EVENT;
@@ -28,7 +41,7 @@ function validatePresentationDocument(document){
  window.SR_RHUMBLINE_SETUP=routeSetup;
  window.SR_SETUP_COURSE=new URLSearchParams(location.search).get('course')||Object.keys(event.courses)[0];
  if(!Object.hasOwn(event.courses,window.SR_SETUP_COURSE))throw Error(srText('Ukendt bane til rhumbline.'));
- window.SR_READONLY=!local;
+ window.SR_READONLY=!local&&!config.admin;
  window.SRStorage=eventStorage;
  if(routeSetup){
   window.SR_READONLY=true;
@@ -38,19 +51,6 @@ function validatePresentationDocument(document){
  if(!local){
   let initial,sha=null;
   try{
-   if(config.admin){
-    const session=await fetch(config.apiBase+'/api/session',{cache:'no-store'}).then(r=>r.json());
-    if(!session.canEdit){
-     const message=document.createElement('p'),link=document.createElement('a');
-     srBind(message,'textContent',()=>srText('Log ind med en GitHub-konto med skriverettighed til præsentationens repository.'));
-     srBind(link,'textContent',()=>srText('Log ind med GitHub'));
-     const syncLink=()=>{link.href=eventLoginURL();};syncLink();srOnLanguageChange(syncLink);
-     const loginPage=document.createElement('section');loginPage.className='tracker-login';
-     loginPage.append(document.querySelector('[data-language-picker]'),message,link);
-     document.body.replaceChildren(loginPage);document.documentElement.classList.remove('viewer-loading');document.body.setAttribute('aria-busy','false');return;
-    }
-    window.SR_READONLY=false;window.SR_LOGIN=session.login;
-   }
    const url=config.admin?config.apiBase+eventAPI('/api/presentation'):'events/'+event.id+'/presentation.json';
    const response=await fetch(url,{cache:'no-store'});
    if(!response.ok)throw new Error(srText('Præsentationen kunne ikke indlæses (')+response.status+').');
@@ -60,13 +60,17 @@ function validatePresentationDocument(document){
    showViewerLoadingError(error);return;
   }
   window.SR_SHA=sha;
-  const draftKey='sr2026-draft:admin:'+(window.SR_LOGIN||'');
+  const draftKey=config.admin?hostedDraftKey:null;
   if(config.admin){
+   window.SR_LEGACY_DRAFT_KEYS=migrateHostedDrafts();
    const draft=JSON.parse(eventStorage.getItem(draftKey));
    if(draft){
     validatePresentationDocument(draft.document);
     if(draft.sha===sha){initial=draft.document;window.SR_RESTORED=true;}
-    else eventStorage.setItem(draftKey+':previous',JSON.stringify(draft));
+    else {
+     eventStorage.setItem(draftKey+':previous',JSON.stringify(draft));
+     eventStorage.removeItem(draftKey);
+    }
    }
    window.SR_PREVIOUS_DRAFT=JSON.parse(eventStorage.getItem(draftKey+':previous')??'null');
    if(window.SR_PREVIOUS_DRAFT)validatePresentationDocument(window.SR_PREVIOUS_DRAFT.document);

@@ -24,12 +24,11 @@ async function openImageCrop(){
  srBind($('imageCropStatus'),'textContent',()=>srText('Indlæser billede …'));
  $('imageCropDialog').showModal();$('cancelImageCrop').focus();
  try{
-  if(!validEventImageURL(image.url))throw new SRMessageError('Billedets serveradresse mangler.');
-  const bitmap=new Image();
-  await new Promise((resolve,reject)=>{bitmap.onload=resolve;bitmap.onerror=()=>reject(new SRMessageError('Billedet kunne ikke hentes. Luk og prøv igen.'));bitmap.src=image.url;});
+  const src=await eventImageSource(image),bitmap=new Image();
+  await new Promise((resolve,reject)=>{bitmap.onload=resolve;bitmap.onerror=()=>reject(new SRMessageError('Billedet kunne ikke hentes. Luk og prøv igen.'));bitmap.src=src;});
   if(imageCropState!==state)return;
   state.bitmap=bitmap;state.rect={x:0,y:0,width:bitmap.naturalWidth,height:bitmap.naturalHeight};
-  $('imageCropSource').src=image.url;$('imageCropStage').hidden=false;
+  $('imageCropSource').src=src;$('imageCropStage').hidden=false;
   $('imageCropFields').disabled=false;$('applyImageCrop').disabled=$('resetImageCrop').disabled=false;
   $('imageCropStatus').textContent='';renderImageCrop();
  }catch(error){if(imageCropState===state)srBind($('imageCropStatus'),'textContent',()=>srErrorText(error));}

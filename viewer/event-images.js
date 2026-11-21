@@ -1,9 +1,42 @@
-// Photos are uploaded to the local server; notes keep their permanent URL.
+// Hosted drafts keep image bytes in the browser until publication.
 const eventImageUploads=new Map(),eventImageErrors=new WeakMap();
 let imageUploadToken=0;
 let shownEventImageId=null,eventImageRenderToken=0;
 let panelEventImage=null,panelEventImageNote=null,mapImageView=null,mapImageToken=0;
 const validEventImageURL=url=>/^\/?event-images\/[0-9a-f-]{36}\.(webp|png|jpg)$/.test(url||'');
+const eventImageExtensions={'image/webp':'webp','image/png':'png','image/jpeg':'jpg'};
+const draftImageURLs=new Map();
+let draftImageDB;
+function openDraftImageDB(){
+ if(!draftImageDB)draftImageDB=new Promise((resolve,reject)=>{
+  const request=indexedDB.open('sr-event-images',1);
+  request.onupgradeneeded=()=>request.result.createObjectStore('drafts');
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error);
+ }).catch(error=>{draftImageDB=null;throw error;});
+ return draftImageDB;
+}
+async function draftImageTransaction(mode,operation){
+ const db=await openDraftImageDB();
+ return new Promise((resolve,reject)=>{
+  const transaction=db.transaction('drafts',mode),request=operation(transaction.objectStore('drafts'));
+  transaction.oncomplete=()=>resolve(request.result);
+  transaction.onabort=()=>reject(transaction.error);
+ });
+}
+async function readDraftImage(image){
+ const blob=await draftImageTransaction('readonly',store=>store.get(image.id));
+ if(!blob)throw new SRMessageError('Billedet mangler i den lokale kladde.');
+ return blob;
+}
+function eventImageSource(image){
+ if(!validEventImageURL(image?.url))throw new SRMessageError('Billedets serveradresse mangler.');
+ if(!image.draft)return image.url;
+ if(!draftImageURLs.has(image.id))draftImageURLs.set(image.id,readDraftImage(image).then(blob=>URL.createObjectURL(blob)).catch(error=>{
+  draftImageURLs.delete(image.id);throw error;
+ }));
+ return draftImageURLs.get(image.id);
+}
 function syncEventImageVisibility(){
  $('eventImageFigure').hidden=!!mapImageView||!$('eventImage').getAttribute('src');
  $('eventImageStatus').hidden=!!mapImageView;
@@ -30,10 +63,10 @@ async function showMapEventImage(image=panelEventImage,note=panelEventImageNote)
  syncEventImageVisibility();
  if(document.activeElement===$('eventImageButton'))$('mapEventImage').focus({preventScroll:true});
  try{
-  const img=new Image();
-  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new SRMessageError('Billedet kunne ikke hentes. Klik for at vise kortet igen.'));img.src=image.url;});
+  const src=await eventImageSource(image),img=new Image();
+  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new SRMessageError('Billedet kunne ikke hentes. Klik for at vise kortet igen.'));img.src=src;});
   if(token!==mapImageToken)return;
-  $('mapEventImageContent').src=image.url;srBind($('mapEventImageContent'),'alt',()=>image.name||srText('Billede til event'));
+  $('mapEventImageContent').src=src;srBind($('mapEventImageContent'),'alt',()=>image.name||srText('Billede til event'));
   $('mapEventImageContent').hidden=false;$('mapEventImageStatus').textContent='';
  }catch(error){if(token===mapImageToken)srBind($('mapEventImageStatus'),'textContent',()=>srErrorText(error));}
 }
@@ -58,13 +91,26 @@ async function prepareEventImage(file){
 async function uploadEventImageCanvas(canvas,name){
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.9));
   if(!blob)throw new SRMessageError('Billedet kunne ikke klargøres.');
-  const response=await fetch((window.SR_CONFIG?.apiBase||'')+'/api/event-images',{method:'POST',headers:{'Content-Type':blob.type},body:blob});
+  return {...await saveEventImage(blob),name,width:canvas.width,height:canvas.height,type:blob.type};
+}
+async function saveEventImage(blob){
+  if(!window.SR_CONFIG?.admin)return sendEventImage(blob);
+  const extension=eventImageExtensions[blob.type];
+  if(!extension)throw new SRMessageError('Billedet kunne ikke klargøres.');
+  const id=crypto.randomUUID(),url='event-images/'+id+'.'+extension;
+  await draftImageTransaction('readwrite',store=>store.put(blob,id));
+  return {id,url,draft:true};
+}
+async function sendEventImage(blob,id){
+  const url=(window.SR_CONFIG?.apiBase||'')+'/api/event-images'+(id?'?id='+encodeURIComponent(id):'');
+  const response=await fetch(url,{method:'POST',headers:{'Content-Type':blob.type},body:blob});
   if(!response.ok){
    const {error}=await response.json().catch(()=>({}));
-   throw new SRMessageError(error||'Serveren kunne ikke gemme billedet. Start vieweren med python3 scripts/serve_viewer.py.');
+   const failure=new SRMessageError(error||'Serveren kunne ikke gemme billedet. Start vieweren med python3 scripts/serve_viewer.py.');
+   failure.status=response.status;throw failure;
   }
-  const saved=await response.json();
-  return {id:saved.id,url:saved.url,name,width:canvas.width,height:canvas.height,type:blob.type};
+  const {id:savedId,url:savedURL}=await response.json();
+  return {id:savedId,url:savedURL};
 }
 function setAttachedEventImage(image,target=editingNote){
  return updateEventContent(target,{image});
@@ -113,25 +159,27 @@ async function renderEventImage(image,note){
  if(!id)return;
  srBind($('eventImageStatus'),'textContent',()=>srText('Indlæser billede …'));
  try{
-  if(!validEventImageURL(image.url))throw new SRMessageError('Billedets serveradresse mangler.');
-  const img=new Image();
-  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new SRMessageError('Billedet kunne ikke hentes fra serveren.'));img.src=image.url;});
+  const src=await eventImageSource(image),img=new Image();
+  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new SRMessageError('Billedet kunne ikke hentes fra serveren.'));img.src=src;});
   if(token!==eventImageRenderToken)return;
-  $('eventImage').src=image.url;
+  $('eventImage').src=src;
   srBind($('eventImage'),'alt',()=>image.name||srText('Billede til event'));$('eventImageCaption').textContent=image.name||'';
   syncEventImageVisibility();$('eventImageStatus').textContent='';
  }catch(error){if(token===eventImageRenderToken)srBind($('eventImageStatus'),'textContent',()=>srErrorText(error));}
 }
+async function embedEventImages(document,{draftOnly=false}={}){
+ for(const note of document.notes)if(note.image?.id&&(!draftOnly||note.image.draft)){
+  const response=await fetch(await eventImageSource(note.image));if(!response.ok)throw new SRMessageError("Billedet til “{0}” mangler. Eksporten er ikke gemt.",note.text||note.image.name);
+  const blob=await response.blob();delete note.image.draft;
+  note.image.dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
+ }
+ return document;
+}
 async function exportEventNotes(){
  const button=$('export');button.disabled=true;
  try{
-  const output=JSON.parse(JSON.stringify(notes));
-  for(const note of output)if(note.image?.id){
-   const response=await fetch(note.image.url);if(!response.ok)throw new SRMessageError("Billedet til “{0}” mangler. Eksporten er ikke gemt.",note.text||note.image.name);
-   const blob=await response.blob();
-   note.image.dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
-  }
-  download(new Blob([JSON.stringify({version:1,notes:output,speedPins},null,2)],{type:'application/json'}),window.SR_EVENT.id+'-haendelser.json');
+  const output=await embedEventImages(JSON.parse(JSON.stringify({version:1,notes,speedPins})));
+  download(new Blob([JSON.stringify(output,null,2)],{type:'application/json'}),window.SR_EVENT.id+'-haendelser.json');
  }catch(error){srBind($('annotationStatus'),'textContent',()=>error.message?srErrorText(error):srText('Noterne kunne ikke eksporteres.'));}
  finally{button.disabled=false;}
 }

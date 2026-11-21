@@ -301,6 +301,3 @@ body.boat-compare-open main{--event-width:clamp(280px,28vw,440px)}
  #eventPanel,#boatComparePanel{grid-row:3;border-top:1px solid #d5d9de}
  #presentationFooter{grid-row:4}
 }
-
-.tracker-login{width:min(100%,560px);margin:32px auto;padding:24px}
-.tracker-login>.language-picker{justify-self:end}

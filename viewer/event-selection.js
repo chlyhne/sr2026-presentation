@@ -53,7 +53,8 @@ async function loadEventSelection(){
   const old=prefix+'sr2026-draft:'+path+':',next=prefix+'sr2026-draft:admin:';
   for(const key of Object.keys(localStorage))if(key.startsWith(old)&&localStorage.getItem(next+key.slice(old.length))===null)localStorage.setItem(next+key.slice(old.length),localStorage.getItem(key));
  }
- eventStorage={getItem:key=>localStorage.getItem(prefix+key),setItem:(key,value)=>localStorage.setItem(prefix+key,value),removeItem:key=>localStorage.removeItem(prefix+key)};
+ eventStorage={getItem:key=>localStorage.getItem(prefix+key),setItem:(key,value)=>localStorage.setItem(prefix+key,value),removeItem:key=>localStorage.removeItem(prefix+key),
+  keys:()=>Object.keys(localStorage).filter(key=>key.startsWith(prefix)).map(key=>key.slice(prefix.length))};
  const select=document.getElementById('eventSelect');
  select.replaceChildren(...catalog.events.map(item=>new Option(item.title,item.id)));select.value=id;
  select.onchange=()=>{
@@ -70,3 +71,4 @@ async function loadEventSelection(){
 }
 function eventAPI(path){return path+'?event='+encodeURIComponent(window.SR_EVENT.id);}
 function eventLoginURL(){return window.SR_CONFIG.apiBase+eventAPI('/auth/login')+'&lang='+srLanguage;}
+function eventEditorURL(){return srLanguageURL(window.SR_CONFIG.apiBase+'/admin/events/'+encodeURIComponent(window.SR_EVENT.id)+'/');}
